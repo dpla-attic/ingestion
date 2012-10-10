@@ -9,7 +9,7 @@ from amara.thirdparty import json
 
 PROFILE_EXT = '.pjs'
 PROFILE_DATA_EXT = '.sjs'
-PROFILE_DATA_NAME = lambda d,n: os.path.join(d,'%s%s'%(n.rsplit(PROFILE_EXT,1)[0], PROFILE_DATA_EXT))
+PROFILE_DATA_NAME = lambda d,n,s: os.path.join(d,'%s_%s%s'%(n.rsplit(PROFILE_EXT,1)[0],s,PROFILE_DATA_EXT))
 
 def process_profile(indir,outdir,profname):
 
@@ -27,15 +27,22 @@ def process_profile(indir,outdir,profname):
 
     H = httplib2.Http('/tmp/.pollcache')
     H.force_exception_as_status_code = True
-    resp, content = H.request(profile[u'endpoint_URL'])
-    if not resp[u'status'].startswith('2'):
-        print >> sys.stderr, '  HTTP error (',resp[u'status'],') resolving URL: ',content[:80]
-        return False
+    subResources = profile[u'subresources'] or ['']
+    for subr in subResources:
 
-    # Save retrieved data
-    fout = open(PROFILE_DATA_NAME(outdir,profname),'w')
-    fout.write(content)
-    fout.close()
+        # For now, a simplifying assumption that string concatenation produces a
+        # full URI from the combination of the endpoint URL and each subresource id.
+        # Better might be a single field listing all URIs but unclear how that extends
+        # to other protocols.
+        resp, content = H.request(profile[u'endpoint_URL']+subr)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: '+profile[u'endpoint_URL']+subr
+            continue
+
+        # Save retrieved data
+        fout = open(PROFILE_DATA_NAME(outdir,profname,subr),'w')
+        fout.write(content)
+        fout.close()
 
     # Update profile metadata and save
     profile[u'last_checked'] = datetime.datetime.now().isoformat()
