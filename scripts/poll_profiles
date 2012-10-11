@@ -4,7 +4,7 @@
 
 import sys, os
 import httplib2
-import datetime
+import datetime, time
 from amara.thirdparty import json
 
 PROFILE_EXT = '.pjs'
@@ -25,6 +25,9 @@ def process_profile(indir,outdir,profname):
         print >> sys.stderr, 'Error reading source profile.'
         return False
 
+    # Pause in secs between HTTP requests
+    sleep = profile.get(u'sleep') or 0
+
     H = httplib2.Http('/tmp/.pollcache')
     H.force_exception_as_status_code = True
     subResources = profile[u'subresources'] or ['']
@@ -43,6 +46,8 @@ def process_profile(indir,outdir,profname):
         fout = open(PROFILE_DATA_NAME(outdir,profname,subr),'w')
         fout.write(content)
         fout.close()
+
+        time.sleep(sleep)
 
     # Update profile metadata and save
     profile[u'last_checked'] = datetime.datetime.now().isoformat()
