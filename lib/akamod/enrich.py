@@ -1,6 +1,5 @@
 from akara.services import simple_service
-from akara import logger
-from akara import request
+from akara import request, response
 from akara import module_config
 from akara.util import copy_headers_to_dict
 
@@ -22,8 +21,8 @@ def enrich(body,ctype):
     for uri in enrichments:
         headers = copy_headers_to_dict(request.environ,exclude=['HTTP_PIPELINE'])
         headers['content-type'] = ctype
-        resp, content = H.request(uri,'POST',headers=headers)
-        if not resp.status.startswith('2'):
+        resp, content = H.request(uri,'POST',body=content,headers=headers)
+        if not str(resp.status).startswith('2'):
             response.code = resp.status
             response.add_header('content-type',resp['content-type'])
             break
