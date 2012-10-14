@@ -23,3 +23,20 @@ To run the ingest process, install the script then feed it a source profile desc
     {"endpoint_URL":"http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset=jfb&limit=10"}
     DONE
     $ poll_profiles profiles data
+
+Source profiles are represented as JSON objects. Their properties include;
+
+* endpoint_URL; the Akara-wrapped URL from which JSON representations are retrieved.
+* subresources; for OAI, names individual sets in an OAI store. When used, endpoint_URL should terminate with "&oaiset=" (this may change)
+* last_checked; read-only timestamp indicating the last time this source was polled
+* enrichments; ordered list of Akara enrichment services, including any service specific query parameters
+
+Enrichment pipelines are implemented through a central enrichment service which interprets the list of other services as communicated via a "Pipeline" HTTP header on a POST request. For example, given a data.sjs data document, the following request will send that data through the provided pipeline;
+
+    $ curl -X POST -d @data.sjs -H "Pipeline:
+
+Current enrichment services are;
+
+* shred/unshred; ',' based string/list and list/string (de)construction. The "prop" parameter specifies which property is to be shredded/unshredded
+* geocode; replaces the named property (via the "prop" parameter) with its lat/long
+* select-id; creates or updates an "id" property to the value of the property named by the "prop" parameter

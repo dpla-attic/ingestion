@@ -8,5 +8,7 @@ setup( name = 'ingestion',
        author='Mark Baker',
        author_email='mark@zepheira.com',
        url='http://dp.la',
+       package_dir={'dplaingestion':'lib'},
+       packages=['dplaingestion','dplaingestion.akamod'],
        scripts=['scripts/poll_profiles'],
 )
