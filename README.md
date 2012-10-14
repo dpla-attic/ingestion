@@ -38,5 +38,5 @@ Enrichment pipelines are implemented through a central enrichment service which 
 Current enrichment services are;
 
 * shred/unshred; ',' based string/list and list/string (de)construction. The "prop" parameter specifies which property is to be shredded/unshredded
-* geocode; replaces the named property (via the "prop" parameter) with its lat/long
+* geocode; replaces the named property (via the "prop" parameter) with its lat/long. NOTE; in order to use geo lookups, the geonames sqlite file has to be created using the [instructions](https://foundry.zepheira.com/projects/zenpub/repository/entry/NOTES) and stored in the "caches" directory below the home directory of akara.conf
 * select-id; creates or updates an "id" property to the value of the property named by the "prop" parameter
