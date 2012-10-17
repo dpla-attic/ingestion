@@ -16,6 +16,7 @@ def shred(body,ctype,prop=None):
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    data[prop] = [ s.strip() for s in data[prop].split(',') ]
+    if prop in data:
+        data[prop] = [ s.strip() for s in data[prop].split(',') ]
 
     return json.dumps(data)
