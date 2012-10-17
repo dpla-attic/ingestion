@@ -1,6 +1,6 @@
-To install the ingest subsystem, first install the necessary components;
+To install or upgrade the ingest subsystem, first install the necessary components;
 
-    $ pip install -r requirements.txt
+    $ pip install --no-deps --ignore-installed -r requirements.txt
 
 Then set up and start the (Akara) server;
 
