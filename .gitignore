@@ -3,3 +3,4 @@ logs/*
 profiles/*
 data/*
 .DS_Store
+*.pyc
