@@ -49,8 +49,9 @@ def test_unshred1():
         "id": "999",
         "prop1": "lets,go,bluejays"
     }
-    url = server() + "unshred?prop=prop1"
+    url = server() + "shred?action=unshred&prop=prop1"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
 
@@ -61,8 +62,9 @@ def test_unshred2():
         "prop1": ["lets","go","bluejays"]
     }
     EXPECTED = INPUT
-    url = server() + "unshred?prop=prop9"
+    url = server() + "shred?action=unshred&prop=prop9"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
 

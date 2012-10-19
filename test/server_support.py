@@ -67,7 +67,6 @@ class Akara:
 
 MODULES = ["dplaingestion.akamod.enrich",
            "dplaingestion.akamod.shred",
-           "dplaingestion.akamod.unshred",
            "dplaingestion.akamod.select-id",
 ]           
 
