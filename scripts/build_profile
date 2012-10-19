@@ -6,9 +6,10 @@
 import sys, os
 import httplib2
 from amara.thirdparty import json
-                 
+                                                                
+LIMIT = "9999"
 AKARA_BASE = "http://localhost:8889/"
-AKARA_SETS = AKARA_BASE + "oai.listsets.json?endpoint="
+AKARA_SETS = AKARA_BASE + "oai.listsets.json?limit=" + LIMIT + "&endpoint="
 AKARA_RECORDS = AKARA_BASE + "oai.listrecords.json?endpoint="
 
 def build_profile(endpoint_URL):
