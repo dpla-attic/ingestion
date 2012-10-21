@@ -6,12 +6,13 @@ import sys, os
 import httplib2
 import datetime, time
 from amara.thirdparty import json
+from amara.lib.iri import is_absolute
 
 PROFILE_EXT = '.pjs'
 PROFILE_DATA_EXT = '.sjs'
 PROFILE_DATA_NAME = lambda d,n,s: os.path.join(d,'%s_%s%s'%(n.rsplit(PROFILE_EXT,1)[0],s,PROFILE_DATA_EXT))
 
-def process_profile(indir,outdir,profname):
+def process_profile(indir,out,profname):
 
     fprof = open(os.path.join(indir,profname),'r')
     try:
@@ -37,15 +38,31 @@ def process_profile(indir,outdir,profname):
         # full URI from the combination of the endpoint URL and each subresource id.
         # Better might be a single field listing all URIs but unclear how that extends
         # to other protocols.
+
+        print >> sys.stderr, profile[u'endpoint_URL']+subr
         resp, content = H.request(profile[u'endpoint_URL']+subr)
         if not resp[u'status'].startswith('2'):
             print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: '+profile[u'endpoint_URL']+subr
             continue
 
-        # Save retrieved data
-        fout = open(PROFILE_DATA_NAME(outdir,profname,subr),'w')
-        fout.write(content)
-        fout.close()
+        # Enrich retrieved data
+
+        # If the 2nd arg is an absolute URI, it's the enrichment service so POST there,
+        # otherwise treat as an output directory
+        if is_absolute(out):
+            headers = {
+                "Content-Type": "application/json",
+                "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
+                "Pipeline-Rec": '.'.join(profile["enrichments_rec"]),
+            }
+            resp, content = H.request(out,'POST',body=content,headers=headers)
+            if not str(resp.status).startswith('2'):
+                print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+
+        else:
+            fout = open(PROFILE_DATA_NAME(out,profname,subr),'w')
+            fout.write(content)
+            fout.close()
 
         time.sleep(sleep)
 
@@ -61,7 +78,10 @@ if __name__ == '__main__':
 
     # Verify that both given directories exist
     for d in sys.argv[1:]:
+        if is_absolute(d): break # skip URIs
+
         dirExists = False
+
         try:
             if os.stat(d): dirExists = True
         except:
