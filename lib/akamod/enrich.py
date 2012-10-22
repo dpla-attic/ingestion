@@ -2,10 +2,9 @@ from akara.services import simple_service
 from akara import request, response
 from akara import module_config, logger
 from akara.util import copy_headers_to_dict
-from amara.thirdparty import json
+from amara.thirdparty import json, httplib2
 import uuid
 
-import httplib2
 
 H = httplib2.Http()
 H.force_exception_as_status_code = True
@@ -46,6 +45,8 @@ def enrich(body,ctype):
     for record in data[u'items']:
         # Assign the record to its collection
         record['collection'] = COLL['id']
+        # Preserve record prior to any enrichments
+        record['original_record'] = record
 
         pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
     
