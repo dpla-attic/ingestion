@@ -53,7 +53,7 @@ def process_profile(indir,out,profname):
             headers = {
                 "Content-Type": "application/json",
                 "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
-                "Pipeline-Rec": '.'.join(profile["enrichments_rec"]),
+                "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
             }
             resp, content = H.request(out,'POST',body=content,headers=headers)
             if not str(resp.status).startswith('2'):
