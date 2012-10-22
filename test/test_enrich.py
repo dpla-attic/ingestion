@@ -1,6 +1,6 @@
 from server_support import server
 
-import httplib2
+from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
 
@@ -33,6 +33,20 @@ def test_shred2():
     }
     EXPECTED = INPUT
     url = server() + "shred?prop=prop9"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    assert str(resp.status).startswith("2")
+
+    assert json.loads(content) == EXPECTED
+
+def test_shred3():
+    "Shredding with a non-default delimeter"
+    INPUT = {
+        "p":"a,d,f ,, g"
+    }
+    EXPECTED = {
+        "p": ["a,d,f", ",,", "g"]
+    }
+    url = server() + "shred?prop=p&delim=%20"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
