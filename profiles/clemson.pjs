@@ -1,0 +1,28 @@
+{
+    "enrichments_rec": [
+        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
+        "http://localhost:8889/shred?prop=subject&delim=%3b", 
+        "http://camp.dpla.berkman.temphost.net:5931/dpla"
+    ], 
+    "enrichments_coll": [
+        "http://camp.dpla.berkman.temphost.net:5931/dpla"
+    ], 
+    "endpoint_URL": "http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset=", 
+    "subresources": [
+        "gmb", 
+        "ctm", 
+        "cfb", 
+        "spg", 
+        "jfb", 
+        "jbt", 
+        "pre", 
+        "dnc", 
+        "scp", 
+        "swl", 
+        "weg", 
+        "ghs", 
+        "wsb", 
+        "mbe", 
+        "gcj"
+    ]
+}
