@@ -46,7 +46,7 @@ def enrich(body,ctype):
         # Assign the record to its collection
         record['collection'] = COLL['id']
         # Preserve record prior to any enrichments
-        record['original_record'] = record
+        record['original_record'] = record.copy()
 
         pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
     
