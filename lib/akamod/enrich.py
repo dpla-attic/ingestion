@@ -12,6 +12,7 @@ H.force_exception_as_status_code = True
 def pipe(content,ctype,enrichments,wsgi_header):
     body = json.dumps(content)
     for uri in enrichments:
+        if len(uri) < 1: continue # in case there's no pipeline
         headers = copy_headers_to_dict(request.environ,exclude=[wsgi_header])
         headers['content-type'] = ctype
         resp, cont = H.request(uri,'POST',body=body,headers=headers)
