@@ -1,0 +1,114 @@
+from akara import logger
+from akara import response
+from akara.services import simple_service
+from amara.thirdparty import json
+from functools import partial
+
+CONTEXT = {
+   "@vocab": "http://purl.org/dc/terms/",
+   "dpla": "http://dp.la/terms/",
+   "name": "xsd:string",
+   "dplaContributor": "dpla:contributor",
+   "dplaSourceRecord": "dpla:sourceRecord",
+   "coordinates": "dpla:coordinates",
+   "state": "dpla:state",                             
+   "start" : {
+     "@id" : "dpla:start",
+     "@type": "xsd:date"
+   },
+   "end" : {
+     "@id" : "dpla:end",
+     "@type": "xsd:date"
+   },
+   "iso3166-2": "dpla:iso3166-2",
+   "iso639": "dpla:iso639",
+   "LCSH": "http://id.loc.gov/authorities/subjects"
+}
+
+def spatial_transform(d):
+    spatial = []
+    for i,s in enumerate(d["coverage"]):
+        sp = { "name": s }
+        # Check if we have lat/long for this location. Requires geocode earlier in the pipeline
+        if "coverage_geo" in d and i < len(d["coverage_geo"]) and len(d["coverage_geo"][i]) > 0:
+            sp["coordinates"] = d["coverage_geo"][i]
+        spatial.append(sp);
+    return {"spatial":spatial}
+
+def created_transform(d):
+    created = {
+        "start": d["datestamp"],
+        "end": d["datestamp"]
+    }
+    return {"created":created}
+
+def temporal_transform(d):
+    temporal = []
+    for t in d["date"]:
+        temporal.append( {
+            "start": t,
+            "end": t
+        } );
+    return {"temporal":temporal}
+
+# Structure mapping the original property to a function returning a single
+# item dict representing the new property and its value
+TRANSFORMER = {
+    "source"           : lambda d: {"contributor": d.get("source",None)},
+    "original_record"  : lambda d: {"dplaSourceRecord": d.get("original_record",None)},
+    "datestamp"        : created_transform,
+    "date"             : temporal_transform,
+    "coverage"         : spatial_transform,
+    "title"            : lambda d: {"title": d.get("title",None)},
+    "creator"          : lambda d: {"creator": d.get("creator",None)},
+    "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
+    "type"             : lambda d: {"type": d.get("type",None)},
+    "format"           : lambda d: {"format": d.get("format",None)},
+    "description"      : lambda d: {"description": d.get("description",None)},
+    "rights"           : lambda d: {"rights": d.get("rights",None)},
+
+    # language - needs a lookup table/service. TBD.
+    # isPartOf - needs 
+    # subject - needs additional enrichment 
+}
+
+@simple_service('POST', 'http://purl.org/la/dp/oai-to-dpla', 'oai-to-dpla', 'application/ld+json')
+def oaitodpla(body,ctype,dplacontrib=None):
+    '''   
+    Convert output of Freemix OAI service into the DPLA JSON-LD format.
+
+    Does not currently require any enrichments to be ahead in the pipeline, but
+    supports geocoding if used. In the future, subject shredding may be assumed too.
+
+    Accepts a single parameter which specifies the literal value of the dplaContributor stanza
+    '''
+
+    try :
+        data = json.loads(body)
+    except:
+        response.code = 500
+        response.add_header('content-type','text/plain')
+        return "Unable to parse body as JSON"
+
+    out = {
+        "@context": CONTEXT,
+    }
+
+    # Apply all transformation rules from original document
+    for p in data.keys():
+        if p in TRANSFORMER:
+            out.update(TRANSFORMER[p](data))
+
+    # Additional content not from original document
+    if dplacontrib:
+        out["dplaContributor"] = {
+            "@id": "http://dp.la/repository/items/ID_TBD2",
+            "name": dplacontrib
+        }
+
+    out["@id"] = "http://dp.la/repository/items/ID_TBD1"
+
+    # Strip out keys with None/null values?
+    out = dict((k,v) for (k,v) in out.items() if v)
+
+    return json.dumps(out)
