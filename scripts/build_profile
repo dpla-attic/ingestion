@@ -4,8 +4,7 @@
 # Outputs a profile that can be used for a given endpoint with poll_profiles, including all the available sets for that endpoint
 
 import sys, os
-import httplib2
-from amara.thirdparty import json
+from amara.thirdparty import json, httplib2
                                                                 
 LIMIT = "9999"
 AKARA_BASE = "http://localhost:8889/"
