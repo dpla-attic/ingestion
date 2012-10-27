@@ -66,9 +66,10 @@ TRANSFORMER = {
     "format"           : lambda d: {"format": d.get("format",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
+    "collection"       : lambda d: {"isPartOf": {"@id":d.get("collection",None)}}
 
     # language - needs a lookup table/service. TBD.
-    # isPartOf - needs 
+    # isPartOf - needs name of collection
     # subject - needs additional enrichment 
 }
 
