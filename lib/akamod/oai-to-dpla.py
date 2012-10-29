@@ -69,11 +69,12 @@ TRANSFORMER = {
     "format"           : lambda d: {"format": d.get("format",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
-    "collection"       : lambda d: {"isPartOf": {"@id":d.get("collection",None)}}
+    "collection"       : lambda d: {"isPartOf": {"@id":d.get("collection",None)}},
+    "subject"          : lambda d: {"subject": [ {"name":sub} for sub in d.get("subject",[]) ]},
 
     # language - needs a lookup table/service. TBD.
     # isPartOf - needs name of collection
-    # subject - needs additional enrichment 
+    # subject - needs additional LCSH enrichment. just names for now
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/oai-to-dpla', 'oai-to-dpla', 'application/ld+json')
