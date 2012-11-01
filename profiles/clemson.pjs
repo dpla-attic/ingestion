@@ -8,7 +8,7 @@
     "enrichments_coll": [
         "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe", 
         "http://camp.dpla.berkman.temphost.net:5931/dpla",
-        "http://localhost:8889/get-record?couch=http://camp.dpla.berkman.temphost.net:5931/jefftest/"
+        "http://localhost:8889/get-record?couch=http://camp.dpla.berkman.temphost.net:5931/dpla/"
     ], 
     "endpoint_URL": "http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset=", 
     "last_checked": "2012-11-01T14:44:37.418283", 
