@@ -3,3 +3,4 @@ logs/*
 data/*
 .DS_Store
 *.pyc
+.idea/*
