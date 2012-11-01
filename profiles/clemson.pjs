@@ -1,28 +1,32 @@
 {
     "enrichments_rec": [
-        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
+        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo",
         "http://localhost:8889/shred?prop=subject&delim=%3b", 
+        "http://localhost:8889/oai-to-dpla", 
         "http://camp.dpla.berkman.temphost.net:5931/dpla"
     ], 
     "enrichments_coll": [
-        "http://camp.dpla.berkman.temphost.net:5931/dpla"
+        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe", 
+        "http://camp.dpla.berkman.temphost.net:5931/dpla",
+        "http://localhost:8889/get-record?couch=http://camp.dpla.berkman.temphost.net:5931/jefftest/"
     ], 
     "endpoint_URL": "http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset=", 
+    "last_checked": "2012-11-01T14:44:37.418283", 
     "subresources": [
         "gmb", 
         "ctm", 
-        "cfb", 
-        "spg", 
-        "jfb", 
-        "jbt", 
-        "pre", 
-        "dnc", 
-        "scp", 
-        "swl", 
-        "weg", 
-        "ghs", 
-        "wsb", 
-        "mbe", 
+        "cfb",
+        "spg",
+        "jfb",
+        "jbt",
+        "pre",
+        "dnc",
+        "scp",
+        "swl",
+        "weg",
+        "ghs",
+        "wsb",
+        "mbe",
         "gcj"
     ]
 }

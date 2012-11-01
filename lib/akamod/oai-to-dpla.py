@@ -69,11 +69,10 @@ TRANSFORMER = {
     "format"           : lambda d: {"format": d.get("format",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
-    "collection"       : lambda d: {"isPartOf": {"@id":d.get("collection",None)}},
+    "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
     "subject"          : lambda d: {"subject": [ {"name":sub} for sub in d.get("subject",[]) ]},
 
     # language - needs a lookup table/service. TBD.
-    # isPartOf - needs name of collection
     # subject - needs additional LCSH enrichment. just names for now
 }
 
@@ -115,7 +114,7 @@ def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
             "name": dplacontrib
         }
 
-    out["@id"] = "http://dp.la/repository/items/ID_TBD1"
+    out["@id"] = "http://dp.la/api/items/ID_TBD1"
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

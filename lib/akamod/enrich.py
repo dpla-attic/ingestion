@@ -21,6 +21,7 @@ def pipe(content,ctype,enrichments,wsgi_header):
             continue
 
         body = cont
+    return body
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich', 'enrich', 'application/json')
 def enrich(body,ctype):
@@ -37,17 +38,18 @@ def enrich(body,ctype):
     # First, we run the collection representation through its enrichment pipeline
 
     COLL = {
-        "id": str(uuid.uuid4()),
+        "@id": "http://dp.la/api/collections/" + str(uuid.uuid4()),
     }
 
-    pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
+    enriched_collection = json.loads(pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL'))
 
     # Then the records
     for record in data[u'items']:
-        # Assign the record to its collection
-        record['collection'] = COLL['id']
         # Preserve record prior to any enrichments
-        record['original_record'] = record.copy()
+        record['original_record'] = record.copy()         
+
+        # Add collection information
+        record[u'collection'] = {'@id' : enriched_collection['@id'], 'title' : enriched_collection['title']}
 
         pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
     
