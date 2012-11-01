@@ -3,6 +3,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from functools import partial
+import uuid
 
 GEOPROP = None
 
@@ -114,7 +115,7 @@ def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
             "name": dplacontrib
         }
 
-    out["@id"] = "http://dp.la/api/items/ID_TBD1"
+    out["@id"] = "http://dp.la/api/items/" +  str(uuid.uuid4())
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)
