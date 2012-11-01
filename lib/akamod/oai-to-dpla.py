@@ -1,6 +1,7 @@
 from akara import logger
 from akara import response
 from akara.services import simple_service
+from amara.lib.iri import is_absolute
 from amara.thirdparty import json
 from functools import partial
 import uuid
@@ -55,6 +56,13 @@ def temporal_transform(d):
         } );
     return {"temporal":temporal}
 
+def source_transform(d):
+    source = ""
+    for i,s in enumerate(d["handle"]):
+        if is_absolute(s):
+            source = s
+    return {"source":source}
+
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
 TRANSFORMER = {
@@ -72,6 +80,7 @@ TRANSFORMER = {
     "rights"           : lambda d: {"rights": d.get("rights",None)},
     "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
     "subject"          : lambda d: {"subject": [ {"name":sub} for sub in d.get("subject",[]) ]},
+    "handle"           : source_transform
 
     # language - needs a lookup table/service. TBD.
     # subject - needs additional LCSH enrichment. just names for now
