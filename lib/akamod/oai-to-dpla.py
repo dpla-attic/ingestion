@@ -1,5 +1,5 @@
 from akara import logger
-from akara import response
+from akara import request, response
 from akara.services import simple_service
 from amara.lib.iri import is_absolute
 from amara.thirdparty import json
@@ -118,12 +118,14 @@ def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
             out.update(TRANSFORMER[p](data))
 
     # Additional content not from original document
-    if dplacontrib:
-        out["dplaContributor"] = {
-            "@id": "http://dp.la/repository/items/ID_TBD2",
-            "name": dplacontrib
-        }
+    try :
+        profile_context = json.loads(request.environ.get('HTTP_CONTEXT',''))
+    except:
+        response.code = 500
+        response.add_header('content-type','text/plain')
+        return "Unable to parse context header as JSON: " + request.environ.get(u'HTTP_CONTEXT','')
 
+    out["dplaContributor"] = profile_context["contributor"] if "contributor" in profile_context else {}
     out["@id"] = "http://dp.la/api/items/" +  str(uuid.uuid4())
 
     # Strip out keys with None/null values?

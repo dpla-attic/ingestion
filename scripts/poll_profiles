@@ -44,8 +44,14 @@ def process_profile(indir,out,profname):
             print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: '+profile[u'endpoint_URL']+subr
             continue
 
-        # Enrich retrieved data
+        # Add contextual information about the data source that's required by the pipeline
+        CONTEXT = {
+            'collection': subr,
+            'contributor': profile[u'contributor'] if u'contributor' in profile else {}
+            }
 
+
+        # Enrich retrieved data
         # If the 2nd arg is an absolute URI, it's the enrichment service so POST there,
         # otherwise treat as an output directory
         if is_absolute(out):
@@ -53,7 +59,7 @@ def process_profile(indir,out,profname):
                 "Content-Type": "application/json",
                 "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
                 "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-                "Context": json.dumps({'collection':subr}),
+                "Context": json.dumps(CONTEXT),
             }
             resp, content = H.request(out,'POST',body=content,headers=headers)
             if not str(resp.status).startswith('2'):
