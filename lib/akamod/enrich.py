@@ -49,7 +49,10 @@ def enrich(body,ctype):
         record['original_record'] = record.copy()         
 
         # Add collection information
-        record[u'collection'] = {'@id' : enriched_collection['@id'], 'title' : enriched_collection['title']}
+        record[u'collection'] = {
+            '@id' : enriched_collection['@id'],
+            'title' : enriched_collection['title'] if 'title' in enriched_collection else ""
+        }
 
         pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
     
