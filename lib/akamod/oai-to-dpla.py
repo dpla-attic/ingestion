@@ -32,7 +32,7 @@ CONTEXT = {
 def spatial_transform(d):
     global GEOPROP
     spatial = []
-    for i,s in enumerate(d["coverage"]):
+    for i,s in enumerate((d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]])):
         sp = { "name": s }
         # Check if we have lat/long for this location. Requires geocode earlier in the pipeline
         if GEOPROP in d and i < len(d[GEOPROP]) and len(d[GEOPROP][i]) > 0:
@@ -49,7 +49,7 @@ def created_transform(d):
 
 def temporal_transform(d):
     temporal = []
-    for t in d["date"]:
+    for t in (d["date"] if not isinstance(d["date"],basestring) else [d["date"]]):
         temporal.append( {
             "start": t,
             "end": t
@@ -87,7 +87,7 @@ TRANSFORMER = {
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/oai-to-dpla', 'oai-to-dpla', 'application/ld+json')
-def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
+def oaitodpla(body,ctype,geoprop=None):
     '''   
     Convert output of Freemix OAI service into the DPLA JSON-LD format.
 
