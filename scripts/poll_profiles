@@ -4,6 +4,7 @@
 
 import sys, os
 import datetime, time
+from urllib import urlencode
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import is_absolute
 
@@ -38,39 +39,51 @@ def process_profile(indir,out,profname):
         # Better might be a single field listing all URIs but unclear how that extends
         # to other protocols.
 
-        print >> sys.stderr, profile[u'endpoint_URL']+subr
-        resp, content = H.request(profile[u'endpoint_URL']+subr)
-        if not resp[u'status'].startswith('2'):
-            print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: '+profile[u'endpoint_URL']+subr
-            continue
+        # If multiple requests are required to harvest all information from a resource, they will
+        # give us 'resumption tokens' after each request until we are done. Passing the resumption
+        # token will provide the next batch of results
 
-        # Add contextual information about the data source that's required by the pipeline
-        CONTEXT = {
-            'collection': subr,
-            'contributor': profile[u'contributor'] if u'contributor' in profile else {}
-            }
+        request_more, resumption_token = True, ""
+        while request_more:
+            endpoint = profile[u'endpoint_URL'] + subr
+            if resumption_token:
+                endpoint += '&' + urlencode({'resumption_token': resumption_token})
+            print >> sys.stderr, endpoint
 
+            resp, content = H.request(endpoint)
+            if not resp[u'status'].startswith('2'):
+                print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+                continue
+            endpoint_content = json.loads(content)
+            resumption_token = endpoint_content['resumption_token']
 
-        # Enrich retrieved data
-        # If the 2nd arg is an absolute URI, it's the enrichment service so POST there,
-        # otherwise treat as an output directory
-        if is_absolute(out):
-            headers = {
-                "Content-Type": "application/json",
-                "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
-                "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-                "Context": json.dumps(CONTEXT),
-            }
-            resp, content = H.request(out,'POST',body=content,headers=headers)
-            if not str(resp.status).startswith('2'):
-                print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+            # Add contextual information about the data source that's required by the pipeline
+            CONTEXT = {
+                'collection': subr,
+                'contributor': profile[u'contributor'] if u'contributor' in profile else {}
+                }
 
-        else:
-            fout = open(PROFILE_DATA_NAME(out,profname,subr),'w')
-            fout.write(content)
-            fout.close()
+            # Enrich retrieved data
+            # If the 2nd arg is an absolute URI, it's the enrichment service so POST there,
+            # otherwise treat as an output directory
+            if is_absolute(out):
+                headers = {
+                    "Content-Type": "application/json",
+                    "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
+                    "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
+                    "Context": json.dumps(CONTEXT),
+                }
+                resp, content = H.request(out,'POST',body=content,headers=headers)
+                if not str(resp.status).startswith('2'):
+                    print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
 
-        time.sleep(sleep)
+            else:
+                fout = open(PROFILE_DATA_NAME(out,profname,subr),'w')
+                fout.write(content)
+                fout.close()
+
+            request_more = resumption_token is not None and len(resumption_token) > 0
+            time.sleep(sleep)
 
     # Update profile metadata and save
     profile[u'last_checked'] = datetime.datetime.now().isoformat()
