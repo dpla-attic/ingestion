@@ -1,3 +1,4 @@
+import sys
 from server_support import server
 
 from amara.thirdparty import httplib2
@@ -81,6 +82,58 @@ def test_unshred2():
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
+def test_oaitodpla_date_single():
+    "Correctly transform a single date value"
+    INPUT = {
+        "date" : "1928"
+    }
+    EXPECTED = {
+        u'temporal' : [{
+            u'start' : u'1928',
+            u'end' : u'1928'
+        }]
+    }
+
+    url = server() + "oai-to-dpla"
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Context": "{}",
+    }
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['temporal'] == EXPECTED['temporal']
+
+def test_oaitodpla_date_multiple():
+    "Correctly transform a multiple date values"
+    INPUT = {
+        "date" : ["1928", "1406"]
+    }
+    EXPECTED = {
+        u'temporal' : [{
+            u'start' : u'1928',
+            u'end' : u'1928'
+        },
+        {
+            u'start' : u'1406',
+            u'end' : u'1406'
+        }
+        ]
+    }
+
+    url = server() + "oai-to-dpla"
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Context": "{}",
+    }
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['temporal'] == EXPECTED['temporal']
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
