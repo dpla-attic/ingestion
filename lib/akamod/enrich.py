@@ -44,6 +44,7 @@ def enrich(body,ctype):
     enriched_collection = json.loads(pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL'))
 
     # Then the records
+    docs = []
     for record in data[u'items']:
         # Preserve record prior to any enrichments
         record['original_record'] = record.copy()         
@@ -54,6 +55,6 @@ def enrich(body,ctype):
             'title' : enriched_collection['title'] if 'title' in enriched_collection else ""
         }
 
-        pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
+        docs.append(pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC'))
     
-    return json.dumps({})
+    return json.dumps({'docs' : docs})
