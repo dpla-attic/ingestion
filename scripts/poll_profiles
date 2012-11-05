@@ -12,13 +12,13 @@ PROFILE_EXT = '.pjs'
 PROFILE_DATA_EXT = '.sjs'
 PROFILE_DATA_NAME = lambda d,n,s: os.path.join(d,'%s_%s%s'%(n.rsplit(PROFILE_EXT,1)[0],s,PROFILE_DATA_EXT))
 
-def process_profile(indir,out,profname):
+def process_profile(indir,out,profname,couch):
 
     fprof = open(os.path.join(indir,profname),'r')
     try:
         profile = json.load(fprof)
     except Exception as e:
-        profile = None;
+        profile = None
 
     fprof.close()
 
@@ -76,6 +76,11 @@ def process_profile(indir,out,profname):
                 resp, content = H.request(out,'POST',body=content,headers=headers)
                 if not str(resp.status).startswith('2'):
                     print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+                else:
+                    # Bulk insert all items to couch
+                    resp, content = H.request(couch + "_bulk_docs",'POST',body=content,headers=headers)
+                    if not str(resp.status).startswith('2'):
+                        print >> sys.stderr, '  HTTP error posting to CouchDB: '+repr(resp)
 
             else:
                 fout = open(PROFILE_DATA_NAME(out,profname,subr),'w')
@@ -112,4 +117,4 @@ if __name__ == '__main__':
 
     for profile in filter(lambda x: x.endswith(PROFILE_EXT), os.listdir(sys.argv[1])):
         print >> sys.stderr, 'Processing profile: '+profile
-        process_profile(sys.argv[1], sys.argv[2], profile)
+        process_profile(sys.argv[1], sys.argv[2], profile, sys.argv[3])
