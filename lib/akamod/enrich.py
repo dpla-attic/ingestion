@@ -55,6 +55,7 @@ def enrich(body,ctype):
             'title' : enriched_collection['title'] if 'title' in enriched_collection else ""
         }
 
-        docs.append(pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC'))
+        doc = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
+        docs.append(json.loads(doc))
     
     return json.dumps({'docs' : docs})
