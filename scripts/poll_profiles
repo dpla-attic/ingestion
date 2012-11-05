@@ -78,7 +78,6 @@ def process_profile(indir,out,profname,couch):
                     print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
                 else:
                     # Bulk insert all items to couch
-                    print >> sys.stderr, content
                     resp, content = H.request(couch + "/_bulk_docs",'POST',body=content,headers=headers)
                     if not str(resp.status).startswith('2'):
                         print >> sys.stderr, '  HTTP error posting to CouchDB: '+repr(resp)
