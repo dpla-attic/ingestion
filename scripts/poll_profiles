@@ -53,8 +53,10 @@ def process_profile(indir,out,profname):
                 "Content-Type": "application/json",
                 "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
                 "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-                "Context": json.dumps({'collection':subr}),
+                "Collection": subr,
+                "Source": profile['name'],
             }
+            
             resp, content = H.request(out,'POST',body=content,headers=headers)
             if not str(resp.status).startswith('2'):
                 print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)

@@ -48,7 +48,9 @@ def created_transform(d):
 
 def temporal_transform(d):
     temporal = []
-    for t in d["date"]:
+    dates = d["date"]
+    if type(dates) != list: dates = [dates] # treat single date as a list
+    for t in dates:
         temporal.append( {
             "start": t,
             "end": t
@@ -115,7 +117,9 @@ def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
             "name": dplacontrib
         }
 
-    out["@id"] = "http://dp.la/api/items/" +  str(uuid.uuid4())
+    id = str(uuid.uuid4())
+    out["@id"] = "http://dp.la/api/items/" + id
+    out["id"] = id
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)
