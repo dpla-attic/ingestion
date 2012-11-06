@@ -5,6 +5,8 @@ from amara.lib.iri import is_absolute
 from amara.thirdparty import json
 from functools import partial
 import uuid
+import sys
+from zen import dateparser
 
 GEOPROP = None
 
@@ -47,13 +49,38 @@ def created_transform(d):
     }
     return {"created":created}
 
+def clean_date(d):
+    result = d
+    result = result.replace("ca.","")
+    result = result.strip()
+    return result
+
+def split_date(d):
+    range = d.split('-')
+    if len(range) == 2:
+        range = [dateparser.to_iso8601(clean_date(x)) for x in range]
+        return range
+    else:
+        return None, None
+
 def temporal_transform(d):
     temporal = []
+#    if isinstance(d["date"],basestring):
+#        if d[]
     for t in (d["date"] if not isinstance(d["date"],basestring) else [d["date"]]):
-        temporal.append( {
-            "start": t,
-            "end": t
-        } );
+        parsed = dateparser.to_iso8601(clean_date(t))
+        if parsed is not None:
+            a,b = parsed,parsed
+        else:
+            # Maybe it's a range - try splitting it up
+            a,b = split_date(t)
+        if a is not None and b is not None:
+            temporal.append( {
+                "start": a,
+                "end": b
+            })
+        else:
+            print >> sys.stderr, "Could not parse date: " + t
     return {"temporal":temporal}
 
 def source_transform(d):
@@ -62,6 +89,14 @@ def source_transform(d):
         if is_absolute(s):
             source = s
     return {"source":source}
+
+def subject_transform(d):
+    subject = []
+    for s in (d["subject"] if not isinstance(d["subject"],basestring) else [d["subject"]]):
+        subject.append({
+            "name" : s
+        })
+    return {"subject" : subject}
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
@@ -79,7 +114,7 @@ TRANSFORMER = {
     "description"      : lambda d: {"description": d.get("description",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
     "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
-    "subject"          : lambda d: {"subject": [ {"name":sub} for sub in d.get("subject",[]) ]},
+    "subject"          : subject_transform,
     "handle"           : source_transform
 
     # language - needs a lookup table/service. TBD.
