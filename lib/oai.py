@@ -134,8 +134,10 @@ class oaiservice(object):
         for id_, props in records:
             for k, v in props.iteritems():
                 props[k] = [ U(item) for item in v ]
-
-        resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken) if doc.OAI_PMH.ListRecords.resumptionToken is not None else ""
+        if (doc.OAI_PMH.ListRecords is not None) and (doc.OAI_PMH.ListRecords.resumptionToken is not None):
+            resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken)
+        else:
+            resumption_token = ''
         return {'records' : records, 'resumption_token' : resumption_token}
 
 #
