@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 #
-# Usage: python poll_profiles.py <profiles-directory> [<data-directory>|<enrichment-service-URI>]
+# Usage: python poll_profiles.py <profiles-glob> <enrichment-service-URI>
 
-import sys, os
+import sys, os, glob
+import base64
 import datetime, time
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import is_absolute
 
-PROFILE_EXT = '.pjs'
-PROFILE_DATA_EXT = '.sjs'
-PROFILE_DATA_NAME = lambda d,n,s: os.path.join(d,'%s_%s%s'%(n.rsplit(PROFILE_EXT,1)[0],s,PROFILE_DATA_EXT))
+def process_profile(out,profile_f):
 
-def process_profile(indir,out,profname):
-
-    fprof = open(os.path.join(indir,profname),'r')
+    fprof = open(profile_f,'r')
     try:
         profile = json.load(fprof)
     except Exception as e:
@@ -45,32 +42,24 @@ def process_profile(indir,out,profname):
             continue
 
         # Enrich retrieved data
-        # If the 2nd arg is an absolute URI, it's the enrichment service so POST there,
-        # otherwise treat as an output directory
-        if is_absolute(out):
-            headers = {
-                "Content-Type": "application/json",
-                "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
-                "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-                "Source": profile['name'],
-                "Collection": subr,
-                "Contributor": profile.get(u'contributor',{})
-            }
-            
-            resp, content = H.request(out,'POST',body=content,headers=headers)
-            if not str(resp.status).startswith('2'):
-                print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
-
-        else:
-            fout = open(PROFILE_DATA_NAME(out,profname,subr),'w')
-            fout.write(content)
-            fout.close()
+        headers = {
+            "Content-Type": "application/json",
+            "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
+            "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
+            "Source": profile['name'],
+            "Collection": subr,
+            "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
+        }
+        
+        resp, content = H.request(out,'POST',body=content,headers=headers)
+        if not str(resp.status).startswith('2'):
+            print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
 
         time.sleep(sleep)
 
     # Update profile metadata and save
     profile[u'last_checked'] = datetime.datetime.now().isoformat()
-    fprof = open(os.path.join(indir,profname),'w')
+    fprof = open(profile_f,'w')
     json.dump(profile,fprof,indent=4)
     fprof.close()
 
@@ -93,6 +82,6 @@ if __name__ == '__main__':
             print >> sys.stderr, 'Directory '+d+' does not exist. Aborting.'
             sys.exit(1)
 
-    for profile in filter(lambda x: x.endswith(PROFILE_EXT), os.listdir(sys.argv[1])):
+    for profile in glob.glob(sys.argv[1]):
         print >> sys.stderr, 'Processing profile: '+profile
-        process_profile(sys.argv[1], sys.argv[2], profile)
+        process_profile(sys.argv[2], profile)
