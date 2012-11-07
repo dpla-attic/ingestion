@@ -39,7 +39,7 @@ def spatial_transform(d):
         # Check if we have lat/long for this location. Requires geocode earlier in the pipeline
         if GEOPROP in d and i < len(d[GEOPROP]) and len(d[GEOPROP][i]) > 0:
             sp["coordinates"] = d[GEOPROP][i]
-        spatial.append(sp);
+        spatial.append(sp)
     return {"spatial":spatial}
 
 def created_transform(d):
@@ -57,30 +57,47 @@ def clean_date(d):
 
 def split_date(d):
     range = d.split('-')
+    if not len(range) == 2:
+        range = d.split(' - ')
     if len(range) == 2:
         range = [dateparser.to_iso8601(clean_date(x)) for x in range]
         return range
     else:
         return None, None
 
+def parse_date(t):
+    parsed = dateparser.to_iso8601(clean_date(t))
+    if parsed is not None:
+        a,b = parsed,parsed
+    else:
+        # Maybe it's a range - try splitting it up
+        a,b = split_date(t)
+    return a,b
+
 def temporal_transform(d):
     temporal = []
-#    if isinstance(d["date"],basestring):
-#        if d[]
+
+    # First look at the date field, and log any parsing errors
     for t in (d["date"] if not isinstance(d["date"],basestring) else [d["date"]]):
-        parsed = dateparser.to_iso8601(clean_date(t))
-        if parsed is not None:
-            a,b = parsed,parsed
-        else:
-            # Maybe it's a range - try splitting it up
-            a,b = split_date(t)
+        a,b = parse_date(t)
         if a is not None and b is not None:
             temporal.append( {
                 "start": a,
                 "end": b
             })
         else:
-            print >> sys.stderr, "Could not parse date: " + t
+            logger.debug("Could not parse date: " + t)
+
+    # Then, check out the 'coverage' field, since dates may be there
+    if "coverage" in d:
+        for t in (d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]]):
+            a,b = parse_date(t)
+            if a is not None and b is not None:
+                temporal.append( {
+                    "start": a,
+                    "end": b
+                })
+
     return {"temporal":temporal}
 
 def source_transform(d):

@@ -197,6 +197,27 @@ def test_oaitodpla_date_parse_format_yyyy_mm_dd():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+def test_oaitodpla_date_parse_format_date_with_slashes():
+    "Correctly transform a date of format MM/DD/YYYY"
+    INPUT = {
+        "date" : "05/20/1928"
+    }
+    EXPECTED = {
+        u'temporal' : [{
+            u'start' : u'1928-05-20',
+            u'end' : u'1928-05-20'
+        }]
+    }
+
+    url = server() + "oai-to-dpla"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['temporal'] == EXPECTED['temporal']
+
+
 def test_oaitodpla_date_parse_format_natural_string():
     "Correctly transform a date of format Month, DD, YYYY"
     INPUT = {
@@ -271,6 +292,51 @@ def test_oaitodpla_date_parse_format_date_range():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+
+def test_oaitodpla_date_parse_format_date_range():
+    "Correctly transform a date of format 1960-05-01 - 1960-05-15"
+    INPUT = {
+        "date" : "1960-05-01 - 1960-05-15"
+    }
+    EXPECTED = {
+        u'temporal' : [{
+            u'start' : u'1960-05-01',
+            u'end' : u'1960-05-15'
+        }]
+    }
+
+    url = server() + "oai-to-dpla"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['temporal'] == EXPECTED['temporal']
+
+def test_oaitodpla_date_pull_from_coverage_field():
+    "Pull a date out of the coverage field"
+    INPUT = {
+        "date" : "1928-05-20",
+        "coverage" : "1800-10-20"
+    }
+    EXPECTED = {
+        u'temporal' : [{
+            u'start' : u'1928-05-20',
+            u'end' : u'1928-05-20'
+        },
+        {
+            u'start' : u'1800-10-20',
+            u'end' : u'1800-10-20'
+        }]
+    }
+
+    url = server() + "oai-to-dpla"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['temporal'] == EXPECTED['temporal']
 
 
 
