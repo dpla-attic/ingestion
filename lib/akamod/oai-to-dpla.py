@@ -35,7 +35,7 @@ def spatial_transform(d):
     global GEOPROP
     spatial = []
     for i,s in enumerate((d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]])):
-        sp = { "name": s }
+        sp = { "name": s.strip() }
         # Check if we have lat/long for this location. Requires geocode earlier in the pipeline
         if GEOPROP in d and i < len(d[GEOPROP]) and len(d[GEOPROP][i]) > 0:
             sp["coordinates"] = d[GEOPROP][i]
@@ -111,7 +111,7 @@ def subject_transform(d):
     subject = []
     for s in (d["subject"] if not isinstance(d["subject"],basestring) else [d["subject"]]):
         subject.append({
-            "name" : s
+            "name" : s.strip()
         })
     return {"subject" : subject}
 
