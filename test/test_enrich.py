@@ -59,6 +59,20 @@ def test_shred3():
 
     assert json.loads(content) == EXPECTED
 
+def test_shred4():
+    "Shredding multiple fields"
+    INPUT = {
+        "p": ["a,b,c", "d,e,f"]
+    }
+    EXPECTED = {
+        "p": ["a","b","c","d","e","f"]
+    }
+    url = server() + "shred?prop=p"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    assert str(resp.status).startswith("2")
+
+    assert json.loads(content) == EXPECTED
+
 def test_unshred1():
     "Valid unshredding"
 
