@@ -68,7 +68,8 @@ class Akara:
 MODULES = ["dplaingestion.akamod.enrich",
            "dplaingestion.akamod.shred",
            "dplaingestion.akamod.select-id",
-]           
+           "dplaingestion.akamod.oai-to-dpla",
+]
 
 """ % dict(config_root = config_root,
            port = port,

@@ -63,7 +63,8 @@ def enrich(body,ctype):
     at_id = "http://dp.la/api/collections/" + cid
     COLL = {
         "_id": cid,
-        "@id": at_id
+        "@id": at_id,
+        "title": collection_name
     }
 
     enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
@@ -80,9 +81,10 @@ def enrich(body,ctype):
         record['original_record'] = record.copy()         
 
         # Add collection information
-        record[u'collection'] = {'@id' : at_id}
-        if 'title' in enriched_collection:
-            record[u'collection'].update({'title' : enriched_collection['title']})
+        record[u'collection'] = {
+            '@id' : at_id,
+            'title' : enriched_collection.get('title',"")
+        }
 
         # Set id to value of the first handle, disambiguated w source. Not sure if
         # one is guaranteed or on what scale it's unique

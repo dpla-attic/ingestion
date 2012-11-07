@@ -1,6 +1,7 @@
 from akara import logger
-from akara import response
+from akara import request, response
 from akara.services import simple_service
+from amara.lib.iri import is_absolute
 from amara.thirdparty import json
 from functools import partial
 import uuid
@@ -31,7 +32,7 @@ CONTEXT = {
 def spatial_transform(d):
     global GEOPROP
     spatial = []
-    for i,s in enumerate(d["coverage"]):
+    for i,s in enumerate((d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]])):
         sp = { "name": s }
         # Check if we have lat/long for this location. Requires geocode earlier in the pipeline
         if GEOPROP in d and i < len(d[GEOPROP]) and len(d[GEOPROP][i]) > 0:
@@ -48,14 +49,19 @@ def created_transform(d):
 
 def temporal_transform(d):
     temporal = []
-    dates = d["date"]
-    if type(dates) != list: dates = [dates] # treat single date as a list
-    for t in dates:
+    for t in (d["date"] if not isinstance(d["date"],basestring) else [d["date"]]):
         temporal.append( {
             "start": t,
             "end": t
         } );
     return {"temporal":temporal}
+
+def source_transform(d):
+    source = ""
+    for i,s in enumerate(d["handle"]):
+        if is_absolute(s):
+            source = s
+    return {"source":source}
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
@@ -74,20 +80,20 @@ TRANSFORMER = {
     "rights"           : lambda d: {"rights": d.get("rights",None)},
     "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
     "subject"          : lambda d: {"subject": [ {"name":sub} for sub in d.get("subject",[]) ]},
+    "handle"           : source_transform
 
     # language - needs a lookup table/service. TBD.
     # subject - needs additional LCSH enrichment. just names for now
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/oai-to-dpla', 'oai-to-dpla', 'application/ld+json')
-def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
+def oaitodpla(body,ctype,geoprop=None):
     '''   
     Convert output of Freemix OAI service into the DPLA JSON-LD format.
 
     Does not currently require any enrichments to be ahead in the pipeline, but
     supports geocoding if used. In the future, subject shredding may be assumed too.
 
-    Parameter "dplacontrib" specifies the literal value of the dplaContributor stanza
     Parameter "geoprop" specifies the property name containing lat/long coords
     '''
 
@@ -111,15 +117,15 @@ def oaitodpla(body,ctype,dplacontrib=None,geoprop=None):
             out.update(TRANSFORMER[p](data))
 
     # Additional content not from original document
-    if dplacontrib:
-        out["dplaContributor"] = {
-            "@id": "http://dp.la/repository/items/ID_TBD2",
-            "name": dplacontrib
-        }
+    try :
+        profile_context = json.loads(request.environ.get('HTTP_CONTEXT',''))
+    except:
+        response.code = 500
+        response.add_header('content-type','text/plain')
+        return "Unable to parse context header as JSON: " + request.environ.get(u'HTTP_CONTEXT','')
 
-    id = str(uuid.uuid4())
-    out["@id"] = "http://dp.la/api/items/" + id
-    out["id"] = id
+    out["dplaContributor"] = profile_context["contributor"] if "contributor" in profile_context else {}
+    out["@id"] = "http://dp.la/api/items/" +  str(uuid.uuid4())
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

@@ -9,7 +9,8 @@ def oaisetname(body,ctype,sets_service=None):
     Service that accepts a JSON document and sets the "name" property based on looking up
     the set in the HTTP_CONTEXT using the service passed in the 'sets_service' parameter.
     Assumes that the set_service returns a JSON array of two-element arrays, where the first
-    element is the id and the second element the complete name
+    element is the id and the second element the complete name.
+    Also adds the DPLA Contributor information from the HTTP_CONTEXT.
     '''   
     
     if not sets_service:
@@ -48,5 +49,8 @@ def oaisetname(body,ctype,sets_service=None):
         if s[0] == context[u'collection']:
              data[u'title'] = s[1]
              continue
+
+    # Also add DPLA Contributor information from the context
+    data["dplaContributor"] = context["contributor"] if "contributor" in context else {}
 
     return json.dumps(data)

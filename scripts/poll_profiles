@@ -45,7 +45,6 @@ def process_profile(indir,out,profname):
             continue
 
         # Enrich retrieved data
-
         # If the 2nd arg is an absolute URI, it's the enrichment service so POST there,
         # otherwise treat as an output directory
         if is_absolute(out):
@@ -53,8 +52,9 @@ def process_profile(indir,out,profname):
                 "Content-Type": "application/json",
                 "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
                 "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-                "Collection": subr,
                 "Source": profile['name'],
+                "Collection": subr,
+                "Contributor": profile.get(u'contributor',{})
             }
             
             resp, content = H.request(out,'POST',body=content,headers=headers)
