@@ -1,13 +1,11 @@
 {
+    "name": "georgia",
     "enrichments_coll": [
-        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?limit=999%26endpoint=http://dlg.galileo.usg.edu/cgi/oai", 
-        "http://camp.dpla.berkman.temphost.net:5931/dpla",
-        "http://localhost:8889/get-record?couch=http://camp.dpla.berkman.temphost.net:5931/dpla/"
+        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?limit=999%26endpoint=http://dlg.galileo.usg.edu/cgi/oai"
     ], 
     "enrichments_rec": [
         "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
-        "http://localhost:8889/oai-to-dpla",
-        "http://camp.dpla.berkman.temphost.net:5931/dpla"
+        "http://localhost:8889/oai-to-dpla"
     ], 
     "subresources": [
         "crdl", 

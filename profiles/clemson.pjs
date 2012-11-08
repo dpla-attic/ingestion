@@ -1,44 +1,34 @@
 {
-    "name": "clemson",
-    "enrichments_rec": [
-        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo",
-        "http://localhost:8889/shred?prop=subject&delim=%3b", 
-        "http://localhost:8889/oai-to-dpla", 
-<<<<<<< HEAD
-=======
-        "http://camp.dpla.berkman.temphost.net:5931/dpla"
-    ],
     "enrichments_coll": [
-        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe",
-        "http://camp.dpla.berkman.temphost.net:5931/dpla",
-        "http://localhost:8889/get-record?couch=http://camp.dpla.berkman.temphost.net:5931/dpla/"
->>>>>>> a0e6c87cfd5bb10f6347f35377721855801d7988
+        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe"
     ], 
-    "enrichments_coll": [], 
-    "endpoint_URL": "http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset=", 
-<<<<<<< HEAD
-=======
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/scdl-clemson",
-        "name": "South Carolina Digital Library - Clemson"
-    },
-    "last_checked": "2012-11-01T14:44:37.418283",
->>>>>>> a0e6c87cfd5bb10f6347f35377721855801d7988
+    "name": "clemson", 
+    "enrichments_rec": [
+        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
+        "http://localhost:8889/shred?prop=subject&delim=%3b", 
+        "http://localhost:8889/oai-to-dpla"
+    ], 
     "subresources": [
         "gmb", 
         "ctm", 
-        "cfb",
-        "spg",
-        "jfb",
-        "jbt",
-        "pre",
-        "dnc",
-        "scp",
-        "swl",
-        "weg",
-        "ghs",
-        "wsb",
-        "mbe",
+        "cfb", 
+        "spg", 
+        "jfb", 
+        "jbt", 
+        "pre", 
+        "dnc", 
+        "scp", 
+        "swl", 
+        "weg", 
+        "ghs", 
+        "wsb", 
+        "mbe", 
         "gcj"
-    ]
+    ], 
+    "last_checked": "2012-11-06T22:13:21.471726", 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/scdl-clemson", 
+        "name": "South Carolina Digital Library - Clemson"
+    }, 
+    "endpoint_URL": "http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
 }
