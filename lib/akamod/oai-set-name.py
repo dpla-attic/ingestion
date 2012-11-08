@@ -1,6 +1,7 @@
 import sys
 from akara.services import simple_service
 from akara import request, response
+from akara import logger
 from amara.thirdparty import json, httplib2
 
 @simple_service('POST', 'http://purl.org/la/dp/oai-set-name', 'oai-set-name', 'application/json')
@@ -10,7 +11,6 @@ def oaisetname(body,ctype,sets_service=None):
     the set in the HTTP_CONTEXT using the service passed in the 'sets_service' parameter.
     Assumes that the set_service returns a JSON array of two-element arrays, where the first
     element is the id and the second element the complete name.
-    Also adds the DPLA Contributor information from the HTTP_CONTEXT.
     '''   
     
     if not sets_service:
@@ -26,13 +26,13 @@ def oaisetname(body,ctype,sets_service=None):
         return "Unable to parse body as JSON"
 
     try :
-        context = json.loads(request.environ.get('HTTP_CONTEXT',''))
+        collection = request.environ['HTTP_COLLECTION']
     except:
         response.code = 500
         response.add_header('content-type','text/plain')
-        return "Unable to parse context header as JSON: " + request.environ.get(u'HTTP_CONTEXT','')
+        return "No Collection header found"
 
-    H = httplib2.Http('/tmp/.pollcache')
+    H = httplib2.Http('/tmp/.cache')
     H.force_exception_as_status_code = True
     resp, content = H.request(sets_service)
     if not resp[u'status'].startswith('2'):
@@ -43,14 +43,11 @@ def oaisetname(body,ctype,sets_service=None):
     except:
         response.code = 500
         response.add_header('content-type','text/plain')
-        return "Unable to parse context header as JSON: " + request.environ.get(u'HTTP_CONTEXT','')
+        return "Unable to parse sets service result as JSON: " + repr(content)
 
     for s in sets:
-        if s[0] == context[u'collection']:
+        if s[0] == collection:
              data[u'title'] = s[1]
-             continue
-
-    # Also add DPLA Contributor information from the context
-    data["dplaContributor"] = context["contributor"] if "contributor" in context else {}
+             break
 
     return json.dumps(data)

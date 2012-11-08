@@ -51,10 +51,10 @@ def enrich(body,ctype):
     if not (collection_name or source_name):
         response.code = 500
         response.add_header('content-type','text/plain')
-        return "Source and Profile request headers are required"
+        return "Source and Collection request headers are required"
 
     coll_enrichments = request_headers.get(u'Pipeline-Coll','').split(',')
-    rec_enrichments = request.environ.get(u'Pipeline-Rec','').split(',')
+    rec_enrichments = request_headers.get(u'Pipeline-Rec','').split(',')
 
     data = json.loads(body)
 
@@ -64,7 +64,6 @@ def enrich(body,ctype):
     COLL = {
         "_id": cid,
         "@id": at_id,
-        "title": collection_name
     }
 
     enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
@@ -73,7 +72,7 @@ def enrich(body,ctype):
         docuri = couch_rev_check(join(COUCH_DATABASE,cid))
         resp, cont = H.request(docuri,'PUT',body=enriched_coll_text,headers=CT_JSON)
         if not str(resp.status).startswith('2'):
-            logger.debug("Error storing collection in Couch: "+repr(resp))
+            logger.debug("Error storing collection in Couch: "+repr((resp,content)))
 
     # Then the records
     for record in data[u'items']:
@@ -93,11 +92,10 @@ def enrich(body,ctype):
 
         enriched_record = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         if COUCH_DATABASE:
-            # Get rev for follow on update. FIXME: should be able to optionally skip this for initial ingest
             docuri = couch_rev_check(join(COUCH_DATABASE,rid))
             resp, cont = H.request(docuri,'PUT',body=enriched_record,headers=CT_JSON)
             if not str(resp.status).startswith('2'):
-                logger.debug("Error storing record in Couch: "+repr(resp))
+                logger.debug("Error storing record in Couch: "+repr((resp,content)))
                 continue
     
     return json.dumps({})

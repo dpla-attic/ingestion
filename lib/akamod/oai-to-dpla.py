@@ -4,7 +4,7 @@ from akara.services import simple_service
 from amara.lib.iri import is_absolute
 from amara.thirdparty import json
 from functools import partial
-import uuid
+import base64
 
 GEOPROP = None
 
@@ -117,15 +117,12 @@ def oaitodpla(body,ctype,geoprop=None):
             out.update(TRANSFORMER[p](data))
 
     # Additional content not from original document
-    try :
-        profile_context = json.loads(request.environ.get('HTTP_CONTEXT',''))
-    except:
-        response.code = 500
-        response.add_header('content-type','text/plain')
-        return "Unable to parse context header as JSON: " + request.environ.get(u'HTTP_CONTEXT','')
 
-    out["dplaContributor"] = profile_context["contributor"] if "contributor" in profile_context else {}
-    out["@id"] = "http://dp.la/api/items/" +  str(uuid.uuid4())
+    if 'HTTP_CONTRIBUTOR' in request.environ:
+        try:
+            out["dplaContributor"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
+        except Exception as e:
+            logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)
