@@ -5,8 +5,9 @@
 import sys, os, glob
 import base64
 import datetime, time
+from urllib import urlencode
 from amara.thirdparty import json, httplib2
-from amara.lib.iri import is_absolute
+from amara.lib.iri import is_absolute, join
 
 def process_profile(out,profile_f):
 
@@ -14,7 +15,7 @@ def process_profile(out,profile_f):
     try:
         profile = json.load(fprof)
     except Exception as e:
-        profile = None;
+        profile = None
 
     fprof.close()
 
@@ -35,25 +36,38 @@ def process_profile(out,profile_f):
         # Better might be a single field listing all URIs but unclear how that extends
         # to other protocols.
 
-        print >> sys.stderr, profile[u'endpoint_URL']+subr
-        resp, content = H.request(profile[u'endpoint_URL']+subr)
-        if not resp[u'status'].startswith('2'):
-            print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: '+profile[u'endpoint_URL']+subr
-            continue
+        # If multiple requests are required to harvest all information from a resource, they will
+        # give us 'resumption tokens' after each request until we are done. Passing the resumption
+        # token will provide the next batch of results
 
-        # Enrich retrieved data
-        headers = {
-            "Content-Type": "application/json",
-            "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
-            "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-            "Source": profile['name'],
-            "Collection": subr,
-            "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
-        }
-        
-        resp, content = H.request(out,'POST',body=content,headers=headers)
-        if not str(resp.status).startswith('2'):
-            print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+        request_more, resumption_token = True, ""
+        while request_more:
+            endpoint = profile[u'endpoint_URL'] + subr
+            if resumption_token:
+                endpoint += '&' + urlencode({'resumption_token': resumption_token})
+            print >> sys.stderr, endpoint
+
+            resp, content = H.request(endpoint)
+            if not resp[u'status'].startswith('2'):
+                print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+                continue
+            endpoint_content = json.loads(content)
+            resumption_token = endpoint_content['resumption_token']
+
+            # Enrich retrieved data
+            headers = {
+                "Content-Type": "application/json",
+                "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
+                "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
+                "Source": profile['name'],
+                "Collection": subr,
+                "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
+            }
+            resp, content = H.request(out,'POST',body=content,headers=headers)
+            if not str(resp.status).startswith('2'):
+                print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+
+            request_more = resumption_token is not None and len(resumption_token) > 0
 
         time.sleep(sleep)
 

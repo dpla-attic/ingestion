@@ -20,6 +20,8 @@ def shred(body,ctype,action="shred",prop=None,delim=','):
     for p in prop.split('.'):
         if p in data:
             if action == "shred":
+                if type(data[p]) == list:
+                    data[p] = delim.join(data[p])
                 if delim not in data[p]: continue
                 data[p] = [ s.strip() for s in data[p].split(delim) ]
             elif action == "unshred":

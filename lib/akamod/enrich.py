@@ -4,9 +4,16 @@ from akara import module_config, logger
 from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
+from urllib import quote
 import uuid
 
 COUCH_DATABASE = module_config().get('couch_database')
+
+COUCH_ID_BUILDER = lambda src, lname: "%s--%s"%((src,lname))
+# Set id to value of the first handle, disambiguated w source. Not sure if
+# a handle is guaranteed or on what scale it's unique.
+# FIXME it's looking like an id builder needs to be part of the profile
+COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'handle',["nohandle"])[0].strip())
 
 # FIXME: this should be JSON-LD, but CouchDB doesn't support +json yet
 CT_JSON = {'Content-Type': 'application/json'}
@@ -29,13 +36,34 @@ def pipe(content,ctype,enrichments,wsgi_header):
         body = cont
     return body
 
-def couch_rev_check(docuri):
-    # Get rev for follow on update. FIXME: should be able to optionally skip this for initial ingest
+# FIXME: should be able to optionally skip the revision checks for initial ingest
+def couch_rev_check_coll(docuri):
+    'Modify collection URI to include any current revision'
     resp, cont = H.request(docuri,'GET')
     if str(resp.status).startswith('2'):
         rev = json.loads(cont)['_rev']
         docuri += "?rev="+rev
     return docuri
+
+def couch_rev_check_recs(docs,src):
+    '''
+    Insert revisions for all records into structure using CouchDB bulk interface.
+    Uses key ranges to narrow bulk query to the source being ingested.
+    '''
+    uri = join(COUCH_DATABASE,'_all_docs')
+    start = quote(COUCH_ID_BUILDER(src,''))
+    end = quote(COUCH_ID_BUILDER(src,'Z'*100)) # FIXME. Is this correct?
+    uri += '?startkey=%s&endkey=%s'%(start,end)
+    resp, cont = H.request(join(COUCH_DATABASE,'_all_docs'),'GET')
+    if str(resp.status).startswith('2'):
+        rows = json.loads(cont)["rows"]
+        revs = { r["id"]:r["value"]["rev"] for r in rows }
+        for doc in docs:
+            id = COUCH_REC_ID_BUILDER(src,doc)
+            if id in revs:
+                doc['_rev'] = revs[id]
+    else:
+        logger.debug('Unable to retrieve document revisions via bulk interface: '+repr(resp))
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich', 'enrich', 'application/json')
 def enrich(body,ctype):
@@ -59,7 +87,7 @@ def enrich(body,ctype):
     data = json.loads(body)
 
     # First, we run the collection representation through its enrichment pipeline
-    cid = "%s-%s"%(source_name,collection_name)
+    cid = COUCH_ID_BUILDER(source_name,collection_name)
     at_id = "http://dp.la/api/collections/" + cid
     COLL = {
         "_id": cid,
@@ -68,13 +96,15 @@ def enrich(body,ctype):
 
     enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
     enriched_collection = json.loads(enriched_coll_text)
+    # FIXME. Integrate collection storage into bulk call below
     if COUCH_DATABASE:
-        docuri = couch_rev_check(join(COUCH_DATABASE,cid))
+        docuri = couch_rev_check_coll(join(COUCH_DATABASE,cid))
         resp, cont = H.request(docuri,'PUT',body=enriched_coll_text,headers=CT_JSON)
         if not str(resp.status).startswith('2'):
-            logger.debug("Error storing collection in Couch: "+repr((resp,content)))
+            logger.debug("Error storing collection in Couch: "+repr((resp,cont)))
 
     # Then the records
+    docs = []
     for record in data[u'items']:
         # Preserve record prior to any enrichments
         record['original_record'] = record.copy()         
@@ -85,17 +115,20 @@ def enrich(body,ctype):
             'title' : enriched_collection.get('title',"")
         }
 
-        # Set id to value of the first handle, disambiguated w source. Not sure if
-        # one is guaranteed or on what scale it's unique
-        rid = "%s-%s"%(source_name,record[u'handle'][0].strip())
-        record[u'_id'] = rid
+        record[u'id'] = COUCH_REC_ID_BUILDER(source_name,record)
 
-        enriched_record = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
-        if COUCH_DATABASE:
-            docuri = couch_rev_check(join(COUCH_DATABASE,rid))
-            resp, cont = H.request(docuri,'PUT',body=enriched_record,headers=CT_JSON)
-            if not str(resp.status).startswith('2'):
-                logger.debug("Error storing record in Couch: "+repr((resp,content)))
-                continue
-    
-    return json.dumps({})
+        doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
+        doc = json.loads(doc_text)
+        if 'id' in doc:
+            doc[u'_id'] = doc[u'id']
+        docs.append(doc)
+
+    couch_rev_check_recs(docs,source_name)
+    couch_docs_text = json.dumps({"docs":docs})
+    if COUCH_DATABASE:
+        resp, content = H.request(join(COUCH_DATABASE,'_bulk_docs'),'POST',body=couch_docs_text,headers=CT_JSON)
+        logger.debug("Couch bulk update response: "+content)
+        if not str(resp.status).startswith('2'):
+            logger.debug('HTTP error posting to CouchDB: '+repr((resp,content)))
+
+    return json.dumps({'docs' : docs})
