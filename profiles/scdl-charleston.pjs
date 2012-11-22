@@ -4,9 +4,8 @@
     ], 
     "name": "scdl-charleston", 
     "enrichments_rec": [
-        "http://localhost:8889/shred?prop=coverage&delim=%3b", 
+        "http://localhost:8889/shred?prop=coverage.subject&delim=%3b", 
         "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
-        "http://localhost:8889/shred?prop=subject&delim=%3b", 
         "http://localhost:8889/oai-to-dpla"
     ], 
     "subresources": [
@@ -117,5 +116,5 @@
         "@id": "http://dp.la/api/contributor/scdl-charleston", 
         "name": "South Carolina Digital Library - College of Charleston"
     }, 
-    "endpoint_URL": "http://localhost:8889/oai.listrecords.json?limit=9999&endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "http://localhost:8889/dpla-list-records?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="
 }

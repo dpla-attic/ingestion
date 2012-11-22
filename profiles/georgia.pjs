@@ -871,5 +871,5 @@
         "@id": "http://dp.la/api/contributor/georgia", 
         "name": "Digital Library of Georgia"
     }, 
-    "endpoint_URL": "http://localhost:8889/oai.listrecords.json?limit=9999&endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
+    "endpoint_URL": "http://localhost:8889/dpla-list-records?endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
 }

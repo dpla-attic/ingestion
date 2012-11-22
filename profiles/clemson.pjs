@@ -30,5 +30,5 @@
         "@id": "http://dp.la/api/contributor/scdl-clemson", 
         "name": "South Carolina Digital Library - Clemson"
     }, 
-    "endpoint_URL": "http://localhost:8889/oai.listrecords.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "http://localhost:8889/dpla-list-records?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
 }
