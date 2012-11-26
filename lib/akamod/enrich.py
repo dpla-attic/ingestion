@@ -5,6 +5,7 @@ from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
 from urllib import quote
+import datetime
 import uuid
 
 COUCH_DATABASE = module_config().get('couch_database')
@@ -37,13 +38,11 @@ def pipe(content,ctype,enrichments,wsgi_header):
     return body
 
 # FIXME: should be able to optionally skip the revision checks for initial ingest
-def couch_rev_check_coll(docuri):
-    'Modify collection URI to include any current revision'
+def couch_rev_check_coll(docuri,doc):
+    'Add current revision to body so we can update it'
     resp, cont = H.request(docuri,'GET')
     if str(resp.status).startswith('2'):
-        rev = json.loads(cont)['_rev']
-        docuri += "?rev="+rev
-    return docuri
+        doc['_rev'] = json.loads(cont)['_rev']
 
 def couch_rev_check_recs(docs,src):
     '''
@@ -59,11 +58,14 @@ def couch_rev_check_recs(docs,src):
         rows = json.loads(cont)["rows"]
         revs = { r["id"]:r["value"]["rev"] for r in rows }
         for doc in docs:
-            id = COUCH_REC_ID_BUILDER(src,doc)
+            id = doc['id']
             if id in revs:
                 doc['_rev'] = revs[id]
     else:
         logger.debug('Unable to retrieve document revisions via bulk interface: '+repr(resp))
+
+def set_ingested_date(doc):
+    doc[u'ingestDate'] = datetime.datetime.now().isoformat()
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich', 'enrich', 'application/json')
 def enrich(body,ctype):
@@ -92,14 +94,17 @@ def enrich(body,ctype):
     COLL = {
         "_id": cid,
         "@id": at_id,
+        "ingestType": "collection"
     }
+    set_ingested_date(COLL)
 
     enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
     enriched_collection = json.loads(enriched_coll_text)
     # FIXME. Integrate collection storage into bulk call below
     if COUCH_DATABASE:
-        docuri = couch_rev_check_coll(join(COUCH_DATABASE,cid))
-        resp, cont = H.request(docuri,'PUT',body=enriched_coll_text,headers=CT_JSON)
+        docuri = join(COUCH_DATABASE,cid)
+        couch_rev_check_coll(docuri,enriched_collection)
+        resp, cont = H.request(docuri,'PUT',body=json.dumps(enriched_collection),headers=CT_JSON)
         if not str(resp.status).startswith('2'):
             logger.debug("Error storing collection in Couch: "+repr((resp,cont)))
 
@@ -116,6 +121,8 @@ def enrich(body,ctype):
         }
 
         record[u'id'] = COUCH_REC_ID_BUILDER(source_name,record)
+        record[u'ingestType'] = 'item'
+        set_ingested_date(record)
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)

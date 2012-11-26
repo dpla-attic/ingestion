@@ -134,7 +134,9 @@ TRANSFORMER = {
     "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
     "id"               : lambda d: {"id": d.get("id",None)},
     "subject"          : subject_transform,
-    "handle"           : source_transform
+    "handle"           : source_transform,
+    "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
+    "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)}
 
     # language - needs a lookup table/service. TBD.
     # subject - needs additional LCSH enrichment. just names for now
