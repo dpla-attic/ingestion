@@ -56,7 +56,10 @@ def couch_rev_check_recs(docs,src):
     resp, cont = H.request(join(COUCH_DATABASE,'_all_docs'),'GET')
     if str(resp.status).startswith('2'):
         rows = json.loads(cont)["rows"]
-        revs = { r["id"]:r["value"]["rev"] for r in rows }
+        #revs = { r["id"]:r["value"]["rev"] for r in rows } # 2.7 specific
+        revs = {}
+        for r in rows:
+            revs[r["id"]] = r["value"]["rev"]
         for doc in docs:
             id = doc['id']
             if id in revs:
