@@ -7,8 +7,11 @@ from amara.lib.iri import join
 from urllib import quote
 import datetime
 import uuid
+import base64
 
 COUCH_DATABASE = module_config().get('couch_database')
+COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
+COUCH_DATABASE_PASSWORD = module_config().get('couch_database_password')
 
 COUCH_ID_BUILDER = lambda src, lname: "%s--%s"%((src,lname))
 # Set id to value of the first handle, disambiguated w source. Not sure if
@@ -16,8 +19,11 @@ COUCH_ID_BUILDER = lambda src, lname: "%s--%s"%((src,lname))
 # FIXME it's looking like an id builder needs to be part of the profile
 COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'handle',["nohandle"])[0].strip())
 
+COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
+
 # FIXME: this should be JSON-LD, but CouchDB doesn't support +json yet
 CT_JSON = {'Content-Type': 'application/json'}
+
 
 H = httplib2.Http()
 H.force_exception_as_status_code = True
@@ -40,7 +46,7 @@ def pipe(content,ctype,enrichments,wsgi_header):
 # FIXME: should be able to optionally skip the revision checks for initial ingest
 def couch_rev_check_coll(docuri,doc):
     'Add current revision to body so we can update it'
-    resp, cont = H.request(docuri,'GET')
+    resp, cont = H.request(docuri,'GET',headers=COUCH_AUTH_HEADER)
     if str(resp.status).startswith('2'):
         doc['_rev'] = json.loads(cont)['_rev']
 
@@ -53,7 +59,7 @@ def couch_rev_check_recs(docs,src):
     start = quote(COUCH_ID_BUILDER(src,''))
     end = quote(COUCH_ID_BUILDER(src,'Z'*100)) # FIXME. Is this correct?
     uri += '?startkey=%s&endkey=%s'%(start,end)
-    resp, cont = H.request(join(COUCH_DATABASE,'_all_docs'),'GET')
+    resp, cont = H.request(join(COUCH_DATABASE,'_all_docs'),'GET',headers=COUCH_AUTH_HEADER)
     if str(resp.status).startswith('2'):
         rows = json.loads(cont)["rows"]
         #revs = { r["id"]:r["value"]["rev"] for r in rows } # 2.7 specific
@@ -107,7 +113,7 @@ def enrich(body,ctype):
     if COUCH_DATABASE:
         docuri = join(COUCH_DATABASE,cid)
         couch_rev_check_coll(docuri,enriched_collection)
-        resp, cont = H.request(docuri,'PUT',body=json.dumps(enriched_collection),headers=CT_JSON)
+        resp, cont = H.request(docuri,'PUT',body=json.dumps(enriched_collection),headers=dict(CT_JSON.items()+COUCH_AUTH_HEADER.items()))
         if not str(resp.status).startswith('2'):
             logger.debug("Error storing collection in Couch: "+repr((resp,cont)))
 
@@ -136,7 +142,7 @@ def enrich(body,ctype):
     couch_rev_check_recs(docs,source_name)
     couch_docs_text = json.dumps({"docs":docs})
     if COUCH_DATABASE:
-        resp, content = H.request(join(COUCH_DATABASE,'_bulk_docs'),'POST',body=couch_docs_text,headers=CT_JSON)
+        resp, content = H.request(join(COUCH_DATABASE,'_bulk_docs'),'POST',body=couch_docs_text,headers=dict(CT_JSON.items()+COUCH_AUTH_HEADER.items()))
         logger.debug("Couch bulk update response: "+content)
         if not str(resp.status).startswith('2'):
             logger.debug('HTTP error posting to CouchDB: '+repr((resp,content)))
