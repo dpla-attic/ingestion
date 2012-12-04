@@ -132,7 +132,7 @@ TRANSFORMER = {
     "description"      : lambda d: {"description": d.get("description",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
     "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
-    "id"               : lambda d: {"id": d.get("id",None)},
+    "id"               : lambda d: {"id": d.get("id",None), "@id" : "http://dp.la/api/items/"+d.get("id","")},
     "subject"          : subject_transform,
     "handle"           : source_transform,
     "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
