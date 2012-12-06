@@ -126,7 +126,7 @@ def enrich(body,ctype):
         # Add collection information
         record[u'collection'] = {
             '@id' : at_id,
-            'title' : enriched_collection.get('title',"")
+            'name' : enriched_collection.get('title',"")
         }
 
         record[u'id'] = COUCH_REC_ID_BUILDER(source_name,record)
