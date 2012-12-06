@@ -4,4 +4,5 @@ git+http://github.com/zepheira/freemix-akara.git#egg=freemix-akara
 hg+http://foundry.zepheira.com/hg/zenpub/#egg=zen
 
 python-dateutil
+timelib
 simplejson
