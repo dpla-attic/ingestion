@@ -1,0 +1,15 @@
+{
+    "enrichments_coll": [
+    ], 
+    "name": "NARA", 
+    "type": "ARC",
+    "enrichments_rec": [
+    ], 
+    "subresources": [
+    ], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/nara", 
+        "name": "National Archives Records Administration"
+    }, 
+    "endpoint_URL": "file:/home/mbaker/Downloads/ArchivalDescriptions"
+}

@@ -2,12 +2,18 @@
 #
 # Usage: python poll_profiles.py <profiles-glob> <enrichment-service-URI>
 
-import sys, os, glob
+import sys, os, glob, fnmatch
 import base64
 import datetime, time
+from itertools import groupby
 from urllib import urlencode
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import is_absolute, join
+from amara import bindery
+
+ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.path.dirname(srcdir+os.sep),"%s_%s.xml"%(htype.replace(' ',''),hid))
+
+global ENRICH # enrichment service URI
 
 def process_profile(out,profile_f):
 
@@ -23,53 +29,31 @@ def process_profile(out,profile_f):
         print >> sys.stderr, 'Error reading source profile.'
         return False
 
-    # Pause in secs between HTTP requests
-    sleep = profile.get(u'sleep') or 0
+    # Pause in secs between collection ingests
+    sleep = profile.get(u'sleep',0)
+
+    ENRICH = out
 
     H = httplib2.Http('/tmp/.pollcache')
     H.force_exception_as_status_code = True
-    subResources = profile[u'subresources'] or ['']
-    for subr in subResources:
+    subResources = profile.get(u'subresources')
+    ptype = profile.get(u'type').lower()
+    if not subResources or len(subResources)==0: # i.e. all subresources
+        process = TYPE_PROCESSORS.get((ptype,'all'))
+        if not process:
+            print >> sys.stderr, "The ingest of all %s collections is not supported at this time"%(ptype.upper())
+            sys.exit(1)
 
-        # For now, a simplifying assumption that string concatenation produces a
-        # full URI from the combination of the endpoint URL and each subresource id.
-        # Better might be a single field listing all URIs but unclear how that extends
-        # to other protocols.
+        process(profile)
+    else:
+        process = TYPE_PROCESSORS((ptype,'coll'))
+        if not process:
+            print >> sys.stderr, "The ingest of individual %s collections is not supported at this time"%(ptype.upper())
+            sys.exit(1)
 
-        # If multiple requests are required to harvest all information from a resource, they will
-        # give us 'resumption tokens' after each request until we are done. Passing the resumption
-        # token will provide the next batch of results
-
-        request_more, resumption_token = True, ""
-        while request_more:
-            endpoint = profile[u'endpoint_URL'] + subr
-            if resumption_token:
-                endpoint += '&' + urlencode({'resumption_token': resumption_token})
-            print >> sys.stderr, endpoint
-
-            resp, content = H.request(endpoint)
-            if not resp[u'status'].startswith('2'):
-                print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
-                continue
-            endpoint_content = json.loads(content)
-            resumption_token = endpoint_content['resumption_token']
-
-            # Enrich retrieved data
-            headers = {
-                "Content-Type": "application/json",
-                "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
-                "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
-                "Source": profile['name'],
-                "Collection": subr,
-                "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
-            }
-            resp, content = H.request(out,'POST',body=content,headers=headers)
-            if not str(resp.status).startswith('2'):
-                print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
-
-            request_more = resumption_token is not None and len(resumption_token) > 0
-
-        time.sleep(sleep)
+        for subr in subResources:
+            process(profile,subr)
+            time.sleep(sleep)
 
     # Update profile metadata and save
     profile[u'last_checked'] = datetime.datetime.now().isoformat()
@@ -79,22 +63,107 @@ def process_profile(out,profile_f):
 
     return True
 
+def process_arc_all(profile):
+    src_URL = profile.get('endpoint_URL')
+    assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
+    src_dir = src_URL[5:]
+
+    for root, dirs, files in os.walk(src_dir):
+        print "root = "+root
+        collections = {}
+        for filename in fnmatch.filter(files, 'Item_*.xml'):
+            print "fn = "+repr(filename)
+            item_fn = os.path.join(root,filename)
+            item_f = open(item_fn,'r')
+            parsed_item = bindery.parse(item_f)
+            item = {}
+
+            item['title'] = unicode(parsed_item.archival_description.title)
+            item['created'] = {'start': unicode(parsed_item.archival_description.created_timestamp),
+                               'end': unicode(parsed_item.archival_description.created_timestamp) }
+            if hasattr(parsed_item.archival_description,'scope_content_note'):
+                item['description'] = unicode(parsed_item.archival_description.scope_content_note)
+
+            hier_items = parsed_item.archival_description.hierarchy.hierarchy_item
+            for hi in hier_items:
+                htype = unicode(hi.hierarchy_item_lod)
+                if not htype.lower() == 'series': continue # only interested in Series objects as collections
+
+                hid = hi.hierarchy_item_id
+                if hid in collections: continue # we've already gathered this collection's info
+
+                coll = {}
+
+                # Parse the series/collection file
+                hier_fname = ARC_RELATED_FILE(root,htype,hid)
+                try:
+                    hier_f = open(hier_fname,'r')
+                except Exception as e:
+                    print >> sys.stderr, "Couldn't find referenced Series file (%s) from %s"%((hier_fname,item_fn))
+                    continue
+
+                hier = bindery.parse(hier_f)
+                hier_f.close()
+
+                coll['title'] = unicode(hier.archival_description.title)
+
+                collections[hier_fname] = coll
+
+            print repr(item)
+            enrich_coll(profile,None,json.dumps(item))
+
+def enrich_coll(profile,subr,content):
+    # Enrich retrieved data
+    headers = {
+        "Content-Type": "application/json",
+        "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
+        "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
+        "Source": profile['name'],
+        "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
+    }
+    if subr:
+        headers["Collection"] = subr
+
+    resp, content = H.request(ENRICH,'POST',body=content,headers=headers)
+    if not str(resp.status).startswith('2'):
+        print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+
+def process_oai_coll(profile,subr):
+    # For now, a simplifying assumption that string concatenation produces a
+    # full URI from the combination of the endpoint URL and each subresource id.
+    # Better might be a single field listing all URIs but unclear how that extends
+    # to other protocols.
+
+    # If multiple requests are required to harvest all information from a resource, they will
+    # give us 'resumption tokens' after each request until we are done. Passing the resumption
+    # token will provide the next batch of results
+
+    request_more, resumption_token = True, ""
+    while request_more:
+        endpoint = profile[u'endpoint_URL'] + subr
+        if resumption_token:
+            endpoint += '&' + urlencode({'resumption_token': resumption_token})
+        print >> sys.stderr, endpoint
+
+        resp, content = H.request(endpoint)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+            continue
+        endpoint_content = json.loads(content)
+        resumption_token = endpoint_content['resumption_token']
+
+        enrich_coll(profile,subr,content)
+
+        request_more = resumption_token is not None and len(resumption_token) > 0
+
+TYPE_PROCESSORS = {
+    ('arc','coll'): None,
+    ('arc','all'): process_arc_all,
+    ('oai','coll'): process_oai_coll,
+    ('oai','all'): None,
+}
+
 if __name__ == '__main__':
-
-    # Verify that both given directories exist
-    for d in sys.argv[1:]:
-        if is_absolute(d): continue # skip URIs
-
-        dirExists = False
-
-        try:
-            if os.stat(d): dirExists = True
-        except:
-            pass
-
-        if not dirExists:
-            print >> sys.stderr, 'Directory '+d+' does not exist. Aborting.'
-            sys.exit(1)
 
     for profile in glob.glob(sys.argv[1]):
         print >> sys.stderr, 'Processing profile: '+profile
