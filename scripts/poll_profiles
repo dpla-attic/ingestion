@@ -14,6 +14,8 @@ from amara import bindery
 ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.path.dirname(srcdir+os.sep),"%s_%s.xml"%(htype.replace(' ',''),hid))
 
 global ENRICH # enrichment service URI
+H = httplib2.Http('/tmp/.pollcache')
+H.force_exception_as_status_code = True
 
 def process_profile(out,profile_f):
 
@@ -34,8 +36,6 @@ def process_profile(out,profile_f):
 
     ENRICH = out
 
-    H = httplib2.Http('/tmp/.pollcache')
-    H.force_exception_as_status_code = True
     subResources = profile.get(u'subresources')
     ptype = profile.get(u'type').lower()
     if not subResources or len(subResources)==0: # i.e. all subresources
@@ -68,49 +68,61 @@ def process_arc_all(profile):
     assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
     src_dir = src_URL[5:]
 
+    collections = {} # this could get big unless we can figure out a way to scope it
     for root, dirs, files in os.walk(src_dir):
         print "root = "+root
-        collections = {}
+        items = []
         for filename in fnmatch.filter(files, 'Item_*.xml'):
-            print "fn = "+repr(filename)
             item_fn = os.path.join(root,filename)
             item_f = open(item_fn,'r')
-            parsed_item = bindery.parse(item_f)
+            item_parsed = bindery.parse(item_f)
             item = {}
 
-            item['title'] = unicode(parsed_item.archival_description.title)
-            item['created'] = {'start': unicode(parsed_item.archival_description.created_timestamp),
-                               'end': unicode(parsed_item.archival_description.created_timestamp) }
-            if hasattr(parsed_item.archival_description,'scope_content_note'):
-                item['description'] = unicode(parsed_item.archival_description.scope_content_note)
+            item['title'] = unicode(item_parsed.archival_description.title)
+            item['created'] = {'start': unicode(item_parsed.archival_description.created_timestamp),
+                               'end': unicode(item_parsed.archival_description.created_timestamp) }
+            if hasattr(item_parsed.archival_description,'scope_content_note'):
+                item['description'] = unicode(item_parsed.archival_description.scope_content_note)
 
-            hier_items = parsed_item.archival_description.hierarchy.hierarchy_item
+            print repr(item)
+
+            hier_items = item_parsed.archival_description.hierarchy.hierarchy_item
             for hi in hier_items:
                 htype = unicode(hi.hierarchy_item_lod)
                 if not htype.lower() == 'series': continue # only interested in Series objects as collections
 
                 hid = hi.hierarchy_item_id
-                if hid in collections: continue # we've already gathered this collection's info
 
-                coll = {}
+                if hid not in collections:
+                    # Parse the series/collection file
+                    hier_fname = ARC_RELATED_FILE(root,htype,hid)
+                    try:
+                        hier_f = open(hier_fname,'r')
+                    except Exception as e:
+                        print >> sys.stderr, "Couldn't find referenced Series file (%s) from %s"%((hier_fname,item_fn))
+                        continue
 
-                # Parse the series/collection file
-                hier_fname = ARC_RELATED_FILE(root,htype,hid)
-                try:
-                    hier_f = open(hier_fname,'r')
-                except Exception as e:
-                    print >> sys.stderr, "Couldn't find referenced Series file (%s) from %s"%((hier_fname,item_fn))
-                    continue
+                    hier = bindery.parse(hier_f)
+                    hier_f.close()
 
-                hier = bindery.parse(hier_f)
-                hier_f.close()
+                    cid = unicode(hier.archival_description.arc_id)
+                    assert hid == cid, "Unexpected difference in ARC IDs between Item reference and retrieved Series"
 
-                coll['title'] = unicode(hier.archival_description.title)
+                    coll = {}
+                    coll['id'] = cid
+                    coll['label'] = unicode(hier.archival_description.title)
+                    coll['items'] = []
+                    collections[cid] = coll
+                else:
+                    coll = collections[cid]
 
-                collections[hier_fname] = coll
+                coll['items'].append(item)
 
-            print repr(item)
-            enrich_coll(profile,None,json.dumps(item))
+            items.append(item)
+
+    for cid in collections:
+        # FIXME need way to pass in the label
+        enrich_coll(profile,cid,json.dumps({'items':collections[cid]['items']}))
 
 def enrich_coll(profile,subr,content):
     # Enrich retrieved data
