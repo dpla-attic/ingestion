@@ -53,9 +53,6 @@ import datetime
 import uuid
 import base64
 
-print "aaa"
-logger.info("aaa")
-
 COUCH_DATABASE = module_config().get('couch_database')
 COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
 COUCH_DATABASE_PASSWORD = module_config().get('couch_database_password')
@@ -81,12 +78,12 @@ def update_document(document, doctype):
 def listrecords(limit=100):
     import httplib
     h = httplib2.Http()
-    logger.debug('aaa')
     h.force_exception_as_status_code = True
     url = join(COUCH_DATABASE, '_design', VIEW_APP, '_view', VIEW_NAME)
     url += '?limit=' + str(limit)
     logger.debug(url)
-    resp, content = h.request(url, "GET")
+    resp, content = h.request(url, "GET", headers=COUCH_AUTH_HEADER)
+    logger.debug("Content: " + content)
     if str(resp.status).startswith('2'):
         return content
     else:
