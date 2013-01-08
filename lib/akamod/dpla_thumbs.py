@@ -5,23 +5,22 @@ provided under the Apache 2.0 license.
 See the files LICENSE and NOTICE for details.
 Project home, documentation, distributions: http://wiki.xml3k.org/Akara
 
- Module name:: freemix_akara.oai
-
-Scrapes collections from a OAI site into JSON form for Freemix
+ Module name:: dpla_thumbs
 
 = Defined REST entry points =
 
-Updated document.
-
 dpla-thumbs-update-doc Handles POST
 
-Returns documents wich need to have thumbnail downloaded.
+    Updates document adding the thumbnail file path.
 
-dpla-thumbs-list-for-downloading GET
+dpla-thumbs-list-for-downloading Handles GET
+
+    Returns documents wich need to have thumbnail downloaded.
 
 = Configuration =
 
-None
+This module inherits database configuration from enrich.py,
+everything is defined in akara.conf.
 
 = Notes on security =
 
