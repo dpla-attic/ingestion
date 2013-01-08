@@ -53,6 +53,7 @@ import datetime
 import uuid
 import base64
 
+# Configuration for accessing the database.
 COUCH_DATABASE = module_config().get('couch_database')
 COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
 COUCH_DATABASE_PASSWORD = module_config().get('couch_database_password')
@@ -60,13 +61,18 @@ COUCH_DATABASE_PASSWORD = module_config().get('couch_database_password')
 COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
 CT_JSON = {'Content-Type': 'application/json'}
 
+# The app name used for accessing the views.
 VIEW_APP = "thumbnails"
+
+# The view name for accessing the documents which need getting the thumbnail.
 VIEW_NAME = "all_for_downloading"
 
 UPDATE_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-update-doc'
 LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-list-for-downloading'
 
-
+# 
+# 
+#
 @simple_service('POST', UPDATE_SERVICE_ID, 'dpla-thumbs-update-doc', 'application/json')
 def update_document(document, doctype):
     couch = Server(COUCH_DATABASE_URL)
@@ -74,6 +80,15 @@ def update_document(document, doctype):
     # TODO update the document
     return document
 
+
+# 
+# Service for getting all the documents which need downloading thumbnails.
+# The logic is simple, it just queries a view defined in couchdb database.
+# 
+# PARAMS:
+#   limit - the maximum number of records to return
+#           default value is 100
+#
 @simple_service('GET', LISTRECORDS_SERVICE_ID, 'dpla-thumbs-list-for-downloading', 'application/json')
 def listrecords(limit=100):
     import httplib
