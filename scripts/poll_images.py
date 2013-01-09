@@ -148,7 +148,7 @@ def get_documents():
     logging.info('Getting documents from akara.')
     h = httplib2.Http()
     h.force_exception_as_status_code = True
-    url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL'] )
+    url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL'] ) + "?limit=%s" % conf['GET_DOCUMENTS_LIMIT']
     logging.debug('Using akara url: ' + url)
     #TODO add limit from config file
     resp, content = h.request(url, 'GET')
