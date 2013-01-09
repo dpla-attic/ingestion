@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Usage: python poll_images.py <profiles-glob> <enrichment-service-URI.
 
@@ -122,16 +123,15 @@ def download_image(url, id, file_number):
         logging.info("Downloading file to: " + fname)
         local_file = open(fname, 'w')
         local_file.write(conn.read())
-    except:
-        msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
+    except Exception as e:
+        msg = traceback.format_exception(*sys.exc_info())
         logging.error(msg)
         return False
     else:
         conn.close()
         local_file.close()
-    except:
     logging.debug("File downloaded")
-    return True
+    return fname
 
 def parse_documents(documents):
     """
@@ -148,18 +148,40 @@ def process_document(document):
         - downloads the thumbnail
         - uppdates the document
     """
-    #pp.pprint(document) # RM
     id = document[u"id"]
     url = document[u'value'][URL_FIELD_NAME]
-    #url_ext = url[-3:] #RM
     logging.info("Processing document id = " + document["id"])
     logging.info("Found thumbnail URL = " + url)
 
-    #file_path = generate_file_path(document["id"], 1, url_ext) # RM
-    download_image(url, id, 1)
-    #TODO get image url
-    #TODO download thumbnail to file
-    #TODO update document
+    filepath = download_image(url, id, 1)
+    if filepath: # so everything is OK and the file is on disk
+        doc = update_document(document, filepath)
+        save_document(doc)
+
+def update_document(document, filepath):
+    """
+    Function updates the document setting a filepath to a proper variable.
+    """
+    #TODO: add doc
+    document[u'value'][URL_FILE_PATH] = filepath
+    return document
+
+def save_document(document):
+    """
+    """
+    #TODO: add doc
+    logging.info("Updating document in database")
+    h = httplib2.Http()
+    h.force_exception_as_status_code = True
+    url = join(conf['AKARA_SERVER'], conf['UPDATE_DOCUMENT_URL'], document[u'id'])
+    logging.debug("Calling url: " + url)
+    doc = json.dumps(document)
+    resp, content = h.request(url, 'POST', body = doc)
+    if str(resp.status).startswith('2'):
+        return content
+    else:
+        logging.error("Couldn't update document [id=%s]" % (document[u'id']))
+        logging.error("  … with data: %s" % (pp.pformat(document)))
 
 
 def configure_logger():
@@ -180,7 +202,8 @@ def process_config():
     res = {}
     # the names of config settings expected to be in the config file
     names = ['AKARA_SERVER', 'GET_DOCUMENTS_URL', 'GET_DOCUMENTS_LIMIT', \
-             'THUMBS_ROOT_PATH']
+             'THUMBS_ROOT_PATH', 'UPDATE_DOCUMENT_URL', \
+             ]
     for name in names:
         res[name] = config.get('thumbs', name)
     return res
@@ -199,6 +222,7 @@ def get_documents():
         return content
     else:
         logging.error("Couldn't get documents using: " + url)
+        logging.error("Emergency exit…")
         exit(1)
 
 def download_thumbs():
