@@ -117,26 +117,35 @@ from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
 import logging
 import logging.handlers
+import logging.config
+
 SCRIPT_NAME = "thumbnails downloader"
 
 def configure_logger():
+
+    logging.config.fileConfig("thumbs.logger.config")
+    return logging.getLogger(SCRIPT_NAME)
+    
+
     DEBUG_LOG_FILENAME = 'thumbs.debug.log'
-    INFO_LOG_FILENAME = 'thumbs.debug.info'
+    INFO_LOG_FILENAME  = 'thumbs.info.log'
+    MAX_LOG_SIZE = 256*1024*1024 # 256MB
 
     logger = logging.getLogger(SCRIPT_NAME)
     logger.setLevel(logging.DEBUG)
 
-    # Debug handler
-    handler_d = logging.handlers.RotatingFileHandler(DEBUG_LOG_FILENAME, maxBytes=20, backupCount=5)
-    handler_d.setLevel(logging.DEBUG)
-    logger.addHandler(handler_d)
-    # Info handler
-    handler_i = logging.handlers.RotatingFileHandler(INFO_LOG_FILENAME, maxBytes=20, backupCount=5)
-    handler_i.setLevel(logging.INFO)
-    logger.addHandler(handler_i)
+    def make_handler(filename, level):
 
-    logger.debug('aaa')
-    logger.info('info')
+        # Debug handler
+        handler = logging.handlers.RotatingFileHandler(DEBUG_LOG_FILENAME, maxBytes=MAX_LOG_SIZE, backupCount=5)
+        handler_d.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s :: %(message)s")
+        logger.setFormatter(formatter)
+        logger.addHandler(handler_d)
+
+    make_handler(DEBUG_LOG_FILENAME, logging.DEBUG)
+    make_handler(INFO_LOG_FILENAME, logging.INFO)
+
     return logger
 
 def process_config():
@@ -149,7 +158,7 @@ def process_config():
     res = {}
     # the names of config settings expected to be in the config file
     names = ['AKARA_SERVER', 'GET_DOCUMENTS_URL', 'GET_DOCUMENTS_LIMIT', \
-             'DEBUG_LEVEL']
+            ]
     for name in names:
         res[name] = config.get('thumbs', name)
     return res
@@ -187,10 +196,10 @@ def download_thumbs():
 
 if __name__ == '__main__':
     #TODO add option for the config file name
+    #TODO add checking if the log directory exists
 
     conf = process_config()
-    print conf['DEBUG_LEVEL']
     logger = configure_logger()
-    logging.getLogger(SCRIPT_NAME).setLevel(conf['DEBUG_LEVEL'])
+    logging.info("Script started.")
 
     download_thumbs()
