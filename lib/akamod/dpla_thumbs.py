@@ -89,7 +89,7 @@ def update_document(document_id, document):
     if str(resp.status).startswith('2'):
         return content
     else:
-        logger.error("Couldn't store the document %(document) with the id: %(id)s. " % {'document':document, 'id':document_id}
+        logger.error("Couldn't store the document %(document) with the id: %(id)s. " % {'document':document, 'id':document_id} )
 
 # 
 # Service for getting all the documents which need downloading thumbnails.
