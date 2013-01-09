@@ -79,7 +79,14 @@ LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-list-for-downloading
 #   document    - json containing the document
 #
 @simple_service('POST', UPDATE_SERVICE_ID, 'dpla-thumbs-update-doc', 'application/json')
-def update_document(document_id, document):
+def update_document(body, ctype):
+    logger.debug(body)
+    from StringIO import StringIO
+    io = StringIO(body) 
+    parsed_doc = json.load(io) 
+    document_id = parsed_doc[u"id"]
+    document  = body
+
     logger.debug("Storing the document: " + document_id)
     import httplib
     h = httplib2.Http()
