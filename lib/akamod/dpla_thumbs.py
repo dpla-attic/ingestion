@@ -69,16 +69,26 @@ VIEW_NAME = "all_for_downloading"
 UPDATE_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-update-doc'
 LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-list-for-downloading'
 
-# 
-# 
+#
+# Service for updating the document. It just sends the document to the database.
+# To avoid parsing the json multiple times, here will be sent the document and 
+# the document id as separate parameter.
+#
+# TODO: add doc here
+#
 #
 @simple_service('POST', UPDATE_SERVICE_ID, 'dpla-thumbs-update-doc', 'application/json')
-def update_document(document, doctype):
-    couch = Server(COUCH_DATABASE_URL)
-    db = couch[COUCH_DATABASE_NAME]
-    # TODO update the document
-    return document
-
+def update_document(document_id, document):
+    logger.debug("Storing the document: " + document_id)
+    import httplib
+    h = httplib2.Http()
+    h.force_exception_as_status_code = True
+    url = join(COUCH_DATABASE, document_id)
+    resp, content = h.request(url, 'PUT', body=document, headers=COUCH_AUTH_HEADER)
+    if str(resp.status).startswith('2'):
+        return content
+    else:
+        logger.error("Couldn't store the document %(document) with the id: %(id)s. " % {'document':document, 'id':document_id}
 
 # 
 # Service for getting all the documents which need downloading thumbnails.
