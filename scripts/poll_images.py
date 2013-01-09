@@ -122,31 +122,7 @@ import logging.config
 SCRIPT_NAME = "thumbnails downloader"
 
 def configure_logger():
-
     logging.config.fileConfig("thumbs.logger.config")
-    return logging.getLogger(SCRIPT_NAME)
-    
-
-    DEBUG_LOG_FILENAME = 'thumbs.debug.log'
-    INFO_LOG_FILENAME  = 'thumbs.info.log'
-    MAX_LOG_SIZE = 256*1024*1024 # 256MB
-
-    logger = logging.getLogger(SCRIPT_NAME)
-    logger.setLevel(logging.DEBUG)
-
-    def make_handler(filename, level):
-
-        # Debug handler
-        handler = logging.handlers.RotatingFileHandler(DEBUG_LOG_FILENAME, maxBytes=MAX_LOG_SIZE, backupCount=5)
-        handler_d.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s :: %(message)s")
-        logger.setFormatter(formatter)
-        logger.addHandler(handler_d)
-
-    make_handler(DEBUG_LOG_FILENAME, logging.DEBUG)
-    make_handler(INFO_LOG_FILENAME, logging.INFO)
-
-    return logger
 
 def process_config():
     """
@@ -167,17 +143,17 @@ def get_documents():
     """
     Downloads a set of documents from couchdb.
     """
-    logger.debug('Getting documents from akara')
+    logging.info('Getting documents from akara.')
     h = httplib2.Http()
     h.force_exception_as_status_code = True
     url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL'] )
-    logger.debug("Calling url: " + url)
+    logging.debug('Using akara url: ' + url)
     #TODO add limit from config file
     resp, content = h.request(url, 'GET')
     if str(resp.status).startswith('2'):
         return content
     else:
-        logger.error("Couldn't get documents using: " + url)
+        logging.error("Couldn't get documents using: " + url)
         exit(1)
 
 def download_thumbs():
@@ -189,9 +165,7 @@ def download_thumbs():
     """
     documents = get_documents()
     documents = parse_documents(documents)
-    print len(documents)
-    pass
-
+    logging.info("Got %d documents from akara." % len(documents))
 
 
 if __name__ == '__main__':
@@ -199,7 +173,7 @@ if __name__ == '__main__':
     #TODO add checking if the log directory exists
 
     conf = process_config()
-    logger = configure_logger()
+    configure_logger()
     logging.info("Script started.")
 
     download_thumbs()
