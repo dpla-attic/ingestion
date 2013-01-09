@@ -2,6 +2,9 @@
 #
 # Usage: python poll_images.py <profiles-glob> <enrichment-service-URI.
 
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
+
 import sys, os, glob
 
 # Field name to search for the thumbnail URL.
@@ -97,9 +100,7 @@ def parse_documents(documents):
     """
     from StringIO import StringIO
     io = StringIO(documents)
-    #print documents
     return json.load(io)
-    # TODO implement
 
 def process_document(document):
     """
@@ -108,6 +109,7 @@ def process_document(document):
         - downloads the thumbnail
         - uppdates the document
     """
+    logging.info("Processing document id = " + document["id"])
     #TODO implement
     #TODO get image url
     #TODO download thumbnail to file
@@ -163,10 +165,16 @@ def download_thumbs():
         Downloads images.
         Updates the documents.
     """
+    # Get documents from couchdb
     documents = get_documents()
-    documents = parse_documents(documents)
-    logging.info("Got %d documents from akara." % len(documents))
 
+    # Convert couchdb reply to json.
+    documents = parse_documents(documents)
+    logging.info("Got %d documents from akara." % len(documents["rows"]))
+
+    for doc in documents["rows"]:
+        #pp.pprint(doc) # RM
+        process_document(doc)
 
 if __name__ == '__main__':
     #TODO add option for the config file name
