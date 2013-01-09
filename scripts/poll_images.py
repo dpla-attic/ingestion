@@ -175,13 +175,14 @@ def save_document(document):
     h.force_exception_as_status_code = True
     url = join(conf['AKARA_SERVER'], conf['UPDATE_DOCUMENT_URL'], document[u'id'])
     logging.debug("Calling url: " + url)
-    doc = json.dumps(document)
+    doc = json.dumps(document[u'value'])
     resp, content = h.request(url, 'POST', body = doc)
     if str(resp.status).startswith('2'):
         return content
     else:
         logging.error("Couldn't update document [id=%s]" % (document[u'id']))
-        logging.error("  … with data: %s" % (pp.pformat(document)))
+        logging.error("    … with data: %s" % (pp.pformat(document)))
+        logging.error("    … with raw data: %s" % (doc, ) );
 
 
 def configure_logger():
