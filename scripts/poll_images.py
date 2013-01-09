@@ -124,6 +124,11 @@ import logging.config
 SCRIPT_NAME = "thumbnails downloader"
 
 def configure_logger():
+    """
+    Function configured logging.
+    Currently this is a very simple imeplemtation,
+    it just reads the configuration from a file.
+    """
     logging.config.fileConfig("thumbs.logger.config")
 
 def process_config():
@@ -150,7 +155,6 @@ def get_documents():
     h.force_exception_as_status_code = True
     url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL'] ) + "?limit=%s" % conf['GET_DOCUMENTS_LIMIT']
     logging.debug('Using akara url: ' + url)
-    #TODO add limit from config file
     resp, content = h.request(url, 'GET')
     if str(resp.status).startswith('2'):
         return content
