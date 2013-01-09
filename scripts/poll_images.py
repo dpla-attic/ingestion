@@ -17,10 +17,10 @@ pp = pprint.PrettyPrinter(indent=4)
 import sys, os, glob
 
 # Field name to search for the thumbnail URL.
-URL_FIELD_NAME = "preview_source_url"
+URL_FIELD_NAME = u"preview_source_url"
 
 # Field name used for storing the path to the local filename.
-URL_FILE_PATH = "preview_file_path"
+URL_FILE_PATH = u"preview_file_path"
 
 def generate_file_path(id, file_number, file_extension):
     """
@@ -39,6 +39,10 @@ def generate_file_path(id, file_number, file_extension):
         id             - document id from couchdb  
         file_number    - the number of the file added just before the extension
         file_extension - extension of the file
+    
+    Return:
+        filepath       - path, without file name
+        full_filepath  - path, with file name
 
     Example:
         Function call:
@@ -70,10 +74,12 @@ def generate_file_path(id, file_number, file_extension):
     path = re.sub("(.{2})", "\\1" + os.sep, md5sum, re.DOTALL)
     logging.debug("PATH:       " + path)
     
-    full_fname = os.path.join(conf['THUMBS_ROOT_PATH'], path, fname)
+    path = os.path.join(conf['THUMBS_ROOT_PATH'], path)
+    full_fname = os.path.join(path, fname)
     logging.debug("FULL PATH:  " + full_fname)
+    
 
-    return full_fname
+    return (path, full_fname)
 
 def download_image(url, id, file_number):
     """
@@ -89,19 +95,31 @@ def download_image(url, id, file_number):
     """
 
     # TODO test it
-
-    def get_file_extension(url):
-        return "jpg" #TODO implement
-
+    file_extension = url[-3:]
+    (path, fname) = generate_file_path(id, file_number, file_extension)
+    
     import urllib
     conn = urllib.urlopen(url)
-    if not conn.getcode() % 100 == 2:
-        raise Exception("Got % from url: [%s] for document: [%s]" % (conn.getcode(), url, id))
-    fname = generate_file_path(id, file_number, file_extension)
+    if not conn.getcode() / 100 == 2:
+        msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
+        logging.error(msg)
+
+
+    # Let's create the directory for storing the file name.
+    import os
+    import os.path
+    if not os.path.exists(path):
+        logging.info("Creating directory: " + path)
+        os.makedirs(path)
+    else:
+        logging.debug("Path exists")
+
+    logging.info("Downloading file to: " + fname)
     local_file = open(fname, 'w')
     local_file.write(conn.read())
     conn.close()
     local_file.close()
+    logging.debug("File downloaded")
 
 def parse_documents(documents):
     """
@@ -118,8 +136,15 @@ def process_document(document):
         - downloads the thumbnail
         - uppdates the document
     """
+    #pp.pprint(document) # RM
+    id = document[u"id"]
+    url = document[u'value'][URL_FIELD_NAME]
+    #url_ext = url[-3:] #RM
     logging.info("Processing document id = " + document["id"])
-    #TODO implement
+    logging.info("Found thumbnail URL = " + url)
+
+    #file_path = generate_file_path(document["id"], 1, url_ext) # RM
+    download_image(url, id, 1)
     #TODO get image url
     #TODO download thumbnail to file
     #TODO update document
@@ -143,7 +168,7 @@ def process_config():
     res = {}
     # the names of config settings expected to be in the config file
     names = ['AKARA_SERVER', 'GET_DOCUMENTS_URL', 'GET_DOCUMENTS_LIMIT', \
-            ]
+             'THUMBS_ROOT_PATH']
     for name in names:
         res[name] = config.get('thumbs', name)
     return res
@@ -179,7 +204,6 @@ def download_thumbs():
     logging.info("Got %d documents from akara." % len(documents["rows"]))
 
     for doc in documents["rows"]:
-        #pp.pprint(doc) # RM
         process_document(doc)
 
 if __name__ == '__main__':
