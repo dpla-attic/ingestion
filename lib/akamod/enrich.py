@@ -13,11 +13,11 @@ COUCH_DATABASE = module_config().get('couch_database')
 COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
 COUCH_DATABASE_PASSWORD = module_config().get('couch_database_password')
 
-COUCH_ID_BUILDER = lambda src, lname: "%s--%s"%((src,lname))
-# Set id to value of the first handle, disambiguated w source. Not sure if
-# a handle is guaranteed or on what scale it's unique.
-# FIXME it's looking like an id builder needs to be part of the profile
-COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'handle',["nohandle"])[0].strip())
+COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
+# Set id to value of the first identifier, disambiguated w source. Not sure if
+# an OAI handle is guaranteed or on what scale it's unique.
+# FIXME it's looking like an id builder needs to be part of the profile. Or UUID as fallback?
+COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'identifiers',["no-id"])[0].strip())
 
 COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
 
