@@ -2,6 +2,15 @@
 #
 # Usage: python poll_images.py <profiles-glob> <enrichment-service-URI.
 
+from amara.thirdparty import json, httplib2
+from amara.lib.iri import join
+import logging
+import logging.handlers
+import logging.config
+
+
+SCRIPT_NAME = "thumbnails downloader"
+
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -12,9 +21,6 @@ URL_FIELD_NAME = "preview_source_url"
 
 # Field name used for storing the path to the local filename.
 URL_FILE_PATH = "preview_file_path"
-
-# Root directory used for storing images
-MAIN_PICTURE_DIRECTORY = "/tmp/main_pic_dir"
 
 def generate_file_path(id, file_number, file_extension):
     """
@@ -50,19 +56,22 @@ def generate_file_path(id, file_number, file_extension):
     import hashlib
     import os
 
+    logging.debug("Generating filename for document")
+
     cleared_id = re.sub(r'[-]', '_', id)
-    print "Cleared id: " + cleared_id
+    logging.debug("Cleared id: " + cleared_id)
     
     fname = "%s_%s.%s" % (cleared_id, file_number, file_extension)
-    print "File name:  " + fname
+    logging.debug("File name:  " + fname)
     
     md5sum = hashlib.md5(id).hexdigest().upper()
-    print "Hashed id:  " + md5sum
+    logging.debug("Hashed id:  " + md5sum)
     
     path = re.sub("(.{2})", "\\1" + os.sep, md5sum, re.DOTALL)
-    print "PATH:       " + path
+    logging.debug("PATH:       " + path)
     
-    full_fname = os.path.join(MAIN_PICTURE_DIRECTORY, path, fname)
+    full_fname = os.path.join(conf['THUMBS_ROOT_PATH'], path, fname)
+    logging.debug("FULL PATH:  " + full_fname)
 
     return full_fname
 
@@ -115,13 +124,6 @@ def process_document(document):
     #TODO download thumbnail to file
     #TODO update document
 
-from amara.thirdparty import json, httplib2
-from amara.lib.iri import join
-import logging
-import logging.handlers
-import logging.config
-
-SCRIPT_NAME = "thumbnails downloader"
 
 def configure_logger():
     """
