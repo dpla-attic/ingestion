@@ -26,7 +26,7 @@ def process_profile(out,profile_f):
     # Pause in secs between HTTP requests
     sleep = profile.get(u'sleep') or 0
 
-    H = httplib2.Http('/tmp/.pollcache')
+    H = httplib2.Http('/tmp/szymon/.pollcache')
     H.force_exception_as_status_code = True
     subResources = profile[u'subresources'] or ['']
     for subr in subResources:

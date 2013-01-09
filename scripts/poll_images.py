@@ -63,35 +63,134 @@ def generate_file_path(id, file_number, file_extension):
 
     return full_fname
 
-print generate_file_path('clemsontest--hcc001-hcc016', 1, "jpg")
+def download_image(url, id, file_number):
+    """
+    Function downloads the thumbnail from the given url and storing it somewhere.
+
+    Current implementation stores the file on disk, other imlementations could 
+    be made in the future.
+
+    Params:
+        url         - the url of the file for downloading
+        id          - document id, used for generating the file name
+        file_number - number of the file for this document
+    """
+
+    # TODO test it
+
+    def get_file_extension(url):
+        return "jpg" #TODO implement
+
+    import urllib
+    conn = urllib.urlopen(url)
+    if not conn.getcode() % 100 == 2:
+        raise Exception("Got % from url: [%s] for document: [%s]" % (conn.getcode(), url, id))
+    fname = generate_file_path(id, file_number, file_extension)
+    local_file = open(fname, 'w')
+    local_file.write(conn.read())
+    conn.close()
+    local_file.close()
+
+def parse_documents(documents):
+    """
+    Function converts provided json with documents to a list of dictionariers.
+    """
+    from StringIO import StringIO
+    io = StringIO(documents)
+    #print documents
+    return json.load(io)
+    # TODO implement
+
+def process_document(document):
+    """
+    Function processes document:
+        - gets the image url
+        - downloads the thumbnail
+        - uppdates the document
+    """
+    #TODO implement
+    #TODO get image url
+    #TODO download thumbnail to file
+    #TODO update document
+
+from amara.thirdparty import json, httplib2
+from amara.lib.iri import join
+import logging
+import logging.handlers
+SCRIPT_NAME = "thumbnails downloader"
+
+def configure_logger():
+    DEBUG_LOG_FILENAME = 'thumbs.debug.log'
+    INFO_LOG_FILENAME = 'thumbs.debug.info'
+
+    logger = logging.getLogger(SCRIPT_NAME)
+    logger.setLevel(logging.DEBUG)
+
+    # Debug handler
+    handler_d = logging.handlers.RotatingFileHandler(DEBUG_LOG_FILENAME, maxBytes=20, backupCount=5)
+    handler_d.setLevel(logging.DEBUG)
+    logger.addHandler(handler_d)
+    # Info handler
+    handler_i = logging.handlers.RotatingFileHandler(INFO_LOG_FILENAME, maxBytes=20, backupCount=5)
+    handler_i.setLevel(logging.INFO)
+    logger.addHandler(handler_i)
+
+    logger.debug('aaa')
+    logger.info('info')
+    return logger
+
+def process_config():
+    """
+    Function reads and uses configurations from the config file.
+    """
+    import ConfigParser
+    config = ConfigParser.ConfigParser()
+    config.read('dpla-thumbs.ini')
+    res = {}
+    # the names of config settings expected to be in the config file
+    names = ['AKARA_SERVER', 'GET_DOCUMENTS_URL', 'GET_DOCUMENTS_LIMIT', \
+             'DEBUG_LEVEL']
+    for name in names:
+        res[name] = config.get('thumbs', name)
+    return res
+
+def get_documents():
+    """
+    Downloads a set of documents from couchdb.
+    """
+    logger.debug('Getting documents from akara')
+    h = httplib2.Http()
+    h.force_exception_as_status_code = True
+    url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL'] )
+    logger.debug("Calling url: " + url)
+    #TODO add limit from config file
+    resp, content = h.request(url, 'GET')
+    if str(resp.status).startswith('2'):
+        return content
+    else:
+        logger.error("Couldn't get documents using: " + url)
+        exit(1)
+
+def download_thumbs():
+    """
+    The main function.
+        Function downloads documents from couchdb.
+        Downloads images.
+        Updates the documents.
+    """
+    documents = get_documents()
+    documents = parse_documents(documents)
+    print len(documents)
+    pass
 
 
-exit;
-
-def process_profile():
-    None
 
 if __name__ == '__main__':
+    #TODO add option for the config file name
 
-    process_profile()
+    conf = process_config()
+    print conf['DEBUG_LEVEL']
+    logger = configure_logger()
+    logging.getLogger(SCRIPT_NAME).setLevel(conf['DEBUG_LEVEL'])
 
-    sys.exit()
-
-    # Verify that both given directories exist
-    for d in sys.argv[1:]:
-        if os.path.isabs(d): continue # skip URIs
-
-        dirExists = False
-
-        try:
-            if os.stat(d): dirExists = True
-        except:
-            pass
-
-        if not dirExists:
-            print >> sys.stderr, 'Directory '+d+' does not exist. Aborting.'
-            sys.exit(1)
-
-    for profile in glob.glob(sys.argv[1]):
-        print >> sys.stderr, 'Processing profile: '+profile
-        process_profile(sys.argv[2], profile)
+    download_thumbs()
