@@ -71,12 +71,6 @@ LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-list-for-downloading
 
 #
 # Service for updating the document. It just sends the document to the database.
-# To avoid parsing the json multiple times, here will be sent the document and 
-# the document id as separate parameter.
-#
-# PARAMS:
-#   document_id - document id
-#   document    - json containing the document
 #
 @simple_service('POST', UPDATE_SERVICE_ID, 'dpla-thumbs-update-doc', 'application/json')
 def update_document(body, ctype):
