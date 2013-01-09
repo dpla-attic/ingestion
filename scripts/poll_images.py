@@ -92,6 +92,10 @@ def download_image(url, id, file_number):
         url         - the url of the file for downloading
         id          - document id, used for generating the file name
         file_number - number of the file for this document
+
+    Returns:
+        True        - if everything is OK
+        False       - otherwise
     """
 
     # TODO test it
@@ -103,7 +107,7 @@ def download_image(url, id, file_number):
     if not conn.getcode() / 100 == 2:
         msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
         logging.error(msg)
-
+        return False
 
     # Let's create the directory for storing the file name.
     import os
@@ -114,12 +118,20 @@ def download_image(url, id, file_number):
     else:
         logging.debug("Path exists")
 
-    logging.info("Downloading file to: " + fname)
-    local_file = open(fname, 'w')
-    local_file.write(conn.read())
-    conn.close()
-    local_file.close()
+    try:
+        logging.info("Downloading file to: " + fname)
+        local_file = open(fname, 'w')
+        local_file.write(conn.read())
+    except:
+        msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
+        logging.error(msg)
+        return False
+    else:
+        conn.close()
+        local_file.close()
+    except:
     logging.debug("File downloaded")
+    return True
 
 def parse_documents(documents):
     """
