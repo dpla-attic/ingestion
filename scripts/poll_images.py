@@ -187,7 +187,8 @@ def save_document(document):
 
 def configure_logger():
     """
-    Function configured logging.
+    Function for configuring logging.
+
     Currently this is a very simple imeplemtation,
     it just reads the configuration from a file.
     """
@@ -195,7 +196,7 @@ def configure_logger():
 
 def process_config():
     """
-    Function reads and uses configurations from the config file.
+    Function reads the config file and parses options.
     """
     import ConfigParser
     config = ConfigParser.ConfigParser()
@@ -243,12 +244,44 @@ def download_thumbs():
     for doc in documents["rows"]:
         process_document(doc)
 
-if __name__ == '__main__':
-    #TODO add option for the config file name
-    #TODO add checking if the log directory exists
+def parse_cmd_params():
+    """
+    Function parses options for the script.
+    """
+    from optparse import OptionParser
+    parser = OptionParser()
+    DEFAULT_CONFIG_FILE = 'dpla-thumbs.ini'
+    DEFAULT_LOGGER_CONFIG_FILE = 'thumbs.logger.config'
+    parser.add_option("-c", "--config", 
+                                dest="config_file",
+                                help="Config file, if nothing provided, then '%s' will be used." % DEFAULT_CONFIG_FILE, 
+                                default=DEFAULT_CONFIG_FILE)
+    parser.add_option("-l", "--logger", 
+                                dest="logger_file", 
+                                help = "File with logger configuration, if nothing provided, then %s is used." % DEFAULT_LOGGER_CONFIG_FILE, 
+                                default=DEFAULT_LOGGER_CONFIG_FILE)
+    return parser.parse_args()
 
+def validate_params(options, args):
+    # TODO add doc
+    # Logger is not yet configured:
+    print ("Using configuration file: %s" % (options.config_file, ))
+    print ("Using logger configuration file: %s" % (options.logger_file, ))
+
+    def check_file_exists(filename):
+        from os.path import isfile
+        if not isfile(filename):
+            print "There is no file %s" % filename
+
+    check_file_exists(options.config_file)
+    check_file_exists(options.logger_file)
+
+if __name__ == '__main__':
+    (options, args) = parse_cmd_params()
+    validate_params(options, args)
     conf = process_config()
     configure_logger()
+    
     logging.info("Script started.")
 
     download_thumbs()
