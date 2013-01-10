@@ -185,22 +185,22 @@ def save_document(document):
         logging.error("    … with raw data: %s" % (doc, ) );
 
 
-def configure_logger():
+def configure_logger(config_file):
     """
     Function for configuring logging.
 
     Currently this is a very simple imeplemtation,
     it just reads the configuration from a file.
     """
-    logging.config.fileConfig("thumbs.logger.config")
+    logging.config.fileConfig(config_file)
 
-def process_config():
+def process_config(config_file):
     """
     Function reads the config file and parses options.
     """
     import ConfigParser
     config = ConfigParser.ConfigParser()
-    config.read('dpla-thumbs.ini')
+    config.read(config_file)
     res = {}
     # the names of config settings expected to be in the config file
     names = ['AKARA_SERVER', 'GET_DOCUMENTS_URL', 'GET_DOCUMENTS_LIMIT', \
@@ -272,6 +272,8 @@ def validate_params(options, args):
         from os.path import isfile
         if not isfile(filename):
             print "There is no file %s" % filename
+            print "exiting, good bye…"
+            exit(1)
 
     check_file_exists(options.config_file)
     check_file_exists(options.logger_file)
@@ -279,9 +281,9 @@ def validate_params(options, args):
 if __name__ == '__main__':
     (options, args) = parse_cmd_params()
     validate_params(options, args)
-    conf = process_config()
-    configure_logger()
-    
+    conf = process_config(options.config_file)
+    configure_logger(options.logger_file)
+
     logging.info("Script started.")
 
     download_thumbs()
