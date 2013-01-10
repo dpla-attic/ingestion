@@ -8,20 +8,30 @@ from amara.lib.iri import join
 import logging
 import logging.handlers
 import logging.config
+from StringIO import StringIO
+import pprint
+import sys, os, glob
+import re
+import hashlib
+import os
+import os
+import urllib
+import os.path
 
 
+# Used by the logger.
 SCRIPT_NAME = "thumbnails downloader"
 
-import pprint
+# Used for logging nice json in the error logs.
+# This is used for debugging as well.
 pp = pprint.PrettyPrinter(indent=4)
 
-import sys, os, glob
-
-# Field name to search for the thumbnail URL.
+# Used for searching for the thumbnail URL.
 URL_FIELD_NAME = u"preview_source_url"
 
-# Field name used for storing the path to the local filename.
+# Used for storing the path to the local filename.
 URL_FILE_PATH = u"preview_file_path"
+
 
 def generate_file_path(id, file_number, file_extension):
     """
@@ -57,9 +67,6 @@ def generate_file_path(id, file_number, file_extension):
         PATH:       8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/
         FULL_NAME:  /tmp/szymon/main_pic_dir/8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/clemsontest__hcc001_hcc016_1.jpg
     """
-    import re
-    import hashlib
-    import os
 
     logging.debug("Generating filename for document")
 
@@ -99,11 +106,9 @@ def download_image(url, id, file_number):
         False       - otherwise
     """
 
-    # TODO test it
     file_extension = url[-3:]
     (path, fname) = generate_file_path(id, file_number, file_extension)
     
-    import urllib
     conn = urllib.urlopen(url)
     if not conn.getcode() / 100 == 2:
         msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
@@ -111,8 +116,6 @@ def download_image(url, id, file_number):
         return False
 
     # Let's create the directory for storing the file name.
-    import os
-    import os.path
     if not os.path.exists(path):
         logging.info("Creating directory: " + path)
         os.makedirs(path)
@@ -133,20 +136,34 @@ def download_image(url, id, file_number):
     logging.debug("File downloaded")
     return fname
 
+
 def parse_documents(documents):
     """
-    Function converts provided json with documents to a list of dictionariers.
+    Parses the provided string with json into object.
+
+    Arguments:
+        documents String - documents from couchdb in string format
+
+    Returns:
+        Object with parsed json.
     """
-    from StringIO import StringIO
     io = StringIO(documents)
     return json.load(io)
 
+
 def process_document(document):
     """
-    Function processes document:
-        - gets the image url
-        - downloads the thumbnail
-        - uppdates the document
+    Processes one document.
+
+    * gets the image url from document
+    * downloads the thumbnail
+    * updates the document in couchdb
+
+    Arguments:
+        document Object - document already parsed
+
+    Returns:
+        None
     """
     id = document[u"id"]
     url = document[u'value'][URL_FIELD_NAME]
@@ -158,18 +175,34 @@ def process_document(document):
         doc = update_document(document, filepath)
         save_document(doc)
 
+
 def update_document(document, filepath):
     """
-    Function updates the document setting a filepath to a proper variable.
+    Updates the document setting a filepath to a proper variable.
+
+    Arguments:
+        document Object - document for updating (decoded by json module)
+        filepath String - filepath to insert
+
+    Returns:
+        The document from parameter with additional field containing the filepath.
     """
-    #TODO: add doc
     document[u'value'][URL_FILE_PATH] = filepath
     return document
 
+
 def save_document(document):
     """
+    Saves the document in the couchdb.
+
+    Arguments:
+        document - document to save
+
+    Returns:
+        If saving succeeded: the value returned by akara.
+        If saving failed: a bunch of error logs is written - returns False.
+
     """
-    #TODO: add doc
     logging.info("Updating document in database")
     h = httplib2.Http()
     h.force_exception_as_status_code = True
@@ -183,29 +216,33 @@ def save_document(document):
         logging.error("Couldn't update document [id=%s]" % (document[u'id']))
         logging.error("    … with data: %s" % (pp.pformat(document)))
         logging.error("    … with raw data: %s" % (doc, ) );
+        return False
 
 
 def configure_logger(config_file):
     """
-        Function for configuring logging.
+    Configures logging for the script.
 
-        Currently this is a very simple imeplemtation,
-        it just reads the configuration from a file.
 
-    Params:
-        config_file - path to the config file.
+    Currently this is a very simple imeplemtation,
+    it just reads the configuration from a file.
+
+    Arguments:
+        config_file String - path to the config file.
 
     Returns:
-        Nothing.
+        Nothing, however there is an exception thrown if the file is missing,
+        or there is something wrong with it.
     """
     logging.config.fileConfig(config_file)
 
+
 def process_config(config_file):
     """
-    Function reads the config file and parses options.
+    Reads the config file and parses options.
 
-    Params:
-        config_file - path to the config file
+    Arguments:
+        config_file String - path to the config file
 
     Returns:
         Dictionary with values read from the config file.
@@ -222,9 +259,17 @@ def process_config(config_file):
         res[name] = config.get('thumbs', name)
     return res
 
+
 def get_documents():
     """
-    Downloads a set of documents from couchdb.
+    Downloads a set of documents from couchdb. If there is an error with 
+    downloading the docuemtns, the script exits.
+
+    Arguments:
+        None
+
+    Returns:
+        None
     """
     logging.info('Getting documents from akara.')
     h = httplib2.Http()
@@ -239,12 +284,20 @@ def get_documents():
         logging.error("Emergency exit…")
         exit(1)
 
+
 def download_thumbs():
     """
-    The main function.
-        Function downloads documents from couchdb.
-        Downloads images.
-        Updates the documents.
+    This is the main script function.
+
+    * Downloads documents from couchdb.
+    * Downloads images.
+    * Updates the documents.
+
+    Arguments:
+        None
+
+    Returns:
+        None
     """
     # Get documents from couchdb
     documents = get_documents()
@@ -259,7 +312,13 @@ def download_thumbs():
 
 def parse_cmd_params():
     """
-    Function parses options for the script.
+    Parses options for the script.
+
+    Arguments:
+        None
+
+    Returns:
+        (options, args) - pure output from parser.parse_args()
     """
     from optparse import OptionParser
     parser = OptionParser()
@@ -277,7 +336,20 @@ def parse_cmd_params():
 
 def validate_params(options, args):
     """
-    Function validates if provided paramters are OK.
+    Validates if provided paramters are OK.
+
+    Checks if the provided params exist.
+    Checks if the config files exist.
+
+    Exits program if any of the rules is violated.
+
+    Arguments:
+        options - object returned by the parse_cmd_params()
+        args    - object returned by the parse_cmd_params()
+
+    Returns:
+        None
+
     """
     # Logger is not yet configured:
     print ("Using configuration file: %s" % (options.config_file, ))
@@ -293,12 +365,22 @@ def validate_params(options, args):
     check_file_exists(options.config_file)
     check_file_exists(options.logger_file)
 
+#################################################################################
 if __name__ == '__main__':
+
+    # Parse program params.
     (options, args) = parse_cmd_params()
+
+    # Validate the params.
     validate_params(options, args)
+
+    # Process the script config file.
     conf = process_config(options.config_file)
+
+    # Set up the logger.
     configure_logger(options.logger_file)
 
     logging.info("Script started.")
 
+    # Start processing thumbnails.
     download_thumbs()
