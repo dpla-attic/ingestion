@@ -10,13 +10,12 @@ import logging.handlers
 import logging.config
 from StringIO import StringIO
 import pprint
-import sys, os, glob
+import sys
 import re
 import hashlib
 import os
-import os
-import urllib
 import os.path
+import urllib
 
 
 # Used by the logger.
@@ -35,9 +34,11 @@ URL_FILE_PATH = u"preview_file_path"
 
 def generate_file_path(id, file_number, file_extension):
     """
-    Function generates and returns the file path based in provided params.
+    Generates and returns the file path based in provided params.
 
-    The file path is generated using the following algorithm:
+    Algorithm:
+
+      The file path is generated using the following algorithm:
 
         -   convert all not allowed characters from the document id to "_"
         -   to the above string add number and extension getting FILE_NAME
@@ -46,12 +47,12 @@ def generate_file_path(id, file_number, file_extension):
         -   insert "/" between each to characters of this hash getting CALCULATED_PATH
         -   join the MAIN_PATH, CALCULATED_PATH and FILE_NAME
     
-    Params:
+    Arguments:
         id             - document id from couchdb  
         file_number    - the number of the file added just before the extension
         file_extension - extension of the file
     
-    Return:
+    Returns:
         filepath       - path, without file name
         full_filepath  - path, with file name
 
@@ -89,32 +90,29 @@ def generate_file_path(id, file_number, file_extension):
 
     return (path, full_fname)
 
-def download_image(url, id, file_number):
+def download_image(url, id, file_number=1):
     """
-    Function downloads the thumbnail from the given url and storing it somewhere.
+    Downloads the thumbnail from the given url and stores it on disk.
 
-    Current implementation stores the file on disk, other imlementations could 
-    be made in the future.
+    Current implementation stores the file on disk
 
     Params:
         url         - the url of the file for downloading
-        id          - document id, used for generating the file name
+        id          - document id, used for the file name generation
         file_number - number of the file for this document
 
     Returns:
-        True        - if everything is OK
+        Name of the file where the image was stored - if everything is OK
         False       - otherwise
     """
 
+    # Get the thumbnail extension from the URL, needed for storing the 
+    # file on disk with proper extension.
     file_extension = url[-3:]
+
+    # Get the directory path and file path for storing the image.
     (path, fname) = generate_file_path(id, file_number, file_extension)
     
-    conn = urllib.urlopen(url)
-    if not conn.getcode() / 100 == 2:
-        msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
-        logging.error(msg)
-        return False
-
     # Let's create the directory for storing the file name.
     if not os.path.exists(path):
         logging.info("Creating directory: " + path)
@@ -122,6 +120,14 @@ def download_image(url, id, file_number):
     else:
         logging.debug("Path exists")
 
+    # Open connection to the image using provided URL.
+    conn = urllib.urlopen(url)
+    if not conn.getcode() / 100 == 2:
+        msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
+        logging.error(msg)
+        return False
+
+    # Download the image.
     try:
         logging.info("Downloading file to: " + fname)
         local_file = open(fname, 'w')
@@ -170,7 +176,7 @@ def process_document(document):
     logging.info("Processing document id = " + document["id"])
     logging.info("Found thumbnail URL = " + url)
 
-    filepath = download_image(url, id, 1)
+    filepath = download_image(url, id)
     if filepath: # so everything is OK and the file is on disk
         doc = update_document(document, filepath)
         save_document(doc)
