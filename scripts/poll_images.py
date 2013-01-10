@@ -108,7 +108,8 @@ def download_image(url, id, file_number=1):
 
     # Get the thumbnail extension from the URL, needed for storing the 
     # file on disk with proper extension.
-    file_extension = url[-3:]
+    fileName, fileExtension = os.path.splitext(url)
+    file_extension = fileExtension[1:]
 
     # Get the directory path and file path for storing the image.
     (path, fname) = generate_file_path(id, file_number, file_extension)
