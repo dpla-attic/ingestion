@@ -1,6 +1,7 @@
 git+http://github.com/zepheira/amara.git#egg=amara
 git+http://github.com/zepheira/akara.git#egg=akara
 git+http://github.com/zepheira/freemix-akara.git#egg=freemix-akara
+git+http://github.com/dpla/xmltodict#egg=xmltodict
 hg+http://foundry.zepheira.com/hg/zenpub/#egg=zen
 
 python-dateutil

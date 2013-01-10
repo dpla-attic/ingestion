@@ -10,6 +10,7 @@ from urllib import urlencode
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import is_absolute, join
 from amara import bindery
+import xmltodict
 
 # FIXME Turns out this isn't always correct. Sometimes Series files are located in
 # different directories than its Item files. No clear deterministic path between
@@ -68,57 +69,60 @@ def process_profile(out,profile_f):
 
     return True
 
+ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
+
+#def skip_cdata(path,key,data):
+#    if '#text' in data:
+#        del data['#text']
+#    return key, data
+#
+#ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',postprocessor=skip_cdata)
 def process_arc_all(profile):
     src_URL = profile.get('endpoint_URL')
     assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
     src_dir = src_URL[5:]
 
     collections = {} # this could get big unless we can figure out a way to scope it
+    print "Walking directory: "+src_dir
     for (root, dirs, files) in os.walk(src_dir):
-        print "root = "+root
         items = []
         for filename in fnmatch.filter(files, 'Item_*.xml'):
             item_fn = os.path.join(root,filename)
             item_f = open(item_fn,'r')
-            item_parsed = bindery.parse(item_f)
-            item = {}
+            item = ARC_PARSE(item_f)['archival-description']
 
-            item['title'] = unicode(item_parsed.archival_description.title)
-            item['handle'] = [unicode(item_parsed.archival_description.arc_id)] # FIXME OAI leak
-            item['created'] = {'start': unicode(item_parsed.archival_description.created_timestamp),
-                               'end': unicode(item_parsed.archival_description.created_timestamp) }
-            if hasattr(item_parsed.archival_description,'scope_content_note'):
-                item['description'] = unicode(item_parsed.archival_description.scope_content_note)
+            # set our generic identifier property
+            item['identifiers'] = [item['arc-id']]
 
-            print repr(item)
-
-            hier_items = item_parsed.archival_description.hierarchy.hierarchy_item
+            hier_items = item['hierarchy']['hierarchy-item']
             for hi in hier_items:
-                htype = unicode(hi.hierarchy_item_lod)
+                htype = hi['hierarchy-item-lod']
                 if not htype.lower() == 'series': continue # only interested in Series objects as collections
 
-                hid = hi.hierarchy_item_id
+                hid = hi['hierarchy-item-id']
 
                 if hid not in collections:
                     # Parse the series/collection file
                     try:
-                        print >> sys.stderr, "Looking for Series file with arc-id = "+root 
-                        hier_fname = glob.glob(ARC_RELATED_FILE(root,htype,hid))[0]
-                        print >> sys.stderr, "   Found file = "+hier_fname
+                        hier_rf = ARC_RELATED_FILE(root,htype,hid)
+                        print "Related file: "+hier_rf
+                        hier_fname = glob.glob(hier_rf)[0]
+                        print "  Found as: "+hier_fname
                         hier_f = open(hier_fname,'r')
                     except Exception as e:
                         print >> sys.stderr, "Couldn't find referenced Series file (%s) from %s"%((hier_fname,item_fn))
+                        print >> sys.stderr, repr(e)
                         continue
 
-                    hier = bindery.parse(hier_f)
+                    hier = ARC_PARSE(hier_f)['archival-description']
                     hier_f.close()
 
-                    cid = unicode(hier.archival_description.arc_id)
-                    assert hid == cid, "Unexpected difference in ARC IDs between Item reference and retrieved Series"
+                    cid = hier['arc-id']
+                    #assert hid == cid, "Unexpected difference in ARC IDs between Item reference and retrieved Series"
 
                     coll = {}
-                    coll['handle'] = [cid]
-                    coll['label'] = unicode(hier.archival_description.title)
+                    coll['identifiers'] = [cid]
+                    coll['label'] = hier.get('title','')
                     coll['items'] = []
                     collections[cid] = coll
                 else:
@@ -126,6 +130,7 @@ def process_arc_all(profile):
 
                 coll['items'].append(item)
 
+            #print json.dumps(item,indent=4)
             items.append(item)
 
     for cid in collections:
