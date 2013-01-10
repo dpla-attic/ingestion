@@ -187,16 +187,28 @@ def save_document(document):
 
 def configure_logger(config_file):
     """
-    Function for configuring logging.
+        Function for configuring logging.
 
-    Currently this is a very simple imeplemtation,
-    it just reads the configuration from a file.
+        Currently this is a very simple imeplemtation,
+        it just reads the configuration from a file.
+
+    Params:
+        config_file - path to the config file.
+
+    Returns:
+        Nothing.
     """
     logging.config.fileConfig(config_file)
 
 def process_config(config_file):
     """
     Function reads the config file and parses options.
+
+    Params:
+        config_file - path to the config file
+
+    Returns:
+        Dictionary with values read from the config file.
     """
     import ConfigParser
     config = ConfigParser.ConfigParser()
@@ -241,6 +253,7 @@ def download_thumbs():
     documents = parse_documents(documents)
     logging.info("Got %d documents from akara." % len(documents["rows"]))
 
+    # Process all documents.
     for doc in documents["rows"]:
         process_document(doc)
 
@@ -263,7 +276,9 @@ def parse_cmd_params():
     return parser.parse_args()
 
 def validate_params(options, args):
-    # TODO add doc
+    """
+    Function validates if provided paramters are OK.
+    """
     # Logger is not yet configured:
     print ("Using configuration file: %s" % (options.config_file, ))
     print ("Using logger configuration file: %s" % (options.logger_file, ))
