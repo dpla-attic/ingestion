@@ -46,12 +46,12 @@ def generate_file_path(id, file_number, file_extension):
         -   convert to uppercase
         -   insert "/" between each to characters of this hash getting CALCULATED_PATH
         -   join the MAIN_PATH, CALCULATED_PATH and FILE_NAME
-    
+
     Arguments:
         id             - document id from couchdb  
         file_number    - the number of the file added just before the extension
         file_extension - extension of the file
-    
+
     Returns:
         filepath       - path, without file name
         full_filepath  - path, with file name
@@ -86,9 +86,9 @@ def generate_file_path(id, file_number, file_extension):
     path = os.path.join(conf['THUMBS_ROOT_PATH'], path)
     full_fname = os.path.join(path, fname)
     logging.debug("FULL PATH:  " + full_fname)
-    
 
     return (path, full_fname)
+
 
 def download_image(url, id, file_number=1):
     """
@@ -177,7 +177,8 @@ def process_document(document):
     logging.info("Found thumbnail URL = " + url)
 
     filepath = download_image(url, id)
-    if filepath: # so everything is OK and the file is on disk
+    if filepath: 
+        # so everything is OK and the file is on disk
         doc = update_document(document, filepath)
         save_document(doc)
 
@@ -215,13 +216,13 @@ def save_document(document):
     url = join(conf['AKARA_SERVER'], conf['UPDATE_DOCUMENT_URL'], document[u'id'])
     logging.debug("Calling url: " + url)
     doc = json.dumps(document[u'value'])
-    resp, content = h.request(url, 'POST', body = doc)
+    resp, content = h.request(url, 'POST', body=doc)
     if str(resp.status).startswith('2'):
         return content
     else:
         logging.error("Couldn't update document [id=%s]" % (document[u'id']))
         logging.error("    … with data: %s" % (pp.pformat(document)))
-        logging.error("    … with raw data: %s" % (doc, ) );
+        logging.error("    … with raw data: %s" % (doc,))
         return False
 
 
@@ -280,7 +281,7 @@ def get_documents():
     logging.info('Getting documents from akara.')
     h = httplib2.Http()
     h.force_exception_as_status_code = True
-    url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL'] ) + "?limit=%s" % conf['GET_DOCUMENTS_LIMIT']
+    url = join(conf['AKARA_SERVER'], conf['GET_DOCUMENTS_URL']) + "?limit=%s" % conf['GET_DOCUMENTS_LIMIT']
     logging.debug('Using akara url: ' + url)
     resp, content = h.request(url, 'GET')
     if str(resp.status).startswith('2'):
@@ -316,6 +317,7 @@ def download_thumbs():
     for doc in documents["rows"]:
         process_document(doc)
 
+
 def parse_cmd_params():
     """
     Parses options for the script.
@@ -334,11 +336,12 @@ def parse_cmd_params():
                                 dest="config_file",
                                 help="Config file, if nothing provided, then '%s' will be used." % DEFAULT_CONFIG_FILE, 
                                 default=DEFAULT_CONFIG_FILE)
-    parser.add_option("-l", "--logger", 
+    parser.add_option("-l", "--logger",
                                 dest="logger_file", 
-                                help = "File with logger configuration, if nothing provided, then %s is used." % DEFAULT_LOGGER_CONFIG_FILE, 
+                                help="File with logger configuration, if nothing provided, then %s is used." % DEFAULT_LOGGER_CONFIG_FILE, 
                                 default=DEFAULT_LOGGER_CONFIG_FILE)
     return parser.parse_args()
+
 
 def validate_params(options, args):
     """
@@ -358,8 +361,8 @@ def validate_params(options, args):
 
     """
     # Logger is not yet configured:
-    print ("Using configuration file: %s" % (options.config_file, ))
-    print ("Using logger configuration file: %s" % (options.logger_file, ))
+    print ("Using configuration file: %s" % (options.config_file,))
+    print ("Using logger configuration file: %s" % (options.logger_file,))
 
     def check_file_exists(filename):
         from os.path import isfile
