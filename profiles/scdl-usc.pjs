@@ -1,4 +1,5 @@
 {
+    "type": "oai",
     "enrichments_coll": [
         "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe"
     ], 
