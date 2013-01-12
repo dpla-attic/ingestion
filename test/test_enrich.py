@@ -404,6 +404,7 @@ def test_enrich_subject_cleanup():
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['subject'] == EXPECTED['subject']
+<<<<<<< HEAD
 
 def test_enrich_type_cleanup():
     "Test type normalization"
@@ -455,7 +456,7 @@ def test_enrich_format_cleanup():
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
     assert not 'TBD_physicalformat' in result.keys()
-
+    
 
 def test_identify_preview_location():
     """
