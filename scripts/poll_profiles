@@ -52,7 +52,7 @@ def process_profile(out,profile_f):
 
         process(profile)
     else:
-        process = TYPE_PROCESSORS((ptype,'coll'))
+        process = TYPE_PROCESSORS.get((ptype,'coll'))
         if not process:
             print >> sys.stderr, "The ingest of individual %s collections is not supported at this time"%(ptype.upper())
             sys.exit(1)
@@ -92,7 +92,7 @@ def process_arc_all(profile):
             item = ARC_PARSE(item_f)['archival-description']
 
             # set our generic identifier property
-            item['identifiers'] = [item['arc-id']]
+            item['id'] = item['arc-id']
 
             hier_items = item['hierarchy']['hierarchy-item']
             for hi in hier_items:
@@ -121,7 +121,7 @@ def process_arc_all(profile):
                     #assert hid == cid, "Unexpected difference in ARC IDs between Item reference and retrieved Series"
 
                     coll = {}
-                    coll['identifiers'] = [cid]
+                    coll['id'] = cid
                     coll['label'] = hier.get('title','')
                     coll['items'] = []
                     collections[cid] = coll
@@ -178,6 +178,11 @@ def process_oai_coll(profile,subr):
         endpoint_content = json.loads(content)
         resumption_token = endpoint_content['resumption_token']
 
+        # we don't like the default id for each item, so rewrite it to the first handle
+        for item in endpoint_content['items']:
+            item['id'] = item['handle'][0]
+
+        content = json.dumps(endpoint_content)
         enrich_coll(profile,subr,content)
 
         request_more = resumption_token is not None and len(resumption_token) > 0
