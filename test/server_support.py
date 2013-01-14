@@ -70,15 +70,13 @@ MODULES = [
     "dplaingestion.oai",
     "zen.akamod.geocoding",
     "dplaingestion.akamod.enrich",
-    "dplaingestion.akamod.enrich-subject",
-    "dplaingestion.akamod.enrich-type",
-    "dplaingestion.akamod.enrich-format",
     "dplaingestion.akamod.select-id",
     "dplaingestion.akamod.shred",
     "dplaingestion.akamod.geocode",
     "dplaingestion.akamod.oai-to-dpla",
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
+    "dplaingestion.akamod.dpla_thumbs",
     "dplaingestion.akamod.identify_preview_location",
     ]
 
