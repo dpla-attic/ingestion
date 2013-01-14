@@ -7,3 +7,4 @@ hg+http://foundry.zepheira.com/hg/zenpub/#egg=zen
 python-dateutil
 timelib
 simplejson
+six
