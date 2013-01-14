@@ -4,6 +4,8 @@ from server_support import server
 from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
+from dict_differ import DictDiffer
+
 
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
@@ -435,6 +437,30 @@ def test_enrich_format_cleanup():
     assert result['format'] == EXPECTED['format']
     assert not 'TBD_physicalformat' in result.keys()
 
+def test_identify_preview_location():
+    """
+    Should add a thumbnail URL made of the source URL.
+    """
+    INPUT = {
+            u"something" : "x",
+            u"somethink" : "y",
+            u"source" : "http://repository.clemson.edu/u?/scp,104"
+    }
+    EXPECTED = {
+            u"something" : "x",
+            u"somethink" : "y",
+            u"source" : "http://repository.clemson.edu/u?/scp,104",
+            u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&amp;CISOPTR=104"
+    }
+    url = server() + "identify_preview_location"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    d = DictDiffer(EXPECTED, result)
+
+    if not d.same():
+        d.print_diff()
+        assert result == EXPECTED
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
