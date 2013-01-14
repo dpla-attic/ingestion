@@ -56,7 +56,6 @@ def create_server_dir(port):
     f.write("""
 class Akara:
   ConfigRoot = %(config_root)r
-  ServerRoot = 'http://dalkescientific.com/'
   InternalServerRoot = 'http://localhost:%(port)s/'
   Listen = 'localhost:%(port)s'
   LogLevel = 'DEBUG'
@@ -65,14 +64,21 @@ class Akara:
   MaxServers = 5
   MaxRequestsPerServer = 5
 
-MODULES = ["dplaingestion.akamod.enrich",
-           "dplaingestion.akamod.enrich-subject",
-           "dplaingestion.akamod.enrich-type",
-           "dplaingestion.akamod.enrich-format",
-           "dplaingestion.akamod.shred",
-           "dplaingestion.akamod.select-id",
-           "dplaingestion.akamod.oai-to-dpla",
-]
+MODULES = [
+    "freemix_akara.contentdm",
+    "freemix_akara.oai",
+    "dplaingestion.oai",
+    "zen.akamod.geocoding",
+    "dplaingestion.akamod.enrich",
+    "dplaingestion.akamod.select-id",
+    "dplaingestion.akamod.shred",
+    "dplaingestion.akamod.geocode",
+    "dplaingestion.akamod.oai-to-dpla",
+    "dplaingestion.akamod.oai-set-name",
+    "dplaingestion.akamod.dpla-list-records",
+    "dplaingestion.akamod.dpla_thumbs",
+    "dplaingestion.akamod.identify_preview_location",
+    ]
 
 """ % dict(config_root = config_root,
            port = port,
