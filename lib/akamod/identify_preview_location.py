@@ -3,13 +3,11 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
-#identify_preview_location (akara module - new)
-#Responsible for: adding a field to a document with the URL where we should expect to the find the thumbnail
-#Usage:  as a module in the enrichment pipeline, as part of the standard ingest process
-
 @simple_service('POST', 'http://purl.org/la/dp/indentify_preview_location', 'identify_preview_location', 'application/json')
 def identify_preview_location(body, ctype):
     """
+    Responsible for: adding a field to a document with the URL where we should 
+    expect to the find the thumbnail
     """
 
     def r500(msg):
