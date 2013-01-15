@@ -9,10 +9,11 @@ def identify_preview_location(body, ctype):
     Responsible for: adding a field to a document with the URL where we should 
     expect to the find the thumbnail
     """
-
+    
     try:
         data = json.loads(body)
         url = data['source']
+        logger.debug("source = " + source)
         URL_FIELD_NAME = u"preview_source_url"
         (base_url, rest) = url.split("u?")
         if base_url == "" or rest == "":
@@ -24,6 +25,7 @@ def identify_preview_location(body, ctype):
 
         thumb_url = "%scgi-bin/thumbnail.exe?CISOROOT=%s&amp;CISOPTR=%s" % (base_url, p[0], p[1])
         data[URL_FIELD_NAME] = thumb_url
+        logger.debug("Thumbnail URL = " + thumb_url)
         return json.dumps(data)
         
     except Exception as e:
