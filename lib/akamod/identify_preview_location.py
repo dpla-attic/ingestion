@@ -12,18 +12,34 @@ def identify_preview_location(body, ctype):
     """
     """
 
+    def r500(msg):
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return msg
+
     try:
         data = json.loads(body)
     except:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        return "Unable to parse body as JSON"
+        return r500("Unable to parse body as JSON.")
 
-    
+    url = ""
+    try:
+        url = data['source']
+    except:
+        return r500("JSON doesn't have 'source' field.")
+
     URL_FIELD_NAME = u"preview_source_url"
-    url = data['source']
     (base_url, rest) = url.split("u?")
+    if base_url == "" or rest == "":
+        return r500("Bad URL.")
+
     p = rest.split(",")
+    if len(p) != 2:
+        return r500("Bad URL.")
+
     thumb_url = "%scgi-bin/thumbnail.exe?CISOROOT=%s&amp;CISOPTR=%s" % (base_url, p[0], p[1])
     data[URL_FIELD_NAME] = thumb_url
     return json.dumps(data)
+
+
+
