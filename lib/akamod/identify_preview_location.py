@@ -10,34 +10,28 @@ def identify_preview_location(body, ctype):
     expect to the find the thumbnail
     """
 
-    def r500(msg):
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        return msg
-
     try:
         data = json.loads(body)
-    except:
-        return r500("Unable to parse body as JSON.")
-
-    url = ""
-    try:
         url = data['source']
-    except:
-        return r500("JSON doesn't have 'source' field.")
+        URL_FIELD_NAME = u"preview_source_url"
+        (base_url, rest) = url.split("u?")
+        if base_url == "" or rest == "":
+            raise Exception("Bad URL.")
 
-    URL_FIELD_NAME = u"preview_source_url"
-    (base_url, rest) = url.split("u?")
-    if base_url == "" or rest == "":
-        return r500("Bad URL.")
+        p = rest.split(",")
+        if len(p) != 2:
+            raise Exception("Bad URL.")
 
-    p = rest.split(",")
-    if len(p) != 2:
-        return r500("Bad URL.")
+        thumb_url = "%scgi-bin/thumbnail.exe?CISOROOT=%s&amp;CISOPTR=%s" % (base_url, p[0], p[1])
+        data[URL_FIELD_NAME] = thumb_url
+        return json.dumps(data)
+        
+    except Exception as e:
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return e.message
 
-    thumb_url = "%scgi-bin/thumbnail.exe?CISOROOT=%s&amp;CISOPTR=%s" % (base_url, p[0], p[1])
-    data[URL_FIELD_NAME] = thumb_url
-    return json.dumps(data)
+
 
 
 
