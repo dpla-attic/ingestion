@@ -598,8 +598,6 @@ def test_identify_preview_location_bad_url():
         INPUT[u"source"] = bad_url
         url = server() + "identify_preview_location"
         resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        print resp.status
-        print bad_url
         assert resp.status == 500
 
 if __name__ == "__main__":
