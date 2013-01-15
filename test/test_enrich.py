@@ -566,5 +566,41 @@ def test_identify_preview_location_bad_url():
         resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
         assert resp.status == 500
 
+def test_identify_preview_location_bad_json():
+    """
+    Should get 500 from akara for:
+        - bad json
+        - missing the 'source' field
+    """
+    INPUT = [ "{...}", "{'aaa':'bbb'}", "xxx" ]
+    for i in INPUT:
+        url = server() + "identify_preview_location"
+        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
+        assert resp.status == 500
+
+def test_identify_preview_location_bad_url():
+    """
+    Should get 500 from akara for bad url.
+    """
+    bad_urls = [ "http://repository.clemson.edu/uscp104",
+        "http://repository.clemson.edu/s?/scp,104",
+        "http://repository.clemson.edu/u/scp,104",
+        "http://repository.clemson.edu/u?/scp104",
+        "http://repository.clemson.edu/u?/scp",
+        "http://repository.clemson.edu/",
+            ]
+    INPUT = {
+            u"something" : "x",
+            u"somethink" : "y",
+            u"source" : ""
+    }
+    for bad_url in bad_urls:
+        INPUT[u"source"] = bad_url
+        url = server() + "identify_preview_location"
+        resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+        print resp.status
+        print bad_url
+        assert resp.status == 500
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
