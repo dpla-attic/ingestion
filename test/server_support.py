@@ -66,6 +66,9 @@ class Akara:
   MaxRequestsPerServer = 5
 
 MODULES = ["dplaingestion.akamod.enrich",
+           "dplaingestion.akamod.enrich-subject",
+           "dplaingestion.akamod.enrich-type",
+           "dplaingestion.akamod.enrich-format",
            "dplaingestion.akamod.shred",
            "dplaingestion.akamod.select-id",
            "dplaingestion.akamod.oai-to-dpla",

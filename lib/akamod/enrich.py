@@ -17,7 +17,7 @@ COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
 # Set id to value of the first identifier, disambiguated w source. Not sure if
 # an OAI handle is guaranteed or on what scale it's unique.
 # FIXME it's looking like an id builder needs to be part of the profile. Or UUID as fallback?
-COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'id','no-id').strip())
+COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'id','no-id').strip().replace(" ","__"))
 
 COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
 

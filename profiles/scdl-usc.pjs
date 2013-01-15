@@ -1,13 +1,15 @@
 {
     "type": "oai",
     "enrichments_coll": [
-        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe"
+        "http://localhost:8872/oai-set-name?sets_service=http://localhost:8872/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe"
     ], 
     "name": "scdl-usc", 
     "enrichments_rec": [
-        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
-        "http://localhost:8889/shred?prop=subject.coverage&delim=%3b", 
-        "http://localhost:8889/oai-to-dpla"
+        "http://localhost:8872/oai-to-dpla", 
+        "http://localhost:8872/shred?prop=subject%2Ctype&delim=%3b", 
+        "http://localhost:8872/enrich-subject", 
+        "http://localhost:8872/enrich-type", 
+        "http://localhost:8872/enrich-format"
     ], 
     "subresources": [
         "access", 
@@ -129,10 +131,11 @@
         "blaeu", 
         "simms1"
     ], 
-    "last_checked": "2012-11-22T11:29:52.900515", 
+    "last_checked": "2013-01-13T21:23:26.720459", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-usc", 
         "name": "South Carolina Digital Library - University of South Carolina"
     }, 
-    "endpoint_URL": "http://localhost:8889/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "http://localhost:8872/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
 }
+

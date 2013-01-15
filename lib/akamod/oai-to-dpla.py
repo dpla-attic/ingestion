@@ -147,6 +147,7 @@ def source_transform(d):
             break
     return {"source":source}
 
+
 def subject_transform(d):
     subject = []
     for s in (d["subject"] if not isinstance(d["subject"],basestring) else [d["subject"]]):
@@ -172,7 +173,7 @@ TRANSFORMER = {
     "rights"           : lambda d: {"rights": d.get("rights",None)},
     "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
     "id"               : lambda d: {"id": d.get("id",None), "@id" : "http://dp.la/api/items/"+d.get("id","")},
-    "subject"          : subject_transform,
+    "subject"          : lambda d: {"subject": d.get("subject",None)},
     "handle"           : source_transform,
     "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
     "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)}

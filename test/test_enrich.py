@@ -73,6 +73,22 @@ def test_shred4():
 
     assert json.loads(content) == EXPECTED
 
+def test_shred5():
+    "Shredding multiple keys"
+    INPUT = {
+        "p": "a,b,c",
+        "q": "d,e,f"
+    }
+    EXPECTED = {
+        "p": ["a","b","c"],
+        "q": ["d","e","f"]
+    }
+    url = server() + "shred?prop=p,q"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    assert str(resp.status).startswith("2")
+
+    assert json.loads(content) == EXPECTED
+
 def test_unshred1():
     "Valid unshredding"
 
@@ -102,48 +118,6 @@ def test_unshred2():
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
-
-def test_oaitodpla_subject_single():
-    "Correctly map a single subject"
-    INPUT = {
-        "subject" : "Dolls -- Ceramic"
-    }
-    EXPECTED = {
-        u'subject' : [{
-            u'name' : u'Dolls -- Ceramic'
-        }]
-    }
-
-    url = server() + "oai-to-dpla"
-
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-    assert str(resp.status).startswith("2")
-
-    result = json.loads(content)
-    assert result['subject'] == EXPECTED['subject']
-
-def test_oaitodpla_subject_multiple():
-    "Correctly map a single subject"
-    INPUT = {
-        "subject" : ["Dolls -- Ceramic", "Dolls -- Plastic"]
-    }
-    EXPECTED = {
-        u'subject' : [{
-            u'name' : u'Dolls -- Ceramic'
-        },
-        {
-            u'name' : u'Dolls -- Plastic'
-        }
-        ]
-    }
-
-    url = server() + "oai-to-dpla"
-
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-    assert str(resp.status).startswith("2")
-
-    result = json.loads(content)
-    assert result['subject'] == EXPECTED['subject']
 
 def test_oaitodpla_date_single():
     "Correctly transform a single date value"
@@ -352,6 +326,114 @@ def test_oaitodpla_date_pull_from_coverage_field():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+def test_enrich_multiple_subject_reformat_to_dict():
+    "Transform an array of strings of subjects to an array of dictionaries"
+    INPUT = {
+        "subject" : ["Cats","Dogs","Mice"]
+        }
+    EXPECTED = {
+        u'subject' : [
+            {u'name' : u'Cats'},
+            {u'name' : u'Dogs'},
+            {u'name' : u'Mice'}
+            ]
+        }
+
+    url = server() + "enrich-subject"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['subject'] == EXPECTED['subject']
+
+def test_enrich_single_subject_reformat_to_dict():
+    "Transform a subjects string to an array of dictionaries"
+    INPUT = {
+        "subject" : "Cats"
+        }
+    EXPECTED = {
+        u'subject' : [
+            {u'name' : u'Cats'}
+            ]
+        }
+
+    url = server() + "enrich-subject"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['subject'] == EXPECTED['subject']
+
+def test_enrich_subject_cleanup():
+    "Test spacing correction on '--' and remove of trailing periods"
+    INPUT = {
+        "subject" : ["Cats","Dogs -- Mean","Mice."]
+        }
+    EXPECTED = {
+        u'subject' : [
+            {u'name' : u'Cats'},
+            {u'name' : u'Dogs--Mean'},
+            {u'name' : u'Mice'}
+            ]
+        }
+
+    url = server() + "enrich-subject"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['subject'] == EXPECTED['subject']
+
+def test_enrich_type_cleanup():
+    "Test type normalization"
+    INPUT = {
+        "type" : ["Still Images","Text"]
+        }
+    EXPECTED = {
+        u'type' : [ "image", "text" ]
+        }
+
+    url = server() + "enrich-type"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['type'] == EXPECTED['type']
+    
+def test_enrich_format_cleanup():
+    "Test format normalization and removal of non IMT formats"
+    INPUT = {
+        "format" : ["Still Images","image/JPEG","audio","Images"]
+        }
+    EXPECTED = {
+        u'format' : [ "image/jpeg", "audio" ],
+        u'TBD_physicalformat' : ["Still Images", "Images"]
+        }
+
+    url = server() + "enrich-format"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['format'] == EXPECTED['format']
+    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
+    
+def test_enrich_format_cleanup():
+    "Test format normalization and removal of non IMT formats with one format"
+    INPUT = {
+        "format" : "image/JPEG"
+        }
+    EXPECTED = {
+        u'format' : "image/jpeg"
+        }
+
+    url = server() + "enrich-format"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['format'] == EXPECTED['format']
+    assert not 'TBD_physicalformat' in result.keys()
 
 
 if __name__ == "__main__":
