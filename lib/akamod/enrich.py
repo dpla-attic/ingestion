@@ -35,6 +35,7 @@ def pipe(content,ctype,enrichments,wsgi_header):
         if len(uri) < 1: continue # in case there's no pipeline
         headers = copy_headers_to_dict(request.environ,exclude=[wsgi_header])
         headers['content-type'] = ctype
+        logger.debug("Calling url: %s " % uri)
         resp, cont = H.request(uri,'POST',body=body,headers=headers)
         if not str(resp.status).startswith('2'):
             logger.debug("Error in enrichment pipeline at %s: %s"%(uri,repr(resp)))
