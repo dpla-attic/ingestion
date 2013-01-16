@@ -26,6 +26,25 @@ def pinfo(*data):
     for d in data:
         print d
 
+def assert_same_jsons(this, that):
+    """
+    Checks if the dictionaries are the same.
+    It compares the keys and values.
+    Prints diff if they are not exact and throws exception.
+    """
+    d = DictDiffer(this, that)
+
+    if not d.same():
+        d.print_diff()
+        assert this == that
+
+def pinfo(*data):
+    """
+    Prints all the params in separate lines.
+    """
+    for d in data:
+        print d
+
 
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
@@ -548,17 +567,11 @@ def test_identify_preview_location_bad_url():
     """
     Should get 500 from akara for bad url.
     """
-    bad_urls = [ "http://repository.clemson.edu/uscp104",
-        "http://repository.clemson.edu/s?/scp,104",
-        "http://repository.clemson.edu/u/scp,104",
-        "http://repository.clemson.edu/u?/scp104",
-        "http://repository.clemson.edu/u?/scp",
-        "http://repository.clemson.edu/",
             ]
     INPUT = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : ""
+            u"something" : u"x",
+            u"somethink" : u"y",
+            u"source" : u""
     }
     for bad_url in bad_urls:
         INPUT[u"source"] = bad_url
