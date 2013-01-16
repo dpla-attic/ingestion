@@ -52,6 +52,10 @@ def identify_preview_location(body, ctype):
     return json.dumps(data)
         
 
+    if not data.has_key("source"):
+        logger.error("There is no 'source' key in JSON")
+        return body
+
     url = data['source']
     logger.debug("source = " + url)
     URL_FIELD_NAME = u"preview_source_url"
