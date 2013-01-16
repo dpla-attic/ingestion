@@ -1,4 +1,4 @@
-
+import json
 
 class DictDiffer:
     """
@@ -6,8 +6,17 @@ class DictDiffer:
     """
 
     def __init__(self, first, second):
-        self.first = first
-        self.second = second
+
+        if isinstance(first, str):
+            self.first = json.loads(first)
+        else:
+            self.first = first
+
+        if isinstance(second, str):
+            self.second = json.loads(second)
+        else:
+            self.second = second
+
         self._diff = self._generate_diff()
         print self._diff
 

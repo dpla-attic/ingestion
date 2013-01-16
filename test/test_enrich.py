@@ -457,27 +457,45 @@ def test_identify_preview_location():
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
-    d = DictDiffer(EXPECTED, result)
+
+    assert_same_jsons(EXPECTED, result)
+
+def assert_same_jsons(this, that):
+    """
+    Checks if the dictionaries are the same.
+    It compares the keys and values.
+    Prints diff if they are not exact and throws exception.
+    """
+    d = DictDiffer(this, that)
 
     if not d.same():
         d.print_diff()
-        assert result == EXPECTED
+        assert this == that
+
 
 def test_identify_preview_location_bad_json():
     """
-    Should get 500 from akara for:
-        - bad json
-        - missing the 'source' field
+    Should get 500 from akara for bad json.
     """
-    INPUT = [ "{...}", "{'aaa':'bbb'}", "xxx" ]
+    INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
     for i in INPUT:
         url = server() + "identify_preview_location"
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
+def test_identify_preview_location_missing_source_field():
+    """
+    Should return original JSON if the 'source' field is missing.
+    """
+    INPUT = [ "{'aaa':'bbb'}" ]
+    for i in INPUT:
+        url = server() + "identify_preview_location"
+        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
+        assert_same_jsons(INPUT, content)
+
 def test_identify_preview_location_bad_url():
     """
-    Should get 500 from akara for bad url.
+    Should return original JSON for bad URL.
     """
     bad_urls = [ "http://repository.clemson.edu/uscp104",
         "http://repository.clemson.edu/s?/scp,104",
@@ -494,8 +512,9 @@ def test_identify_preview_location_bad_url():
     for bad_url in bad_urls:
         INPUT[u"source"] = bad_url
         url = server() + "identify_preview_location"
+        print url
         resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        assert resp.status == 500
+        assert_same_jsons(INPUT, content)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
