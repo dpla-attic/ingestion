@@ -6,6 +6,25 @@ import os
 from amara.thirdparty import json
 from dict_differ import DictDiffer
 
+def assert_same_jsons(this, that):
+    """
+    Checks if the dictionaries are the same.
+    It compares the keys and values.
+    Prints diff if they are not exact and throws exception.
+    """
+    d = DictDiffer(this, that)
+
+    if not d.same():
+        d.print_diff()
+        assert this == that
+
+def pinfo(*data):
+    """
+    Prints all the params in separate lines.
+    """
+    for d in data:
+        print d
+
 
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
@@ -451,26 +470,15 @@ def test_identify_preview_location():
             u"something" : "x",
             u"somethink" : "y",
             u"source" : "http://repository.clemson.edu/u?/scp,104",
-            u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&amp;CISOPTR=104"
+            u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&CISOPTR=104"
     }
     url = server() + "identify_preview_location"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+
     assert str(resp.status).startswith("2")
     result = json.loads(content)
 
     assert_same_jsons(EXPECTED, result)
-
-def assert_same_jsons(this, that):
-    """
-    Checks if the dictionaries are the same.
-    It compares the keys and values.
-    Prints diff if they are not exact and throws exception.
-    """
-    d = DictDiffer(this, that)
-
-    if not d.same():
-        d.print_diff()
-        assert this == that
 
 
 def test_identify_preview_location_bad_json():
@@ -487,27 +495,29 @@ def test_identify_preview_location_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
     """
-    INPUT = [ "{'aaa':'bbb'}" ]
-    for i in INPUT:
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
-        assert_same_jsons(INPUT, content)
+    INPUT = '{"aaa":"bbb"}'
+    url = server() + "identify_preview_location"
+    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+
+    pinfo(url,resp,content)
+
+    assert_same_jsons(INPUT, content)
 
 def test_identify_preview_location_bad_url():
     """
     Should return original JSON for bad URL.
     """
-    bad_urls = [ "http://repository.clemson.edu/uscp104",
-        "http://repository.clemson.edu/s?/scp,104",
-        "http://repository.clemson.edu/u/scp,104",
-        "http://repository.clemson.edu/u?/scp104",
-        "http://repository.clemson.edu/u?/scp",
-        "http://repository.clemson.edu/",
+    bad_urls = [ u"http://repository.clemson.edu/uscp104",
+        u"http://repository.clemson.edu/s?/scp,104",
+        u"http://repository.clemson.edu/u/scp,104",
+        u"http://repository.clemson.edu/u?/scp104",
+        u"http://repository.clemson.edu/u?/scp",
+        u"http://repository.clemson.edu/",
             ]
     INPUT = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : ""
+            u"something" : u"x",
+            u"somethink" : u"y",
+            u"source" : u""
     }
     for bad_url in bad_urls:
         INPUT[u"source"] = bad_url
