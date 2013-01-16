@@ -5,9 +5,6 @@
 
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
-import logger
-import logger.handlers
-import logger.config
 from StringIO import StringIO
 import pprint
 import sys
@@ -153,7 +150,10 @@ def download_image(url, id, file_number=1):
     logger.debug("File downloaded")
     return fname
 
-@simple_service('POST', 'http://purl.org/la/dp/indentify_preview_location', 'download_preview', 'application/json')
+class DownloadPreviewException(Exception):
+    pass
+
+@simple_service('POST', 'http://purl.org/la/dp/download_preview', 'download_preview', 'application/json')
 def download_preview(body, ctype):
     """
     Responsible for downloading thumbnail.
@@ -169,10 +169,11 @@ def download_preview(body, ctype):
             doc = update_document(document, filepath)
             return json.dumps(doc)
         else:
-            raise Exception("Cannot save thumbnail.")
+            raise DownloadPreviewException("Cannot save thumbnail.")
     except Exception as e:
+        logger.error(e.args)
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return e.message
+        return e.args[0] #This is message, however calling e.message is deprecated.
 
     
