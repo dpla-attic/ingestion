@@ -437,6 +437,7 @@ def test_enrich_format_cleanup():
     assert result['format'] == EXPECTED['format']
     assert not 'TBD_physicalformat' in result.keys()
 
+
 def test_identify_preview_location():
     """
     Should add a thumbnail URL made of the source URL.
