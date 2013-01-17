@@ -4,7 +4,7 @@ from server_support import server
 from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
-from dict_differ import DictDiffer
+from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
 def assert_same_jsons(this, that):
@@ -26,24 +26,6 @@ def pinfo(*data):
     for d in data:
         print d
 
-def assert_same_jsons(this, that):
-    """
-    Checks if the dictionaries are the same.
-    It compares the keys and values.
-    Prints diff if they are not exact and throws exception.
-    """
-    d = DictDiffer(this, that)
-
-    if not d.same():
-        d.print_diff()
-        assert this == that
-
-def pinfo(*data):
-    """
-    Prints all the params in separate lines.
-    """
-    for d in data:
-        print d
 
 
 CT_JSON = {"Content-Type": "application/json"}
@@ -51,8 +33,6 @@ HEADERS = {
             "Content-Type": "application/json",
             "Context": "{}",
           }
-
-
 
 H = httplib2.Http()
 

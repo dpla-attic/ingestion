@@ -1,5 +1,24 @@
 import json
 
+def pinfo(*data):
+    """
+    Prints all the params in separate lines.
+    """
+    for d in data:
+        print d
+
+def assert_same_jsons(this, that):
+    """
+    Checks if the dictionaries are the same.
+    It compares the keys and values.
+    Prints diff if they are not exact and throws exception.
+    """
+    d = DictDiffer(this, that)
+
+    if not d.same():
+        d.print_diff()
+        assert this == that
+
 class DictDiffer:
     """
     Class for creating nicely looking dictionary diffs.
