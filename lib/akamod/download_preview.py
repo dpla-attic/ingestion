@@ -6,6 +6,7 @@
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
 from StringIO import StringIO
+from akara import module_config
 import pprint
 import sys
 import re
@@ -24,22 +25,25 @@ URL_FIELD_NAME = u"preview_source_url"
 # Used for storing the path to the local filename.
 URL_FILE_PATH = u"preview_file_path"
 
+THUMBS_ROOT_PATH = module_config().get('thumbs_root_path')
+
+
 def update_document(document, filepath):
     """
-    updates the document setting a filepath to a proper variable.
+    Updates the document setting a filepath to a proper variable.
 
-    arguments:
+    Arguments:
         document object - document for updating (decoded by json module)
         filepath string - filepath to insert
 
-    returns:
+    Returns:
         the document from parameter with additional field containing the filepath.
     """
     document[URL_FILE_PATH] = filepath
     return document
 
 
-def generate_file_path(id, file_number, file_extension):
+def generate_file_path(id, file_extension):
     """
     Generates and returns the file path based in provided params.
 
@@ -56,7 +60,6 @@ def generate_file_path(id, file_number, file_extension):
 
     Arguments:
         id             - document id from couchdb  
-        file_number    - the number of the file added just before the extension
         file_extension - extension of the file
 
     Returns:
@@ -65,23 +68,23 @@ def generate_file_path(id, file_number, file_extension):
 
     Example:
         Function call:
-            generate_file_path('clemsontest--hcc001-hcc016', 1, "jpg")
+            generate_file_path('clemsontest--hcc001-hcc016', ".jpg")
 
         Generated values for the algorithm steps:
 
         CLEARED_ID: clemsontest__hcc001_hcc016
-        FILE_NAME:  clemsontest__hcc001_hcc016_1.jpg
+        FILE_NAME:  clemsontest__hcc001_hcc016.jpg
         HASHED_ID:  8E393B3B5DA0E0B3A7AEBFB91FE1278A
         PATH:       8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/
-        FULL_NAME:  /tmp/szymon/main_pic_dir/8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/clemsontest__hcc001_hcc016_1.jpg
+        FULL_NAME:  /tmp/szymon/main_pic_dir/8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/clemsontest__hcc001_hcc016.jpg
     """
 
-    logger.debug("Generating filename for document")
+    logger.debug("Generating filename for document with id: [%s].", id)
 
     cleared_id = re.sub(r'[-]', '_', id)
     logger.debug("Cleared id: " + cleared_id)
     
-    fname = "%s_%s.%s" % (cleared_id, file_number, file_extension)
+    fname = "%s%s" % (cleared_id, file_extension)
     logger.debug("File name:  " + fname)
     
     md5sum = hashlib.md5(id).hexdigest().upper()
@@ -97,43 +100,81 @@ def generate_file_path(id, file_number, file_extension):
     return (path, full_fname)
 
 
-def download_image(url, id, file_number=1):
+class FileExtensionException(Exception):
+    pass
+
+
+def find_file_extension(conn):
+    """
+    Finds out the file extension based on the MIME type from the opened connection.
+
+    Arguments:
+        conn - opened connection to a resource
+
+    Returns:
+        file extension (String) - extension for the file - WITH DOT AT THE BEGINNING!!
+
+    Throws:
+        throws exception if it cannot find the extension
+    """
+    import mimetypes as m
+    header = conn.headers['content-type']
+    possible_extensions = m.guess_all_extensions(header)
+    if possible_extensions:
+        ext = ""
+        if ".jpg" in possible_extensions: # as the default extension for 'image/jpeg' mimetype
+            ext = ".jpg"
+        else:
+            ext = possible_extensions[0]
+        logger.debug("Trying to find out extension for header [%s], found %s." % (header, possible_extensions))
+        logger.debug("Chose %s." % ext)
+        return ext
+    else:
+        msg = "Cannot find extension for mime type: [%s]." % header
+        logger.error(msg)
+        raise FileExtensionException(msg)
+
+
+def download_image(url, id):
     """
     Downloads the thumbnail from the given url and stores it on disk.
 
     Current implementation stores the file on disk
 
-    Params:
+    Arguments:
         url         - the url of the file for downloading
         id          - document id, used for the file name generation
-        file_number - number of the file for this document
 
     Returns:
         Name of the file where the image was stored - if everything is OK
         False       - otherwise
     """
-
-    # Get the thumbnail extension from the URL, needed for storing the 
-    # file on disk with proper extension.
-    fileName, fileExtension = os.path.splitext(url)
-    file_extension = fileExtension[1:]
-
-    # Get the directory path and file path for storing the image.
-    (path, fname) = generate_file_path(id, file_number, file_extension)
     
-    # Let's create the directory for storing the file name.
-    if not os.path.exists(path):
-        logger.info("Creating directory: " + path)
-        os.makedirs(path)
-    else:
-        logger.debug("Path exists")
-
     # Open connection to the image using provided URL.
     conn = urllib.urlopen(url)
     if not conn.getcode() / 100 == 2:
         msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
         logger.error(msg)
         return False
+
+    # Get the thumbnail extension from the URL, needed for storing the 
+    # file on disk with proper extension.
+    file_extension = ""
+    try:
+        file_extension = find_file_extension(conn)
+    except FileExtensionException as e:
+        logger.error("Couldn't find file extension.")
+        return False
+    
+    # Get the directory path and file path for storing the image.
+    (path, fname) = generate_file_path(id, file_extension)
+    
+    # Let's create the directory for storing the file name.
+    if not os.path.exists(path):
+        logger.info("Creating directory: " + path)
+        os.makedirs(path)
+    else:
+        logger.debug("Path [%s] exists." % path)
 
     # Download the image.
     try:
@@ -147,11 +188,13 @@ def download_image(url, id, file_number=1):
     else:
         conn.close()
         local_file.close()
-    logger.debug("File downloaded")
+    logger.debug("Downloaded file from [%s] to [%s].")
     return fname
+
 
 class DownloadPreviewException(Exception):
     pass
+
 
 @simple_service('POST', 'http://purl.org/la/dp/download_preview', 'download_preview', 'application/json')
 def download_preview(body, ctype):
@@ -159,21 +202,35 @@ def download_preview(body, ctype):
     Responsible for downloading thumbnail.
     """
 
+    data = {}
     try:
         data = json.loads(body)
-        url = data[URL_FIELD_NAME]
-        id = data[u'id']
-        filepath = download_image(url, id)
-        if filepath: 
-            # so everything is OK and the file is on disk
-            doc = update_document(document, filepath)
-            return json.dumps(doc)
-        else:
-            raise DownloadPreviewException("Cannot save thumbnail.")
     except Exception as e:
-        logger.error(e.args)
+        msg = "Bad JSON: " + e.args[0]
+        logger.error(msg)
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return e.args[0] #This is message, however calling e.message is deprecated.
+        return msg
+
+    if not data.has_key(URL_FIELD_NAME):
+        logger.error("There is no '%s' key in JSON." % URL_FIELD_NAME)
+        return body
+
+    url = data[URL_FIELD_NAME]
+    
+    if not data.has_key(u'id'):
+        logger.error("There is no '%s' key in JSON." % 'id')
+        return body
+
+    id = data[u'id']
+    filepath = download_image(url, id)
+
+    if filepath: 
+        # so everything is OK and the file is on disk
+        doc = update_document(data, filepath)
+        return json.dumps(doc)
+    else:
+        logger.error("Cannot save thumbnail from: %s." % (url))
+        return body
 
     
