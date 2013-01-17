@@ -20,6 +20,10 @@ URL_FIELD_NAME = u"preview_source_url"
 # Used for storing the path to the local filename.
 URL_FILE_PATH = u"preview_file_path"
 
+GOOD_DATA = { "id"="clemson--cfb004",
+        URL_FILE_PATH:"http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1040"
+}
+
 def test_download_preview_bad_json():
     """
     Should get 500 from akara for bad json.
@@ -49,6 +53,17 @@ def test_download_preview_without_thumbnail_url_field():
     INPUT = '{"aaa":"bbb", "id":"abc"}'
     url = server() + "download_preview"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+    assert resp.status == 200
+    assert_same_jsons(INPUT, content)
+
+def test_download_preview_with_bad_url():
+    """
+    Should get 200 from akara and input JSON when there is bad thumbnail URL.
+    """
+    INPUT = '{"aaa":"bbb", "id":"abc", "%s":"aaa"}' % URL_FIELD_NAME
+    url = server() + "download_preview"
+    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+    pinfo(INPUT, url,resp,content)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
