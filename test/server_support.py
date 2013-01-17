@@ -208,3 +208,14 @@ def httplib_server():
         port = 80
     conn = httplib.HTTPConnection(host, port, strict=True)
     return conn
+
+def print_error_log():
+    """
+    Prints the Akara's error log. Is useful when running `nodetests --verbose`.
+    """
+    print "ERROR LOG\n"
+    print os.path.join(config_root, 'logs', 'error.log')
+    with open(os.path.join(config_root, 'logs', 'error.log'), "r") as errfile:
+        for line in errfile:
+            sys.stdout.write(line)
+    print "END OF ERROR LOG\n"
