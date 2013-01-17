@@ -51,6 +51,7 @@ def create_server_dir(port):
     
     config_root = tempfile.mkdtemp(prefix="akara_test_")
     config_filename = os.path.join(config_root, "akara_test.config")
+    thumbs_root_path= os.path.join(config_root, "thumbs_root_path")
 
     f = open(config_filename, "w")
     f.write("""
@@ -83,12 +84,16 @@ MODULES = [
     "dplaingestion.akamod.download_preview",
     ]
 
+class download_preview:
+    thumbs_root_path = '%(thumbs_root_path)s'
 """ % dict(config_root = config_root,
            port = port,
+           thumbs_root_path=thumbs_root_path
            ))
     f.close()
 
     os.mkdir(os.path.join(config_root, "logs"))
+    os.mkdir(os.path.join(config_root, "thumbs_root_path"))
 
 #FIXME: add back config for:
 #[collection]
