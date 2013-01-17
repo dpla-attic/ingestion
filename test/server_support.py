@@ -43,15 +43,18 @@ config_root = None
 config_filename = None
 server_pid = None
 server_did_not_start = False
+thumbs_root = None
 
 # Create a temporary directory structure for Akara.
 # Needs a configuration .ini file and the logs subdirectory.
 def create_server_dir(port):
-    global config_root, config_filename
+    global config_root, config_filename, thumbs_root
     
     config_root = tempfile.mkdtemp(prefix="akara_test_")
     config_filename = os.path.join(config_root, "akara_test.config")
-    thumbs_root_path= os.path.join(config_root, "thumbs_root_path")
+    thumbs_root=os.path.join(config_root, "thumbs_root")
+
+    print thumbs_root
 
     f = open(config_filename, "w")
     f.write("""
@@ -85,15 +88,17 @@ MODULES = [
     ]
 
 class download_preview:
-    thumbs_root_path = '%(thumbs_root_path)s'
+    thumbs_root_path = '%(thumbs_root)s'
 """ % dict(config_root = config_root,
            port = port,
-           thumbs_root_path=thumbs_root_path
+           thumbs_root=thumbs_root
            ))
     f.close()
 
     os.mkdir(os.path.join(config_root, "logs"))
-    os.mkdir(os.path.join(config_root, "thumbs_root_path"))
+    os.mkdir(thumbs_root)
+
+    print thumbs_root
 
 #FIXME: add back config for:
 #[collection]
@@ -224,3 +229,15 @@ def print_error_log():
         for line in errfile:
             sys.stdout.write(line)
     print "END OF ERROR LOG\n"
+
+def get_thumbs_root():
+    """
+    Function returns thumbs_root variable.
+
+    This is just a small workaround, as I need ot have the value of thumbs_root in
+    one of the tests. However simple importing the variable in the test file gets
+    None value all the time, as it is copied at the moment of importing.
+
+    This function solves the problem.
+    """
+    return thumbs_root
