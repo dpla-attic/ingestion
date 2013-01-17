@@ -151,7 +151,12 @@ def download_image(url, id):
     """
     
     # Open connection to the image using provided URL.
-    conn = urllib.urlopen(url)
+    try:
+        conn = urllib.urlopen(url)
+    except IOError as e:
+        logger.error("Cannot open url [%s] for downloading thumbnail." % url)
+        return False
+
     if not conn.getcode() / 100 == 2:
         msg = "Got %s from url: [%s] for document: [%s]" % (conn.getcode(), url, id)
         logger.error(msg)
