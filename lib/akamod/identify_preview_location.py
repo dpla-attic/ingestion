@@ -14,9 +14,11 @@ def identify_preview_location(body, ctype):
     try:
         data = json.loads(body)
     except Exception as e:
+        msg = "Bad JSON: " + e.args[0]
+        logger.error(msg)
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return e.message
+        return msg
 
     if not data.has_key(u"source"):
         logger.error("There is no 'source' key in JSON.")
