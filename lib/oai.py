@@ -91,7 +91,7 @@ class oaiservice(object):
         sets = []
 
         def receive_nodes(n):
-		sets.append(dict([('setSpec', n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)), ('setName', n.xml_select(u'string(o:setName)', prefixes=PREFIXES)), ('setDescription', n.xml_select(u'string(o:setDescription)', prefixes=PREFIXES))]))
+            sets.append(dict([('setSpec', n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)), ('setName', n.xml_select(u'string(o:setName)', prefixes=PREFIXES)), ('setDescription', n.xml_select(u'string(o:setDescription)', prefixes=PREFIXES))]))
         pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
         return sets
 

@@ -125,10 +125,18 @@ def enrich(body,ctype):
         record['original_record'] = record.copy()         
 
         # Add collection information
-        record[u'collection'] = {
-            '@id' : at_id,
-            'name' : enriched_collection.get('title',"")
-        }
+        if enriched_collection.get('description',""):
+            record[u'collection'] = {
+                '@id' : at_id,
+                'name' : enriched_collection.get('title',""),
+                'description' : enriched_collection.get('description',"")
+            }
+        else:
+            record[u'collection'] = {
+                '@id' : at_id,
+                'name' : enriched_collection.get('title',"")
+            }
+
 
         record[u'id'] = COUCH_REC_ID_BUILDER(source_name,record)
         record[u'ingestType'] = 'item'
