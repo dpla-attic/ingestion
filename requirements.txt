@@ -8,3 +8,4 @@ python-dateutil
 timelib
 simplejson
 six
+CouchDB
