@@ -193,6 +193,7 @@ def download_image(url, id):
     else:
         conn.close()
         local_file.close()
+
     logger.debug("Downloaded file from [%s] to [%s].")
     return fname
 
