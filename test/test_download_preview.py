@@ -81,7 +81,7 @@ def test_download_preview():
         path = get_thumbs_root()
         for i in xrange(0,32,2):
             path = os.path.join(path, md5[i:i+2])
-        path = os.path.join(path, id+".jpg")
+        path = os.path.join(path, id+".jpeg")
         return path
     
     INPUT = json.dumps(GOOD_DATA)
