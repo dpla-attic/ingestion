@@ -22,7 +22,7 @@ URL_FIELD_NAME = u"preview_source_url"
 URL_FILE_PATH = u"preview_file_path"
 
 THUMBS_ROOT_PATH = module_config().get('thumbs_root_path')
-
+MIME_TYPES = module_config().get('mime_to_type')
 
 def update_document(document, filepath):
     """
@@ -104,6 +104,8 @@ def find_file_extension(conn):
     """
     Finds out the file extension based on the MIME type from the opened connection.
 
+    Function is using the configuration field 'mime_to_type' stored at akara.conf.
+
     Arguments:
         conn - opened connection to a resource
 
@@ -113,28 +115,18 @@ def find_file_extension(conn):
     Throws:
         throws exception if it cannot find the extension
     """
-    import mimetypes as m
-
     # The content type from HTTP headers.
     header = conn.headers['content-type']
 
-    # Get all possible extensions for this MIME type.
-    possible_extensions = m.guess_all_extensions(header)
-    
-    if possible_extensions:
-        ext = ""
-        if ".jpg" in possible_extensions: # as the default extension for 'image/jpeg' mimetype is ".jpe"
-            ext = ".jpg"
-        else:
-            ext = possible_extensions[0]
-        logger.debug("Trying to find out extension for header [%s], found %s." % (header, possible_extensions))
-        logger.debug("Chose %s." % ext)
+    if header in MIME_TYPES:
+        ext = MIME_TYPES[header]
+        logger.debug("MIME type is [%s], returning extension [%s]" % (header, ext))
         return ext
     else:
         msg = "Cannot find extension for mime type: [%s]." % header
         logger.error(msg)
         raise FileExtensionException(msg)
-
+    
 
 def download_image(url, id):
     """
