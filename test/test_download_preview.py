@@ -95,5 +95,5 @@ def test_download_preview():
     assert resp.status == 200
     assert_same_jsons(EXPECTED_OUTPUT, content)
 
-if __name == "__main__":
+if __name__ == "__main__":
     raise SystemExit("Use nosetest")
