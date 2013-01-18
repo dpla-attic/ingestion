@@ -1,5 +1,5 @@
 import sys
-from server_support import server
+from server_support import server, print_error_log, get_thumbs_root
 
 from amara.thirdparty import httplib2
 import os
@@ -20,9 +20,6 @@ URL_FIELD_NAME = u"preview_source_url"
 # Used for storing the path to the local filename.
 URL_FILE_PATH = u"preview_file_path"
 
-GOOD_DATA = { "id"="clemson--cfb004",
-        URL_FILE_PATH:"http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1040"
-}
 
 def test_download_preview_bad_json():
     """
@@ -63,17 +60,40 @@ def test_download_preview_with_bad_url():
     INPUT = '{"aaa":"bbb", "id":"abc", "%s":"aaa"}' % URL_FIELD_NAME
     url = server() + "download_preview"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
-    pinfo(INPUT, url,resp,content)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
-def test_download_preview_with_bad_url():
+def test_download_preview():
     """
     Should get 200 from akara and input JSON when there is bad thumbnail URL.
     """
-    INPUT = '{"aaa":"bbb", "id":"abc", "%s":"aaa"}' % URL_FIELD_NAME
+    GOOD_DATA = { "id":"clemson--cfb004",
+        URL_FIELD_NAME:"http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1040"
+    }
+
     url = server() + "download_preview"
+
+    def get_file_path():
+        global thumbs_root
+        id = 'clemson__cfb004'
+        md5 = '84BA8BC32C4316A96FDC89F51BEB427D'
+        pinfo(get_thumbs_root())
+        path = get_thumbs_root()
+        for i in xrange(0,32,2):
+            path = os.path.join(path, md5[i:i+2])
+        path = os.path.join(path, id+".jpg")
+        return path
+    
+    INPUT = json.dumps(GOOD_DATA)
+    GOOD_DATA[URL_FILE_PATH] = get_file_path()
+    EXPECTED_OUTPUT = json.dumps(GOOD_DATA)
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
-    pinfo(INPUT, url,resp,content)
+    
+    pinfo(INPUT,EXPECTED_OUTPUT, url,resp,content)
+    print_error_log()
+
     assert resp.status == 200
-    assert_same_jsons(INPUT, content)
+    assert_same_jsons(EXPECTED_OUTPUT, content)
+
+if __name == "__main__":
+    raise SystemExit("Use nosetest")
