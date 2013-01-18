@@ -13,7 +13,7 @@ AKARA_RECORDS = AKARA_BASE + "oai.listrecords.json?endpoint="
 
 def build_profile(endpoint_URL):
 
-    H = httplib2.Http('/tmp/szymon/.pollcache')
+    H = httplib2.Http('/tmp/.pollcache')
     H.force_exception_as_status_code = True          
     resp, content = H.request(AKARA_SETS + endpoint_URL)
     if not resp[u'status'].startswith('2'):
