@@ -49,7 +49,7 @@ class DictDiffer:
             if not self.second.has_key(k):
                 diff[k] = (self.first[k], "KEY NOT FOUND")
             elif self.first[k] != self.second[k]:
-                diff[k] = (self.first[k], self.second[k])
+                diff[k] = ("DIFFERENT VALUES", self.first[k], self.second[k])
         for k in self.second.keys():         
             if not self.first.has_key(k):
                 diff[k] = (self.second[k], "KEY NOT FOUND")                
@@ -78,4 +78,3 @@ class DictDiffer:
         import pprint
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint( self._diff )
-        print "aaaa"
