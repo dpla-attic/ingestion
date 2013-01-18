@@ -89,6 +89,15 @@ MODULES = [
 
 class download_preview:
     thumbs_root_path = '%(thumbs_root)s'
+
+    # Only these MIME types are supported
+    # The value is the extension which will be used for storing the
+    # file on disk.
+    mime_to_type = {
+        'image/jpeg' : '.jpeg',
+        'image/gif'  : '.gif',
+        'image/png'  : '.png',
+    }
 """ % dict(config_root = config_root,
            port = port,
            thumbs_root=thumbs_root
