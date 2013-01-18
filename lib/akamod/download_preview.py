@@ -218,13 +218,13 @@ def download_preview(body, ctype):
         response.add_header('content-type', 'text/plain')
         return msg
 
-    if not data.has_key(URL_FIELD_NAME):
+    if not URL_FIELD_NAME in data:
         logger.error("There is no '%s' key in JSON." % URL_FIELD_NAME)
         return body
 
     url = data[URL_FIELD_NAME]
     
-    if not data.has_key(u'id'):
+    if not u'id' in data:
         logger.error("There is no '%s' key in JSON." % 'id')
         return body
 
