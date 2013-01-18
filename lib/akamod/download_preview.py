@@ -1,7 +1,3 @@
-#
-# Reponsible for:  downloading a preview for a document
-# Usage: as a module in separate pipeline, to be run on existing documents in the repository to download the thumbnails
-#
 
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
@@ -30,7 +26,7 @@ THUMBS_ROOT_PATH = module_config().get('thumbs_root_path')
 
 def update_document(document, filepath):
     """
-    Updates the document setting a filepath to a proper variable.
+    Updates the document with a filepath of downloaded thumbnail..
 
     Arguments:
         document object - document for updating (decoded by json module)
@@ -47,7 +43,7 @@ def generate_file_path(id, file_extension):
     """
     Generates and returns the file path based in provided params.
 
-    Algorithm:
+    Algorithm for generating the file path:
 
       The file path is generated using the following algorithm:
 
@@ -118,11 +114,16 @@ def find_file_extension(conn):
         throws exception if it cannot find the extension
     """
     import mimetypes as m
+
+    # The content type from HTTP headers.
     header = conn.headers['content-type']
+
+    # Get all possible extensions for this MIME type.
     possible_extensions = m.guess_all_extensions(header)
+    
     if possible_extensions:
         ext = ""
-        if ".jpg" in possible_extensions: # as the default extension for 'image/jpeg' mimetype
+        if ".jpg" in possible_extensions: # as the default extension for 'image/jpeg' mimetype is ".jpe"
             ext = ".jpg"
         else:
             ext = possible_extensions[0]
@@ -205,7 +206,8 @@ class DownloadPreviewException(Exception):
 @simple_service('POST', 'http://purl.org/la/dp/download_preview', 'download_preview', 'application/json')
 def download_preview(body, ctype):
     """
-    Responsible for downloading thumbnail.
+    Reponsible for:  downloading a preview for a document
+    Usage: as a module in separate pipeline, to be run on existing documents in the repository to download the thumbnails
     """
 
     data = {}
@@ -222,13 +224,16 @@ def download_preview(body, ctype):
         logger.error("There is no '%s' key in JSON." % URL_FIELD_NAME)
         return body
 
+    # URL for downloading thumbnail.
     url = data[URL_FIELD_NAME]
     
     if not u'id' in data:
         logger.error("There is no '%s' key in JSON." % 'id')
         return body
 
+    # Document id.
     id = data[u'id']
+
     filepath = download_image(url, id)
 
     if filepath: 
