@@ -421,13 +421,13 @@ def test_enrich_type_cleanup():
     result = json.loads(content)
     assert result['type'] == EXPECTED['type']
     
-def test_enrich_format_cleanup():
+def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
-        "format" : ["Still Images","image/JPEG","audio","Images"]
+        "format" : ["Still Images","image/JPEG","audio","Images", "audio/mp3 (45kb , 12 minuetes)"]
         }
     EXPECTED = {
-        u'format' : [ "image/jpeg", "audio" ],
+        u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
         u'TBD_physicalformat' : ["Still Images", "Images"]
         }
 
@@ -438,8 +438,8 @@ def test_enrich_format_cleanup():
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
-    
-def test_enrich_format_cleanup():
+
+def test_enrich_format_cleanup_single():
     "Test format normalization and removal of non IMT formats with one format"
     INPUT = {
         "format" : "image/JPEG"

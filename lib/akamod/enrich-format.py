@@ -12,9 +12,10 @@ def enrichformat(body,ctype,action="enrich-format",prop="format",alternate="TBD_
 
     a) setting the format to be all lowercase
     b) running through a set of cleanup regex's (e.g. image/jpg -> image/jpeg)
-    b) checking to see if the field is a valid IMT, and moving it to a separatee field if not
+    c) checking to see if the field is a valid IMT, and moving it to a separatee field if not
        See http://www.iana.org/assignments/media-types for list of valid media-types. We do not
-       require that a subtype be defined. The 
+       require that a subtype be defined. 
+    d) Remove any extra text after the IMT   
     
     By default works on the 'format' field, but can be overridden by passing the name of the field to use
     as the 'prop' parameter. Non-IMT's are moved the field defined by the 'alternate' parameter.
@@ -27,6 +28,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="format",alternate="TBD_
         s = s.lower().strip()
         for pattern, replace in REGEXPS:
             s = re.sub(pattern, replace, s)
+            s = re.sub(r"([^\sa-z/]+)\s.*",r"\1",s)
         return s
 
     def is_imt(s):
