@@ -88,12 +88,24 @@ def test_download_preview():
     GOOD_DATA[URL_FILE_PATH] = get_file_path()
     EXPECTED_OUTPUT = json.dumps(GOOD_DATA)
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
-    
-    pinfo(INPUT,EXPECTED_OUTPUT, url,resp,content)
-    print_error_log()
 
     assert resp.status == 200
     assert_same_jsons(EXPECTED_OUTPUT, content)
+
+def test_downloading_with_bad_URL():
+    """
+    Should return the same json, when the image URL gives 500.
+    """
+    url = server() + "download_preview"
+    GOOD_DATA = { "id":"clemson--cfb004",
+            URL_FIELD_NAME: server() + 'download_test_image?extension=500'
+    }
+    INPUT = json.dumps(GOOD_DATA)
+    resp, content = H.request(url, "POST", body=INPUT, headers=HEADERS)
+    assert resp.status == 200
+    assert_same_jsons(INPUT, content)
+
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
