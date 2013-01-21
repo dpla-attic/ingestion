@@ -20,6 +20,7 @@ URL_FIELD_NAME = u"preview_source_url"
 # Used for storing the path to the local filename.
 URL_FILE_PATH = u"preview_file_path"
 
+url = server() + "download_preview"
 
 def test_download_preview_bad_json():
     """
@@ -27,7 +28,6 @@ def test_download_preview_bad_json():
     """
     INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
     for i in INPUT:
-        url = server() + "download_preview"
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
@@ -37,7 +37,6 @@ def test_download_preview_without_id():
     Should get 200 from akara and input JSON when there is missing id field.
     """
     INPUT = '{"aaa":"bbb"}'
-    url = server() + "download_preview"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
@@ -48,7 +47,6 @@ def test_download_preview_without_thumbnail_url_field():
     Should get 200 from akara and input JSON when there is missing thumbnail url_field.
     """
     INPUT = '{"aaa":"bbb", "id":"abc"}'
-    url = server() + "download_preview"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
@@ -58,7 +56,6 @@ def test_download_preview_with_bad_url():
     Should get 200 from akara and input JSON when there is bad thumbnail URL.
     """
     INPUT = '{"aaa":"bbb", "id":"abc", "%s":"aaa"}' % URL_FIELD_NAME
-    url = server() + "download_preview"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
@@ -70,8 +67,6 @@ def test_download_preview():
     GOOD_DATA = { "id":"clemson--cfb004",
         URL_FIELD_NAME:"http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1040"
     }
-
-    url = server() + "download_preview"
 
     def get_file_path():
         global thumbs_root
@@ -96,7 +91,6 @@ def test_downloading_with_bad_URL():
     """
     Should return the same json, when the image URL gives 500.
     """
-    url = server() + "download_preview"
     GOOD_DATA = { "id":"clemson--cfb004",
             URL_FIELD_NAME: server() + 'download_test_image?extension=500'
     }
