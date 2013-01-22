@@ -1,5 +1,7 @@
 import os
 import sys
+import re
+import hashlib
 from server_support import server, print_error_log, get_thumbs_root
 from dplaingestion.akamod.download_test_image import image_png, image_jpg
 from amara.thirdparty import httplib2
@@ -76,8 +78,6 @@ def _get_file_path(doc_id, extension):
     Returns:
         Absolute path for the file.
     """
-    import re
-    import hashlib
     id = re.sub(r'[-]', '_', doc_id)
     md5 = hashlib.md5(doc_id).hexdigest().upper()
     md5_path = ""
@@ -94,7 +94,6 @@ def test_download_preview():
     GOOD_DATA = { "id":"clemson--cfb004",
         URL_FIELD_NAME:"http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1040"
     }
-
     
     INPUT = json.dumps(GOOD_DATA)
     GOOD_DATA[URL_FILE_PATH] = _get_file_path("clemson--cfb004", "jpg")
@@ -155,6 +154,7 @@ def test_dowloading_jpg_image():
     Should return JSON with file path and download the file.
     """
     _check_downloading_image("jpg", image_jpg)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
