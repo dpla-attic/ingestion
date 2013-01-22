@@ -177,7 +177,7 @@ def download_image(url, id):
     # Download the image.
     try:
         logger.info("Downloading file to: " + fname)
-        local_file = open(fname, 'w')
+        local_file = open(fname, 'wb')
         local_file.write(conn.read())
     except Exception as e:
         msg = traceback.format_exception(*sys.exc_info())
