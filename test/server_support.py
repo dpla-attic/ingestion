@@ -85,6 +85,8 @@ MODULES = [
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.identify_preview_location",
     "dplaingestion.akamod.download_preview",
+
+    "dplaingestion.akamod.download_test_image",
     ]
 
 class download_preview:
@@ -94,7 +96,7 @@ class download_preview:
     # The value is the extension which will be used for storing the
     # file on disk.
     mime_to_type = {
-        'image/jpeg' : '.jpeg',
+        'image/jpeg' : '.jpg',
         'image/gif'  : '.gif',
         'image/png'  : '.png',
     }
