@@ -37,7 +37,6 @@ class DictDiffer:
             self.second = second
 
         self._diff = self._generate_diff()
-        print self._diff
 
     def _generate_diff(self):
         """
@@ -47,12 +46,12 @@ class DictDiffer:
         diff = {}
         for k in self.first.keys():
             if not self.second.has_key(k):
-                diff[k] = (self.first[k], "KEY NOT FOUND")
+                diff[k] = ('KEY NOT FOUND IN SECOND DICT', self.first[k])
             elif self.first[k] != self.second[k]:
-                diff[k] = ("DIFFERENT VALUES", self.first[k], self.second[k])
+                diff[k] = {"DIFFERENT VALUES" : { 'FIRST DICT': self.first[k], 'SECOND DICT' : self.second[k]} }
         for k in self.second.keys():         
             if not self.first.has_key(k):
-                diff[k] = (self.second[k], "KEY NOT FOUND")                
+                diff[k] = ("KEY NOT FOUND IN FIRST DICT", self.second[k])                
         return diff
             
     def same(self):
@@ -76,5 +75,7 @@ class DictDiffer:
             Prints nicely the difference between dictionaries.
         """
         import pprint
-        pp = pprint.PrettyPrinter(indent=4)
+        pp = pprint.PrettyPrinter(indent=2)
         pp.pprint( self._diff )
+
+
