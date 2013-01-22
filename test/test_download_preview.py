@@ -25,13 +25,16 @@ URL_FILE_PATH = u"preview_file_path"
 # URL for current akara server instance.
 url = server() + "download_preview"
 
+def _get_server_response(body):
+    return H.request(url,"POST",body=body,headers=HEADERS)
+
 def test_download_preview_bad_json():
     """
     Should get 500 from akara for bad json.
     """
     INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
     for i in INPUT:
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
+        resp,content = _get_server_response(i)
         assert resp.status == 500
 
 
@@ -40,7 +43,7 @@ def test_download_preview_without_id():
     Should get 200 from akara and input JSON when there is missing id field.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+    resp,content = _get_server_response(INPUT)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -50,7 +53,7 @@ def test_download_preview_without_thumbnail_url_field():
     Should get 200 from akara and input JSON when there is missing thumbnail url_field.
     """
     INPUT = '{"aaa":"bbb", "id":"abc"}'
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+    resp,content = _get_server_response(INPUT)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -60,7 +63,7 @@ def test_download_preview_with_bad_url():
     Should get 200 from akara and input JSON when there is bad thumbnail URL.
     """
     INPUT = '{"aaa":"bbb", "id":"abc", "%s":"aaa"}' % URL_FIELD_NAME
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+    resp,content = _get_server_response(INPUT)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -98,7 +101,7 @@ def test_download_preview():
     INPUT = json.dumps(GOOD_DATA)
     GOOD_DATA[URL_FILE_PATH] = _get_file_path("clemson--cfb004", "jpg")
     EXPECTED_OUTPUT = json.dumps(GOOD_DATA)
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
+    resp,content = _get_server_response(INPUT)
 
     assert resp.status == 200
     assert_same_jsons(EXPECTED_OUTPUT, content)
@@ -112,7 +115,7 @@ def test_downloading_with_bad_URL():
             URL_FIELD_NAME: server() + 'download_test_image?extension=500'
     }
     INPUT = json.dumps(GOOD_DATA)
-    resp, content = H.request(url, "POST", body=INPUT, headers=HEADERS)
+    resp,content = _get_server_response(INPUT)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -127,7 +130,7 @@ def _check_downloading_image(extension, expected_content):
             URL_FIELD_NAME: server() + 'download_test_image?extension=' + extension
     }
     INPUT = json.dumps(GOOD_DATA)
-    resp, content = H.request(url, "POST", body=INPUT, headers=HEADERS)
+    resp,content = _get_server_response(INPUT)
     # The file should be written at:
     filepath = _get_file_path(id, extension)
     GOOD_DATA[URL_FILE_PATH] = filepath
