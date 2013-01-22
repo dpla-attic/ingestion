@@ -15,6 +15,20 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
+"""
+This is a module used only for internal testing the module download_preview.
+
+It just serves the images based on the request param.
+
+This file contains images:
+    image_png - png version, base64 format
+    image_jpg - jpg version, base64 format
+
+The image is taken from Clemson, the original URL is:
+http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1042
+
+"""
+
 image_png = """iVBORw0KGgoAAAANSUhEUgAAAFcAAAB4CAIAAAAIUPnYAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
 B3RJTUUH3QEVEAAUPi9cQQAAIABJREFUeNpcu2mMZVlyHhYRZ7nLu2/Pvfal972nZyGHPRwOqeGI
 omVZImlDomzBPyRYgPXHgmXAEEzIPwzDBgwbNmwLsGyaErcxrWWmh9vMsGft6WWml+ru6qqu6q6s
