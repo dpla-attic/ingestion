@@ -21,7 +21,11 @@ URL_FIELD_NAME = u"preview_source_url"
 # Used for storing the path to the local filename.
 URL_FILE_PATH = u"preview_file_path"
 
+# The main directory where the images will be saved.
 THUMBS_ROOT_PATH = module_config().get('thumbs_root_path')
+
+# The dictionary containing mapping of MIME type to file extension.
+# What's more, only those MIME types will be saved.
 MIME_TYPES = module_config().get('mime_to_type')
 
 def update_document(document, filepath):
@@ -33,7 +37,7 @@ def update_document(document, filepath):
         filepath string - filepath to insert
 
     Returns:
-        the document from parameter with additional field containing the filepath.
+        The document from parameter with additional field containing the filepath.
     """
     document[URL_FILE_PATH] = filepath
     return document
@@ -72,7 +76,7 @@ def generate_file_path(id, file_extension):
         FILE_NAME:  clemsontest__hcc001_hcc016.jpg
         HASHED_ID:  8E393B3B5DA0E0B3A7AEBFB91FE1278A
         PATH:       8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/
-        FULL_NAME:  /tmp/szymon/main_pic_dir/8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/clemsontest__hcc001_hcc016.jpg
+        FULL_NAME:  /main_pic_dir/8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/clemsontest__hcc001_hcc016.jpg
     """
 
     logger.debug("Generating filename for document with id: [%s].", id)
@@ -100,14 +104,15 @@ class FileExtensionException(Exception):
     pass
 
 
-def find_file_extension(conn):
+def find_file_extension(mime):
     """
     Finds out the file extension based on the MIME type from the opened connection.
 
-    Function is using the configuration field 'mime_to_type' stored at akara.conf.
+    Implementation:
+        Function is using the configuration field 'mime_to_type' stored at akara.conf.
 
     Arguments:
-        conn - opened connection to a resource
+        mime (String)   -   MIME type read from the HTTP headers
 
     Returns:
         file extension (String) - extension for the file - WITH DOT AT THE BEGINNING!!
@@ -115,15 +120,13 @@ def find_file_extension(conn):
     Throws:
         throws exception if it cannot find the extension
     """
-    # The content type from HTTP headers.
-    header = conn.headers['content-type']
 
     if header in MIME_TYPES:
-        ext = MIME_TYPES[header]
-        logger.debug("MIME type is [%s], returning extension [%s]" % (header, ext))
+        ext = MIME_TYPES[mime]
+        logger.debug("MIME type is [%s], returning extension [%s]" % (mime, ext))
         return ext
     else:
-        msg = "Cannot find extension for mime type: [%s]." % header
+        msg = "Cannot find extension for mime type: [%s]." % mime
         logger.error(msg)
         raise FileExtensionException(msg)
     
@@ -159,7 +162,9 @@ def download_image(url, id):
     # file on disk with proper extension.
     file_extension = ""
     try:
-        file_extension = find_file_extension(conn)
+        # The content type from HTTP headers.
+        header = conn.headers['content-type']
+        file_extension = find_file_extension(header)
     except FileExtensionException as e:
         logger.error("Couldn't find file extension.")
         return False
