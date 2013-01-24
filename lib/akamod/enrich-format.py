@@ -21,14 +21,14 @@ def enrichformat(body,ctype,action="enrich-format",prop="format",alternate="TBD_
     as the 'prop' parameter. Non-IMT's are moved the field defined by the 'alternate' parameter.
     '''   
 
-    REGEXPS = ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg')
+    REGEXPS = ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
     IMT_TYPES = ['application','audio','image','message','model','multipart','text','video']
 
     def cleanup(s):
         s = s.lower().strip()
         for pattern, replace in REGEXPS:
             s = re.sub(pattern, replace, s)
-            s = re.sub(r"([^\sa-z/]+)\s.*",r"\1",s)
+            s = re.sub(r"^([a-z0-9/]+)\s.*",r"\1",s)
         return s
 
     def is_imt(s):
