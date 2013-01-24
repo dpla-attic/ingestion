@@ -121,7 +121,7 @@ def find_file_extension(mime):
         throws exception if it cannot find the extension
     """
 
-    if header in MIME_TYPES:
+    if mime in MIME_TYPES:
         ext = MIME_TYPES[mime]
         logger.debug("MIME type is [%s], returning extension [%s]" % (mime, ext))
         return ext
@@ -185,7 +185,7 @@ def download_image(url, id):
         local_file = open(fname, 'wb')
         local_file.write(conn.read())
     except Exception as e:
-        msg = traceback.format_exception(*sys.exc_info())
+        msg = e.message
         logger.error(msg)
         return False
     else:
@@ -223,7 +223,7 @@ def download_preview(body, ctype):
 
     # URL for downloading thumbnail.
     url = data[URL_FIELD_NAME]
-    
+
     if not u'id' in data:
         logger.error("There is no '%s' key in JSON." % 'id')
         return body
