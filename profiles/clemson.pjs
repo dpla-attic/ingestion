@@ -1,15 +1,15 @@
 {
-    "type": "oai",
     "enrichments_coll": [
         "http://localhost:8872/oai-set-name?sets_service=http://localhost:8872/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe"
     ], 
     "name": "clemson", 
     "enrichments_rec": [
         "http://localhost:8872/oai-to-dpla", 
-        "http://localhost:8872/shred?prop=subject%2Ctype&delim=%3b", 
+        "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
         "http://localhost:8872/enrich-subject", 
         "http://localhost:8872/enrich-type", 
-        "http://localhost:8872/enrich-format"
+        "http://localhost:8872/enrich-format", 
+        "http://localhost:8872/identify_preview_location"
     ], 
     "subresources": [
         "gmb", 
@@ -28,10 +28,11 @@
         "mbe", 
         "gcj"
     ], 
-    "last_checked": "2013-01-13T18:56:16.194168", 
+    "last_checked": "2013-01-23T15:40:04.158294", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-clemson", 
         "name": "South Carolina Digital Library - Clemson"
     }, 
+    "type": "oai", 
     "endpoint_URL": "http://localhost:8872/dpla-list-records?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
 }

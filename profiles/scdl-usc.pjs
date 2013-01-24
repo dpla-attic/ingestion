@@ -1,15 +1,15 @@
 {
-    "type": "oai",
     "enrichments_coll": [
         "http://localhost:8872/oai-set-name?sets_service=http://localhost:8872/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe"
     ], 
     "name": "scdl-usc", 
     "enrichments_rec": [
         "http://localhost:8872/oai-to-dpla", 
-        "http://localhost:8872/shred?prop=subject%2Ctype&delim=%3b", 
+        "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
         "http://localhost:8872/enrich-subject", 
         "http://localhost:8872/enrich-type", 
-        "http://localhost:8872/enrich-format"
+        "http://localhost:8872/enrich-format", 
+        "http://localhost:8872/identify_preview_location"
     ], 
     "subresources": [
         "access", 
@@ -131,11 +131,11 @@
         "blaeu", 
         "simms1"
     ], 
-    "last_checked": "2013-01-13T21:23:26.720459", 
+    "last_checked": "2013-01-23T16:29:33.827586", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-usc", 
         "name": "South Carolina Digital Library - University of South Carolina"
     }, 
+    "type": "oai", 
     "endpoint_URL": "http://localhost:8872/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
 }
-
