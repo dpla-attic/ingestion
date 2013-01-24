@@ -408,10 +408,11 @@ def test_enrich_subject_cleanup():
 def test_enrich_type_cleanup():
     "Test type normalization"
     INPUT = {
-        "type" : ["Still Images","Text"]
+        "type" : ["Still Images","Text","Statue"]
         }
     EXPECTED = {
-        u'type' : [ "image", "text" ]
+        u'type' : [ "image", "text" ],
+        u'TBD_physicalformat' : ["Statue"]
         }
 
     url = server() + "enrich-type"
@@ -424,7 +425,7 @@ def test_enrich_type_cleanup():
 def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
-        "format" : ["Still Images","image/JPEG","audio","Images", "audio/mp3 (45kb , 12 minuetes)"]
+        "format" : ["Still Images","image/JPEG","audio","Images",  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
         }
     EXPECTED = {
         u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
