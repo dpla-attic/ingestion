@@ -27,7 +27,6 @@ def pinfo(*data):
         print d
 
 
-
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
             "Content-Type": "application/json",
@@ -500,7 +499,7 @@ def test_identify_preview_location_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
     """
-    INPUT = '{"aaa":"bbb"}'
+    INPUT = '{"aaa":"bbb", "id":"asa"}'
     url = server() + "identify_preview_location"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
 
