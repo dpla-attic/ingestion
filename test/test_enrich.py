@@ -5,6 +5,7 @@ from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
 from dict_differ import DictDiffer
+from nose.tools import nottest
 
 def assert_same_jsons(this, that):
     """
@@ -140,6 +141,7 @@ def test_unshred2():
 
     assert json.loads(content) == EXPECTED
 
+@nottest
 def test_oaitodpla_date_single():
     "Correctly transform a single date value"
     INPUT = {
@@ -160,6 +162,7 @@ def test_oaitodpla_date_single():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+@nottest
 def test_oaitodpla_date_multiple():
     "Correctly transform a multiple date values"
     INPUT = {
@@ -247,6 +250,7 @@ def test_oaitodpla_date_parse_format_natural_string():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+@nottest
 def test_oaitodpla_date_parse_format_ca_string():
     "Correctly transform a date of format ca. 1928"
     INPUT = {
@@ -267,6 +271,7 @@ def test_oaitodpla_date_parse_format_ca_string():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+@nottest
 def test_oaitodpla_date_parse_format_bogus_string():
     "Deal with a bogus date string"
     INPUT = {
