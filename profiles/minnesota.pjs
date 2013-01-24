@@ -2,13 +2,17 @@
     "type": "oai",
     "name": "minnesota",
     "enrichments_rec": [
-        "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
-        "http://localhost:8889/oai-to-dpla?geoprop=coverage_geo"
+        "http://localhost:8878/oai-to-dpla",
+        "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
+        "http://localhost:8878/enrich-subject",
+        "http://localhost:8878/enrich-type",
+        "http://localhost:8878/enrich-format",
+        "http://localhost:8878/mdl-enrich-location"
     ], 
     "enrichments_coll": [
-        "http://localhost:8889/oai-set-name?sets_service=http://localhost:8889/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe"
+        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe"
     ], 
-    "endpoint_URL": "http://localhost:8889/dpla-list-records?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe&oaiset=",
+    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe&oaiset=",
     "contributor": {
         "@id": "http://dp.la/api/contributor/mdl",
         "name": "Minnesota Digital Library"
