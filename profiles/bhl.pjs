@@ -1,0 +1,21 @@
+{
+    "enrichments_coll": [
+        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=http://www.biodiversitylibrary.org/oai"
+    ], 
+    "name": "bhl", 
+    "enrichments_rec": [
+        "http://localhost:8878/oai-to-dpla"
+        "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
+        "http://localhost:8878/enrich-subject",
+        "http://localhost:8878/enrich-type",
+        "http://localhost:8878/enrich-format"
+    ], 
+    "subresources": [
+        "item",
+        "articlepdf",
+        "title"
+    ], 
+    "last_checked": "2013-01-18T16:26:40.094739", 
+    "type": "oai", 
+    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://www.biodiversitylibrary.org/oai&oaiset="
+}

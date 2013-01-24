@@ -141,10 +141,13 @@ def temporal_transform(d):
 
 def source_transform(d):
     source = ""
-    for s in d["handle"]:
-        if is_absolute(s):
-            source = s
-            break
+    if isinstance(d['handle'],basestring) and is_absolute(d['handle']):
+        source = d['handle']
+    else:
+        for s in d["handle"]:
+            if is_absolute(s):
+                source = s
+                break
     return {"source":source}
 
 
