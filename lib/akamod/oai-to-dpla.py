@@ -161,15 +161,6 @@ def is_shown_at_transform(d):
             }
         }
 
-
-def subject_transform(d):
-    subject = []
-    for s in (d["subject"] if not isinstance(d["subject"],basestring) else [d["subject"]]):
-        subject.append({
-            "name" : s.strip()
-        })
-    return {"subject" : subject}
-
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
@@ -179,7 +170,6 @@ CHO_TRANSFORMER = {
     "description"      : lambda d: {"description": d.get("description",None)},
     "date"             : lambda d: {"date": d.get("date",None)},
     "language"         : lambda d: {"language": d.get("language",None)},
-    "format"           : lambda d: {"physicalmedium" : d.get("format",None)},
     "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
     "relation"         : lambda d: {"relation": d.get("relation",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},

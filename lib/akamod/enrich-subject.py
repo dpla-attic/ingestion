@@ -2,10 +2,11 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-subject', 'enrich-subject', 'application/json')
-def enrichsubject(body,ctype,action="enrich-subject",prop="subject"):
+def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject"):
     '''   
     Service that accepts a JSON document and enriches the "subject" field of that document
     by: 
@@ -32,13 +33,14 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="subject"):
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if prop in data:
+    if exists(data,prop):
+        v = getprop(data,prop)
         subject = []
-        for s in (data[prop] if not isinstance(data[prop],basestring) else [data[prop]]):
+        for s in (v if not isinstance(v,basestring) else [v]):
             subject.append({
                     "name" : cleanup(s)
                     })
 
-        data[prop] = subject
+        setprop(data,prop,subject)
 
     return json.dumps(data)

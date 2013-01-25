@@ -2,10 +2,11 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-format', 'enrich-format', 'application/json')
-def enrichformat(body,ctype,action="enrich-format",prop="format",alternate="TBD_physicalformat"):
+def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alternate="aggregatedCHO/physicalmedium"):
     '''   
     Service that accepts a JSON document and enriches the "format" field of that document
     by: 
@@ -40,17 +41,18 @@ def enrichformat(body,ctype,action="enrich-format",prop="format",alternate="TBD_
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if prop in data:
+    if exists(data,prop):
+        v = getprop(data,prop)
         format = []
         physicalFormat = []
-        for s in (data[prop] if not isinstance(data[prop],basestring) else [data[prop]]):
+        for s in (v if not isinstance(v,basestring) else [v]):
             format.append(cleanup(s)) if is_imt(cleanup(s)) else physicalFormat.append(s)
 
         if len(format) > 0:
-            data[prop] = format[0] if len(format) == 1 else format
+            setprop(data,prop,format[0]) if len(format) == 1 else setprop(data,prop,format)
         else:
-            del data[prop]
+            setprop(data,prop,None)
         if len(physicalFormat) > 0:
-            data[alternate] = physicalFormat[0] if len(physicalFormat) == 1 else physicalFormat
+            setprop(data,alternate,physicalFormat[0]) if len(physicalFormat) == 1 else setprop(data,alternate,physicalFormat)
 
     return json.dumps(data)
