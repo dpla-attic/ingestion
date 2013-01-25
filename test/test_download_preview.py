@@ -147,14 +147,14 @@ def _check_downloading_image(extension, expected_content):
 
 def test_dowloading_png_image():
     """
-    Should return JSON with file path and download the file.
+    Should return JSON with file path and png download the file.
     """
     _check_downloading_image("png", image_png)
 
 
 def test_dowloading_jpg_image():
     """
-    Should return JSON with file path and download the file.
+    Should return JSON with file path and jpg download the file.
     """
     _check_downloading_image("jpg", image_jpg)
 

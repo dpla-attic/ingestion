@@ -7,26 +7,6 @@ from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
-def assert_same_jsons(this, that):
-    """
-    Checks if the dictionaries are the same.
-    It compares the keys and values.
-    Prints diff if they are not exact and throws exception.
-    """
-    d = DictDiffer(this, that)
-
-    if not d.same():
-        d.print_diff()
-        assert this == that
-
-def pinfo(*data):
-    """
-    Prints all the params in separate lines.
-    """
-    for d in data:
-        print d
-
-
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
             "Content-Type": "application/json",
@@ -485,16 +465,6 @@ def test_identify_preview_location():
     assert_same_jsons(EXPECTED, result)
 
 
-def test_identify_preview_location_bad_json():
-    """
-    Should get 500 from akara for bad json.
-    """
-    INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
-    for i in INPUT:
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
-        assert resp.status == 500
-
 def test_identify_preview_location_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
@@ -506,6 +476,7 @@ def test_identify_preview_location_missing_source_field():
     pinfo(url,resp,content)
 
     assert_same_jsons(INPUT, content)
+
 
 def test_identify_preview_location_bad_url():
     """
@@ -542,55 +513,6 @@ def test_identify_preview_location_bad_json():
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
-def test_identify_preview_location_bad_url():
-    """
-    Should get 500 from akara for bad url.
-    """
-            ]
-    INPUT = {
-            u"something" : u"x",
-            u"somethink" : u"y",
-            u"source" : u""
-    }
-    for bad_url in bad_urls:
-        INPUT[u"source"] = bad_url
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        assert resp.status == 500
-
-def test_identify_preview_location_bad_json():
-    """
-    Should get 500 from akara for:
-        - bad json
-        - missing the 'source' field
-    """
-    INPUT = [ "{...}", "{'aaa':'bbb'}", "xxx" ]
-    for i in INPUT:
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
-        assert resp.status == 500
-
-def test_identify_preview_location_bad_url():
-    """
-    Should get 500 from akara for bad url.
-    """
-    bad_urls = [ "http://repository.clemson.edu/uscp104",
-        "http://repository.clemson.edu/s?/scp,104",
-        "http://repository.clemson.edu/u/scp,104",
-        "http://repository.clemson.edu/u?/scp104",
-        "http://repository.clemson.edu/u?/scp",
-        "http://repository.clemson.edu/",
-            ]
-    INPUT = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : ""
-    }
-    for bad_url in bad_urls:
-        INPUT[u"source"] = bad_url
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        assert resp.status == 500
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
