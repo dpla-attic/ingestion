@@ -7,6 +7,24 @@ from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
+def assert_same_jsons(this, that):
+    """
+    Checks if the dictionaries are the same.
+    It compares the keys and values.
+    Prints diff if they are not exact and throws exception.
+    """
+    d = DictDiffer(this, that)
+
+    if not d.same():
+        d.print_diff()
+        assert this == that
+
+def pinfo(*data):
+    """
+    Prints all the params in separate lines.
+    """
+    for d in data:
+        print d
 
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
@@ -21,7 +39,7 @@ def test_shred1():
 
     INPUT = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     EXPECTED = {
         "id": "999",
@@ -37,7 +55,7 @@ def test_shred2():
     "Shredding of an unknown property"
     INPUT = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     EXPECTED = INPUT
     url = server() + "shred?prop=prop9"
@@ -63,7 +81,7 @@ def test_shred3():
 def test_shred4():
     "Shredding multiple fields"
     INPUT = {
-        "p": ["a,b,c", "d,e,f"]
+        "p": ["a;b;c", "d;e;f"]
     }
     EXPECTED = {
         "p": ["a","b","c","d","e","f"]
@@ -77,8 +95,8 @@ def test_shred4():
 def test_shred5():
     "Shredding multiple keys"
     INPUT = {
-        "p": "a,b,c",
-        "q": "d,e,f"
+        "p": "a;b;c",
+        "q": "d;e;f"
     }
     EXPECTED = {
         "p": ["a","b","c"],
@@ -99,7 +117,7 @@ def test_unshred1():
     }
     EXPECTED = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     url = server() + "shred?action=unshred&prop=prop1"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
@@ -143,6 +161,7 @@ def test_enrich_dates_bogus_date():
 
 
 def test_enrich_date_single():
+
     "Correctly transform a single date value"
     INPUT = {
         "date" : "1928"
@@ -404,7 +423,7 @@ def test_enrich_multiple_subject_reformat_to_dict():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -422,7 +441,7 @@ def test_enrich_single_subject_reformat_to_dict():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -442,7 +461,7 @@ def test_enrich_subject_cleanup():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -459,7 +478,7 @@ def test_enrich_type_cleanup():
         u'TBD_physicalformat' : ["Statue"]
         }
 
-    url = server() + "enrich-type"
+    url = server() + "enrich-type?prop=type"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -473,18 +492,18 @@ def test_enrich_format_cleanup_multiple():
         }
     EXPECTED = {
         u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
-        u'TBD_physicalformat' : ["Still Images", "Images"]
+        u'physicalmedium' : ["Still Images", "Images"]
         }
 
-    url = server() + "enrich-format"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
-    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
-
-def test_enrich_format_cleanup_single():
+    assert result['physicalmedium'] == EXPECTED['physicalmedium']
+    
+def test_enrich_format_cleanup():
     "Test format normalization and removal of non IMT formats with one format"
     INPUT = {
         "format" : "image/JPEG"
@@ -493,13 +512,13 @@ def test_enrich_format_cleanup_single():
         u'format' : "image/jpeg"
         }
 
-    url = server() + "enrich-format"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
-    assert not 'TBD_physicalformat' in result.keys()
+    assert not 'physicalmedium' in result.keys()
 
 
 def test_physical_format_from_format_and_type():

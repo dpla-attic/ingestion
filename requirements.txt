@@ -9,3 +9,4 @@ timelib
 simplejson
 six
 CouchDB
+nose
