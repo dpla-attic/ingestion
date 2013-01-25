@@ -19,22 +19,30 @@ DEFAULT_DATETIME = dateutil_parse("2000-01-01")
 CONTEXT = {
    "@vocab": "http://purl.org/dc/terms/",
    "dpla": "http://dp.la/terms/",
+   "edm": "http://www.europeana.eu/schemas/edm/",    
+   "LCSH": "http://id.loc.gov/authorities/subjects",
    "name": "xsd:string",
-   "dplaContributor": "dpla:contributor",
-   "dplaSourceRecord": "dpla:sourceRecord",
-   "coordinates": "dpla:coordinates",
+   "collection" : "dpla:aggregation",
+   "aggregatedDigitalResource" : "dpla:aggregatedDigitalResource",
+   "originalRecord" : "dpla:originalRecord",
    "state": "dpla:state",                             
+   "coordinates": "dpla:coordinates",
+   "stateLocatedIn" : "dpla:stateLocatedIn",
+   "aggregatedCHO" : "edm:aggregatedCHO",   
+   "dataProvider" : "edm:dataProvider",
+   "hasView" : "edm:hasView",
+   "isShownAt" : "edm:isShownAt",
+   "object" : "edm:object",
+   "provider" : "edm:provider",
    "start" : {
-     "@id" : "dpla:start",
+     "@id" : "dpla:dateRangeStart",
      "@type": "xsd:date"
    },
    "end" : {
-     "@id" : "dpla:end",
+     "@id" : "dpla:dateRangeEnd",
      "@type": "xsd:date"
-   },
-   "iso3166-2": "dpla:iso3166-2",
-   "iso639": "dpla:iso639",
-   "LCSH": "http://id.loc.gov/authorities/subjects"
+   },        
+   "name": "xsd:string"
 }
 
 def spatial_transform(d):
@@ -48,42 +56,47 @@ def spatial_transform(d):
         spatial.append(sp)
     return {"spatial":spatial}
 
-def source_transform(d):
+def is_shown_at_transform(d):
     source = ""
-    if isinstance(d['handle'],basestring) and is_absolute(d['handle']):
-        source = d['handle']
-    else:
-        for s in d["handle"]:
-            if is_absolute(s):
-                source = s
-                break
-    return {"source":source}
-
+    for s in (d["handle"] if not isinstance(d["handle"],basestring) else [d["handle"]]):
+        if is_absolute(s):
+            source = s
+            break
+    return {
+        "isShownAt" : { 
+            "@id" : source,
+            "format" : d.get("format",None),
+            "rights" : d.get("rights",None)
+            }
+        }
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
-TRANSFORMER = {
-    "source"           : lambda d: {"contributor": d.get("source",None)},
-    "original_record"  : lambda d: {"dplaSourceRecord": d.get("original_record",None)},
-    "date"             : lambda d: {"created": d.get("date",None)},
-    "coverage"         : spatial_transform,
-    "title"            : lambda d: {"title": d.get("title",None)},
+CHO_TRANSFORMER = {
+    "contributor"      : lambda d: {"contributor": d.get("contributor",None)},
+    "coverage"         : lambda d: {"spatial": d.get("coverage",None)},
     "creator"          : lambda d: {"creator": d.get("creator",None)},
-    "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
-    "type"             : lambda d: {"type": d.get("type",None)},
-    "format"           : lambda d: {"format": d.get("format",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
+    "date"             : lambda d: {"date": d.get("date",None)},
+    "language"         : lambda d: {"language": d.get("language",None)},
+    "format"           : lambda d: {"physicalmedium" : d.get("format",None)},
+    "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
+    "relation"         : lambda d: {"relation": d.get("relation",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
-    "collection"       : lambda d: {"isPartOf": d.get("collection",None)},
-    "id"               : lambda d: {"id": d.get("id",None), "@id" : "http://dp.la/api/items/"+d.get("id","")},
     "subject"          : lambda d: {"subject": d.get("subject",None)},
-    "handle"           : source_transform,
-    "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
-    "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)},
-    "_id"              : lambda d: {"_id": d.get("_id",None)}
+    "title"            : lambda d: {"title": d.get("title",None)},
+    "type"             : lambda d: {"type": d.get("type",None)}
+}
 
-    # language - needs a lookup table/service. TBD.
-    # subject - needs additional LCSH enrichment. just names for now
+AGGREGATION_TRANSFORMER = {
+    "collection"       : lambda d: {"collection": d.get("collection",None)},
+    "id"               : lambda d: {"id": d.get("id",None), "@id" : "http://dp.la/api/items/"+d.get("id","")},
+    "handle"           : is_shown_at_transform,
+    "originalRecord"   : lambda d: {"originalRecord": d.get("originalRecord",None)},
+    "source"           : lambda d: {"dataProvider": d.get("source",None)},
+
+    "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
+    "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)}
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/oai-to-dpla', 'oai-to-dpla', 'application/ld+json')
@@ -109,12 +122,15 @@ def oaitodpla(body,ctype,geoprop=None):
 
     out = {
         "@context": CONTEXT,
+        "aggregatedCHO" : {}
     }
 
-    # Apply all transformation rules from original document
+    # Apply all transformation rules from original document to aggregatedCHO
     for p in data.keys():
-        if p in TRANSFORMER:
-            out.update(TRANSFORMER[p](data))
+        if p in CHO_TRANSFORMER:
+            out['aggregatedCHO'].update(CHO_TRANSFORMER[p](data))
+        if p in AGGREGATION_TRANSFORMER:
+            out.update(AGGREGATION_TRANSFORMER[p](data))
 
     # Additional content not from original document
 
