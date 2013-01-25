@@ -74,7 +74,7 @@ def is_shown_at_transform(d):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "contributor"      : lambda d: {"contributor": d.get("contributor",None)},
-    "coverage"         : lambda d: {"spatial": d.get("coverage",None)},
+    "coverage"         : spatial_transform,
     "creator"          : lambda d: {"creator": d.get("creator",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "date"             : lambda d: {"date": d.get("date",None)},
