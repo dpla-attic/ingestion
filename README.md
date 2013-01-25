@@ -1,3 +1,6 @@
+Travis status for branch "master":
+[![Build Status](https://travis-ci.org/dpla/ingestion.png?branch=master)](https://travis-ci.org/dpla/ingestion)
+
 To install or upgrade the ingest subsystem, first install the necessary components;
 
     $ pip install --no-deps --ignore-installed -r requirements.txt
