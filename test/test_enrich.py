@@ -286,26 +286,6 @@ def test_oaitodpla_date_parse_format_date_range():
     assert result['temporal'] == EXPECTED['temporal']
 
 
-def test_oaitodpla_date_parse_format_date_range():
-    "Correctly transform a date of format 1960-05-01 - 1960-05-15"
-    INPUT = {
-        "date" : "1960-05-01 - 1960-05-15"
-    }
-    EXPECTED = {
-        u'temporal' : [{
-            u'start' : u'1960-05-01',
-            u'end' : u'1960-05-15'
-        }]
-    }
-
-    url = server() + "oai-to-dpla"
-
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-    assert str(resp.status).startswith("2")
-
-    result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
-
 def test_oaitodpla_date_pull_from_coverage_field():
     "Pull a date out of the coverage field"
     INPUT = {
@@ -466,79 +446,6 @@ def test_identify_preview_location():
     assert_same_jsons(EXPECTED, result)
 
 
-def test_identify_preview_location_missing_source_field():
-    """
-    Should return original JSON if the 'source' field is missing.
-    """
-    INPUT = '{"aaa":"bbb", "id":"asa"}'
-    url = server() + "identify_preview_location"
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
-
-    pinfo(url,resp,content)
-
-    assert_same_jsons(INPUT, content)
-
-
-def test_identify_preview_location_bad_url():
-    """
-    Should return original JSON for bad URL.
-    """
-    bad_urls = [ u"http://repository.clemson.edu/uscp104",
-        u"http://repository.clemson.edu/s?/scp,104",
-        u"http://repository.clemson.edu/u/scp,104",
-        u"http://repository.clemson.edu/u?/scp104",
-        u"http://repository.clemson.edu/u?/scp",
-        u"http://repository.clemson.edu/",
-            ]
-    INPUT = {
-            u"something" : u"x",
-            u"somethink" : u"y",
-            u"source" : u""
-    }
-    for bad_url in bad_urls:
-        INPUT[u"source"] = bad_url
-        url = server() + "identify_preview_location"
-        print url
-        resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        assert_same_jsons(INPUT, content)
-
-def test_identify_preview_location_bad_json():
-    """
-    Should get 500 from akara for:
-        - bad json
-        - missing the 'source' field
-    """
-    INPUT = [ "{...}", "{'aaa':'bbb'}", "xxx" ]
-    for i in INPUT:
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
-        assert resp.status == 500
-
-
-def test_identify_preview_location():
-    """
-    Should add a thumbnail URL made of the source URL.
-    """
-    INPUT = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104"
-    }
-    EXPECTED = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104",
-            u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&CISOPTR=104"
-    }
-    url = server() + "identify_preview_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-
-    assert str(resp.status).startswith("2")
-    result = json.loads(content)
-
-    assert_same_jsons(EXPECTED, result)
-
-
 def test_identify_preview_location_bad_json():
     """
     Should get 500 from akara for bad json.
@@ -549,6 +456,7 @@ def test_identify_preview_location_bad_json():
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
+
 def test_identify_preview_location_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
@@ -560,6 +468,7 @@ def test_identify_preview_location_missing_source_field():
     pinfo(url,resp,content)
 
     assert_same_jsons(INPUT, content)
+
 
 def test_identify_preview_location_bad_url():
     """
