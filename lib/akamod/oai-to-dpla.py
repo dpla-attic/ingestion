@@ -79,7 +79,6 @@ CHO_TRANSFORMER = {
     "description"      : lambda d: {"description": d.get("description",None)},
     "date"             : lambda d: {"date": d.get("date",None)},
     "language"         : lambda d: {"language": d.get("language",None)},
-    "format"           : lambda d: {"physicalmedium" : d.get("format",None)},
     "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
     "relation"         : lambda d: {"relation": d.get("relation",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
