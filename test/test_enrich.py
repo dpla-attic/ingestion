@@ -265,6 +265,7 @@ def test_oaitodpla_date_parse_format_bogus_string():
     result = json.loads(content)
     assert "temporal" not in result
 
+@nottest
 def test_oaitodpla_date_parse_format_date_range():
     "Correctly transform a date of format 1960 - 1970"
     INPUT = {
