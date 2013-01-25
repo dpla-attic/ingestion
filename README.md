@@ -1,5 +1,13 @@
-Travis status for branch "master":
+The DPLA Ingestion
+-------------------
+
+Build Status
+-------------------
+
 [![Build Status](https://travis-ci.org/dpla/ingestion.png?branch=master)](https://travis-ci.org/dpla/ingestion)
+
+Documentation
+-------------------
 
 To install or upgrade the ingest subsystem, first install the necessary components;
 
