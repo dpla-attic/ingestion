@@ -5,6 +5,7 @@ from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
 from dict_differ import DictDiffer
+from nose.tools import nottest
 
 def assert_same_jsons(this, that):
     """
@@ -41,7 +42,7 @@ def test_shred1():
 
     INPUT = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     EXPECTED = {
         "id": "999",
@@ -57,7 +58,7 @@ def test_shred2():
     "Shredding of an unknown property"
     INPUT = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     EXPECTED = INPUT
     url = server() + "shred?prop=prop9"
@@ -83,7 +84,7 @@ def test_shred3():
 def test_shred4():
     "Shredding multiple fields"
     INPUT = {
-        "p": ["a,b,c", "d,e,f"]
+        "p": ["a;b;c", "d;e;f"]
     }
     EXPECTED = {
         "p": ["a","b","c","d","e","f"]
@@ -97,8 +98,8 @@ def test_shred4():
 def test_shred5():
     "Shredding multiple keys"
     INPUT = {
-        "p": "a,b,c",
-        "q": "d,e,f"
+        "p": "a;b;c",
+        "q": "d;e;f"
     }
     EXPECTED = {
         "p": ["a","b","c"],
@@ -119,7 +120,7 @@ def test_unshred1():
     }
     EXPECTED = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     url = server() + "shred?action=unshred&prop=prop1"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
@@ -140,6 +141,8 @@ def test_unshred2():
 
     assert json.loads(content) == EXPECTED
 
+# TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_single():
     "Correctly transform a single date value"
     INPUT = {
@@ -160,6 +163,8 @@ def test_oaitodpla_date_single():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_multiple():
     "Correctly transform a multiple date values"
     INPUT = {
@@ -186,6 +191,8 @@ def test_oaitodpla_date_multiple():
     assert result['temporal'] == EXPECTED['temporal']
 
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_yyyy_mm_dd():
     "Correctly transform a date of format YYYY-MM-DD"
     INPUT = {
@@ -206,6 +213,8 @@ def test_oaitodpla_date_parse_format_yyyy_mm_dd():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_date_with_slashes():
     "Correctly transform a date of format MM/DD/YYYY"
     INPUT = {
@@ -227,6 +236,8 @@ def test_oaitodpla_date_parse_format_date_with_slashes():
     assert result['temporal'] == EXPECTED['temporal']
 
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_natural_string():
     "Correctly transform a date of format Month, DD, YYYY"
     INPUT = {
@@ -247,6 +258,8 @@ def test_oaitodpla_date_parse_format_natural_string():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_ca_string():
     "Correctly transform a date of format ca. 1928"
     INPUT = {
@@ -267,6 +280,8 @@ def test_oaitodpla_date_parse_format_ca_string():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_bogus_string():
     "Deal with a bogus date string"
     INPUT = {
@@ -281,6 +296,8 @@ def test_oaitodpla_date_parse_format_bogus_string():
     result = json.loads(content)
     assert "temporal" not in result
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_date_range():
     "Correctly transform a date of format 1960 - 1970"
     INPUT = {
@@ -302,6 +319,8 @@ def test_oaitodpla_date_parse_format_date_range():
     assert result['temporal'] == EXPECTED['temporal']
 
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_parse_format_date_range():
     "Correctly transform a date of format 1960-05-01 - 1960-05-15"
     INPUT = {
@@ -322,6 +341,8 @@ def test_oaitodpla_date_parse_format_date_range():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+#TODO: Date transformation moved to another module
+@nottest
 def test_oaitodpla_date_pull_from_coverage_field():
     "Pull a date out of the coverage field"
     INPUT = {
@@ -360,7 +381,7 @@ def test_enrich_multiple_subject_reformat_to_dict():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -378,7 +399,7 @@ def test_enrich_single_subject_reformat_to_dict():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -398,7 +419,7 @@ def test_enrich_subject_cleanup():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -414,7 +435,7 @@ def test_enrich_type_cleanup():
         u'type' : [ "image", "text" ]
         }
 
-    url = server() + "enrich-type"
+    url = server() + "enrich-type?prop=type"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -428,16 +449,16 @@ def test_enrich_format_cleanup():
         }
     EXPECTED = {
         u'format' : [ "image/jpeg", "audio" ],
-        u'TBD_physicalformat' : ["Still Images", "Images"]
+        u'physicalmedium' : ["Still Images", "Images"]
         }
 
-    url = server() + "enrich-format"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
-    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
+    assert result['physicalmedium'] == EXPECTED['physicalmedium']
     
 def test_enrich_format_cleanup():
     "Test format normalization and removal of non IMT formats with one format"
@@ -448,13 +469,13 @@ def test_enrich_format_cleanup():
         u'format' : "image/jpeg"
         }
 
-    url = server() + "enrich-format"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
-    assert not 'TBD_physicalformat' in result.keys()
+    assert not 'physicalmedium' in result.keys()
 
 
 def test_identify_preview_location():
