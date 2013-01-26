@@ -4,11 +4,14 @@
     ], 
     "name": "clemson", 
     "enrichments_rec": [
+        "http://localhost:8870/select-id", 
         "http://localhost:8870/oai-to-dpla", 
         "http://localhost:8870/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type&delim=%3b", 
+        "http://localhost:8870/enrich-date?prop=created", 
         "http://localhost:8870/enrich-subject", 
         "http://localhost:8870/enrich-type", 
-        "http://localhost:8870/enrich-format"
+        "http://localhost:8870/enrich-format", 
+        "http://localhost:8870/identify_preview_location"
     ], 
     "subresources": [
         "gmb", 
