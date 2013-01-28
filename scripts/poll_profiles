@@ -178,10 +178,6 @@ def process_oai_coll(profile,subr):
         endpoint_content = json.loads(content)
         resumption_token = endpoint_content['resumption_token']
 
-        # we don't like the default id for each item, so rewrite it to the first handle
-        for item in endpoint_content['items']:
-            item['id'] = item['handle'] if isinstance(item['handle'],basestring) else item['handle'][0]
-
         content = json.dumps(endpoint_content)
         enrich_coll(profile,subr,content)
 

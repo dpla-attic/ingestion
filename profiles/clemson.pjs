@@ -4,6 +4,7 @@
     ], 
     "name": "clemson", 
     "enrichments_rec": [
+        "http://localhost:8872/select-id",
         "http://localhost:8872/oai-to-dpla", 
         "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
         "http://localhost:8872/enrich-subject", 
