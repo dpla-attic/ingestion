@@ -30,15 +30,23 @@ def selid(body,ctype,prop='handle'):
     request_headers = copy_headers_to_dict(request.environ)
     source_name = request_headers.get('Source')
 
-    if prop == 'handle' and not isinstance(data['handle'],basestring):
-        for h in data['handle']:
-            if is_absolute(h):
-                id = h
-    else:
+    id = None
+    if isinstance(data[prop],basestring):
         id = data[prop]
+    else:
+        if data[prop]:
+            for h in data[prop]:
+                if is_absolute(h):
+                    id = h
+            if not id:
+                id = data[prop][0]
+
+    if not id:
+        response.code = 500
+        response.add_header('content-type','text/plain')
+        return "No id property was found"
 
     data[u'_id'] = COUCH_REC_ID_BUILDER(source_name, id)
     data[u'id']  = hashlib.md5(data[u'_id']).hexdigest()
-
 
     return json.dumps(data)
