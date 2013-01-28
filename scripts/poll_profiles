@@ -81,9 +81,124 @@ def process_profile(out,profile_f):
 
 if __name__ == '__main__':
 
-    # Verify that both given directories exist
-    for d in sys.argv[1:]:
-        if is_absolute(d): continue # skip URIs
+#def skip_cdata(path,key,data):
+#    if '#text' in data:
+#        del data['#text']
+#    return key, data
+#
+#ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',postprocessor=skip_cdata)
+def process_arc_all(profile):
+    src_URL = profile.get('endpoint_URL')
+    assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
+    src_dir = src_URL[5:]
+
+    collections = {} # this could get big unless we can figure out a way to scope it
+    print "Walking directory: "+src_dir
+    for (root, dirs, files) in os.walk(src_dir):
+        items = []
+        for filename in fnmatch.filter(files, 'Item_*.xml'):
+            item_fn = os.path.join(root,filename)
+            item_f = open(item_fn,'r')
+            item = ARC_PARSE(item_f)['archival-description']
+
+            # set our generic identifier property
+            item['id'] = item['arc-id']
+
+            hier_items = item['hierarchy']['hierarchy-item']
+            for hi in hier_items:
+                htype = hi['hierarchy-item-lod']
+                if not htype.lower() == 'series': continue # only interested in Series objects as collections
+
+                hid = hi['hierarchy-item-id']
+
+                if hid not in collections:
+                    # Parse the series/collection file
+                    try:
+                        hier_rf = ARC_RELATED_FILE(root,htype,hid)
+                        print "Related file: "+hier_rf
+                        hier_fname = glob.glob(hier_rf)[0]
+                        print "  Found as: "+hier_fname
+                        hier_f = open(hier_fname,'r')
+                    except Exception as e:
+                        print >> sys.stderr, "Couldn't find referenced Series file (%s) from %s"%((hier_fname,item_fn))
+                        print >> sys.stderr, repr(e)
+                        continue
+
+                    hier = ARC_PARSE(hier_f)['archival-description']
+                    hier_f.close()
+
+                    cid = hier['arc-id']
+                    #assert hid == cid, "Unexpected difference in ARC IDs between Item reference and retrieved Series"
+
+                    coll = {}
+                    coll['id'] = cid
+                    coll['label'] = hier.get('title','')
+                    coll['items'] = []
+                    collections[cid] = coll
+                else:
+                    coll = collections[cid]
+
+                coll['items'].append(item)
+
+            #print json.dumps(item,indent=4)
+            items.append(item)
+
+    for cid in collections:
+        # FIXME need way to pass in the label
+        enrich_coll(profile,cid,json.dumps({'items':collections[cid]['items']}))
+
+def enrich_coll(profile,subr,content):
+    # Enrich retrieved data
+    global ENRICH
+    headers = {
+        "Content-Type": "application/json",
+        "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
+        "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
+        "Source": profile['name'],
+        "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
+    }
+    if subr:
+        headers["Collection"] = subr
+
+    resp, content = H.request(ENRICH,'POST',body=content,headers=headers)
+    if not str(resp.status).startswith('2'):
+        print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+
+def process_oai_coll(profile,subr):
+    # For now, a simplifying assumption that string concatenation produces a
+    # full URI from the combination of the endpoint URL and each subresource id.
+    # Better might be a single field listing all URIs but unclear how that extends
+    # to other protocols.
+
+    # If multiple requests are required to harvest all information from a resource, they will
+    # give us 'resumption tokens' after each request until we are done. Passing the resumption
+    # token will provide the next batch of results
+
+    request_more, resumption_token = True, ""
+    while request_more:
+        endpoint = profile[u'endpoint_URL'] + subr
+        if resumption_token:
+            endpoint += '&' + urlencode({'resumption_token': resumption_token})
+        print >> sys.stderr, endpoint
+
+        resp, content = H.request(endpoint)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+            continue
+        endpoint_content = json.loads(content)
+        resumption_token = endpoint_content['resumption_token']
+
+        content = json.dumps(endpoint_content)
+        enrich_coll(profile,subr,content)
+
+        request_more = resumption_token is not None and len(resumption_token) > 0
+
+TYPE_PROCESSORS = {
+    ('arc','coll'): None,
+    ('arc','all'): process_arc_all,
+    ('oai','coll'): process_oai_coll,
+    ('oai','all'): None,
+}
 
         dirExists = False
 

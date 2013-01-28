@@ -6,7 +6,6 @@ from akara import module_config
 import pprint
 import sys
 import re
-import hashlib
 import os
 import os.path
 import urllib
@@ -53,7 +52,7 @@ def generate_file_path(id, file_extension):
 
         -   convert all not allowed characters from the document id to "_"
         -   to the above string add number and extension getting FILE_NAME
-        -   calculate md5 from original id
+        -   fetch id (it will already be the md5 of the _id field)
         -   convert to uppercase
         -   insert "/" between each to characters of this hash getting CALCULATED_PATH
         -   join the MAIN_PATH, CALCULATED_PATH and FILE_NAME
@@ -87,7 +86,7 @@ def generate_file_path(id, file_extension):
     fname = "%s%s" % (cleared_id, file_extension)
     logger.debug("File name:  " + fname)
     
-    md5sum = hashlib.md5(id).hexdigest().upper()
+    md5sum = id.upper()
     logger.debug("Hashed id:  " + md5sum)
     
     path = re.sub("(.{2})", "\\1" + os.sep, md5sum, re.DOTALL)

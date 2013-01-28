@@ -179,7 +179,8 @@ TRANSFORMER = {
     "subject"          : lambda d: {"subject": d.get("subject",None)},
     "handle"           : source_transform,
     "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
-    "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)}
+    "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)},
+    "_id"              : lambda d: {"_id": d.get("_id",None)}
 
     # language - needs a lookup table/service. TBD.
     # subject - needs additional LCSH enrichment. just names for now
