@@ -38,7 +38,8 @@ def update_document(document, filepath):
     Returns:
         The document from parameter with additional field containing the filepath.
     """
-    document[URL_FILE_PATH] = filepath
+    base_url = module_config().get('thumbs_root_url')
+    document[URL_FILE_PATH] = base_url + filepath
     return document
 
 
@@ -64,6 +65,7 @@ def generate_file_path(id, file_extension):
     Returns:
         filepath       - path, without file name
         full_filepath  - path, with file name
+        relative_fname - path, relative, without ROOT_PATH
 
     Example:
         Function call:
@@ -88,12 +90,14 @@ def generate_file_path(id, file_extension):
     
     path = re.sub("(.{2})", "\\1" + os.sep, cleared_id, re.DOTALL)
     logger.debug("PATH:       " + path)
+
+    relative_fname = os.path.join(path, fname)
     
     path = os.path.join(THUMBS_ROOT_PATH, path)
     full_fname = os.path.join(path, fname)
     logger.debug("FULL PATH:  " + full_fname)
 
-    return (path, full_fname)
+    return (path, full_fname, relative_fname)
 
 
 class FileExtensionException(Exception):
@@ -166,7 +170,7 @@ def download_image(url, id):
         return False
     
     # Get the directory path and file path for storing the image.
-    (path, fname) = generate_file_path(id, file_extension)
+    (path, fname, relative_fname) = generate_file_path(id, file_extension)
     
     # Let's create the directory for storing the file name.
     if not os.path.exists(path):
@@ -189,7 +193,7 @@ def download_image(url, id):
         local_file.close()
 
     logger.debug("Downloaded file from [%s] to [%s]." % (url, fname, ))
-    return fname
+    return relative_fname
 
 
 class DownloadPreviewException(Exception):
@@ -227,11 +231,12 @@ def download_preview(body, ctype):
     # Document id.
     id = data[u'id']
 
-    filepath = download_image(url, id)
+    relative_fname = download_image(url, id)
 
-    if filepath: 
+    if relative_fname: 
         # so everything is OK and the file is on disk
-        doc = update_document(data, filepath)
+        
+        doc = update_document(data, relative_fname)
         return json.dumps(doc)
     else:
         logger.error("Cannot save thumbnail from: %s." % (url))

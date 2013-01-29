@@ -89,6 +89,27 @@ def _get_file_path(doc_id, extension):
     return path
 
 
+def _get_url_path(doc_id, extension):
+    """
+    Calculates the url filepath where the for 
+    given document id and file extension shoul be saved 
+    by the download_preview module.
+
+    Arguments:
+        doc_id      -   document id from couchdb
+        extension   -   file extension, without '.'
+
+    Returns:
+        URL path for the file.
+    """
+    md5 = doc_id.upper()
+    md5_path = ""
+    for i in xrange(0,32,2):
+        md5_path = os.path.join(md5_path, md5[i:i+2])
+    path = os.path.join("http://aaa.bbb.com/", md5_path, doc_id + "." + extension)
+    return path
+
+
 def test_download_preview():
     """
     Should get 200 from akara and input JSON when there is bad thumbnail URL.
@@ -98,7 +119,7 @@ def test_download_preview():
     }
     
     INPUT = json.dumps(GOOD_DATA)
-    GOOD_DATA[URL_FILE_PATH] = _get_file_path("14428451F16BD0933F32DED43A42654A", "jpg")
+    GOOD_DATA[URL_FILE_PATH] = _get_url_path("14428451F16BD0933F32DED43A42654A", "jpg")
     EXPECTED_OUTPUT = json.dumps(GOOD_DATA)
     resp,content = _get_server_response(INPUT)
 
@@ -132,11 +153,12 @@ def _check_downloading_image(extension, expected_content):
     resp,content = _get_server_response(INPUT)
     # The file should be written at:
     filepath = _get_file_path(id, extension)
-    GOOD_DATA[URL_FILE_PATH] = filepath
+    GOOD_DATA[URL_FILE_PATH] = _get_url_path(id, extension)
     OUTPUT = json.dumps(GOOD_DATA)
+
     assert resp.status == 200
     assert_same_jsons(OUTPUT, content)
-
+    
     # let's check if the files are the same
     with open(filepath, "rb") as f:
         data = f.read()

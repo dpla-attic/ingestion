@@ -91,7 +91,7 @@ MODULES = [
 
 class download_preview:
     thumbs_root_path = '%(thumbs_root)s'
-
+    thumbs_root_url  = 'http://aaa.bbb.com/'
     # Only these MIME types are supported
     # The value is the extension which will be used for storing the
     # file on disk.
