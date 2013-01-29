@@ -81,12 +81,11 @@ def _get_file_path(doc_id, extension):
     Returns:
         Absolute path for the file.
     """
-    id = re.sub(r'[-]', '_', doc_id)
-    md5 = hashlib.md5(doc_id).hexdigest().upper()
+    md5 = doc_id.upper()
     md5_path = ""
     for i in xrange(0,32,2):
         md5_path = os.path.join(md5_path, md5[i:i+2])
-    path = os.path.join(get_thumbs_root(), md5_path, id + "." + extension)
+    path = os.path.join(get_thumbs_root(), md5_path, doc_id + "." + extension)
     return path
 
 
@@ -94,12 +93,12 @@ def test_download_preview():
     """
     Should get 200 from akara and input JSON when there is bad thumbnail URL.
     """
-    GOOD_DATA = { "id":"clemson--cfb004",
+    GOOD_DATA = { "id":"14428451F16BD0933F32DED43A42654A",
         URL_FIELD_NAME:"http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/cfb&CISOPTR=1040"
     }
     
     INPUT = json.dumps(GOOD_DATA)
-    GOOD_DATA[URL_FILE_PATH] = _get_file_path("clemson--cfb004", "jpg")
+    GOOD_DATA[URL_FILE_PATH] = _get_file_path("14428451F16BD0933F32DED43A42654A", "jpg")
     EXPECTED_OUTPUT = json.dumps(GOOD_DATA)
     resp,content = _get_server_response(INPUT)
 
@@ -111,7 +110,7 @@ def test_downloading_with_bad_URL():
     """
     Should return the same json, when the image URL gives 500.
     """
-    GOOD_DATA = { "id":"clemson--cfb004",
+    GOOD_DATA = { "id":"14428451F16BD0933F32DED43A42654A",
             URL_FIELD_NAME: server() + 'download_test_image?extension=500'
     }
     INPUT = json.dumps(GOOD_DATA)
@@ -125,7 +124,7 @@ def _check_downloading_image(extension, expected_content):
     Calls the download_preview service passing thumbnail URL to download_test_image
     service, which 
     """
-    id = 'clemson_--__qkjwerjerj_akjdasdhwqe-399394'
+    id = '14428451F16BD0933F32DED43A42654A'
     GOOD_DATA = { "id":id,
             URL_FIELD_NAME: server() + 'download_test_image?extension=' + extension
     }
