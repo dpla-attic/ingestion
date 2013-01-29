@@ -71,25 +71,22 @@ def generate_file_path(id, file_extension):
 
         Generated values for the algorithm steps:
 
+        TODO: Update doc here for the new algorithm.
+
         CLEARED_ID: clemsontest__hcc001_hcc016
         FILE_NAME:  clemsontest__hcc001_hcc016.jpg
         HASHED_ID:  8E393B3B5DA0E0B3A7AEBFB91FE1278A
         PATH:       8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/
         FULL_NAME:  /main_pic_dir/8E/39/3B/3B/5D/A0/E0/B3/A7/AE/BF/B9/1F/E1/27/8A/clemsontest__hcc001_hcc016.jpg
     """
-
+    
+    cleared_id = id.upper()
     logger.debug("Generating filename for document with id: [%s].", id)
 
-    cleared_id = re.sub(r'[-]', '_', id)
-    logger.debug("Cleared id: " + cleared_id)
-    
     fname = "%s%s" % (cleared_id, file_extension)
     logger.debug("File name:  " + fname)
     
-    md5sum = id.upper()
-    logger.debug("Hashed id:  " + md5sum)
-    
-    path = re.sub("(.{2})", "\\1" + os.sep, md5sum, re.DOTALL)
+    path = re.sub("(.{2})", "\\1" + os.sep, cleared_id, re.DOTALL)
     logger.debug("PATH:       " + path)
     
     path = os.path.join(THUMBS_ROOT_PATH, path)
@@ -191,7 +188,7 @@ def download_image(url, id):
         conn.close()
         local_file.close()
 
-    logger.debug("Downloaded file from [%s] to [%s].")
+    logger.debug("Downloaded file from [%s] to [%s]." % (url, fname, ))
     return fname
 
 
