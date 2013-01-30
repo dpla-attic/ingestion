@@ -26,13 +26,13 @@ def identify_preview_location(body, ctype):
         response.add_header('content-type', 'text/plain')
         return msg
 
-    if not data.has_key(u"source"):
-        logger.error("There is no 'source' key in JSON for doc [%s]." % data[u'id'])
+    if not data.has_key(u"object"):
+        logger.error("There is no 'object' key in JSON for doc [%s]." % data[u'id'])
         log_json()
         return body
 
-    url = data[u'source']
-    logger.debug("source = " + url)
+    url = data[u'object']
+    logger.debug("object = " + url)
     URL_FIELD_NAME = u"preview_source_url"
     p = url.split("u?")
 

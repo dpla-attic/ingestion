@@ -426,12 +426,12 @@ def test_identify_preview_location():
     INPUT = {
             u"something" : "x",
             u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104"
+            u"object"    : "http://repository.clemson.edu/u?/scp,104"
     }
     EXPECTED = {
             u"something" : "x",
             u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104",
+            u"object"    : "http://repository.clemson.edu/u?/scp,104",
             u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&CISOPTR=104"
     }
     url = server() + "identify_preview_location"
@@ -481,10 +481,10 @@ def test_identify_preview_location_bad_url():
     INPUT = {
             u"something" : u"x",
             u"somethink" : u"y",
-            u"source" : u""
+            u"object"    : u""
     }
     for bad_url in bad_urls:
-        INPUT[u"source"] = bad_url
+        INPUT[u"object"] = bad_url
         url = server() + "identify_preview_location"
         print url
         resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
