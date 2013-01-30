@@ -4,27 +4,8 @@ from server_support import server
 from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
-from dict_differ import DictDiffer
+from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
-
-def assert_same_jsons(this, that):
-    """
-    Checks if the dictionaries are the same.
-    It compares the keys and values.
-    Prints diff if they are not exact and throws exception.
-    """
-    d = DictDiffer(this, that)
-
-    if not d.same():
-        d.print_diff()
-        assert this == that
-
-def pinfo(*data):
-    """
-    Prints all the params in separate lines.
-    """
-    for d in data:
-        print d
 
 
 CT_JSON = {"Content-Type": "application/json"}
@@ -32,8 +13,6 @@ HEADERS = {
             "Content-Type": "application/json",
             "Context": "{}",
           }
-
-
 
 H = httplib2.Http()
 
@@ -286,6 +265,7 @@ def test_oaitodpla_date_parse_format_bogus_string():
     result = json.loads(content)
     assert "temporal" not in result
 
+@nottest
 def test_oaitodpla_date_parse_format_date_range():
     "Correctly transform a date of format 1960 - 1970"
     INPUT = {
@@ -306,26 +286,6 @@ def test_oaitodpla_date_parse_format_date_range():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
-
-def test_oaitodpla_date_parse_format_date_range():
-    "Correctly transform a date of format 1960-05-01 - 1960-05-15"
-    INPUT = {
-        "date" : "1960-05-01 - 1960-05-15"
-    }
-    EXPECTED = {
-        u'temporal' : [{
-            u'start' : u'1960-05-01',
-            u'end' : u'1960-05-15'
-        }]
-    }
-
-    url = server() + "oai-to-dpla"
-
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-    assert str(resp.status).startswith("2")
-
-    result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
 
 def test_oaitodpla_date_pull_from_coverage_field():
     "Pull a date out of the coverage field"
@@ -497,17 +457,19 @@ def test_identify_preview_location_bad_json():
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
+
 def test_identify_preview_location_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
     """
-    INPUT = '{"aaa":"bbb"}'
+    INPUT = '{"aaa":"bbb", "id":"asa"}'
     url = server() + "identify_preview_location"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
 
     pinfo(url,resp,content)
 
     assert_same_jsons(INPUT, content)
+
 
 def test_identify_preview_location_bad_url():
     """
