@@ -77,6 +77,7 @@ MODULES = [
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
     "dplaingestion.akamod.enrich-format",
+    "dplaingestion.akamod.enrich-date",
     "dplaingestion.akamod.select-id",
     "dplaingestion.akamod.shred",
     "dplaingestion.akamod.geocode",

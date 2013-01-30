@@ -4,9 +4,10 @@
     ], 
     "name": "scdl-usc", 
     "enrichments_rec": [
-        "http://localhost:8872/select-id",
+        "http://localhost:8872/select-id", 
         "http://localhost:8872/oai-to-dpla", 
         "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
+        "http://localhost:8872/enrich-date?prop=created", 
         "http://localhost:8872/enrich-subject", 
         "http://localhost:8872/enrich-type", 
         "http://localhost:8872/enrich-format", 
@@ -132,7 +133,7 @@
         "blaeu", 
         "simms1"
     ], 
-    "last_checked": "2013-01-23T16:29:33.827586", 
+    "last_checked": "2013-01-30T00:05:59.071164", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-usc", 
         "name": "South Carolina Digital Library - University of South Carolina"

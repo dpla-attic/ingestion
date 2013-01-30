@@ -4,9 +4,10 @@
     ], 
     "name": "scdl-charleston", 
     "enrichments_rec": [
-        "http://localhost:8872/select-id",
+        "http://localhost:8872/select-id", 
         "http://localhost:8872/oai-to-dpla", 
         "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
+        "http://localhost:8872/enrich-date?prop=created", 
         "http://localhost:8872/enrich-subject", 
         "http://localhost:8872/enrich-type", 
         "http://localhost:8872/enrich-format", 
@@ -115,7 +116,7 @@
         "pms", 
         "fpp"
     ], 
-    "last_checked": "2013-01-23T15:59:56.554780", 
+    "last_checked": "2013-01-29T23:29:49.629023", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-charleston", 
         "name": "South Carolina Digital Library - College of Charleston"

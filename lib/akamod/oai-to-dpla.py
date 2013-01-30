@@ -48,97 +48,6 @@ def spatial_transform(d):
         spatial.append(sp)
     return {"spatial":spatial}
 
-def created_transform(d):
-    created = {
-        "start": d["datestamp"],
-        "end": d["datestamp"]
-    }
-    return {"created":created}
-
-DATE_RANGE_RE = r'(\S+)\s*-\s*(\S+)'
-def split_date(d):
-    range = [robust_date_parser(x) for x in re.search(DATE_RANGE_RE,d).groups()]
-    return range
-
-DATE_8601 = '%Y-%m-%d'
-def robust_date_parser(d):
-    """
-    Robust wrapper around some date parsing libs, making a best effort to return
-    a single 8601 date from the input string. No range checking is performed, and
-    any date other than the first occuring will be ignored.
-
-    We use timelib for its ability to make at least some sense of invalid dates,
-    e.g. 2012/02/31 -> 2012/03/03
-
-    We rely only on dateutil.parser for picking out dates from nearly arbitrary
-    strings (fuzzy=True), but at the cost of being forgiving of invalid dates
-    in those kinds of strings.
-
-    Returns None if it fails
-    """
-    dd = None
-    try:
-        dd = dateutil_parse(d,fuzzy=True,default=DEFAULT_DATETIME)
-    except:
-        try:
-            dd = timelib.strtodatetime(d)
-        except ValueError:
-            pass
-
-    if dd:
-        ddiso = dd.isoformat()
-        return ddiso[:ddiso.index('T')]
-
-    return dateparser.to_iso8601(d.replace('ca.','').strip()) # simple cleanup prior to parse
-
-def parse_date_or_range(d):
-    if ' - ' in d: # FIXME could be more robust here, e.g. use year regex
-        a,b = split_date(d)
-    else:
-        parsed = robust_date_parser(d)
-        a,b = parsed,parsed
-    return a,b
-
-DATE_TESTS = {
-    "ca. July 1896": ("1896-07-01","1896-07-01"), # fuzzy dates
-    "1999.11.01": ("1999-11-01","1999-11-01"), # period delim
-    "2012-02-31": ("2012-03-02","2012-03-02"), # invalid date cleanup
-    "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
-    "5/7/2012": ("2012-05-07","2012-05-07"), # slash delim MDY
-    "1999 - 2004": ("1999-01-01","2004-01-01"), # year range
-    " 1999   -   2004  ": ("1999-01-01","2004-01-01"), # range whitespace
-}
-def test_parse_date_or_range():
-    for i in DATE_TESTS:
-        res = parse_date_or_range(i)
-        assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
-
-def temporal_transform(d):
-    temporal = []
-
-    # First look at the date field, and log any parsing errors
-    for t in (d["date"] if not isinstance(d["date"],basestring) else [d["date"]]):
-        a,b = parse_date_or_range(t)
-        if a is not None and b is not None:
-            temporal.append( {
-                "start": a,
-                "end": b
-            })
-        else:
-            logger.debug("Could not parse date: " + t)
-
-    # Then, check out the 'coverage' field, since dates may be there
-    if "coverage" in d:
-        for t in (d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]]):
-            a,b = parse_date_or_range(t)
-            if a is not None and b is not None:
-                temporal.append( {
-                    "start": a,
-                    "end": b
-                })
-
-    return {"temporal":temporal}
-
 def source_transform(d):
     source = ""
     if isinstance(d['handle'],basestring) and is_absolute(d['handle']):
@@ -151,21 +60,12 @@ def source_transform(d):
     return {"source":source}
 
 
-def subject_transform(d):
-    subject = []
-    for s in (d["subject"] if not isinstance(d["subject"],basestring) else [d["subject"]]):
-        subject.append({
-            "name" : s.strip()
-        })
-    return {"subject" : subject}
-
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
 TRANSFORMER = {
     "source"           : lambda d: {"contributor": d.get("source",None)},
     "original_record"  : lambda d: {"dplaSourceRecord": d.get("original_record",None)},
-    "datestamp"        : created_transform,
-    "date"             : temporal_transform,
+    "date"             : lambda d: {"created": d.get("date",None)},
     "coverage"         : spatial_transform,
     "title"            : lambda d: {"title": d.get("title",None)},
     "creator"          : lambda d: {"creator": d.get("creator",None)},
