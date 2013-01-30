@@ -46,8 +46,10 @@ def oaisetname(body,ctype,sets_service=None):
         return "Unable to parse sets service result as JSON: " + repr(content)
 
     for s in sets:
-        if s[0] == collection:
-             data[u'title'] = s[1]
+        if s['setSpec'] == collection:
+             data[u'title'] = s['setName']
+             if s['setDescription']:
+                 data[u'description'] = s['setDescription']
              break
 
     return json.dumps(data)

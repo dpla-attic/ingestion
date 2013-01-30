@@ -68,7 +68,7 @@ def couch_rev_check_recs(docs,src):
         for r in rows:
             revs[r["id"]] = r["value"]["rev"]
         for doc in docs:
-            id = doc['id']
+            id = doc['_id']
             if id in revs:
                 doc['_rev'] = revs[id]
     else:
@@ -129,15 +129,14 @@ def enrich(body,ctype):
             '@id' : at_id,
             'name' : enriched_collection.get('title',"")
         }
+        if 'description' in enriched_collection:
+            record[u'collection']['description'] = enriched_collection.get('description',"")
 
-        record[u'id'] = COUCH_REC_ID_BUILDER(source_name,record)
         record[u'ingestType'] = 'item'
         set_ingested_date(record)
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
-        if 'id' in doc:
-            doc[u'_id'] = doc[u'id']
         docs.append(doc)
 
     couch_rev_check_recs(docs,source_name)

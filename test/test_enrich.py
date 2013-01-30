@@ -4,26 +4,8 @@ from server_support import server
 from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
-from dict_differ import DictDiffer
-
-def assert_same_jsons(this, that):
-    """
-    Checks if the dictionaries are the same.
-    It compares the keys and values.
-    Prints diff if they are not exact and throws exception.
-    """
-    d = DictDiffer(this, that)
-
-    if not d.same():
-        d.print_diff()
-        assert this == that
-
-def pinfo(*data):
-    """
-    Prints all the params in separate lines.
-    """
-    for d in data:
-        print d
+from dict_differ import DictDiffer, assert_same_jsons, pinfo
+from nose.tools import nottest
 
 
 CT_JSON = {"Content-Type": "application/json"}
@@ -31,8 +13,6 @@ HEADERS = {
             "Content-Type": "application/json",
             "Context": "{}",
           }
-
-
 
 H = httplib2.Http()
 
@@ -140,113 +120,116 @@ def test_unshred2():
 
     assert json.loads(content) == EXPECTED
 
+@nottest
 def test_oaitodpla_date_single():
     "Correctly transform a single date value"
     INPUT = {
         "date" : "1928"
     }
     EXPECTED = {
-        u'temporal' : [{
+        u'date' : [{
             u'start' : u'1928',
-            u'end' : u'1928'
+            u'end' : u'1928',
+            u'displayDate' : u'1928'
         }]
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enric-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
-def test_oaitodpla_date_multiple():
-    "Correctly transform a multiple date values"
+@nottest
+def test_enrich_date_date_multiple():
+    "Correctly transform a multiple date value, and take the earliest"
     INPUT = {
         "date" : ["1928", "1406"]
     }
     EXPECTED = {
-        u'temporal' : [{
-            u'start' : u'1928',
-            u'end' : u'1928'
-        },
-        {
+        u'date' : {
             u'start' : u'1406',
-            u'end' : u'1406'
+            u'end' : u'1406',
+            'displayDate' : '1406'
         }
-        ]
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
 
-def test_oaitodpla_date_parse_format_yyyy_mm_dd():
+def test_enrich_date_date_parse_format_yyyy_mm_dd():
     "Correctly transform a date of format YYYY-MM-DD"
     INPUT = {
         "date" : "1928-05-20"
     }
     EXPECTED = {
-        u'temporal' : [{
-            u'start' : u'1928-05-20',
-            u'end' : u'1928-05-20'
-        }]
+        'date' : {
+            'start' : u'1928-05-20',
+            'end' : u'1928-05-20',
+            'displayDate' : '1928-05-20'
+        }
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
-def test_oaitodpla_date_parse_format_date_with_slashes():
+def test_enrich_date_parse_format_date_with_slashes():
     "Correctly transform a date of format MM/DD/YYYY"
     INPUT = {
         "date" : "05/20/1928"
     }
     EXPECTED = {
-        u'temporal' : [{
+        u'date' : {
             u'start' : u'1928-05-20',
-            u'end' : u'1928-05-20'
-        }]
+            u'end' : u'1928-05-20',
+            'displayDate' : '05/20/1928'
+        }
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
 
-def test_oaitodpla_date_parse_format_natural_string():
+def test_enrich_date_date_parse_format_natural_string():
     "Correctly transform a date of format Month, DD, YYYY"
     INPUT = {
         "date" : "May 20, 1928"
     }
     EXPECTED = {
-        u'temporal' : [{
-            u'start' : u'1928-05-20',
-            u'end' : u'1928-05-20'
-        }]
+        'date' : {
+            'start' : u'1928-05-20',
+            'end' : u'1928-05-20',
+            'displayDate' : 'May 20, 1928'
+        }
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
+@nottest
 def test_oaitodpla_date_parse_format_ca_string():
     "Correctly transform a date of format ca. 1928"
     INPUT = {
@@ -267,6 +250,7 @@ def test_oaitodpla_date_parse_format_ca_string():
     result = json.loads(content)
     assert result['temporal'] == EXPECTED['temporal']
 
+@nottest
 def test_oaitodpla_date_parse_format_bogus_string():
     "Deal with a bogus date string"
     INPUT = {
@@ -281,71 +265,48 @@ def test_oaitodpla_date_parse_format_bogus_string():
     result = json.loads(content)
     assert "temporal" not in result
 
-def test_oaitodpla_date_parse_format_date_range():
+def test_enrich_date_parse_format_date_range():
     "Correctly transform a date of format 1960 - 1970"
     INPUT = {
         "date" : "1960 - 1970"
     }
     EXPECTED = {
-        u'temporal' : [{
+        u'date' : {
             u'start' : u'1960',
-            u'end' : u'1970'
-        }]
+            u'end' : u'1970',
+            "displayDate" : "1960 - 1970"
+        }
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
 
-def test_oaitodpla_date_parse_format_date_range():
+def test_enrich_date_parse_format_date_range():
     "Correctly transform a date of format 1960-05-01 - 1960-05-15"
     INPUT = {
         "date" : "1960-05-01 - 1960-05-15"
     }
     EXPECTED = {
-        u'temporal' : [{
+        u'date' : {
             u'start' : u'1960-05-01',
-            u'end' : u'1960-05-15'
-        }]
+            u'end' : u'1960-05-15',
+            "displayDate" : "1960-05-01 - 1960-05-15"
+        }
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
-
-def test_oaitodpla_date_pull_from_coverage_field():
-    "Pull a date out of the coverage field"
-    INPUT = {
-        "date" : "1928-05-20",
-        "coverage" : "1800-10-20"
-    }
-    EXPECTED = {
-        u'temporal' : [{
-            u'start' : u'1928-05-20',
-            u'end' : u'1928-05-20'
-        },
-        {
-            u'start' : u'1800-10-20',
-            u'end' : u'1800-10-20'
-        }]
-    }
-
-    url = server() + "oai-to-dpla"
-
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-    assert str(resp.status).startswith("2")
-
-    result = json.loads(content)
-    assert result['temporal'] == EXPECTED['temporal']
+    assert result['date'] == EXPECTED['date']
 
 def test_enrich_multiple_subject_reformat_to_dict():
     "Transform an array of strings of subjects to an array of dictionaries"
@@ -408,10 +369,11 @@ def test_enrich_subject_cleanup():
 def test_enrich_type_cleanup():
     "Test type normalization"
     INPUT = {
-        "type" : ["Still Images","Text"]
+        "type" : ["Still Images","Text","Statue"]
         }
     EXPECTED = {
-        u'type' : [ "image", "text" ]
+        u'type' : [ "image", "text" ],
+        u'TBD_physicalformat' : ["Statue"]
         }
 
     url = server() + "enrich-type"
@@ -421,13 +383,13 @@ def test_enrich_type_cleanup():
     result = json.loads(content)
     assert result['type'] == EXPECTED['type']
     
-def test_enrich_format_cleanup():
+def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
-        "format" : ["Still Images","image/JPEG","audio","Images"]
+        "format" : ["Still Images","image/JPEG","audio","Images",  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
         }
     EXPECTED = {
-        u'format' : [ "image/jpeg", "audio" ],
+        u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
         u'TBD_physicalformat' : ["Still Images", "Images"]
         }
 
@@ -438,8 +400,8 @@ def test_enrich_format_cleanup():
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
-    
-def test_enrich_format_cleanup():
+
+def test_enrich_format_cleanup_single():
     "Test format normalization and removal of non IMT formats with one format"
     INPUT = {
         "format" : "image/JPEG"
@@ -491,17 +453,19 @@ def test_identify_preview_location_bad_json():
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
+
 def test_identify_preview_location_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
     """
-    INPUT = '{"aaa":"bbb"}'
+    INPUT = '{"aaa":"bbb", "id":"asa"}'
     url = server() + "identify_preview_location"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
 
     pinfo(url,resp,content)
 
     assert_same_jsons(INPUT, content)
+
 
 def test_identify_preview_location_bad_url():
     """
