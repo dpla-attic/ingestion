@@ -117,11 +117,25 @@ def test_simple_substitute_for_the_same_field():
 
 def test_simple_substitute_for_different_field():
     """
-    Should return substituted same json field.
+    Should return substituted another json field.
     """
     INPUT = '{"aaa":"bbb"}'
     EXPECTED_OUTPUT = '{"aaa":"bbb", "xxx":"BBB"}'
     resp,content = _get_server_response(INPUT, "aaa", "xxx", "test_substitute")
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
+
+def test_substitution_for_the_same_field_and_array():
+    """
+    Should return substituted json when original json is array.
+    """
+    data = {"xxx":"yyy", "aaa":["aa", "bbb", "ccc", "ddd"]}
+    INPUT = json.dumps(data)
+    data["aaa"] = ["aa", "BBB", "CCC", "DDD"]
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp,content = _get_server_response(INPUT, "aaa", "aaa", "test_substitute")
+    print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
