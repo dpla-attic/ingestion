@@ -58,7 +58,6 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
             if dd:
                 ddiso = dd.isoformat()
                 return ddiso[:ddiso.index('T')]
-
         return dd
 
     def parse_date_or_range(d):
@@ -70,14 +69,15 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
         return a,b
 
     DATE_TESTS = {
-        "ca. July 1896": ("1896-07-01","1896-07-01"), # fuzzy dates
+        "ca. July 1896": ("1896-07","1896-07"), # fuzzy dates
         "1999.11.01": ("1999-11-01","1999-11-01"), # period delim
         "2012-02-31": ("2012-03-02","2012-03-02"), # invalid date cleanup
         "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
         "5/7/2012": ("2012-05-07","2012-05-07"), # slash delim MDY
-        "1999 - 2004": ("1999-01-01","2004-01-01"), # year range
-        " 1999   -   2004  ": ("1999-01-01","2004-01-01"), # range whitespace
+        "1999 - 2004": ("1999","2004"), # year range
+        " 1999   -   2004  ": ("1999","2004"), # range whitespace
         }
+
     def test_parse_date_or_range():
         for i in DATE_TESTS:
             res = parse_date_or_range(i)
@@ -96,13 +96,12 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
             date_candidates = []
             for s in (data[p] if not isinstance(data[p],basestring) else [data[p]]):
                 a,b = parse_date_or_range(s)
-                if a is not None and b is not None:
-                    date_candidates.append( {
-                            "start": a,
-                            "end": b,
-                            "displayDate" : s
-                            })
-        date_candidates.sort(key=lambda d: d["start"])
+                date_candidates.append( {
+                        "start": a,
+                        "end": b,
+                        "displayDate" : s
+                        })
+        date_candidates.sort(key=lambda d: d["start"] if d["start"] is not None else "9999-12-31")
         if len(date_candidates) > 0:
             data[prop] = date_candidates[0]            
 

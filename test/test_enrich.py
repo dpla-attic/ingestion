@@ -120,21 +120,20 @@ def test_unshred2():
 
     assert json.loads(content) == EXPECTED
 
-@nottest
-def test_oaitodpla_date_single():
-    "Correctly transform a single date value"
+def test_enrich_dates_bogus_date():
+    "Correctly transform a date value that cannot be parsed"
     INPUT = {
-        "date" : "1928"
+        "date" : "could be 1928ish?"
     }
     EXPECTED = {
-        u'date' : [{
-            u'start' : u'1928',
-            u'end' : u'1928',
-            u'displayDate' : u'1928'
-        }]
+        u'date' : {
+            'start' : None,
+            'end' : None,
+            'displayDate' : 'could be 1928ish?'
+        }
     }
 
-    url = server() + "enric-date"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -142,7 +141,28 @@ def test_oaitodpla_date_single():
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
 
-@nottest
+
+def test_enrich_date_single():
+    "Correctly transform a single date value"
+    INPUT = {
+        "date" : "1928"
+    }
+    EXPECTED = {
+        u'date' : {
+            'start' : u'1928',
+            'end' : u'1928',
+            'displayDate' : '1928'
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
 def test_enrich_date_date_multiple():
     "Correctly transform a multiple date value, and take the earliest"
     INPUT = {
