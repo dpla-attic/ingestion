@@ -86,8 +86,8 @@ MODULES = [
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.identify_preview_location",
     "dplaingestion.akamod.download_preview",
-
     "dplaingestion.akamod.download_test_image",
+    "dplaingestion.akamod.lookup",
     ]
 
 class download_preview:
