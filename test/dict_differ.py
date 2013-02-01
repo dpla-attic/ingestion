@@ -29,12 +29,12 @@ class DictDiffer:
 
     def __init__(self, first, second):
 
-        if isinstance(first, str) or isinstance(first, unicode):
+        if isinstance(first, basestring):
             self.first = json.loads(first)
         else:
             self.first = first
 
-        if isinstance(second, str) or isinstance(second, unicode):
+        if isinstance(second, basestring):
             self.second = json.loads(second)
         else:
             self.second = second
