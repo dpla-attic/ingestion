@@ -148,7 +148,7 @@ def test_artstor_source_fetching():
     EXPECTED_SOURCE = "http://www.artstor.org/artstor/ViewImages?id=8DtZYyMmJloyLyw7eDt5QHgr&userId=gDBAdA%3D%3D"
 
     url = server() + "artstor_select_isshownat"
-    resp,content = H.request(url,"POST",body=INPUT_JSON,headers=CT_JSON)
+    resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
     FETCHED_SOURCE = json.loads(content)[u"source"]

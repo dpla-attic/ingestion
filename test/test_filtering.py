@@ -28,7 +28,7 @@ def test_filtering():
         "prop1": "value1"
     }
     url = server() + "filter_empty_values"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=json.dumps(INPUT), headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -50,7 +50,7 @@ def test_filtering_with_ignore():
         "ignore_me": ""
     }
     url = server() + "filter_empty_values?ignore_key=ignore_me"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=json.dumps(INPUT), headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -312,7 +312,7 @@ def test_artstor_doc_filtering():
     )
 
     url = server() + "filter_empty_values?ignore_key=dplaSourceRecord"
-    resp,content = H.request(url,"POST",body=INPUT_JSON,headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED

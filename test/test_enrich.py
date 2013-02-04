@@ -439,6 +439,27 @@ def test_enrich_format_cleanup_single():
     assert not 'TBD_physicalformat' in result.keys()
 
 
+def test_physical_format_from_format_and_type():
+    """
+    Test physical format appending from format and type fields
+    """
+    INPUT = {
+        "format": ["76.8 x 104 cm", "Oil on canvas"],
+        "type": ["Paintings", "Painting"]
+    }
+    EXPECTED = {
+        "TBD_physicalformat": ["Paintings", "Painting", "76.8 x 104 cm", "Oil on canvas"]
+    }
+
+    resp, content = H.request(server() + "enrich-type", "POST", body=json.dumps(INPUT), headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    assert json.loads(content)['TBD_physicalformat'] == ["Paintings", "Painting"]
+    resp, content = H.request(server() + "enrich-format", "POST", body=content, headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
+
+
 def test_identify_preview_location():
     """
     Should add a thumbnail URL made of the source URL.
