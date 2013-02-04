@@ -2,7 +2,7 @@
  Akara module that cleans empty lives of given json;
  to test locally, save TEST_EXAMPLE to local file (i.e. artstor_doc.js) and then run:
 
- url -X POST -d @test/artstor_doc.js -H "Content-Type: application/json" http://localhost:8879/filter_empty_values
+ curl -X POST -d @test/artstor_doc.js -H "Content-Type: application/json" http://localhost:8879/filter_empty_values
 """
 
 __author__ = 'Alexey R.'

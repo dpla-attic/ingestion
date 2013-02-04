@@ -1,10 +1,7 @@
-import sys
 from server_support import server
 
 from amara.thirdparty import httplib2
-import os
 from amara.thirdparty import json
-from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
 

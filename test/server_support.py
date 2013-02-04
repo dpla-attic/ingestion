@@ -89,6 +89,7 @@ MODULES = [
 
     "dplaingestion.akamod.download_test_image",
     "dplaingestion.akamod.filter-empty-values",
+    "dplaingestion.akamod.artstor-select-isshownat",
     ]
 
 class download_preview:
