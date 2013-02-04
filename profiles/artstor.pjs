@@ -6,6 +6,7 @@
     "enrichments_rec": [
         "http://localhost:8879/select-id?prop=id", 
         "http://localhost:8879/oai-to-dpla", 
+        "http://localhost:8879/artstor_select_isshownat", 
         "http://localhost:8879/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
         "http://localhost:8879/enrich-date?prop=created", 
         "http://localhost:8879/enrich-subject", 
@@ -17,7 +18,7 @@
     "subresources": [
         "SetDPLA"
     ], 
-    "last_checked": "2013-02-02T01:42:56.376360", 
+    "last_checked": "2013-02-04T20:55:00.759991", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
         "name": "ARTstor OAICatMuseum"
