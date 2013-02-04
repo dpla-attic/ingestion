@@ -18,7 +18,9 @@ H = httplib2.Http()
 
 BASIC_URL = server() + "lookup"
 
-def _get_server_response(body, input_field=None, output_field=None, subst=None):
+
+def _get_server_response(body, input_field=None,
+        output_field=None, subst=None):
     """
     Returns response from server using provided url.
     """
@@ -42,7 +44,7 @@ def test_bad_INPUT_json():
     Should return 500 when getting bad JSON.
     """
     INPUT = '{"aaabbb: eeee}'
-    resp,content = _get_server_response(INPUT, "a", "b")
+    resp, content = _get_server_response(INPUT, "a", "b")
     assert resp.status == 500
 
 
@@ -51,7 +53,7 @@ def test_no_params():
     Should return 500 for no params.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = _get_server_response(INPUT)
+    resp, content = _get_server_response(INPUT)
     assert resp.status == 500
 
 
@@ -60,7 +62,7 @@ def test_missing_input_field():
     Should return 500 for no param.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = _get_server_response(INPUT)
+    resp, content = _get_server_response(INPUT)
     assert resp.status == 500
 
 
@@ -69,7 +71,7 @@ def test_missing_field_in_json():
     Should return the same json for missing INPUT field in json.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = _get_server_response(INPUT, "a", "b", "TEST_SUBSTITUTE")
+    resp, content = _get_server_response(INPUT, "a", "b", "TEST_SUBSTITUTE")
     assert resp.status == 200
     assert_same_jsons(INPUT, INPUT)
 
@@ -79,7 +81,7 @@ def test_missing_output_field():
     Should return 500 when the OUTPUT field is missing from URL.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = _get_server_response(INPUT, "a", "", "TEST_SUBSTITUTE")
+    resp, content = _get_server_response(INPUT, "a", "", "TEST_SUBSTITUTE")
     assert resp.status == 500
 
 
@@ -88,7 +90,7 @@ def test_substitution_with_missing_subst_dict():
     Should return the same JSON when the key is missing from substitution.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = _get_server_response(INPUT, "aaa", "aaa", "aaa")
+    resp, content = _get_server_response(INPUT, "aaa", "aaa", "aaa")
     print (content)
     assert resp.status == 500
     assert content == "Missing substitution dictionary"
@@ -99,7 +101,8 @@ def test_substitution_with_missing_key():
     Should return the same JSON when the key is missing from substitution.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp,content = _get_server_response(INPUT, "bbb", "bbb", "test_substitute")
+    resp, content = _get_server_response(INPUT, "bbb",
+            "bbb", "test_substitute")
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -110,7 +113,8 @@ def test_simple_substitute_for_the_same_field():
     """
     INPUT = '{"aaa":"bbb"}'
     EXPECTED_OUTPUT = '{"aaa":"BBB"}'
-    resp,content = _get_server_response(INPUT, "aaa", "aaa", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa",
+            "aaa", "test_substitute")
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
@@ -121,7 +125,8 @@ def test_simple_substitute_for_different_field():
     """
     INPUT = '{"aaa":"bbb"}'
     EXPECTED_OUTPUT = '{"aaa":"bbb", "xxx":"BBB"}'
-    resp,content = _get_server_response(INPUT, "aaa", "xxx", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa",
+            "xxx", "test_substitute")
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
@@ -130,11 +135,12 @@ def test_substitution_for_the_same_field_and_array():
     """
     Should return substituted json when original json is array.
     """
-    data = {"xxx":"yyy", "aaa":["aa", "bbb", "ccc", "ddd"]}
+    data = {"xxx": "yyy", "aaa": ["aa", "bbb", "ccc", "ddd"]}
     INPUT = json.dumps(data)
     data["aaa"] = ["aa", "BBB", "CCC", "DDD"]
     EXPECTED_OUTPUT = json.dumps(data)
-    resp,content = _get_server_response(INPUT, "aaa", "aaa", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa",
+            "aaa", "test_substitute")
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
