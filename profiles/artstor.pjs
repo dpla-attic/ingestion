@@ -12,7 +12,7 @@
         "http://localhost:8879/enrich-type", 
         "http://localhost:8879/enrich-format", 
         "http://localhost:8879/identify_preview_location", 
-        "http://localhost:8879/filter_empty_values"
+        "http://localhost:8879/filter_empty_values?ignore_key=dplaSourceRecord"
     ], 
     "subresources": [
         "SetDPLA"

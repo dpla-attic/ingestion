@@ -88,6 +88,7 @@ MODULES = [
     "dplaingestion.akamod.download_preview",
 
     "dplaingestion.akamod.download_test_image",
+    "dplaingestion.akamod.filter-empty-values",
     ]
 
 class download_preview:
