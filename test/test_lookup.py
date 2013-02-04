@@ -146,5 +146,19 @@ def test_substitution_for_the_same_field_and_array():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+def test_substitution_for_differnt_fields_and_array():
+    """
+    Should return substituted json when original json is array.
+    """
+    data = {"xxx": "yyy", "aaa": ["aa", "bbb", "ccc", "ddd"]}
+    INPUT = json.dumps(data)
+    data["zzz"] = ["aa", "BBB", "CCC", "DDD"]
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa",
+            "zzz", "test_substitute")
+    print_error_log()
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
