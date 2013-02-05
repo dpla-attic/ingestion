@@ -79,7 +79,7 @@ MODULES = [
     "dplaingestion.akamod.oai-to-dpla",
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
-    "dplaingestion.akamod.identify_preview_location",
+    "dplaingestion.akamod.contentdm-identify-object",
     ]
 
 """ % dict(config_root = config_root,

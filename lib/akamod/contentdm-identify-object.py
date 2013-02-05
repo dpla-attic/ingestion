@@ -3,8 +3,8 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
-@simple_service('POST', 'http://purl.org/la/dp/identify_preview_location', 'identify_preview_location', 'application/json')
-def identify_preview_location(body, ctype):
+@simple_service('POST', 'http://purl.org/la/dp/identify_preview_location', 'contentdm-identify-object', 'application/json')
+def contentdm_identify_object(body, ctype):
     """
     Responsible for: adding a field to a document with the URL where we should 
     expect to the find the thumbnail
