@@ -18,7 +18,7 @@ HTTP_TYPE_TEXT = 'text/plain'
 HTTP_HEADER_TYPE = 'Content-Type'
 
 @simple_service('POST', 'http://purl.org/la/dp/artstor_select_isshownat', 'artstor_select_isshownat', HTTP_TYPE_JSON)
-def filter_empty_values_endpoint(body, ctype):
+def artstor_select_source(body, ctype):
 
     LOG_JSON_ON_ERROR = True
     def log_json():
