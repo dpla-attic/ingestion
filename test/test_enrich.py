@@ -249,6 +249,48 @@ def test_enrich_date_date_parse_format_natural_string():
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
 
+def test_enrich_date_date_parse_format_ca_string():
+    """Correctly transform a date with circa abbreviation (ca.)"""
+    INPUT = {
+        "date" : "ca. May 1928"
+    }
+    EXPECTED = {
+        'date' : {
+            'start' : u'1928-05',
+            'end' : u'1928-05',
+            'displayDate' : 'ca. May 1928'
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
+def test_enrich_date_date_parse_format_c_string():
+    """Correctly transform a date with circa abbreviation (c.)"""
+    INPUT = {
+        "date" : "c. 1928"
+    }
+    EXPECTED = {
+        'date' : {
+            'start' : u'1928',
+            'end' : u'1928',
+            'displayDate' : 'c. 1928'
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
 @nottest
 def test_oaitodpla_date_parse_format_ca_string():
     "Correctly transform a date of format ca. 1928"
@@ -285,8 +327,8 @@ def test_oaitodpla_date_parse_format_bogus_string():
     result = json.loads(content)
     assert "temporal" not in result
 
-def test_enrich_date_parse_format_date_range():
-    "Correctly transform a date of format 1960 - 1970"
+def test_enrich_date_parse_format_date_range1():
+    """Correctly transform a date of format 1960 - 1970"""
     INPUT = {
         "date" : "1960 - 1970"
     }
@@ -307,8 +349,8 @@ def test_enrich_date_parse_format_date_range():
     assert result['date'] == EXPECTED['date']
 
 
-def test_enrich_date_parse_format_date_range():
-    "Correctly transform a date of format 1960-05-01 - 1960-05-15"
+def test_enrich_date_parse_format_date_range2():
+    """Correctly transform a date of format 1960-05-01 - 1960-05-15"""
     INPUT = {
         "date" : "1960-05-01 - 1960-05-15"
     }
@@ -317,6 +359,27 @@ def test_enrich_date_parse_format_date_range():
             u'start' : u'1960-05-01',
             u'end' : u'1960-05-15',
             "displayDate" : "1960-05-01 - 1960-05-15"
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
+def test_enrich_date_parse_format_date_range3():
+    """Correctly transform a date of format 1960-1970"""
+    INPUT = {
+        "date" : "1960-1970"
+    }
+    EXPECTED = {
+        u'date' : {
+            u'start' : u'1960',
+            u'end' : u'1970',
+            "displayDate" : "1960-1970"
         }
     }
 
