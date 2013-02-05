@@ -120,21 +120,20 @@ def test_unshred2():
 
     assert json.loads(content) == EXPECTED
 
-@nottest
-def test_oaitodpla_date_single():
-    "Correctly transform a single date value"
+def test_enrich_dates_bogus_date():
+    "Correctly transform a date value that cannot be parsed"
     INPUT = {
-        "date" : "1928"
+        "date" : "could be 1928ish?"
     }
     EXPECTED = {
-        u'date' : [{
-            u'start' : u'1928',
-            u'end' : u'1928',
-            u'displayDate' : u'1928'
-        }]
+        u'date' : {
+            'start' : None,
+            'end' : None,
+            'displayDate' : 'could be 1928ish?'
+        }
     }
 
-    url = server() + "enric-date"
+    url = server() + "enrich-date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -142,7 +141,28 @@ def test_oaitodpla_date_single():
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
 
-@nottest
+
+def test_enrich_date_single():
+    "Correctly transform a single date value"
+    INPUT = {
+        "date" : "1928"
+    }
+    EXPECTED = {
+        u'date' : {
+            'start' : u'1928',
+            'end' : u'1928',
+            'displayDate' : '1928'
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
 def test_enrich_date_date_multiple():
     "Correctly transform a multiple date value, and take the earliest"
     INPUT = {
@@ -229,6 +249,48 @@ def test_enrich_date_date_parse_format_natural_string():
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
 
+def test_enrich_date_date_parse_format_ca_string():
+    """Correctly transform a date with circa abbreviation (ca.)"""
+    INPUT = {
+        "date" : "ca. May 1928"
+    }
+    EXPECTED = {
+        'date' : {
+            'start' : u'1928-05',
+            'end' : u'1928-05',
+            'displayDate' : 'ca. May 1928'
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
+def test_enrich_date_date_parse_format_c_string():
+    """Correctly transform a date with circa abbreviation (c.)"""
+    INPUT = {
+        "date" : "c. 1928"
+    }
+    EXPECTED = {
+        'date' : {
+            'start' : u'1928',
+            'end' : u'1928',
+            'displayDate' : 'c. 1928'
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
 @nottest
 def test_oaitodpla_date_parse_format_ca_string():
     "Correctly transform a date of format ca. 1928"
@@ -265,8 +327,8 @@ def test_oaitodpla_date_parse_format_bogus_string():
     result = json.loads(content)
     assert "temporal" not in result
 
-def test_enrich_date_parse_format_date_range():
-    "Correctly transform a date of format 1960 - 1970"
+def test_enrich_date_parse_format_date_range1():
+    """Correctly transform a date of format 1960 - 1970"""
     INPUT = {
         "date" : "1960 - 1970"
     }
@@ -287,8 +349,8 @@ def test_enrich_date_parse_format_date_range():
     assert result['date'] == EXPECTED['date']
 
 
-def test_enrich_date_parse_format_date_range():
-    "Correctly transform a date of format 1960-05-01 - 1960-05-15"
+def test_enrich_date_parse_format_date_range2():
+    """Correctly transform a date of format 1960-05-01 - 1960-05-15"""
     INPUT = {
         "date" : "1960-05-01 - 1960-05-15"
     }
@@ -297,6 +359,27 @@ def test_enrich_date_parse_format_date_range():
             u'start' : u'1960-05-01',
             u'end' : u'1960-05-15',
             "displayDate" : "1960-05-01 - 1960-05-15"
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
+def test_enrich_date_parse_format_date_range3():
+    """Correctly transform a date of format 1960-1970"""
+    INPUT = {
+        "date" : "1960-1970"
+    }
+    EXPECTED = {
+        u'date' : {
+            u'start' : u'1960',
+            u'end' : u'1970',
+            "displayDate" : "1960-1970"
         }
     }
 
@@ -417,6 +500,27 @@ def test_enrich_format_cleanup_single():
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
     assert not 'TBD_physicalformat' in result.keys()
+
+
+def test_physical_format_from_format_and_type():
+    """
+    Test physical format appending from format and type fields
+    """
+    INPUT = {
+        "format": ["76.8 x 104 cm", "Oil on canvas"],
+        "type": ["Paintings", "Painting"]
+    }
+    EXPECTED = {
+        "TBD_physicalformat": ["Paintings", "Painting", "76.8 x 104 cm", "Oil on canvas"]
+    }
+
+    resp, content = H.request(server() + "enrich-type", "POST", body=json.dumps(INPUT), headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    assert json.loads(content)['TBD_physicalformat'] == ["Paintings", "Painting"]
+    resp, content = H.request(server() + "enrich-format", "POST", body=content, headers=HEADERS)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
 
 
 def test_identify_preview_location():

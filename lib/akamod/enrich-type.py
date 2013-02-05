@@ -6,7 +6,7 @@ import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-type', 'enrich-type', 'application/json')
 def enrichtype(body,ctype,action="enrich-type",prop="type", alternate="TBD_physicalformat"):
-    '''   
+    """
     Service that accepts a JSON document and enriches the "type" field of that document
     by: 
 
@@ -17,7 +17,7 @@ def enrichtype(body,ctype,action="enrich-type",prop="type", alternate="TBD_physi
     
     By default works on the 'type' field, but can be overridden by passing the name of the field to use
     as a parameter
-    '''   
+    """
 
     REGEXPS = ('images','image'), ('still image','image')
     DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image', 'interactive resource', 'model', 'party', 'physical object',
@@ -34,22 +34,22 @@ def enrichtype(body,ctype,action="enrich-type",prop="type", alternate="TBD_physi
 
     try :
         data = json.loads(body)
-    except:
+    except Exception:
         response.code = 500
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
     if prop in data:
         dctype = []
-        physicalFormat = []
+        physicalFormat = list(data[alternate]) if alternate in data else []
         for s in (data[prop] if not isinstance(data[prop],basestring) else [data[prop]]):
             dctype.append(cleanup(s)) if is_dc_type(cleanup(s)) else physicalFormat.append(s)
 
-        if len(dctype) > 0:
+        if dctype:
             data[prop] = dctype[0] if len(dctype) == 1 else dctype
         else:
             del data[prop]
-        if len(physicalFormat) > 0:
+        if physicalFormat:
             data[alternate] = physicalFormat[0] if len(physicalFormat) == 1 else physicalFormat
 
     return json.dumps(data)

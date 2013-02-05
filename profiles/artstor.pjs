@@ -1,0 +1,28 @@
+{
+    "enrichments_coll": [
+        "http://localhost:8879/oai-set-name?sets_service=http://localhost:8879/oai.listsets.json?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler"
+    ], 
+    "name": "artstor", 
+    "enrichments_rec": [
+        "http://localhost:8879/select-id?prop=id", 
+        "http://localhost:8879/oai-to-dpla", 
+        "http://localhost:8879/artstor_select_isshownat", 
+        "http://localhost:8879/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
+        "http://localhost:8879/enrich-date?prop=created", 
+        "http://localhost:8879/enrich-subject", 
+        "http://localhost:8879/enrich-type", 
+        "http://localhost:8879/enrich-format", 
+        "http://localhost:8879/artstor_preview_location",
+        "http://localhost:8879/filter_empty_values?ignore_key=dplaSourceRecord"
+    ], 
+    "subresources": [
+        "SetDPLA"
+    ], 
+    "last_checked": "2013-02-05T18:29:41.395772", 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/artstor", 
+        "name": "ARTstor OAICatMuseum"
+    }, 
+    "type": "oai", 
+    "endpoint_URL": "http://localhost:8879/dpla-list-records?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler&oaiset="
+}

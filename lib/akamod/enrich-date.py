@@ -9,13 +9,13 @@ from zen import dateparser
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-date', 'enrich-date', 'application/json')
 def enrichdate(body,ctype,action="enrich-format",prop="date"):
-    '''   
+    """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
 
     a) Looks in the list of fields specified by the 'prop' parameter
     b) Extracts all dates, and sets the created date to the earliest date 
-    '''   
+    """
 
     # default date used by dateutil-python to populate absent date elements during parse,
     # e.g. "1999" would become "1999-01-01" instead of using the current month/day
@@ -43,7 +43,7 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
         
         Returns None if it fails
         """
-        dd = dateparser.to_iso8601(d.replace('ca.','').strip()) # simple cleanup prior to parse
+        dd = dateparser.to_iso8601(re.sub("(ca\.|c\.)", "", d, count=0, flags=re.I).strip()) # simple cleanup prior to parse
         if dd is None:
             try:
                 dd = dateutil_parse(d,fuzzy=True,default=DEFAULT_DATETIME)
@@ -58,26 +58,34 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
             if dd:
                 ddiso = dd.isoformat()
                 return ddiso[:ddiso.index('T')]
-
         return dd
 
+    YEAR_RANGE_PROBE_RE = re.compile("(\d{4})\s*-\s*(\d{4})")
     def parse_date_or_range(d):
-        if ' - ' in d: # FIXME could be more robust here, e.g. use year regex
-            a,b = split_date(d)
+        # FIXME could be more robust here,
+        # e.g. use date range regex to handle:
+        # June 1941 - May 1945
+        # 1941-06-1945-05
+        # and do not confuse with just YYYY-MM-DD regex
+        if ' - ' in d or YEAR_RANGE_PROBE_RE.match(d):
+            a, b = split_date(d)
         else:
             parsed = robust_date_parser(d)
-            a,b = parsed,parsed
-        return a,b
+            a, b = parsed, parsed
+        return a, b
 
     DATE_TESTS = {
-        "ca. July 1896": ("1896-07-01","1896-07-01"), # fuzzy dates
+        "ca. July 1896": ("1896-07","1896-07"), # fuzzy dates
+        "c. 1896": ("1896","1896"), # fuzzy dates
         "1999.11.01": ("1999-11-01","1999-11-01"), # period delim
         "2012-02-31": ("2012-03-02","2012-03-02"), # invalid date cleanup
         "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
         "5/7/2012": ("2012-05-07","2012-05-07"), # slash delim MDY
-        "1999 - 2004": ("1999-01-01","2004-01-01"), # year range
-        " 1999   -   2004  ": ("1999-01-01","2004-01-01"), # range whitespace
+        "1999 - 2004": ("1999","2004"), # year range
+        "1999-2004": ("1999","2004"), # year range without spaces
+        " 1999   -   2004  ": ("1999","2004"), # range whitespace
         }
+
     def test_parse_date_or_range():
         for i in DATE_TESTS:
             res = parse_date_or_range(i)
@@ -96,13 +104,12 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
             date_candidates = []
             for s in (data[p] if not isinstance(data[p],basestring) else [data[p]]):
                 a,b = parse_date_or_range(s)
-                if a is not None and b is not None:
-                    date_candidates.append( {
-                            "start": a,
-                            "end": b,
-                            "displayDate" : s
-                            })
-        date_candidates.sort(key=lambda d: d["start"])
+                date_candidates.append( {
+                        "start": a,
+                        "end": b,
+                        "displayDate" : s
+                        })
+        date_candidates.sort(key=lambda d: d["start"] if d["start"] is not None else "9999-12-31")
         if len(date_candidates) > 0:
             data[prop] = date_candidates[0]            
 
