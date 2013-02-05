@@ -60,13 +60,19 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
                 return ddiso[:ddiso.index('T')]
         return dd
 
+    YEAR_RANGE_PROBE_RE = re.compile("(\d{4})\s*-\s*(\d{4})")
     def parse_date_or_range(d):
-        if ' - ' in d: # FIXME could be more robust here, e.g. use year regex
-            a,b = split_date(d)
+        # FIXME could be more robust here,
+        # e.g. use date range regex to handle:
+        # June 1941 - May 1945
+        # 1941-06-1945-05
+        # and do not confuse with just YYYY-MM-DD regex
+        if ' - ' in d or YEAR_RANGE_PROBE_RE.match(d):
+            a, b = split_date(d)
         else:
             parsed = robust_date_parser(d)
-            a,b = parsed,parsed
-        return a,b
+            a, b = parsed, parsed
+        return a, b
 
     DATE_TESTS = {
         "ca. July 1896": ("1896-07","1896-07"), # fuzzy dates
@@ -76,6 +82,7 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
         "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
         "5/7/2012": ("2012-05-07","2012-05-07"), # slash delim MDY
         "1999 - 2004": ("1999","2004"), # year range
+        "1999-2004": ("1999","2004"), # year range without spaces
         " 1999   -   2004  ": ("1999","2004"), # range whitespace
         }
 
