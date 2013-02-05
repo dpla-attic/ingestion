@@ -9,13 +9,13 @@ from zen import dateparser
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-date', 'enrich-date', 'application/json')
 def enrichdate(body,ctype,action="enrich-format",prop="date"):
-    '''   
+    """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
 
     a) Looks in the list of fields specified by the 'prop' parameter
     b) Extracts all dates, and sets the created date to the earliest date 
-    '''   
+    """
 
     # default date used by dateutil-python to populate absent date elements during parse,
     # e.g. "1999" would become "1999-01-01" instead of using the current month/day
@@ -43,7 +43,7 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
         
         Returns None if it fails
         """
-        dd = dateparser.to_iso8601(d.replace('ca.','').strip()) # simple cleanup prior to parse
+        dd = dateparser.to_iso8601(re.sub("(ca\.|c\.)", "", d, count=0, flags=re.I).strip()) # simple cleanup prior to parse
         if dd is None:
             try:
                 dd = dateutil_parse(d,fuzzy=True,default=DEFAULT_DATETIME)
@@ -70,6 +70,7 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
 
     DATE_TESTS = {
         "ca. July 1896": ("1896-07","1896-07"), # fuzzy dates
+        "c. 1896": ("1896","1896"), # fuzzy dates
         "1999.11.01": ("1999-11-01","1999-11-01"), # period delim
         "2012-02-31": ("2012-03-02","2012-03-02"), # invalid date cleanup
         "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
