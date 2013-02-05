@@ -1,9 +1,8 @@
 """
-Akara module for extracting document source from dplaSourceRecord;
-Assumes that original version of document is stored at dplaSourceRecord key in a json tree.
+Artstor specific module for getting preview url for the document;
 """
 
-__author__ = 'alexey'
+__author__ = 'aleksey'
 
 import re
 
@@ -17,8 +16,9 @@ HTTP_TYPE_JSON = 'application/json'
 HTTP_TYPE_TEXT = 'text/plain'
 HTTP_HEADER_TYPE = 'Content-Type'
 
-@simple_service('POST', 'http://purl.org/la/dp/artstor_select_isshownat', 'artstor_select_isshownat', HTTP_TYPE_JSON)
-def artstor_select_source(body, ctype):
+
+@simple_service('POST', 'http://purl.org/la/dp/artstor_preview_location', 'artstor_preview_location', 'application/json')
+def artstor_preview_location(body, ctype):
 
     LOG_JSON_ON_ERROR = True
     def log_json():
@@ -37,8 +37,8 @@ def artstor_select_source(body, ctype):
 
     original_document_key = u"dplaSourceRecord"
     original_sources_key = u"handle"
-    artstor_source_prefix = "Image View"
-    source_key = u"source"
+    artstor_preview_prefix = "Thumbnail"
+    preview_url_key = u"preview_source_url"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
@@ -50,20 +50,20 @@ def artstor_select_source(body, ctype):
         log_json()
         return body
 
-    source = None
+    preview_url = None
     http_re = re.compile("https?://.*$", re.I)
     for s in data[original_document_key][original_sources_key]:
-        if s.startswith(artstor_source_prefix):
+        if s.startswith(artstor_preview_prefix):
             match = re.search(http_re, s)
             if match:
-                source = match.group(0)
+                preview_url = match.group(0)
                 break
 
-    if not source:
-        logger.error("Can't find url with '%s' prefix in [%s] for fetching document source for Artstor.", artstor_source_prefix, data[original_document_key][original_sources_key])
+    if not preview_url:
+        logger.error("Can't find url with '%s' prefix in [%s] for fetching document preview url for Artstor.", artstor_preview_prefix, data[original_document_key][original_sources_key])
         log_json()
         return body
 
-    data[source_key] = source
+    data[preview_url_key] = preview_url
     return json.dumps(data)
 

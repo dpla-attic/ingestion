@@ -12,13 +12,13 @@
         "http://localhost:8879/enrich-subject", 
         "http://localhost:8879/enrich-type", 
         "http://localhost:8879/enrich-format", 
-        "http://localhost:8879/identify_preview_location", 
+        "http://localhost:8879/artstor_preview_location",
         "http://localhost:8879/filter_empty_values?ignore_key=dplaSourceRecord"
     ], 
     "subresources": [
         "SetDPLA"
     ], 
-    "last_checked": "2013-02-04T20:55:00.759991", 
+    "last_checked": "2013-02-05T18:29:41.395772", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
         "name": "ARTstor OAICatMuseum"
