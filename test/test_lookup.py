@@ -148,7 +148,7 @@ def test_substitution_for_the_same_field_and_array():
 
 def test_substitution_for_differnt_fields_and_array():
     """
-    Should return substituted json when original json is array.
+    Should return json when original json is array.
     """
     data = {"xxx": "yyy", "aaa": ["aa", "bbb", "ccc", "ddd"]}
     INPUT = json.dumps(data)
@@ -159,6 +159,22 @@ def test_substitution_for_differnt_fields_and_array():
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
+
+
+def test_dictionary_subsitution():
+    """
+    Should substitute when there is dictionary field.
+    """
+    data = {"xxx": "yyy", "aaa": {"bbb": "ccc"}}
+    INPUT = json.dumps(data)
+    data["aaa"] = {"bbb": "CCC"}
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa.bbb",
+            "aaa.bbb", "test_substitute")
+    print_error_log()
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
