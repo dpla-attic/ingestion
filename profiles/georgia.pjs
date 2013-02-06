@@ -8,6 +8,7 @@
         "http://localhost:8889/select-id",
         "http://localhost:8889/geocode?prop=coverage&newprop=coverage_geo", 
         "http://localhost:8889/oai-to-dpla"
+        "http://localhost:8889/spatial_dates_to_temporal"
     ], 
     "subresources": [
         "crdl", 

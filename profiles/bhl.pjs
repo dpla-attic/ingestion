@@ -6,6 +6,7 @@
     "enrichments_rec": [
         "http://localhost:8878/select-id",
         "http://localhost:8878/oai-to-dpla",
+        "http://localhost:8878/spatial_dates_to_temporal",
         "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
         "http://localhost:8878/enrich-subject",
         "http://localhost:8878/enrich-type",
