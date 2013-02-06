@@ -13,7 +13,7 @@
         "http://localhost:8879/enrich-type", 
         "http://localhost:8879/enrich-format", 
         "http://localhost:8879/artstor_preview_location",
-        "http://localhost:8879/filter_empty_values?ignore_key=dplaSourceRecord"
+        "http://localhost:8879/filter_fields?keys=spatial,rights"
     ], 
     "subresources": [
         "SetDPLA"
