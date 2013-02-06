@@ -43,12 +43,12 @@ def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="spatial"):
             sp["state"]   = data[prop][2]["name"]
             sp["country"] = data[prop][3]["name"]
         else:
-            sp["city"]     = data[prop][0]["name"]
+            sp["city"]    = data[prop][0]["name"]
             sp["county"]  = data[prop][2]["name"]
             sp["state"]   = data[prop][3]["name"]
             sp["country"] = data[prop][4]["name"]
 
         if sp:
-            data[prop] = {"spatial": sp}
+            data[prop] = [sp]
 
     return json.dumps(data)

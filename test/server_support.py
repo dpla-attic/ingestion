@@ -86,12 +86,12 @@ MODULES = [
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.identify_preview_location",
     "dplaingestion.akamod.download_preview",
-
     "dplaingestion.akamod.download_test_image",
     "dplaingestion.akamod.filter-empty-values",
     "dplaingestion.akamod.artstor-select-isshownat",
     "dplaingestion.akamod.artstor_preview_location",
-    "dplaingestion.akamod.spatial_dates_to_temporal"
+    "dplaingestion.akamod.spatial_dates_to_temporal",
+    "dplaingestion.akamod.enrich_location"
     ]
 
 class download_preview:
