@@ -9,6 +9,12 @@ def contentdm_identify_object(body, ctype):
     Responsible for: adding a field to a document with the URL where we should 
     expect to the find the thumbnail
     """
+
+    LOG_JSON_ON_ERROR = True
+    def log_json():
+        if LOG_JSON_ON_ERROR:
+            logger.debug(body)
+
     
     data = {}
     try:
@@ -21,7 +27,8 @@ def contentdm_identify_object(body, ctype):
         return msg
 
     if not data.has_key(u"source"):
-        logger.error("There is no 'source' key in JSON.")
+        logger.error("There is no 'source' key in JSON for doc [%s]." % data[u'id'] if 'id' in data else "UNKNOWN ID")
+        log_json()
         return body
 
     url = data[u'source']
@@ -31,18 +38,21 @@ def contentdm_identify_object(body, ctype):
 
     if len(p) != 2:
         logger.error("Bad URL %s. It should have just one 'u?' part." % url)
+        log_json()
         return body
 
     (base_url, rest) = p
 
     if base_url == "" or rest == "":
         logger.error("Bad URL: %s. There is no 'u?' part." % url)
+        log_json()
         return body
 
     p = rest.split(",")
 
     if len(p) != 2:
         logger.error("Bad URL %s. Expected two parts at the end, used in thumbnail URL for CISOROOT and CISOPTR." %url)
+        log_json()
         return body
 
     thumb_url = "%scgi-bin/thumbnail.exe?CISOROOT=%s&CISOPTR=%s" % (base_url, p[0], p[1])
