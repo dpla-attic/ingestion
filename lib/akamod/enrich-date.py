@@ -6,9 +6,10 @@ from dateutil.parser import parse as dateutil_parse
 import re
 import timelib
 from zen import dateparser
+from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-date', 'enrich-date', 'application/json')
-def enrichdate(body,ctype,action="enrich-format",prop="date"):
+def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
     """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
@@ -100,9 +101,10 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
 
     date_candidates = []
     for p in prop.split(','):
-        if p in data:
+        if exists(data,p):
+            v = getprop(data,p)
             date_candidates = []
-            for s in (data[p] if not isinstance(data[p],basestring) else [data[p]]):
+            for s in (v if not isinstance(v,basestring) else [v]):
                 a,b = parse_date_or_range(s)
                 date_candidates.append( {
                         "start": a,
@@ -110,7 +112,7 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
                         "displayDate" : s
                         })
         date_candidates.sort(key=lambda d: d["start"] if d["start"] is not None else "9999-12-31")
-        if len(date_candidates) > 0:
-            data[prop] = date_candidates[0]            
+        if date_candidates:
+            setprop(data,p,date_candidates[0])
 
     return json.dumps(data)

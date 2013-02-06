@@ -133,7 +133,7 @@ def test_enrich_dates_bogus_date():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -155,7 +155,7 @@ def test_enrich_date_single():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -176,7 +176,7 @@ def test_enrich_date_date_multiple():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -198,7 +198,7 @@ def test_enrich_date_date_parse_format_yyyy_mm_dd():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -219,7 +219,7 @@ def test_enrich_date_parse_format_date_with_slashes():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -241,7 +241,7 @@ def test_enrich_date_date_parse_format_natural_string():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -262,7 +262,7 @@ def test_enrich_date_date_parse_format_ca_string():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -283,7 +283,7 @@ def test_enrich_date_date_parse_format_c_string():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -340,7 +340,7 @@ def test_enrich_date_parse_format_date_range1():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -362,7 +362,7 @@ def test_enrich_date_parse_format_date_range2():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -383,7 +383,7 @@ def test_enrich_date_parse_format_date_range3():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
