@@ -27,7 +27,7 @@ def contentdm_identify_object(body, ctype):
         return msg
 
     if not data.has_key(u"source"):
-        logger.error("There is no 'source' key in JSON for doc [%s]." % data[u'id'])
+        logger.error("There is no 'source' key in JSON for doc [%s]." % data[u'id'] if 'id' in data else "UNKNOWN ID")
         log_json()
         return body
 
