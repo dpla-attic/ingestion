@@ -6,10 +6,9 @@ from dateutil.parser import parse as dateutil_parse
 import re
 import timelib
 from zen import dateparser
-from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-date', 'enrich-date', 'application/json')
-def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
+def enrichdate(body,ctype,action="enrich-format",prop="date"):
     """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
@@ -44,8 +43,7 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
         
         Returns None if it fails
         """
-        circa_re = re.compile("(ca\.|c\.)", re.I)
-        dd = dateparser.to_iso8601(re.sub(circa_re, "", d, count=0).strip()) # simple cleanup prior to parse
+        dd = dateparser.to_iso8601(re.sub("(ca\.|c\.)", "", d, count=0).strip()) # simple cleanup prior to parse
         if dd is None:
             try:
                 dd = dateutil_parse(d,fuzzy=True,default=DEFAULT_DATETIME)
@@ -62,37 +60,30 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
                 return ddiso[:ddiso.index('T')]
         return dd
 
-    year_range = re.compile("(\d{4})\s*-\s*(\d{4})") # simple for digits year range
-    circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_start>\d{2})\s*-\s*(?P<year_end>\d{2})", re.I) # tricky "c. 1970-90" year range
+    YEAR_RANGE_PROBE_RE = re.compile("(\d{4})\s*-\s*(\d{4})")
     def parse_date_or_range(d):
-        # FIXME: could be more robust here,
+        # FIXME could be more robust here,
         # e.g. use date range regex to handle:
         # June 1941 - May 1945
         # 1941-06-1945-05
         # and do not confuse with just YYYY-MM-DD regex
-        if ' - ' in d or year_range.match(d):
+        if ' - ' in d or YEAR_RANGE_PROBE_RE.match(d):
             a, b = split_date(d)
-        elif circa_range.match(d):
-            match = circa_range.match(d)
-            year_start = match.group("century") + match.group("year_start")
-            year_end = match.group("century") + match.group("year_end")
-            a, b = robust_date_parser(year_start), robust_date_parser(year_end)
         else:
             parsed = robust_date_parser(d)
             a, b = parsed, parsed
         return a, b
 
     DATE_TESTS = {
-        "ca. July 1896": ("1896-07", "1896-07"), # fuzzy dates
-        "c. 1896": ("1896", "1896"), # fuzzy dates
-        "c. 1890-95": ("1890", "1895"), # fuzzy date range
-        "1999.11.01": ("1999-11-01", "1999-11-01"), # period delim
-        "2012-02-31": ("2012-03-02", "2012-03-02"), # invalid date cleanup
-        "12-19-2010": ("2010-12-19", "2010-12-19"), # M-D-Y
-        "5/7/2012": ("2012-05-07", "2012-05-07"), # slash delim MDY
-        "1999 - 2004": ("1999", "2004"), # year range
-        "1999-2004": ("1999", "2004"), # year range without spaces
-        " 1999   -   2004  ": ("1999", "2004"), # range whitespace
+        "ca. July 1896": ("1896-07","1896-07"), # fuzzy dates
+        "c. 1896": ("1896","1896"), # fuzzy dates
+        "1999.11.01": ("1999-11-01","1999-11-01"), # period delim
+        "2012-02-31": ("2012-03-02","2012-03-02"), # invalid date cleanup
+        "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
+        "5/7/2012": ("2012-05-07","2012-05-07"), # slash delim MDY
+        "1999 - 2004": ("1999","2004"), # year range
+        "1999-2004": ("1999","2004"), # year range without spaces
+        " 1999   -   2004  ": ("1999","2004"), # range whitespace
         }
 
     def test_parse_date_or_range():
@@ -109,18 +100,17 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
 
     date_candidates = []
     for p in prop.split(','):
-        if exists(data,p):
-            v = getprop(data,p)
+        if p in data:
             date_candidates = []
-            for s in (v if not isinstance(v,basestring) else [v]):
+            for s in (data[p] if not isinstance(data[p],basestring) else [data[p]]):
                 a,b = parse_date_or_range(s)
                 date_candidates.append( {
-                        "begin": a,
+                        "start": a,
                         "end": b,
                         "displayDate" : s
                         })
-        date_candidates.sort(key=lambda d: d["begin"] if d["begin"] is not None else "9999-12-31")
-        if date_candidates:
-            setprop(data,p,date_candidates[0])
+        date_candidates.sort(key=lambda d: d["start"] if d["start"] is not None else "9999-12-31")
+        if len(date_candidates) > 0:
+            data[prop] = date_candidates[0]            
 
     return json.dumps(data)
