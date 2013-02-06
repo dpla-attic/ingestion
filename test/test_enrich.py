@@ -477,7 +477,7 @@ def test_enrich_type_cleanup():
         u'TBD_physicalformat' : ["Statue"]
         }
 
-    url = server() + "enrich-type?prop=type"
+    url = server() + "enrich-type?prop=type&alternate=TBD_physicalformat"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -531,10 +531,10 @@ def test_physical_format_from_format_and_type():
         "TBD_physicalformat": ["Paintings", "Painting", "76.8 x 104 cm", "Oil on canvas"]
     }
 
-    resp, content = H.request(server() + "enrich-type", "POST", body=json.dumps(INPUT), headers=HEADERS)
+    resp, content = H.request(server() + "enrich-type?prop=type&alternate=TBD_physicalformat", "POST", body=json.dumps(INPUT), headers=HEADERS)
     assert str(resp.status).startswith("2")
     assert json.loads(content)['TBD_physicalformat'] == ["Paintings", "Painting"]
-    resp, content = H.request(server() + "enrich-format", "POST", body=content, headers=HEADERS)
+    resp, content = H.request(server() + "enrich-format?prop=format&alternate=TBD_physicalformat", "POST", body=content, headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
@@ -606,6 +606,7 @@ def test_contentdm_identify_object_bad_url():
         url = server() + "contentdm-identify-object"
         print url
         resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+        assert str(resp.status).startswith("2")
         assert_same_jsons(INPUT, content)
 
 if __name__ == "__main__":
