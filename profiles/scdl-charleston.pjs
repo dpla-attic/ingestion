@@ -1,17 +1,17 @@
 {
     "enrichments_coll": [
-        "http://localhost:8870/oai-set-name?sets_service=http://localhost:8870/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe"
+        "http://localhost:8875/oai-set-name?sets_service=http://localhost:8870/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe"
     ], 
     "name": "scdl-charleston", 
     "enrichments_rec": [
-        "http://localhost:8872/select-id", 
-        "http://localhost:8872/oai-to-dpla", 
-        "http://localhost:8870/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type%2CisShownAt/format&delim=%3b", 
-        "http://localhost:8872/enrich-date", 
-        "http://localhost:8872/enrich-subject", 
-        "http://localhost:8872/enrich-type", 
-        "http://localhost:8872/enrich-format", 
-        "http://localhost:8872/identify_preview_location"
+        "http://localhost:8875/select-id", 
+        "http://localhost:8875/oai-to-dpla", 
+        "http://localhost:8875/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type%2CisShownAt/format&delim=%3b", 
+        "http://localhost:8875/enrich-date", 
+        "http://localhost:8875/enrich-subject", 
+        "http://localhost:8875/enrich-type", 
+        "http://localhost:8875/enrich-format", 
+        "http://localhost:8875/contentdm-identify-object"
     ], 
     "subresources": [
         "cep", 
@@ -122,5 +122,5 @@
         "name": "South Carolina Digital Library - College of Charleston"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8870/dpla-list-records?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "http://localhost:8875/dpla-list-records?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="
 }

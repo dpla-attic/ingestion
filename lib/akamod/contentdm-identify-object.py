@@ -7,7 +7,7 @@ from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/identify_preview_location',
     'contentdm-identify-object', 'application/json')
-def contentdm_identify_object(body, ctype, rights_field, download):
+def contentdm_identify_object(body, ctype, rights_field="aggregatedCHO/rights", download=True):
     """
     Responsible for: adding a field to a document with the URL where we
     should expect to the find the thumbnail
