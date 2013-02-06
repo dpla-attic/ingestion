@@ -27,7 +27,7 @@ def shred(body,ctype,action="shred",prop=None,delim=';'):
             v = getprop(data,p)
             if action == "shred":
                 if isinstance(v,list):
-                    v = delim.join(data[p])
+                    v = delim.join(v)
                     setprop(data,p,v)
                 if delim not in v: continue
                 setprop(data,p,[ s.strip() for s in v.split(delim) ])
