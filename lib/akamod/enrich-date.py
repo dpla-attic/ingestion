@@ -107,11 +107,11 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
             for s in (v if not isinstance(v,basestring) else [v]):
                 a,b = parse_date_or_range(s)
                 date_candidates.append( {
-                        "start": a,
+                        "begin": a,
                         "end": b,
                         "displayDate" : s
                         })
-        date_candidates.sort(key=lambda d: d["start"] if d["start"] is not None else "9999-12-31")
+        date_candidates.sort(key=lambda d: d["begin"] if d["begin"] is not None else "9999-12-31")
         if date_candidates:
             setprop(data,p,date_candidates[0])
 
