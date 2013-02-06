@@ -1,11 +1,13 @@
 import json
 
+
 def pinfo(*data):
     """
     Prints all the params in separate lines.
     """
     for d in data:
         print d
+
 
 def assert_same_jsons(this, that):
     """
@@ -18,6 +20,7 @@ def assert_same_jsons(this, that):
     if not d.same():
         d.print_diff()
         assert this == that
+
 
 class DictDiffer:
     """
@@ -45,15 +48,19 @@ class DictDiffer:
         """
         diff = {}
         for k in self.first.keys():
-            if not self.second.has_key(k):
+            if not k in self.second:
                 diff[k] = ('KEY NOT FOUND IN SECOND DICT', self.first[k])
             elif self.first[k] != self.second[k]:
-                diff[k] = {"DIFFERENT VALUES" : { 'FIRST DICT': self.first[k], 'SECOND DICT' : self.second[k]} }
-        for k in self.second.keys():         
-            if not self.first.has_key(k):
-                diff[k] = ("KEY NOT FOUND IN FIRST DICT", self.second[k])                
+                diff[k] = {"DIFFERENT VALUES":
+                            {'FIRST DICT': self.first[k],
+                              'SECOND DICT': self.second[k]}
+                            }
+
+        for k in self.second.keys():
+            if not k in self.first:
+                diff[k] = ("KEY NOT FOUND IN FIRST DICT", self.second[k])
         return diff
-            
+
     def same(self):
         """
         Returns:
@@ -72,10 +79,11 @@ class DictDiffer:
     def print_diff(self):
         """
         Returns:
+            Nothing
+
+        Side effects:
             Prints nicely the difference between dictionaries.
         """
         import pprint
         pp = pprint.PrettyPrinter(indent=2)
-        pp.pprint( self._diff )
-
-
+        pp.pprint(self._diff)
