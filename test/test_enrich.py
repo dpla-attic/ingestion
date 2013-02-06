@@ -1,5 +1,5 @@
 import sys
-from server_support import server
+from server_support import server, print_error_log
 
 from amara.thirdparty import httplib2
 import os
@@ -7,24 +7,6 @@ from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
-def assert_same_jsons(this, that):
-    """
-    Checks if the dictionaries are the same.
-    It compares the keys and values.
-    Prints diff if they are not exact and throws exception.
-    """
-    d = DictDiffer(this, that)
-
-    if not d.same():
-        d.print_diff()
-        assert this == that
-
-def pinfo(*data):
-    """
-    Prints all the params in separate lines.
-    """
-    for d in data:
-        print d
 
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
@@ -151,7 +133,7 @@ def test_enrich_dates_bogus_date():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -173,7 +155,7 @@ def test_enrich_date_single():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -194,7 +176,7 @@ def test_enrich_date_date_multiple():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -216,7 +198,7 @@ def test_enrich_date_date_parse_format_yyyy_mm_dd():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -237,7 +219,7 @@ def test_enrich_date_parse_format_date_with_slashes():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -259,7 +241,7 @@ def test_enrich_date_date_parse_format_natural_string():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -280,7 +262,7 @@ def test_enrich_date_date_parse_format_ca_string():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -301,7 +283,7 @@ def test_enrich_date_date_parse_format_c_string():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -358,7 +340,7 @@ def test_enrich_date_parse_format_date_range1():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -380,7 +362,7 @@ def test_enrich_date_parse_format_date_range2():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -401,7 +383,7 @@ def test_enrich_date_parse_format_date_range3():
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -538,76 +520,6 @@ def test_physical_format_from_format_and_type():
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
-
-def test_contentdm_identify_object():
-    """
-    Should add a thumbnail URL made of the source URL.
-    """
-    INPUT = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104"
-    }
-    EXPECTED = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104",
-            u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&CISOPTR=104"
-    }
-    url = server() + "contentdm-identify-object"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-
-    assert str(resp.status).startswith("2")
-    result = json.loads(content)
-
-    assert_same_jsons(EXPECTED, result)
-
-
-def test_contentdm_identify_object_bad_json():
-    """
-    Should get 500 from akara for bad json.
-    """
-    INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
-    for i in INPUT:
-        url = server() + "contentdm-identify-object"
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
-        assert resp.status == 500
-
-def test_contentdm_identify_object_missing_source_field():
-    """
-    Should return original JSON if the 'source' field is missing.
-    """
-    INPUT = '{"aaa":"bbb"}'
-    url = server() + "contentdm-identify-object"
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
-
-    pinfo(url,resp,content)
-
-    assert_same_jsons(INPUT, content)
-
-def test_contentdm_identify_object_bad_url():
-    """
-    Should return original JSON for bad URL.
-    """
-    bad_urls = [ u"http://repository.clemson.edu/uscp104",
-        u"http://repository.clemson.edu/s?/scp,104",
-        u"http://repository.clemson.edu/u/scp,104",
-        u"http://repository.clemson.edu/u?/scp104",
-        u"http://repository.clemson.edu/u?/scp",
-        u"http://repository.clemson.edu/",
-            ]
-    INPUT = {
-            u"something" : u"x",
-            u"somethink" : u"y",
-            u"source" : u""
-    }
-    for bad_url in bad_urls:
-        INPUT[u"source"] = bad_url
-        url = server() + "contentdm-identify-object"
-        print url
-        resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        assert str(resp.status).startswith("2")
-        assert_same_jsons(INPUT, content)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
