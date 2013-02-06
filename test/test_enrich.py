@@ -161,7 +161,6 @@ def test_enrich_dates_bogus_date():
 
 
 def test_enrich_date_single():
-
     "Correctly transform a single date value"
     INPUT = {
         "date" : "1928"
@@ -520,7 +519,6 @@ def test_enrich_format_cleanup():
     assert result['format'] == EXPECTED['format']
     assert not 'physicalmedium' in result.keys()
 
-
 def test_physical_format_from_format_and_type():
     """
     Test physical format appending from format and type fields
@@ -541,8 +539,7 @@ def test_physical_format_from_format_and_type():
     result = json.loads(content)
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
 
-
-def test_identify_preview_location():
+def test_contentdm_identify_object():
     """
     Should add a thumbnail URL made of the source URL.
     """
@@ -557,7 +554,7 @@ def test_identify_preview_location():
             u"source" : "http://repository.clemson.edu/u?/scp,104",
             u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&CISOPTR=104"
     }
-    url = server() + "identify_preview_location"
+    url = server() + "contentdm-identify-object"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
 
     assert str(resp.status).startswith("2")
@@ -566,31 +563,29 @@ def test_identify_preview_location():
     assert_same_jsons(EXPECTED, result)
 
 
-def test_identify_preview_location_bad_json():
+def test_contentdm_identify_object_bad_json():
     """
     Should get 500 from akara for bad json.
     """
     INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
     for i in INPUT:
-        url = server() + "identify_preview_location"
+        url = server() + "contentdm-identify-object"
         resp,content = H.request(url,"POST",body=i,headers=HEADERS)
         assert resp.status == 500
 
-
-def test_identify_preview_location_missing_source_field():
+def test_contentdm_identify_object_missing_source_field():
     """
     Should return original JSON if the 'source' field is missing.
     """
-    INPUT = '{"aaa":"bbb", "id":"asa"}'
-    url = server() + "identify_preview_location"
+    INPUT = '{"aaa":"bbb"}'
+    url = server() + "contentdm-identify-object"
     resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
 
     pinfo(url,resp,content)
 
     assert_same_jsons(INPUT, content)
 
-
-def test_identify_preview_location_bad_url():
+def test_contentdm_identify_object_bad_url():
     """
     Should return original JSON for bad URL.
     """
@@ -608,7 +603,7 @@ def test_identify_preview_location_bad_url():
     }
     for bad_url in bad_urls:
         INPUT[u"source"] = bad_url
-        url = server() + "identify_preview_location"
+        url = server() + "contentdm-identify-object"
         print url
         resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
         assert_same_jsons(INPUT, content)
