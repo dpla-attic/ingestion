@@ -43,7 +43,8 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
         
         Returns None if it fails
         """
-        dd = dateparser.to_iso8601(re.sub("(ca\.|c\.)", "", d, count=0, flags=re.I).strip()) # simple cleanup prior to parse
+        circa_re = re.compile("(ca\.|c\.)", re.I)
+        dd = dateparser.to_iso8601(re.sub(circa_re, "", d, count=0).strip()) # simple cleanup prior to parse
         if dd is None:
             try:
                 dd = dateutil_parse(d,fuzzy=True,default=DEFAULT_DATETIME)
