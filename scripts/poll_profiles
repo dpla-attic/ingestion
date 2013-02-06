@@ -43,14 +43,11 @@ def process_profile(out,profile_f):
     ENRICH = out
 
     subResources = profile.get(u'subresources')
+    blacklist = profile.get(u'blacklist',[])
     ptype = profile.get(u'type').lower()
-    if not subResources or len(subResources)==0: # i.e. all subresources
+    if not subResources: # i.e. all subresources
         process = TYPE_PROCESSORS.get((ptype,'all'))
-        if not process:
-            print >> sys.stderr, "The ingest of all %s collections is not supported at this time"%(ptype.upper())
-            sys.exit(1)
-
-        process(profile)
+        process(profile,blacklist)
     else:
         process = TYPE_PROCESSORS.get((ptype,'coll'))
         if not process:
@@ -183,11 +180,32 @@ def process_oai_coll(profile,subr):
 
         request_more = resumption_token is not None and len(resumption_token) > 0
 
+def process_oai_all(profile,blacklist=[]):
+    # Get all sets
+    url = profile[u'list_sets']
+    resp, content = H.request(url)
+    if not resp[u'status'].startswith('2'):
+        print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
+        return False 
+
+    sleep = profile.get(u'sleep',0)
+    set_content = json.loads(content)
+    subResources = []
+    for s in set_content:
+        if s[u'setSpec']:
+            subResources.append(s[u'setSpec'])
+
+    # Process the sets
+    subr_to_process =[subr for subr in subResources if subr not in blacklist]
+    for subr in subr_to_process:
+        process_oai_coll(profile,subr)
+        time.sleep(sleep)
+
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
     ('arc','all'): process_arc_all,
     ('oai','coll'): process_oai_coll,
-    ('oai','all'): None,
+    ('oai','all'): process_oai_all,
 }
 
 if __name__ == '__main__':

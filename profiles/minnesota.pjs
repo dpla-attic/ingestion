@@ -1,4 +1,5 @@
 {
+    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe",
     "type": "oai",
     "name": "minnesota",
     "enrichments_rec": [
