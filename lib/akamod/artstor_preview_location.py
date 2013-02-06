@@ -17,7 +17,7 @@ HTTP_TYPE_TEXT = 'text/plain'
 HTTP_HEADER_TYPE = 'Content-Type'
 
 
-@simple_service('POST', 'http://purl.org/la/dp/artstor_preview_location', 'artstor_preview_location', 'application/json')
+@simple_service('POST', 'http://purl.org/la/dp/artstor_preview_location', 'artstor_preview_location', HTTP_TYPE_JSON)
 def artstor_preview_location(body, ctype):
 
     LOG_JSON_ON_ERROR = True
@@ -26,7 +26,7 @@ def artstor_preview_location(body, ctype):
             logger.debug(body)
 
     try:
-        assert ctype == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
+        assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
     except Exception as e:
         error_text = "Bad JSON: %s: %s" % (e.__class__.__name__, str(e))
