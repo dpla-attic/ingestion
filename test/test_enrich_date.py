@@ -247,6 +247,27 @@ def test_enrich_date_parse_format_date_range3():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
+def test_enrich_date_parse_format_date_range4():
+    """Correctly transform a date of format 'c. YYYY-YY'"""
+    INPUT = {
+        "date" : "c. 1960-70"
+    }
+    EXPECTED = {
+        u'date' : {
+            u'start' : u'1960',
+            u'end' : u'1970',
+            "displayDate" : "c. 1960-70"
+        }
+    }
+
+    url = server() + "enrich-date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
