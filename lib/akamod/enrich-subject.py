@@ -18,12 +18,16 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject
     as a parameter
     '''   
     
-    REGEXPS = (' -- ','--'), ('\.$','')
+    REGEXPS = (' -- ','--'), ('\.$',''), ('^\. *','')
 
     def cleanup(s):
         s = s.strip()
         for pattern, replace in REGEXPS:
             s = re.sub(pattern, replace, s)
+        if len(s) > 2:
+            s = s[0].upper() + s[1:]
+        else:
+            s = None
         return s
 
     try :
@@ -37,9 +41,9 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject
         v = getprop(data,prop)
         subject = []
         for s in (v if not isinstance(v,basestring) else [v]):
-            subject.append({
-                    "name" : cleanup(s)
-                    })
+            subj = cleanup(s)
+            if subj:
+                subject.append({ "name" : subj })
 
         setprop(data,prop,subject)
 
