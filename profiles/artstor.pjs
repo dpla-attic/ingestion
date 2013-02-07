@@ -15,7 +15,7 @@
         "http://localhost:8879/enrich-type", 
         "http://localhost:8879/enrich-format", 
         "http://localhost:8879/artstor_preview_location",
-        "http://localhost:8879/filter_fields?keys=spatial,rights",
+        "http://localhost:8879/filter_fields?keys=spatial%2Crights",
         "http://localhost:8879/enrich_location"
     ], 
     "subresources": [
