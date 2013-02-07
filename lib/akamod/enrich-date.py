@@ -61,30 +61,37 @@ def enrichdate(body,ctype,action="enrich-format",prop="date"):
                 return ddiso[:ddiso.index('T')]
         return dd
 
-    YEAR_RANGE_PROBE_RE = re.compile("(\d{4})\s*-\s*(\d{4})")
+    year_range = re.compile("(\d{4})\s*-\s*(\d{4})") # simple for digits year range
+    circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_start>\d{2})\s*-\s*(?P<year_end>\d{2})", re.I) # tricky "c. 1970-90" year range
     def parse_date_or_range(d):
-        # FIXME could be more robust here,
+        # FIXME: could be more robust here,
         # e.g. use date range regex to handle:
         # June 1941 - May 1945
         # 1941-06-1945-05
         # and do not confuse with just YYYY-MM-DD regex
-        if ' - ' in d or YEAR_RANGE_PROBE_RE.match(d):
+        if ' - ' in d or year_range.match(d):
             a, b = split_date(d)
+        elif circa_range.match(d):
+            match = circa_range.match(d)
+            year_start = match.group("century") + match.group("year_start")
+            year_end = match.group("century") + match.group("year_end")
+            a, b = robust_date_parser(year_start), robust_date_parser(year_end)
         else:
             parsed = robust_date_parser(d)
             a, b = parsed, parsed
         return a, b
 
     DATE_TESTS = {
-        "ca. July 1896": ("1896-07","1896-07"), # fuzzy dates
-        "c. 1896": ("1896","1896"), # fuzzy dates
-        "1999.11.01": ("1999-11-01","1999-11-01"), # period delim
-        "2012-02-31": ("2012-03-02","2012-03-02"), # invalid date cleanup
-        "12-19-2010": ("2010-12-19","2010-12-19"), # M-D-Y
-        "5/7/2012": ("2012-05-07","2012-05-07"), # slash delim MDY
-        "1999 - 2004": ("1999","2004"), # year range
-        "1999-2004": ("1999","2004"), # year range without spaces
-        " 1999   -   2004  ": ("1999","2004"), # range whitespace
+        "ca. July 1896": ("1896-07", "1896-07"), # fuzzy dates
+        "c. 1896": ("1896", "1896"), # fuzzy dates
+        "c. 1890-95": ("1890", "1895"), # fuzzy date range
+        "1999.11.01": ("1999-11-01", "1999-11-01"), # period delim
+        "2012-02-31": ("2012-03-02", "2012-03-02"), # invalid date cleanup
+        "12-19-2010": ("2010-12-19", "2010-12-19"), # M-D-Y
+        "5/7/2012": ("2012-05-07", "2012-05-07"), # slash delim MDY
+        "1999 - 2004": ("1999", "2004"), # year range
+        "1999-2004": ("1999", "2004"), # year range without spaces
+        " 1999   -   2004  ": ("1999", "2004"), # range whitespace
         }
 
     def test_parse_date_or_range():
