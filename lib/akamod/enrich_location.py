@@ -3,12 +3,11 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import getprop, setprop, exists
 
 REGEXPS = ('\.',''), ('\(',''), ('\)',''), ('-',''), (',','')
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_location', 'enrich_location', 'application/json')
-def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spatial"):
+def enrichlocation(body,ctype,action="enrich_location", prop="spatial"):
     """
     Service that accepts a JSON document and enriches the "spatial" field of that document by
     iterating through the spatial fields and mapping to the state and iso3166-2, if not already
@@ -25,36 +24,35 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    if exists(data,prop):
+    if prop in data:
         # Remove any spaces around semicolons first
-        v = getprop(data,prop)
-        for k in v[0]:
-            v[0][k] = remove_space_around_semicolons(v[0][k])
+        for k in data[prop][0]:
+            data[prop][0][k] = remove_space_around_semicolons(data[prop][0][k])
 
-        if 'state' in v[0]:
+        if 'state' in data[prop][0]:
             # Handle case where a previous provider-specific location enrichment
             # set the state field
-            isostate = get_isostate(v[0]['state'])
+            isostate = get_isostate(data[prop][0]['state'])
             # It may be the case that the 'state' field does not contain a State name
             if isostate[0]:
-                v[0]['iso3166-2'] = isostate[0]
-                v[0]['state'] = isostate[1]
+                data[prop][0]['iso3166-2'] = isostate[0]
+                data[prop][0]['state'] = isostate[1]
             else:
                 # Remove bogus state
-                del v[0]['state']
-        elif 'city' in v[0] or 'county' in v[0] or 'country' in v[0]:
-            # Handle case where a previous provider-specific location enrichment
+                del data[prop][0]['state']
+        elif 'city' in data[prop][0] or 'county' in data[prop][0] or 'country' in data[prop][0]:
+            # Handle case where a previous provider-specific locaiton enrichment
             # did not set the state field
-            for val in v[0].values():
-                isostate = get_isostate(val)
+            for v in data[prop][0].values():
+                isostate = get_isostate(v)
                 if isostate[0]:
-                    v[0]['iso3166-2'] = isostate[0]
-                    v[0]['state'] = isostate[1]
-                    break
+                    data[prop][0]['iso3166-2'] = isostate[0]
+                    data[prop][0]['state'] = isostate[1]
+                    break 
         else:
             # Handle the case where no previous provider-specific location
             # enrichment occured
-            for d in v:
+            for d in data[prop]:
                 isostate = get_isostate(d['name'], frm_abbrev="Yes")
                 if isostate[0]:
                     d['iso3166-2'] = isostate[0]
@@ -63,13 +61,13 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
         # If any of the spatial fields contain semi-colons, we need to create
         # multiple dictionaries.
         semicolons = None
-        for k in v[0]:
-            if v[0][k] and  ';' in v[0][k]:
+        for k in data[prop][0]:
+            if data[prop][0][k] and  ';' in data[prop][0][k]:
                 semicolons = True
                 break
 
         if semicolons:
-            setprop(data,prop,create_dictionaries(v[0]))
+            data[prop] = create_dictionaries(data[prop][0])
 
     return json.dumps(data)
 
@@ -124,7 +122,7 @@ def from_abbrev(strg):
     if not states:
         states.append(strg)
     return states
-
+                 
 def create_dictionaries(data):
     # Handle multiple values separated by semi-colons in spatial fields
     all = []
@@ -148,7 +146,7 @@ def create_dictionaries(data):
         # Get the length of the longest array
         total = len(max(all, key=len))
 
-        # Create dictionaries
+        # Create dictionaries 
         data = []
         for i in range(1,total):
             d = {}
@@ -156,7 +154,7 @@ def create_dictionaries(data):
                 if i < len(item):
                     d[item[0]] = item[i]
             data.append(d)
-    return data
+    return data 
 
 def remove_space_around_semicolons(strg):
     strg_arr = strg.split(';')
