@@ -37,6 +37,9 @@ def enrichlocation(body,ctype,action="enrich_location", prop="spatial"):
             if isostate[0]:
                 data[prop][0]['iso3166-2'] = isostate[0]
                 data[prop][0]['state'] = isostate[1]
+            else:
+                # Remove bogus state
+                del data[prop][0]['state']
         elif 'city' in data[prop][0] or 'county' in data[prop][0] or 'country' in data[prop][0]:
             # Handle case where a previous provider-specific locaiton enrichment
             # did not set the state field

@@ -21,9 +21,9 @@ def test_enrich_subject_capitalize_firs_letter():
             {"name": "North Carolina"}
         ],
         "subject": [
-            {"name": "subject"},
-            {"name": "hi there"},
-            {"name": "hello"}
+            "subject",
+            "hi there",
+            "hello"
         ]
     }
     EXPECTED = {
@@ -49,10 +49,10 @@ def test_enrich_subject_one_char_string1():
             {"name": "North Carolina"}
         ],
         "subject": [
-            {"name": "subject"},
-            {"name": "a"},
-            {"name": "ab"},
-            {"name": "hello"}
+            "subject",
+            "a",
+            "ab",
+            "hello"
         ]
     }
     EXPECTED = {
@@ -82,8 +82,8 @@ def test_enrich_subject_one_char_string2():
             {"name": "North Carolina"}
         ],
         "subject": [
-            {"name": "h"},
-            {"name": "hi"}
+            "h",
+            "hi"
         ]
     }
     EXPECTED = {
@@ -109,9 +109,12 @@ def test_enrich_subject_remove_period_space():
             {"name": "North Carolina"}
         ],
         "subject": [
-            {"name": "hello there"},
-            {"name": "123"},
-            {"name": ". hi "}
+            "hello there",
+            "123",
+            ". hi ",
+            ".  hi",
+            "             . hi there    ",
+            "a banana"
         ]
     }
     EXPECTED = {
@@ -123,7 +126,8 @@ def test_enrich_subject_remove_period_space():
         "subject": [
             {"name": "Hello there"},
             {"name": "123"},
-            {"name": "Hi"}
+            {"name": "Hi there"},
+            {"name": "A banana"}
         ]
     }
 
@@ -132,4 +136,5 @@ def test_enrich_subject_remove_period_space():
     print str(json.loads(content))
     assert json.loads(content) == EXPECTED
 
-   
+if __name__ == "__main__":
+    raise SystemExit("Use nosetest")

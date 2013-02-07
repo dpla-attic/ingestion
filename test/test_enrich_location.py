@@ -338,7 +338,7 @@ def test_enrich_location_after_provider_specific_enrich_location4():
 
 def test_enrich_location_after_provider_specific_enrich_location5():
     """
-    Previous specific-provider location set incorrect state and semicolons.
+    Should remoe state if previous specific-provider location set incorrect state.
     """
     INPUT = {
         "id": "12345",
@@ -358,7 +358,6 @@ def test_enrich_location_after_provider_specific_enrich_location5():
             {
                 "city": "Anoka",
                 "county": "Minnesota",
-                "state": "United States",
                 "country": "Mississippi River"
             },
             {

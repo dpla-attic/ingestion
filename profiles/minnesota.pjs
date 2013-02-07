@@ -10,7 +10,8 @@
         "http://localhost:8878/enrich-subject",
         "http://localhost:8878/enrich-type",
         "http://localhost:8878/enrich-format",
-        "http://localhost:8878/mdl-enrich-location"
+        "http://localhost:8878/mdl-enrich-location",
+        "http://localhost:8878/enrich_location"
     ], 
     "enrichments_coll": [
         "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe"

@@ -17,13 +17,16 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="subject"):
     as a parameter
     '''   
     
-    REGEXPS = (' -- ','--'), ('\.$',''), ('^. ','')
+    REGEXPS = (' -- ','--'), ('\.$',''), ('^\. *','')
 
     def cleanup(s):
         s = s.strip()
         for pattern, replace in REGEXPS:
             s = re.sub(pattern, replace, s)
-        s = s[0].upper() + s[1:]
+        if len(s) > 2:
+            s = s[0].upper() + s[1:]
+        else:
+            s = None
         return s
 
     try :
@@ -36,10 +39,9 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="subject"):
     if prop in data:
         subject = []
         for s in (data[prop] if not isinstance(data[prop],basestring) else [data[prop]]):
-            if len(s["name"]) > 2:
-                subject.append({
-                        "name" : cleanup(s["name"])
-                        })
+            subj = cleanup(s)
+            if subj:
+                subject.append({"name" : subj })
 
         if subject:
             data[prop] = subject
