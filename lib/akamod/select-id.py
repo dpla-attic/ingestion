@@ -4,6 +4,7 @@ from amara.lib.iri import is_absolute
 from akara.services import simple_service
 from akara.util import copy_headers_to_dict
 from akara import request, response, logger
+from dplaingestion.selector import getprop, setprop, exists
 
 COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
 COUCH_REC_ID_BUILDER = lambda src, id_handle: COUCH_ID_BUILDER(src,id_handle.strip().replace(" ","__"))
@@ -31,15 +32,17 @@ def selid(body,ctype,prop='handle'):
     source_name = request_headers.get('Source')
 
     id = None
-    if isinstance(data[prop],basestring):
-        id = data[prop]
-    else:
-        if data[prop]:
-            for h in data[prop]:
-                if is_absolute(h):
-                    id = h
-            if not id:
-                id = data[prop][0]
+    if exists(data,prop):
+        v = getprop(data,prop)
+        if isinstance(v,basestring):
+            id = v
+        else:
+            if v:
+                for h in v:
+                    if is_absolute(h):
+                        id = h
+                if not id:
+                    id = v[0]
 
     if not id:
         response.code = 500
