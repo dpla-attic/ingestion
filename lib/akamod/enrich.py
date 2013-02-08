@@ -122,7 +122,7 @@ def enrich(body,ctype):
     docs = []
     for record in data[u'items']:
         # Preserve record prior to any enrichments
-        record['original_record'] = record.copy()         
+        record['originalRecord'] = record.copy()         
 
         # Add collection information
         record[u'collection'] = {

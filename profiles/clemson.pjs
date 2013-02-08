@@ -1,21 +1,20 @@
 {
     "list_sets": "http://localhost:8872/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe",
     "enrichments_coll": [
-        "http://localhost:8872/oai-set-name?sets_service=http://localhost:8872/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe"
+        "http://localhost:8875/oai-set-name?sets_service=http://localhost:8875/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe"
     ], 
     "name": "clemson", 
     "enrichments_rec": [
-        "http://localhost:8872/select-id", 
-        "http://localhost:8872/oai-to-dpla", 
+        "http://localhost:8875/select-id", 
+        "http://localhost:8875/oai-to-dpla", 
         "http://localhost:8872/spatial_dates_to_temporal",
-        "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
-        "http://localhost:8872/enrich-date?prop=created", 
-        "http://localhost:8872/enrich-subject", 
-        "http://localhost:8872/enrich-type", 
-        "http://localhost:8872/enrich-format", 
-        "http://localhost:8872/identify_preview_location",
-        "http://localhost:8872/enrich_location"
-    ], 
+        "http://localhost:8875/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type&delim=%3b", 
+        "http://localhost:8875/enrich-date", 
+        "http://localhost:8875/enrich-subject", 
+        "http://localhost:8875/enrich-type", 
+        "http://localhost:8875/enrich-format", 
+        "http://localhost:8875/contentdm-identify-object",
+        "http://localhost:8875/enrich_location"
     ], 
     "subresources": [
         "gmb", 
@@ -34,11 +33,12 @@
         "mbe", 
         "gcj"
     ], 
-    "last_checked": "2013-01-29T23:04:16.441330", 
+    "last_checked": "2013-02-06T11:29:09.209400", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-clemson", 
         "name": "South Carolina Digital Library - Clemson"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8872/dpla-list-records?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
+
+    "endpoint_URL": "http://localhost:8875/dpla-list-records?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
 }

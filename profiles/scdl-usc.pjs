@@ -1,20 +1,20 @@
 {
     "list_sets": "http://localhost:8872/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe",
     "enrichments_coll": [
-        "http://localhost:8872/oai-set-name?sets_service=http://localhost:8872/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe"
+        "http://localhost:8875/oai-set-name?sets_service=http://localhost:8875/oai.listsets.json?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe"
     ], 
     "name": "scdl-usc", 
     "enrichments_rec": [
-        "http://localhost:8872/select-id", 
-        "http://localhost:8872/oai-to-dpla", 
-        "http://localhost:8872/spatial_dates_to_temporal",
-        "http://localhost:8872/shred?prop=subject%2Ctype%2Cformat&delim=%3b", 
-        "http://localhost:8872/enrich-date?prop=created", 
-        "http://localhost:8872/enrich-subject", 
-        "http://localhost:8872/enrich-type", 
-        "http://localhost:8872/enrich-format", 
-        "http://localhost:8872/identify_preview_location",
-        "http://localhost:8872/enrich_location"
+        "http://localhost:8875/select-id", 
+        "http://localhost:8875/oai-to-dpla", 
+        "http://localhost:8875/spatial_dates_to_temporal",
+        "http://localhost:8875/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type%2CisShownAt/format&delim=%3b", 
+        "http://localhost:8875/enrich-date", 
+        "http://localhost:8875/enrich-subject", 
+        "http://localhost:8875/enrich-type", 
+        "http://localhost:8875/enrich-format", 
+        "http://localhost:8875/contentdm-identify-object",
+        "http://localhost:8875/enrich_location"
     ], 
     "subresources": [
         "access", 
@@ -136,11 +136,16 @@
         "blaeu", 
         "simms1"
     ], 
-    "last_checked": "2013-01-30T00:05:59.071164", 
+    "last_checked": "2013-01-25T13:46:52.158314", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-usc", 
         "name": "South Carolina Digital Library - University of South Carolina"
     }, 
     "type": "oai", 
+<<<<<<< HEAD
+    "endpoint_URL": "http://localhost:8875/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
+}
+=======
     "endpoint_URL": "http://localhost:8872/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
 }
+>>>>>>> master
