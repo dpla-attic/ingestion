@@ -1,5 +1,5 @@
 import json
-
+ 
 def pinfo(*data):
     """
     Prints all the params in separate lines.
