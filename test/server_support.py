@@ -107,6 +107,12 @@ class download_preview:
         'image/gif'  : '.gif',
         'image/png'  : '.png',
     }
+
+class lookup:
+    lookup_mapping = {
+        'test': 'test_subst',
+        'test2': 'test_2_subst'
+    }
 """ % dict(config_root = config_root,
            port = port,
            thumbs_root=thumbs_root
