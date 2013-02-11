@@ -7,6 +7,7 @@ from dplaingestion.akamod.download_test_image import image_png, image_jpg
 from amara.thirdparty import httplib2
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
+from nose.tools import nottest
 
 CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
@@ -19,18 +20,17 @@ H = httplib2.Http()
 BASIC_URL = server() + "lookup"
 
 
-def _get_server_response(body, input_field=None,
-        output_field=None, subst=None):
+def _get_server_response(body, prop=None, target=None, subst=None):
     """
     Returns response from server using provided url.
     """
     url = BASIC_URL + "?"
 
-    if input_field is not None:
-        url += "input_field=%s&" % input_field
+    if prop is not None:
+        url += "prop=%s&" % prop
 
-    if output_field is not None:
-        url += "output_field=%s&" % output_field
+    if target is not None:
+        url += "target=%s&" % target
 
     if subst is not None:
         url += "substitution=%s&" % subst
@@ -92,8 +92,9 @@ def test_substitution_with_missing_subst_dict():
     INPUT = '{"aaa":"bbb"}'
     resp, content = _get_server_response(INPUT, "aaa", "aaa", "aaa")
     print (content)
+    print_error_log()
     assert resp.status == 500
-    assert content == "Missing substitution dictionary"
+    assert content == "Missing substitution dictionary [aaa]"
 
 
 def test_substitution_with_missing_key():
@@ -101,8 +102,9 @@ def test_substitution_with_missing_key():
     Should return the same JSON when the key is missing from substitution.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp, content = _get_server_response(INPUT, "bbb",
-            "bbb", "test_substitute")
+    resp, content = _get_server_response(INPUT, "bbb", "bbb", "test_substitute")
+
+    print_error_log()
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -113,8 +115,9 @@ def test_simple_substitute_for_the_same_field():
     """
     INPUT = '{"aaa":"bbb"}'
     EXPECTED_OUTPUT = '{"aaa":"BBB"}'
-    resp, content = _get_server_response(INPUT, "aaa",
-            "aaa", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa", "aaa", "test")
+
+    print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
@@ -125,8 +128,7 @@ def test_simple_substitute_for_different_field():
     """
     INPUT = '{"aaa":"bbb"}'
     EXPECTED_OUTPUT = '{"aaa":"bbb", "xxx":"BBB"}'
-    resp, content = _get_server_response(INPUT, "aaa",
-            "xxx", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa", "xxx", "test")
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
@@ -139,14 +141,13 @@ def test_substitution_for_the_same_field_and_array():
     INPUT = json.dumps(data)
     data["aaa"] = ["aa", "BBB", "CCC", "DDD"]
     EXPECTED_OUTPUT = json.dumps(data)
-    resp, content = _get_server_response(INPUT, "aaa",
-            "aaa", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa", "aaa", "test")
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
-def test_substitution_for_differnt_fields_and_array():
+def test_substitution_for_different_fields_and_array():
     """
     Should return json when original json is array.
     """
@@ -154,8 +155,7 @@ def test_substitution_for_differnt_fields_and_array():
     INPUT = json.dumps(data)
     data["zzz"] = ["aa", "BBB", "CCC", "DDD"]
     EXPECTED_OUTPUT = json.dumps(data)
-    resp, content = _get_server_response(INPUT, "aaa",
-            "zzz", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa", "zzz", "test")
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
@@ -169,8 +169,7 @@ def test_dictionary_subsitution():
     INPUT = json.dumps(data)
     data["aaa"] = {"bbb": "CCC"}
     EXPECTED_OUTPUT = json.dumps(data)
-    resp, content = _get_server_response(INPUT, "aaa.bbb",
-            "aaa.bbb", "test_substitute")
+    resp, content = _get_server_response(INPUT, "aaa/bbb", "aaa/bbb", "test")
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
