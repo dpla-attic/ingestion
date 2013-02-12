@@ -14,6 +14,7 @@
         "http://localhost:8873/enrich-type", 
         "http://localhost:8873/enrich-format", 
         "http://localhost:8873/mdl-enrich-location", 
+        "http://localhost:8873/enrich_location",
         "http://localhost:8873/contentdm-identify-object"
     ], 
     "subresources": [], 

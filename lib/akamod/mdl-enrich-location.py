@@ -51,6 +51,7 @@ def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="aggregatedC
             sp["country"] = v[4]["name"]
 
         if sp:
-            setprop(data, prop,  sp)
+            sp = [sp]
+            setprop(data, prop, sp)
 
     return json.dumps(data)
