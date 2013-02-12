@@ -1,25 +1,27 @@
 {
-    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe",
-    "type": "oai",
-    "name": "minnesota",
-    "enrichments_rec": [
-        "http://localhost:8878/select-id",
-        "http://localhost:8878/oai-to-dpla",
-        "http://localhost:8878/spatial_dates_to_temporal",
-        "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
-        "http://localhost:8878/enrich-subject",
-        "http://localhost:8878/enrich-type",
-        "http://localhost:8878/enrich-format",
-        "http://localhost:8878/mdl-enrich-location",
-        "http://localhost:8878/enrich_location"
-    ], 
     "enrichments_coll": [
-        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe"
+        "http://localhost:8873/oai-set-name?sets_service=http://localhost:8873/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe"
     ], 
-    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe&oaiset=",
+    "name": "minnesota", 
+    "list_sets": "http://localhost:8873/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe", 
+    "enrichments_rec": [
+        "http://localhost:8873/select-id", 
+        "http://localhost:8873/oai-to-dpla", 
+        "http://localhost:8873/spatial_dates_to_temporal", 
+        "http://localhost:8873/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type&delim=%3b", 
+        "http://localhost:8873/enrich-date", 
+        "http://localhost:8873/enrich-subject", 
+        "http://localhost:8873/enrich-type", 
+        "http://localhost:8873/enrich-format", 
+        "http://localhost:8873/mdl-enrich-location", 
+        "http://localhost:8873/contentdm-identify-object"
+    ], 
+    "subresources": [], 
+    "last_checked": "2013-02-09T00:42:56.968417", 
     "contributor": {
-        "@id": "http://dp.la/api/contributor/mdl",
+        "@id": "http://dp.la/api/contributor/mdl", 
         "name": "Minnesota Digital Library"
-    },
-    "subresources": ["swede", "p16022coll1", "ach", "bgc", "bsm", "becker", "belt", "p15160coll13", "bsc", "blue", "ccn", "carl", "clc", "cwh", "p15160coll8", "p16022coll16", "ccu", "p15160coll14", "cotton", "cwc", "dch", "p16022coll8", "des", "p16022coll4", "dcs", "p16022coll6", "p16022coll18", "elm", "fhs", "fch", "fre", "good", "grh", "gust", "hmu", "hzf", "p16022coll19", "mpls", "hcm", "hchm", "irrc", "jch", "jhs", "p15160coll5", "lake", "lfw", "lsm", "macal", "mch", "mcc", "p15160coll9", "mmc", "mah", "mlc", "umc", "mdh", "p16022coll11", "mdt", "mgs", "mhs", "lrl", "sro", "mmm", "p16022coll2", "sll", "msu", "msn", "mor", "mow", "mur", "nba", "npa", "p16022coll12", "nico", "p15160coll4", "nlc", "nsm", "nemhc", "p16022coll13", "nfh", "p16022coll10", "mhd", "olms", "p16022coll3", "otter", "penn", "pipe", "pch", "ren", "p16022coll15", "p16022coll9", "ros", "sac", "stbm", "csc", "stc", "p15160coll1", "p15160coll7", "john", "olaf", "p15160coll11", "spp", "rtc", "p15160coll17", "p15160coll12", "p16022coll20", "scott", "shr", "ssc", "p15160coll3", "p16022coll7", "stearns", "ste", "sew", "spl", "p15160coll10", "p16022coll17", "tch", "army", "umd", "umk", "umo", "naa", "uma", "thomas", "iml", "gag", "was", "p15160coll6", "p15160coll2", "whs", "white", "wch", "winona"]
+    }, 
+    "type": "oai", 
+    "endpoint_URL": "http://localhost:8873/dpla-list-records?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe&oaiset="
 }

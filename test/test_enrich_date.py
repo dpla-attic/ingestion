@@ -20,13 +20,13 @@ def test_enrich_dates_bogus_date():
     }
     EXPECTED = {
         u'date' : {
-            'start' : None,
+            'begin' : None,
             'end' : None,
             'displayDate' : 'could be 1928ish?'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -42,13 +42,13 @@ def test_enrich_date_single():
     }
     EXPECTED = {
         u'date' : {
-            'start' : u'1928',
+            'begin' : u'1928',
             'end' : u'1928',
             'displayDate' : '1928'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -63,13 +63,13 @@ def test_enrich_date_date_multiple():
     }
     EXPECTED = {
         u'date' : {
-            u'start' : u'1406',
+            u'begin' : u'1406',
             u'end' : u'1406',
             'displayDate' : '1406'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -85,13 +85,13 @@ def test_enrich_date_date_parse_format_yyyy_mm_dd():
     }
     EXPECTED = {
         'date' : {
-            'start' : u'1928-05-20',
+            'begin' : u'1928-05-20',
             'end' : u'1928-05-20',
             'displayDate' : '1928-05-20'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -106,13 +106,13 @@ def test_enrich_date_parse_format_date_with_slashes():
     }
     EXPECTED = {
         u'date' : {
-            u'start' : u'1928-05-20',
+            u'begin' : u'1928-05-20',
             u'end' : u'1928-05-20',
             'displayDate' : '05/20/1928'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -128,13 +128,13 @@ def test_enrich_date_date_parse_format_natural_string():
     }
     EXPECTED = {
         'date' : {
-            'start' : u'1928-05-20',
+            'begin' : u'1928-05-20',
             'end' : u'1928-05-20',
             'displayDate' : 'May 20, 1928'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -149,13 +149,13 @@ def test_enrich_date_date_parse_format_ca_string():
     }
     EXPECTED = {
         'date' : {
-            'start' : u'1928-05',
+            'begin' : u'1928-05',
             'end' : u'1928-05',
             'displayDate' : 'ca. May 1928'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -170,13 +170,13 @@ def test_enrich_date_date_parse_format_c_string():
     }
     EXPECTED = {
         'date' : {
-            'start' : u'1928',
+            'begin' : u'1928',
             'end' : u'1928',
             'displayDate' : 'c. 1928'
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -191,13 +191,13 @@ def test_enrich_date_parse_format_date_range1():
     }
     EXPECTED = {
         u'date' : {
-            u'start' : u'1960',
+            u'begin' : u'1960',
             u'end' : u'1970',
             "displayDate" : "1960 - 1970"
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -212,13 +212,13 @@ def test_enrich_date_parse_format_date_range2():
     }
     EXPECTED = {
         u'date' : {
-            u'start' : u'1960-05-01',
+            u'begin' : u'1960-05-01',
             u'end' : u'1960-05-15',
             "displayDate" : "1960-05-01 - 1960-05-15"
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -233,13 +233,13 @@ def test_enrich_date_parse_format_date_range3():
     }
     EXPECTED = {
         u'date' : {
-            u'start' : u'1960',
+            u'begin' : u'1960',
             u'end' : u'1970',
             "displayDate" : "1960-1970"
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -254,13 +254,13 @@ def test_enrich_date_parse_format_date_range4():
     }
     EXPECTED = {
         u'date' : {
-            u'start' : u'1960',
+            u'begin' : u'1960',
             u'end' : u'1970',
             "displayDate" : "c. 1960-70"
         }
     }
 
-    url = server() + "enrich-date"
+    url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")

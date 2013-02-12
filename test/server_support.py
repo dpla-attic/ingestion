@@ -84,7 +84,7 @@ MODULES = [
     "dplaingestion.akamod.oai-to-dpla",
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
-    "dplaingestion.akamod.identify_preview_location",
+    "dplaingestion.akamod.contentdm-identify-object",
     "dplaingestion.akamod.download_preview",
     "dplaingestion.akamod.download_test_image",
     "dplaingestion.akamod.filter-empty-values",

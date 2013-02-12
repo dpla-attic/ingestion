@@ -1,5 +1,5 @@
 import sys
-from server_support import server
+from server_support import server, print_error_log
 
 from amara.thirdparty import httplib2
 import os
@@ -21,7 +21,7 @@ def test_shred1():
 
     INPUT = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     EXPECTED = {
         "id": "999",
@@ -37,7 +37,7 @@ def test_shred2():
     "Shredding of an unknown property"
     INPUT = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     EXPECTED = INPUT
     url = server() + "shred?prop=prop9"
@@ -63,7 +63,7 @@ def test_shred3():
 def test_shred4():
     "Shredding multiple fields"
     INPUT = {
-        "p": ["a,b,c", "d,e,f"]
+        "p": ["a;b;c", "d;e;f"]
     }
     EXPECTED = {
         "p": ["a","b","c","d","e","f"]
@@ -77,8 +77,8 @@ def test_shred4():
 def test_shred5():
     "Shredding multiple keys"
     INPUT = {
-        "p": "a,b,c",
-        "q": "d,e,f"
+        "p": "a;b;c",
+        "q": "d;e;f"
     }
     EXPECTED = {
         "p": ["a","b","c"],
@@ -99,7 +99,7 @@ def test_unshred1():
     }
     EXPECTED = {
         "id": "999",
-        "prop1": "lets,go,bluejays"
+        "prop1": "lets;go;bluejays"
     }
     url = server() + "shred?action=unshred&prop=prop1"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
@@ -120,7 +120,6 @@ def test_unshred2():
 
     assert json.loads(content) == EXPECTED
 
-
 @nottest
 def test_oaitodpla_date_parse_format_ca_string():
     "Correctly transform a date of format ca. 1928"
@@ -129,7 +128,7 @@ def test_oaitodpla_date_parse_format_ca_string():
     }
     EXPECTED = {
         u'temporal' : [{
-            u'start' : u'1928',
+            u'begin' : u'1928',
             u'end' : u'1928'
         }]
     }
@@ -170,7 +169,7 @@ def test_enrich_multiple_subject_reformat_to_dict():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -188,7 +187,7 @@ def test_enrich_single_subject_reformat_to_dict():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -208,7 +207,7 @@ def test_enrich_subject_cleanup():
             ]
         }
 
-    url = server() + "enrich-subject"
+    url = server() + "enrich-subject?prop=subject"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -225,7 +224,7 @@ def test_enrich_type_cleanup():
         u'TBD_physicalformat' : ["Statue"]
         }
 
-    url = server() + "enrich-type"
+    url = server() + "enrich-type?prop=type&alternate=TBD_physicalformat"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
@@ -239,18 +238,18 @@ def test_enrich_format_cleanup_multiple():
         }
     EXPECTED = {
         u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
-        u'TBD_physicalformat' : ["Still Images", "Images"]
+        u'physicalmedium' : ["Still Images", "Images"]
         }
 
-    url = server() + "enrich-format"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
-    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
-
-def test_enrich_format_cleanup_single():
+    assert result['physicalmedium'] == EXPECTED['physicalmedium']
+    
+def test_enrich_format_cleanup():
     "Test format normalization and removal of non IMT formats with one format"
     INPUT = {
         "format" : "image/JPEG"
@@ -259,14 +258,13 @@ def test_enrich_format_cleanup_single():
         u'format' : "image/jpeg"
         }
 
-    url = server() + "enrich-format"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
-    assert not 'TBD_physicalformat' in result.keys()
-
+    assert not 'physicalmedium' in result.keys()
 
 def test_physical_format_from_format_and_type():
     """
@@ -280,85 +278,13 @@ def test_physical_format_from_format_and_type():
         "TBD_physicalformat": ["Paintings", "Painting", "76.8 x 104 cm", "Oil on canvas"]
     }
 
-    resp, content = H.request(server() + "enrich-type", "POST", body=json.dumps(INPUT), headers=HEADERS)
+    resp, content = H.request(server() + "enrich-type?prop=type&alternate=TBD_physicalformat", "POST", body=json.dumps(INPUT), headers=HEADERS)
     assert str(resp.status).startswith("2")
     assert json.loads(content)['TBD_physicalformat'] == ["Paintings", "Painting"]
-    resp, content = H.request(server() + "enrich-format", "POST", body=content, headers=HEADERS)
+    resp, content = H.request(server() + "enrich-format?prop=format&alternate=TBD_physicalformat", "POST", body=content, headers=HEADERS)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
-
-
-def test_identify_preview_location():
-    """
-    Should add a thumbnail URL made of the source URL.
-    """
-    INPUT = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104"
-    }
-    EXPECTED = {
-            u"something" : "x",
-            u"somethink" : "y",
-            u"source" : "http://repository.clemson.edu/u?/scp,104",
-            u"preview_source_url" : "http://repository.clemson.edu/cgi-bin/thumbnail.exe?CISOROOT=/scp&CISOPTR=104"
-    }
-    url = server() + "identify_preview_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-
-    assert str(resp.status).startswith("2")
-    result = json.loads(content)
-
-    assert_same_jsons(EXPECTED, result)
-
-
-def test_identify_preview_location_bad_json():
-    """
-    Should get 500 from akara for bad json.
-    """
-    INPUT = [ "{...}", "{aaa:'bbb'}", "xxx" ]
-    for i in INPUT:
-        url = server() + "identify_preview_location"
-        resp,content = H.request(url,"POST",body=i,headers=HEADERS)
-        assert resp.status == 500
-
-
-def test_identify_preview_location_missing_source_field():
-    """
-    Should return original JSON if the 'source' field is missing.
-    """
-    INPUT = '{"aaa":"bbb", "id":"asa"}'
-    url = server() + "identify_preview_location"
-    resp,content = H.request(url,"POST",body=INPUT,headers=HEADERS)
-
-    pinfo(url,resp,content)
-
-    assert_same_jsons(INPUT, content)
-
-
-def test_identify_preview_location_bad_url():
-    """
-    Should return original JSON for bad URL.
-    """
-    bad_urls = [ u"http://repository.clemson.edu/uscp104",
-        u"http://repository.clemson.edu/s?/scp,104",
-        u"http://repository.clemson.edu/u/scp,104",
-        u"http://repository.clemson.edu/u?/scp104",
-        u"http://repository.clemson.edu/u?/scp",
-        u"http://repository.clemson.edu/",
-            ]
-    INPUT = {
-            u"something" : u"x",
-            u"somethink" : u"y",
-            u"source" : u""
-    }
-    for bad_url in bad_urls:
-        INPUT[u"source"] = bad_url
-        url = server() + "identify_preview_location"
-        print url
-        resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
-        assert_same_jsons(INPUT, content)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

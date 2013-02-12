@@ -2,9 +2,10 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/mdl-enrich-location', 'mdl-enrich-location', 'application/json')
-def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="spatial"):
+def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="aggregatedCHO/spatial"):
     """
     Service that accepts a JSON document and enriches the "spatial" field of that document by:
 
@@ -22,33 +23,34 @@ def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="spatial"):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    if prop in data:
+    if exists(data,prop):
         sp = {}
-        fields = len(data[prop])
+        v = getprop(data,prop)
+        fields = len(v)
         if not fields:
             logger.error("Spatial is empty.")
             return json.dumps(data)
         elif fields == 1:
-            sp["country"] = data[prop][0]["name"]
+            sp["country"] = v[0]["name"]
         elif fields == 2:
-            sp["state"]   = data[prop][0]["name"]
-            sp["country"] = data[prop][1]["name"]
+            sp["state"]   = v[0]["name"]
+            sp["country"] = v[1]["name"]
         elif fields == 3:
-            sp["county"]  = data[prop][0]["name"]
-            sp["state"]   = data[prop][1]["name"]
-            sp["country"] = data[prop][2]["name"]
+            sp["county"]  = v[0]["name"]
+            sp["state"]   = v[1]["name"]
+            sp["country"] = v[2]["name"]
         elif fields == 4:
-            sp["city"]    = data[prop][0]["name"]
-            sp["county"]  = data[prop][1]["name"]
-            sp["state"]   = data[prop][2]["name"]
-            sp["country"] = data[prop][3]["name"]
+            sp["city"]    = v[0]["name"]
+            sp["county"]  = v[1]["name"]
+            sp["state"]   = v[2]["name"]
+            sp["country"] = v[3]["name"]
         else:
-            sp["city"]    = data[prop][0]["name"]
-            sp["county"]  = data[prop][2]["name"]
-            sp["state"]   = data[prop][3]["name"]
-            sp["country"] = data[prop][4]["name"]
+            sp["city"]    = v[0]["name"]
+            sp["county"]  = v[2]["name"]
+            sp["state"]   = v[3]["name"]
+            sp["country"] = v[4]["name"]
 
         if sp:
-            data[prop] = [sp]
+            setprop(data, prop,  sp)
 
     return json.dumps(data)
