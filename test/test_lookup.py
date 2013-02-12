@@ -175,5 +175,83 @@ def test_dictionary_subsitution():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+def test_deeper_dictionary_subsitution():
+    """
+    Should substitute when there is dictionary field.
+    """
+    data = {
+                "xxx": "yyy", 
+                "aaa": {
+                    "bbb": "ccc",
+                    "xxx": {"eee": "aaa"}
+                }
+    }
+
+    INPUT = json.dumps(data)
+    data["aaa"]["xxx"]["eee"] = "AAA222"
+
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa/xxx/eee", "aaa/xxx/eee", "test2")
+    print_error_log()
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
+
+def test_dict_substitution_in_different_field():
+    """
+    Should add another field when prop is dictionary field.
+    """
+    data = {
+                "xxx": "yyy", 
+                "aaa": {
+                    "bbb": "ccc",
+                    "xxx": {"eee": "aaa"}
+                }
+    }
+
+    INPUT = json.dumps(data)
+    data["aa"] = {"bb": {"cc": "AAA222"}}
+
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa/xxx/eee", "aa/bb/cc", "test2")
+    print_error_log()
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
+
+def test_substitute_with_list_of_dictionaries():
+    """
+    Should convert all dicts in a list.
+    """
+    data = {
+                "xxx": "yyy",
+                "aaa": {
+                    "bbb": "ccc",
+                    "xxx": [
+                        {"eee": "aaa"},
+                        {"xxx": "eee"},
+                        {"eee": "bbb"}
+                    ]
+                }
+    }
+
+    INPUT = json.dumps(data)
+    data["aaa"]["xxx"] = [
+                        {"eee": "AAA222"},
+                        {"xxx": "eee"},
+                        {"eee": "BBB222"},
+    ]
+
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa/xxx/eee", "aaa/xxx/eee", "test2")
+    print_error_log()
+    pinfo(resp, content)
+
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
+# TODO Add test with list of dictionaries
+# TODO add test with dictionary with list
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
