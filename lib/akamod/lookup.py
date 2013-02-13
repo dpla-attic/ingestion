@@ -3,7 +3,30 @@ from akara import module_config
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.selector import getprop, exists
+
+def setprop(obj, path, val, path_delim="/"):
+    """
+    Sets the value of the key. If the key path doesn't exist, then the keys
+    are created.
+    """
+
+    # So just set the value for the obj:
+    if path_delim not in path:
+        obj[path] = val
+        return
+
+    # Path is complicated, split that
+    pp, pn = tuple(path.lstrip(path_delim).split(path_delim,1))
+    if pp not in obj:
+        obj[pp] = {}
+
+    if isinstance(obj[pp], list):
+        for e in obj[pp]:
+            setprop(e, pn, val)
+
+
+    return setprop(obj[pp], pn, val)
 
 
 def find_conversion_dictionary(mapping_key):
