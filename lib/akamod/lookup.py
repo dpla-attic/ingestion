@@ -100,7 +100,7 @@ def convert(data, path, name, conv, PATH_DELIM="/"):
         return
 
     # If there is deeper path, let's check it
-    pp, pn = tuple(path.lstrip(PATH_DELIM).split(PATH_DELIM,1))
+    pp, pn = tuple(path.lstrip(PATH_DELIM).split(PATH_DELIM, 1))
 
     # For list: iterate over elements
     if isinstance(data, list):
@@ -129,8 +129,7 @@ def find_conversion_dictionary(mapping_key):
     mapping = module_config().get('lookup_mapping')
     logger.debug("Looking for mapping using key [%s]" % mapping_key)
     dict_name = mapping[mapping_key].upper()
-    logger.debug("Found substitution dict [%s] for key mapping [%s]"
-            % (dict_name, mapping_key,) )
+    logger.debug("Found substitution dict [%s] for key mapping [%s]" % (dict_name, mapping_key,))
     return globals()[dict_name]
 
 
@@ -161,8 +160,8 @@ def the_same_beginning(prop, target):
         "a"     - "a/b"
 
     """
-    return ("/" not in prop and "/" not in target ) \
-            or (prop.split("/")[:-1] == target.split("/")[:-1])
+    return ("/" not in prop and "/" not in target) \
+        or (prop.split("/")[:-1] == target.split("/")[:-1])
 
 
 @simple_service('POST', 'http://purl.org/la/dp/lookup', 'lookup', 'application/json')
@@ -356,7 +355,6 @@ def lookup(body, ctype, prop, target, substitution):
         response.code = 500
         response.add_header('content-type', 'text/plain')
         return msg
-
 
     convert(data, prop, target.split("/")[-1:][0], convdict)
     return json.dumps(data)
