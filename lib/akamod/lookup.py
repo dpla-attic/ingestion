@@ -3,30 +3,78 @@ from akara import module_config
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import getprop, exists
+from dplaingestion.selector import getprop, setprop, exists
 
-def setprop(obj, path, val, path_delim="/"):
+#TODO add documentation for this module
+
+
+def convert(data, path, name, conv, PATH_DELIM="/"):
     """
-    Sets the value of the key. If the key path doesn't exist, then the keys
-    are created.
+    TODO: write here
+        data:
+        path:
+        name: name of the last field
+        conv: dictionary used for conversion
     """
 
-    # So just set the value for the obj:
-    if path_delim not in path:
-        obj[path] = val
+    logger.debug("DATA")
+    logger.debug(data)
+
+    def convert_last(data, path, name, conv):
+        logger.debug("PATH: " + path)
+        if not path in data:
+            return
+
+        value = data[path]
+        if isinstance(value, list):
+            out = []
+            logger.debug("Value is a list")
+            logger.debug(conv)
+            for el in value:
+                if el in conv:
+                    logger.debug("Converting " + el)
+                    logger.debug("TO: " + conv[el])
+                    out.append(conv[el])
+                else:
+                    out.append(el)
+            data[name] = out
+        else:
+            data[name] = conv[value]
+            logger.debug("Converting data[name] = " + data[name])
+
+    # So we should convert now
+    if not PATH_DELIM in path:
+        # There is a list to convert.
+        # If there is a list of dictionaries, each dictionary has to be
+        # converted.
+        if isinstance(data, list):
+            for el in data:
+                logger.debug("CONVERTING ")
+                logger.debug(el)
+                convert_last(el, path, name, conv)
+        else:
+            convert_last(data, path, name, conv)
+
         return
 
-    # Path is complicated, split that
-    pp, pn = tuple(path.lstrip(path_delim).split(path_delim,1))
-    if pp not in obj:
-        obj[pp] = {}
+    # If there is deeper path, let's check it
+    pp, pn = tuple(path.lstrip(PATH_DELIM).split(PATH_DELIM,1))
 
-    if isinstance(obj[pp], list):
-        for e in obj[pp]:
-            setprop(e, pn, val)
+    # For list: iterate over elements
+    if isinstance(data, list):
+        for el in data:
+            convert(el, path, name, conv)
+    elif isinstance(data, dict):
+        if pp not in data:
+            # Then just do nothing
+            logger.error("Couldn't find {0} in data.".format(pp))
+        else:
+            convert(data[pp], pn, name, conv)
+    else:
+        logger.error("Got data of unknown type")
 
+    return
 
-    return setprop(obj[pp], pn, val)
 
 
 def find_conversion_dictionary(mapping_key):
@@ -41,32 +89,9 @@ def find_conversion_dictionary(mapping_key):
     return globals()[dict_name]
 
 
-def convert_data(value, dict_name):
-    """
-    Converts given data using provided dict name.
-    """
-    d = globals()[dict_name]
-    result = None
-
-    if isinstance(value, basestring):
-        logger.debug("Changing value of ['{0}':'{1}'] to {2}".
-                format(prop, value, d[value]))
-        result = d[value]
-
-    if isinstance(value, list):
-        msg = "Changing each value of array ['{0}':'{1}'] to array of values."
-        logger.debug(msg.format(prop, value))
-        result = []
-        for v in value:
-            if v in d:
-                logger.debug("Changing value of '{0}' to {1}".format(v, d[v]))
-                result.append(d[v])
-            else:
-                logger.debug("Not changing value of '{0}', didn't find in {1}".
-                        format(v, substitution))
-                result.append(v)
-
-    return result
+def the_same_beginning(prop, target):
+    return ("/" not in prop and "/" not in target ) \
+            or (prop.split("/")[:-1] == target.split("/")[:-1])
 
 
 @simple_service('POST', 'http://purl.org/la/dp/lookup', 'lookup', 'application/json')
@@ -80,6 +105,15 @@ def lookup(body, ctype, prop, target, substitution):
     logger.debug("OUTPUT: [%s]" % target)
 
     LOG_JSON_ON_ERROR = True
+
+    # Check if the prop and target fields has got the same beginning.
+    if not the_same_beginning(prop, target):
+        msg = "The `prop`=[{0}] and `get`=[{1}] fields do not point to the same dictionary."
+        msg = msg.format(prop, target)
+        logger.error(msg)
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return msg
 
     def log_json():
         if LOG_JSON_ON_ERROR:
@@ -104,14 +138,6 @@ def lookup(body, ctype, prop, target, substitution):
         response.add_header('content-type', 'text/plain')
         return msg
 
-    prop_value = None
-    # Get prop value.
-    try:
-        prop_value = getprop(data, prop)
-    except KeyError as e:
-        logger.error("Didn't find the key [%s] in JSON" % prop)
-        return body
-
     # Dictionary to use for conversion.
     convdict = None
     try:
@@ -124,9 +150,8 @@ def lookup(body, ctype, prop, target, substitution):
         return msg
 
 
-    def substitute(data, value, target):
-        asd
-
+    convert(data, prop, target.split("/")[-1:][0], convdict)
+    return json.dumps(data)
 
     if isinstance(prop_value, basestring):
         #subst_string(prop, value, convdict)

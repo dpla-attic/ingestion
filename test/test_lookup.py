@@ -48,6 +48,7 @@ def test_bad_INPUT_json():
     assert resp.status == 500
 
 
+
 def test_no_params():
     """
     Should return 500 for no params.
@@ -71,7 +72,7 @@ def test_missing_field_in_json():
     Should return the same json for missing INPUT field in json.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp, content = _get_server_response(INPUT, "a", "b", "TEST_SUBSTITUTE")
+    resp, content = _get_server_response(INPUT, "a", "b", "test")
     assert resp.status == 200
     assert_same_jsons(INPUT, INPUT)
 
@@ -81,7 +82,7 @@ def test_missing_output_field():
     Should return 500 when the OUTPUT field is missing from URL.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp, content = _get_server_response(INPUT, "a", "", "TEST_SUBSTITUTE")
+    resp, content = _get_server_response(INPUT, "a", "", "test")
     assert resp.status == 500
 
 
@@ -102,9 +103,10 @@ def test_substitution_with_missing_key():
     Should return the same JSON when the key is missing from substitution.
     """
     INPUT = '{"aaa":"bbb"}'
-    resp, content = _get_server_response(INPUT, "bbb", "bbb", "test_substitute")
+    resp, content = _get_server_response(INPUT, "bbb", "bbb", "test")
 
     print_error_log()
+    pinfo(content)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
@@ -129,9 +131,9 @@ def test_simple_substitute_for_different_field():
     INPUT = '{"aaa":"bbb"}'
     EXPECTED_OUTPUT = '{"aaa":"bbb", "xxx":"BBB"}'
     resp, content = _get_server_response(INPUT, "aaa", "xxx", "test")
+    print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
-
 
 def test_substitution_for_the_same_field_and_array():
     """
@@ -202,7 +204,7 @@ def test_dict_substitution_in_different_field():
     Should add another field when prop is dictionary field.
     """
     data = {
-                "xxx": "yyy", 
+                "xxx": "yyy",
                 "aaa": {
                     "bbb": "ccc",
                     "xxx": {"eee": "aaa"}
@@ -210,10 +212,10 @@ def test_dict_substitution_in_different_field():
     }
 
     INPUT = json.dumps(data)
-    data["aa"] = {"bb": {"cc": "AAA222"}}
+    data["aaa"]["xxx"]["ccc"] = "AAA222"
 
     EXPECTED_OUTPUT = json.dumps(data)
-    resp, content = _get_server_response(INPUT, "aaa/xxx/eee", "aa/bb/cc", "test2")
+    resp, content = _get_server_response(INPUT, "aaa/xxx/eee", "aaa/xxx/ccc", "test2")
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
