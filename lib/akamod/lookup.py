@@ -3,7 +3,6 @@ from akara import module_config
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import getprop, setprop, exists
 
 
 def convert_last(data, path, name, conv):
@@ -55,7 +54,7 @@ def convert_last(data, path, name, conv):
         data[name] = conv[value]
 
 
-def convert(data, path, name, conv, PATH_DELIM="/"):
+def convert(data, path, name, conv, path_delim="/"):
     """ Converts data using converters.
 
     Args:
@@ -87,7 +86,7 @@ def convert(data, path, name, conv, PATH_DELIM="/"):
 
     """
     # So we should convert now
-    if not PATH_DELIM in path:
+    if not path_delim in path:
         # There is a list to convert.
         # If there is a list of dictionaries, each dictionary has to be
         # converted.
@@ -100,7 +99,7 @@ def convert(data, path, name, conv, PATH_DELIM="/"):
         return
 
     # If there is deeper path, let's check it
-    pp, pn = tuple(path.lstrip(PATH_DELIM).split(PATH_DELIM, 1))
+    pp, pn = tuple(path.lstrip(path_delim).split(path_delim, 1))
 
     # For list: iterate over elements
     if isinstance(data, list):
@@ -323,6 +322,7 @@ def lookup(body, ctype, prop, target, substitution):
         return msg
 
     def log_json():
+        """Logs whole body JSON."""
         if LOG_JSON_ON_ERROR:
             logger.debug(body)
 
