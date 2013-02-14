@@ -91,7 +91,8 @@ MODULES = [
     "dplaingestion.akamod.artstor-select-isshownat",
     "dplaingestion.akamod.artstor_preview_location",
     "dplaingestion.akamod.spatial_dates_to_temporal",
-    "dplaingestion.akamod.enrich_location"
+    "dplaingestion.akamod.enrich_location",
+    "dplaingestion.akamod.lookup"
     ]
 
 class download_preview:
@@ -104,6 +105,12 @@ class download_preview:
         'image/jpeg' : '.jpg',
         'image/gif'  : '.gif',
         'image/png'  : '.png',
+    }
+
+class lookup:
+    lookup_mapping = {
+        'test': 'test_subst',
+        'test2': 'test_2_subst'
     }
 """ % dict(config_root = config_root,
            port = port,
