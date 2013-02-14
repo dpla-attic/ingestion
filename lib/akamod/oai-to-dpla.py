@@ -34,7 +34,7 @@ CONTEXT = {
    "isShownAt" : "edm:isShownAt",
    "object" : "edm:object",
    "provider" : "edm:provider",
-   "start" : {
+   "begin" : {
      "@id" : "dpla:dateRangeStart",
      "@type": "xsd:date"
    },
@@ -78,7 +78,7 @@ CHO_TRANSFORMER = {
     "creator"          : lambda d: {"creator": d.get("creator",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "date"             : lambda d: {"date": d.get("date",None)},
-    "language"         : lambda d: {"language": d.get("language",None)},
+    "language"         : lambda d: {"language": {"name" : d.get("language",None)}},
     "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
     "relation"         : lambda d: {"relation": d.get("relation",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},
@@ -136,7 +136,7 @@ def oaitodpla(body,ctype,geoprop=None):
 
     if 'HTTP_CONTRIBUTOR' in request.environ:
         try:
-            out["dplaContributor"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
+            out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
         except Exception as e:
             logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
 
