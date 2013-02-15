@@ -61,3 +61,9 @@ The provided enrichment services include;
 * shred/unshred; ',' based string/list and list/string (de)construction. The "prop" parameter specifies which property is to be shredded/unshredded (support multi-properties using a period delimiter)
 * geocode; creates a new property containing the lat/long of the location present in the property identified by the prop parameter. NOTE; in order to use geo lookups, the geonames sqlite file has to be created using the [instructions](https://foundry.zepheira.com/projects/zenpub/repository/entry/NOTES) and stored in the "caches" directory below the home directory of akara.conf
 * select-id; creates or updates an "id" property to the value of the property named by the "prop" parameter
+ 
+License
+--------
+This application is released under a AGPLv3 license.
+
+Copyright President and Fellows of Harvard College, 2013
