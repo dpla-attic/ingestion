@@ -35,6 +35,8 @@ def process_profile(out,profile_f):
 
     if not profile:
         print >> sys.stderr, 'Error reading source profile.'
+        print >> sys.stderr, "Detailed error information:"
+        print >> sys.stderr, e
         return False
 
     # Pause in secs between collection ingests
