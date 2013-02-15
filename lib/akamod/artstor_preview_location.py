@@ -35,7 +35,7 @@ def artstor_preview_location(body, ctype):
         response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
         return error_text
 
-    original_document_key = u"dplaSourceRecord"
+    original_document_key = u"originalRecord"
     original_sources_key = u"handle"
     artstor_preview_prefix = "Thumbnail"
     preview_url_key = u"preview_source_url"
