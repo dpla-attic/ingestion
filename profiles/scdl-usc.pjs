@@ -25,4 +25,3 @@
     "type": "oai", 
     "endpoint_URL": "http://localhost:8875/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
 }
-}
