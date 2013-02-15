@@ -17,6 +17,7 @@ from amara.bindery.model import examplotron_model, generate_metadata, metadata_d
 from amara.lib import U
 from amara.pushtree import pushtree
 from amara.thirdparty import httplib2
+from akara import logger
 
 OAI_NAMESPACE = u"http://www.openarchives.org/OAI/2.0/"
 
@@ -53,7 +54,11 @@ DSPACE_ARTICLE_BASE = u"http://dspace.mit.edu/handle/"
 
 DSPACE_ID_BASE = u"oai:dspace.mit.edu:"
 
-PREFIXES = {u'o': u'http://www.openarchives.org/OAI/2.0/'}
+PREFIXES = {
+    u'o': u'http://www.openarchives.org/OAI/2.0/',
+    u'dc': u'http://purl.org/dc/elements/1.1/',
+    u'oai_dc': u'http://www.openarchives.org/OAI/2.0/oai_dc/'
+}
 
 class oaiservice(object):
     """
@@ -90,8 +95,22 @@ class oaiservice(object):
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
         sets = []
 
+        paths = [
+            u'string(o:setDescription/oai_dc:dc/dc:description)',
+            u'string(o:setDescription/o:oclcdc/dc:description)',
+            u'string(o:setDescription/dc:description)',
+            u'string(o:setDescription)'            
+        ]
         def receive_nodes(n):
-            sets.append(dict([('setSpec', n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)), ('setName', n.xml_select(u'string(o:setName)', prefixes=PREFIXES)), ('setDescription', n.xml_select(u'string(o:setDescription)', prefixes=PREFIXES))]))
+            setSpec = n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)
+            setName = n.xml_select(u'string(o:setName)', prefixes=PREFIXES)
+            #TODO better solution is to traverse setDescription amara tree
+            for p in paths:
+                setDescription = n.xml_select(p, prefixes=PREFIXES)
+                if setDescription:
+                    break
+            sets.append(dict([('setSpec', setSpec), ('setName', setName), ('setDescription', setDescription)]))
+
         pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
         return sets
 
