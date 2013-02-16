@@ -15,7 +15,7 @@
         "http://localhost:8873/enrich-format", 
         "http://localhost:8873/mdl-enrich-location", 
         "http://localhost:8873/enrich_location",
-        "http://localhost:8873/contentdm-identify-object"
+        "http://localhost:8873/contentdm_identify_object"
     ], 
     "subresources": [], 
     "last_checked": "2013-02-09T00:42:56.968417", 

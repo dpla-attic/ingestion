@@ -106,6 +106,9 @@ def enrich(body,ctype):
         "@id": at_id,
         "ingestType": "collection"
     }
+    # Set collection title field from collection_name if no sets
+    if not coll_enrichments[0]:
+        COLL['title'] = collection_name 
     set_ingested_date(COLL)
 
     enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
