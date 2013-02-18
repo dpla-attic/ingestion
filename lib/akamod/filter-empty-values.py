@@ -17,6 +17,9 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
+from dplaingestion.selector import getprop, setprop, PATH_DELIM
+
+
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
 HTTP_TYPE_TEXT = 'text/plain'
@@ -106,7 +109,22 @@ def filter_path(_dict, path):
     Returns:
      cleaned dictionary
     """
-    pass
+    d = copy.deepcopy(_dict)
+    try:
+        value = getprop(d, path)
+    except KeyError as e:
+        logger.warning("Attempt to clean non existent property \"%s\"", path)
+        return _dict
+    else:
+        if not value:
+            embracing_path, sep, value_key = path.rpartition(PATH_DELIM)
+            if value_key:
+                embracing_dict = getprop(d, embracing_path)
+                del embracing_dict[value_key]
+                setprop(d, embracing_path, embracing_dict)
+            else:
+                del d[path]
+            return d
 
 def test_filtering():
     source = {"v1": "", "v2": "value2", "v3": {"vv1": "", "vv2": "v_value2"}, "v4": {}, "v5": {"0": {"name": ""}, "1": {"name": "name_value_1"}}, "v6": ["", "vvalue6", {}, {"v_sub": ""}], "v7": [""]}
