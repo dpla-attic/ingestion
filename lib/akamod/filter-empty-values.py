@@ -112,7 +112,7 @@ def filter_path(_dict, path):
     d = copy.deepcopy(_dict)
     try:
         value = getprop(d, path)
-    except KeyError as e:
+    except KeyError:
         logger.warning("Attempt to clean non existent property \"%s\"", path)
         return _dict
     else:
@@ -125,6 +125,8 @@ def filter_path(_dict, path):
             else:
                 del d[path]
             return d
+        else:
+            return _dict
 
 def test_filtering():
     source = {"v1": "", "v2": "value2", "v3": {"vv1": "", "vv2": "v_value2"}, "v4": {}, "v5": {"0": {"name": ""}, "1": {"name": "name_value_1"}}, "v6": ["", "vvalue6", {}, {"v_sub": ""}], "v7": [""]}
