@@ -19,8 +19,8 @@ HTTP_TYPE_TEXT = 'text/plain'
 HTTP_HEADER_TYPE = 'Content-Type'
 
 
-@simple_service('POST', 'http://purl.org/la/dp/artstor_preview_location', 'artstor_preview_location', HTTP_TYPE_JSON)
-def artstor_preview_location(body, ctype):
+@simple_service('POST', 'http://purl.org/la/dp/artstor_identify_object', 'artstor_identify_object', HTTP_TYPE_JSON)
+def artstor_identify_object(body, ctype):
 
     LOG_JSON_ON_ERROR = True
     def log_json():
@@ -40,7 +40,6 @@ def artstor_preview_location(body, ctype):
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
     artstor_preview_prefix = "Thumbnail"
-    preview_url_key = u"object/@id"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])

@@ -295,8 +295,8 @@ def test_artstor_preview_location():
     FETCHED_PREVIEW = json.loads(content)[u"preview_source_url"]
     assert FETCHED_PREVIEW == EXPECTED_PREVIEW
 
-def test_artstor_preview_location_v3():
-    """Fetching Artstor document thumbnail (v3)"""
+def test_artstor_identify_object():
+    """Fetching Artstor document thumbnail (schema v3)"""
 
     INPUT_JSON = """
     {
@@ -418,7 +418,7 @@ def test_artstor_preview_location_v3():
 
     EXPECTED_PREVIEW = "http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg"
 
-    url = server() + "artstor_preview_location"
+    url = server() + "artstor_identify_object"
     resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
