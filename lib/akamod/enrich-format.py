@@ -46,8 +46,10 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
     if exists(data,prop):
         v = getprop(data,prop)
         format = []
-
         physicalFormat = getprop(data,alternate) if exists(data,alternate) else []
+        if not isinstance(physicalFormat,list):
+            physicalFormat = [physicalFormat]
+
         for s in (v if not isinstance(v,basestring) else [v]):
             format.append(cleanup(s)) if is_imt(cleanup(s)) else physicalFormat.append(s)
 

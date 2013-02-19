@@ -44,6 +44,8 @@ def enrichtype(body,ctype,action="enrich-type", prop="aggregatedCHO/type", alter
         v = getprop(data,prop)
         dctype = []
         physicalFormat = getprop(data,alternate) if exists(data,alternate) else []
+        if not isinstance(physicalFormat,list):
+            physicalFormat = [physicalFormat]
 
         for s in (v if not isinstance(v,basestring) else [v]):
             dctype.append(cleanup(s)) if is_dc_type(cleanup(s)) else physicalFormat.append(s)
