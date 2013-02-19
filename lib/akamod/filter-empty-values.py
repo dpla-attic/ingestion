@@ -110,23 +110,19 @@ def filter_path(_dict, path):
      cleaned dictionary
     """
     d = copy.deepcopy(_dict)
+    embracing_path, sep, value_key = path.rpartition(PATH_DELIM)
     try:
-        value = getprop(d, path)
+        dict_to_clean = getprop(d, embracing_path)
     except KeyError:
-        logger.warning("Attempt to clean non existent property \"%s\"", path)
+        logger.warning("Attempt to clean non existent path \"%s\"", embracing_path)
         return _dict
     else:
-        if not value:
-            embracing_path, sep, value_key = path.rpartition(PATH_DELIM)
-            if value_key:
-                embracing_dict = getprop(d, embracing_path)
-                del embracing_dict[value_key]
-                setprop(d, embracing_path, embracing_dict)
-            else:
-                del d[path]
+        if value_key:
+            cleaned_dict = filter_dict(dict_to_clean, filter_fields, value_key)
+            setprop(d, embracing_path, cleaned_dict)
             return d
         else:
-            return _dict
+            return filter_dict(dict_to_clean, filter_fields, embracing_path)
 
 def test_filtering():
     source = {"v1": "", "v2": "value2", "v3": {"vv1": "", "vv2": "v_value2"}, "v4": {}, "v5": {"0": {"name": ""}, "1": {"name": "name_value_1"}}, "v6": ["", "vvalue6", {}, {"v_sub": ""}], "v7": [""]}
