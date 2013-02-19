@@ -296,7 +296,7 @@ def test_artstor_preview_location():
     assert FETCHED_PREVIEW == EXPECTED_PREVIEW
 
 def test_artstor_preview_location_v3():
-    """Fetching Artstor document preview url (v3)"""
+    """Fetching Artstor document thumbnail (v3)"""
 
     INPUT_JSON = """
     {
@@ -422,8 +422,10 @@ def test_artstor_preview_location_v3():
     resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
     assert str(resp.status).startswith("2")
 
-    FETCHED_PREVIEW = json.loads(content)[u"preview_source_url"]
-    assert FETCHED_PREVIEW == EXPECTED_PREVIEW
+    doc = json.loads(content)
+    assert u"object" in doc and u"@id" in doc[u"object"], "object/@id path not found in document"
+    FETCHED_PREVIEW = doc[u"object"][u'@id']
+    assert FETCHED_PREVIEW == EXPECTED_PREVIEW, "%s != %s" % (FETCHED_PREVIEW, EXPECTED_PREVIEW)
 
 def test_artstor_source_fetching_v3():
     """
@@ -553,6 +555,6 @@ def test_artstor_source_fetching_v3():
     url = server() + "artstor_select_isshownat"
     resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
     assert str(resp.status).startswith("2")
-    FETCHED_SOURCE = json.loads(content)[u"source"]
+    FETCHED_SOURCE = json.loads(content)[u"isShownAt"][u"@id"]
     assert FETCHED_SOURCE == EXPECTED_SOURCE
 

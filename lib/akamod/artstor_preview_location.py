@@ -11,6 +11,8 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
+from dplaingestion import selector
+
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
 HTTP_TYPE_TEXT = 'text/plain'
@@ -38,7 +40,7 @@ def artstor_preview_location(body, ctype):
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
     artstor_preview_prefix = "Thumbnail"
-    preview_url_key = u"preview_source_url"
+    preview_url_key = u"object/@id"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
@@ -64,6 +66,12 @@ def artstor_preview_location(body, ctype):
         log_json()
         return body
 
-    data[preview_url_key] = preview_url
-    return json.dumps(data)
+    try:
+        selector.setprop(data, preview_url_key, preview_url)
+    except KeyError:
+        logger.error("Can't set value, \"%s\" path does not exist in doc [%s]", preview_url_key, data[u'id'])
+        return body
+    else:
+        return json.dumps(data)
+
 
