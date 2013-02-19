@@ -66,12 +66,9 @@ def artstor_preview_location(body, ctype):
         log_json()
         return body
 
-    try:
-        selector.setprop(data, preview_url_key, preview_url)
-    except KeyError:
-        logger.error("Can't set value, \"%s\" path does not exist in doc [%s]", preview_url_key, data[u'id'])
-        return body
-    else:
-        return json.dumps(data)
+    data["object"] = {"@id": preview_url,
+                      "format": None,
+                      "rights": selector.getprop(data, "aggregatedCHO/rights", keyErrorAsNone=True)}
+    return json.dumps(data)
 
 
