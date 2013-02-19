@@ -35,6 +35,8 @@ def process_profile(out,profile_f):
 
     if not profile:
         print >> sys.stderr, 'Error reading source profile.'
+        print >> sys.stderr, "Detailed error information:"
+        print >> sys.stderr, e
         return False
 
     # Pause in secs between collection ingests
@@ -163,7 +165,7 @@ def process_oai_coll(profile,subr):
 
     request_more, resumption_token = True, ""
     while request_more:
-        endpoint = profile[u'endpoint_URL'] + subr
+        endpoint = profile[u'endpoint_URL'] + (subr if subr != profile[u'name'] else "")
         if resumption_token:
             endpoint += '&' + urlencode({'resumption_token': resumption_token})
         print >> sys.stderr, endpoint
@@ -186,14 +188,19 @@ def process_oai_all(profile,blacklist=[]):
     resp, content = H.request(url)
     if not resp[u'status'].startswith('2'):
         print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
-        return False 
+        return False
 
     sleep = profile.get(u'sleep',0)
-    set_content = json.loads(content)
+    
     subResources = []
-    for s in set_content:
-        if s[u'setSpec']:
-            subResources.append(s[u'setSpec'])
+    if len(content) > 2:
+        set_content = json.loads(content)
+        for s in set_content:
+            if s[u'setSpec']:
+                subResources.append(s[u'setSpec'])
+    else:
+        # Case where provider does not support Sets
+        subResources.append(profile['name'])
 
     # Process the sets
     subr_to_process =[subr for subr in subResources if subr not in blacklist]

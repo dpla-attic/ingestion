@@ -1,0 +1,25 @@
+{
+    "enrichments_coll": [], 
+    "name": "kentucky", 
+    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=http://kdl.kyvl.org/catalog/oai/", 
+    "enrichments_rec": [
+        "http://localhost:8878/select-id", 
+        "http://localhost:8878/oai-to-dpla", 
+        "http://localhost:8878/spatial_dates_to_temporal", 
+        "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b", 
+        "http://localhost:8878/enrich-date?prop=created",
+        "http://localhost:8878/enrich-subject", 
+        "http://localhost:8878/enrich-type", 
+        "http://localhost:8878/enrich-format", 
+        "http://localhost:8878/enrich_location",
+        "http://localhost:8878/kentucky_identify_object"
+    ], 
+    "subresources": [], 
+    "last_checked": "2013-02-08T02:07:44.804283", 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/kdl", 
+        "name": "Kentucky Digital Library"
+    }, 
+    "type": "oai", 
+    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://kdl.kyvl.org/catalog/oai/&oaiset="
+}

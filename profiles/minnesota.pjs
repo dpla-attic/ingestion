@@ -1,9 +1,9 @@
 {
     "enrichments_coll": [
-        "http://localhost:8873/oai-set-name?sets_service=http://localhost:8873/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe"
+        "http://localhost:8873/oai-set-name?sets_service=http://localhost:8873/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php"
     ], 
     "name": "minnesota", 
-    "list_sets": "http://localhost:8873/oai.listsets.json?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe", 
+    "list_sets": "http://localhost:8873/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php",
     "enrichments_rec": [
         "http://localhost:8873/select-id", 
         "http://localhost:8873/oai-to-dpla", 
@@ -15,7 +15,7 @@
         "http://localhost:8873/enrich-format", 
         "http://localhost:8873/mdl-enrich-location", 
         "http://localhost:8873/enrich_location",
-        "http://localhost:8873/contentdm-identify-object"
+        "http://localhost:8873/contentdm_identify_object"
     ], 
     "subresources": [], 
     "last_checked": "2013-02-09T00:42:56.968417", 
@@ -24,5 +24,5 @@
         "name": "Minnesota Digital Library"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8873/dpla-list-records?endpoint=https://server16022.contentdm.oclc.org/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "http://localhost:8873/dpla-list-records?endpoint=http://reflections.mndigital.org/oai/oai2.php&oaiset="
 }

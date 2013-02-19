@@ -50,8 +50,6 @@ def listrecords(endpoint, oaiset=None, resumption_token=None, limit=1000):
     curl "http://localhost:8880/oai.listrecords.json?oaiset=hdl_1721.1_18193&limit=10"
     """
     limit = int(limit)
-    if not oaiset:
-        raise ValueError('OAI set required')
 
     remote = oaiservice(endpoint, logger)
     list_records_result = remote.list_records(set=oaiset,resumption_token=resumption_token)
