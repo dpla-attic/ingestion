@@ -9,6 +9,7 @@
         "http://localhost:8878/oai-to-dpla",
         "http://localhost:8878/spatial_dates_to_temporal",
         "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
+        "http://localhost:8878/enrich-date",
         "http://localhost:8878/enrich-subject",
         "http://localhost:8878/enrich-type",
         "http://localhost:8878/enrich-format",
@@ -19,7 +20,11 @@
         "articlepdf",
         "title"
     ], 
-    "last_checked": "2013-01-18T16:26:40.094739", 
+    "last_checked": "2013-01-18T16:26:40.094739",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/bhl",
+        "name": "Biodiversity Heritage Library"
+    }, 
     "type": "oai", 
     "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://www.biodiversitylibrary.org/oai&oaiset="
 }

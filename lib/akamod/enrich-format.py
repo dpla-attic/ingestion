@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-format', 'enrich-format', 'application/json')
-def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alternate="aggregatedCHO/physicalmedium"):
+def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alternate="aggregatedCHO/physicalMedium"):
     """
     Service that accepts a JSON document and enriches the "format" field of that document
     by: 
@@ -47,7 +47,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
         v = getprop(data,prop)
         format = []
 
-        physicalFormat = list(getprop(data,alternate)) if exists(data,alternate) else []
+        physicalFormat = getprop(data,alternate) if exists(data,alternate) else []
         for s in (v if not isinstance(v,basestring) else [v]):
             format.append(cleanup(s)) if is_imt(cleanup(s)) else physicalFormat.append(s)
 
