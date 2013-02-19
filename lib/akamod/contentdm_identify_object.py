@@ -3,6 +3,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
+from akara import module_config
 
 IGNORE = module_config().get('IGNORE')
 PENDING = module_config().get('PENDING')
