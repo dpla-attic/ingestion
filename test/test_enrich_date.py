@@ -3,6 +3,7 @@ from amara.thirdparty import json
 from nose.tools import nottest
 
 from server_support import server
+from dict_differ import DictDiffer
 
 
 CT_JSON = {"Content-Type": "application/json"}
@@ -310,6 +311,50 @@ def test_enrich_date_parse_century_date_with_P():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
 
+def test_enrich_temporal_date():
+    """Correctly enrich temporal dates"""
+
+    # TODO: disabled dates are not supported by enrich-date parsers
+
+    INPUT = {
+        "aggregatedCHO": {
+            "spatial" : [
+                {"name": "1901-1999"},
+                {"name": " 1901 - 1999 "},
+                #{"name": "1901 - 01 - 01"},
+                {"name": " 1901 / 01 / 01"},
+                {"name": "1905-04-12"},
+                {"name": "01/01/1901"},
+                #{"name": "01 - 01 - 1901"},
+                {"name": "1901"},
+                {"name": "North Carolina"}
+            ]}
+    }
+    EXPECTED = {
+        "aggregatedCHO": {
+            "temporal": [
+                {"begin": "1901", "end": "1999", "displayDate": "1901-1999"},
+                {"begin": "1901", "end": "1999", "displayDate": " 1901 - 1999 "},
+                #{"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "1901 - 01 - 01"},
+                {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": " 1901 / 01 / 01"},
+                {"begin": "1905-04-12", "end": "1905-04-12", "displayDate": "1905-04-12"},
+                {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "01/01/1901"},
+                #{"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "01 - 01 - 1901"},
+                {"begin": "1901", "end": "1901", "displayDate": "1901"}
+            ],
+            "spatial" : [{"name": "North Carolina"}]}
+    }
+
+    url = server() + "spatial_dates_to_temporal"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT), headers=HEADERS)
+    assert resp.status == 200
+
+    url = server() + "enrich-temporal-date"
+    resp, content = H.request(url, "POST", body=content, headers=HEADERS)
+    assert resp.status == 200
+
+    REAL = json.loads(content)
+    assert REAL == EXPECTED, DictDiffer(REAL, EXPECTED).diff()
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

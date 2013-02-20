@@ -168,16 +168,14 @@ def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal", date_key="n
     for p in prop.split(','):
         if exists(data, p):
             v = getprop(data, p)
-            date_candidates = []
-            for s in (v if not isinstance(v, basestring) else [v]):
-                a, b = parse_date_or_range(s)
+            for s in v:
+                a, b = parse_date_or_range(s[date_key])
                 date_candidates.append( {
                     "begin": a,
                     "end": b,
-                    "displayDate" : s
+                    "displayDate" : s[date_key]
                 })
-        date_candidates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
-        if date_candidates:
-            setprop(data, p, date_candidates[0])
+    if date_candidates:
+        setprop(data, p, date_candidates)
 
     return json.dumps(data)
