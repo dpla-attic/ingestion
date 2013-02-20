@@ -10,8 +10,13 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from akara import module_config
 
 from dplaingestion import selector
+
+
+IGNORE = module_config().get('IGNORE')
+PENDING = module_config().get('PENDING')
 
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
@@ -20,7 +25,7 @@ HTTP_HEADER_TYPE = 'Content-Type'
 
 
 @simple_service('POST', 'http://purl.org/la/dp/artstor_identify_object', 'artstor_identify_object', HTTP_TYPE_JSON)
-def artstor_identify_object(body, ctype):
+def artstor_identify_object(body, ctype, download="True"):
 
     LOG_JSON_ON_ERROR = True
     def log_json():
@@ -68,6 +73,16 @@ def artstor_identify_object(body, ctype):
     data["object"] = {"@id": preview_url,
                       "format": None,
                       "rights": selector.getprop(data, "aggregatedCHO/rights", keyErrorAsNone=True)}
+
+    status = IGNORE
+    if download == "True":
+        status = PENDING
+
+    if "admin" in data:
+        data["admin"]["object_status"] = status
+    else:
+        data["admin"] = {"object_status": status}
+
     return json.dumps(data)
 
 
