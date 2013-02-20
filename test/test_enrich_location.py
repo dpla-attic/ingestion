@@ -187,19 +187,19 @@ def test_enrich_location_after_provider_specific_enrich_location1():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
                 "state": "North Carolina",
                 "country": "United States"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
     EXPECTED = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -207,7 +207,7 @@ def test_enrich_location_after_provider_specific_enrich_location1():
                 "country": "United States",
                 "iso3166-2": "US-NC"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
 
@@ -225,19 +225,19 @@ def test_enrich_location_after_provider_specific_enrich_location2():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville;",
                 "county": "Buncombe;",
                 "state": "North Carolina;",
                 "country": "United States;"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
     EXPECTED = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -245,7 +245,7 @@ def test_enrich_location_after_provider_specific_enrich_location2():
                 "country": "United States",
                 "iso3166-2": "US-NC"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
 
@@ -261,19 +261,19 @@ def test_enrich_location_after_provider_specific_enrich_location3():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville; La Jolla",
                 "county": "Buncombe;San Diego",
                 "state": "North Carolina; California ; Texas;",
                 "country": "United States"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
     EXPECTED = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -291,7 +291,7 @@ def test_enrich_location_after_provider_specific_enrich_location3():
                 "state": "Texas",
                 "iso3166-2": "US-TX"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
 
@@ -306,18 +306,18 @@ def test_enrich_location_after_provider_specific_enrich_location4():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville; La Jolla",
                 "county": "Buncombe;San Diego",
                 "country": "United States"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
     EXPECTED = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -327,7 +327,7 @@ def test_enrich_location_after_provider_specific_enrich_location4():
                 "city": "La Jolla",
                 "county": "San Diego",
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
 
@@ -342,19 +342,19 @@ def test_enrich_location_after_provider_specific_enrich_location5():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Anoka; Champlin",
                 "county": "Minnesota",
                 "state": "United States",
                 "country": "Mississippi River"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
     EXPECTED = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "city": "Anoka",
                 "county": "Minnesota",
@@ -363,7 +363,7 @@ def test_enrich_location_after_provider_specific_enrich_location5():
             {
                 "city": "Champlin"
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
 
@@ -372,8 +372,6 @@ def test_enrich_location_after_provider_specific_enrich_location5():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-
-
 def test_enrich_location_no_provider_specific_enrich_location1():
     """
     No previous provider-specific location enrichment and does not contain states
@@ -381,20 +379,20 @@ def test_enrich_location_no_provider_specific_enrich_location1():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             { "name": "Asheville" },
             { "name": "Buncombe" },
             { "name": "United States" }
-        ],
+        ]},
         "creator": "Miguel"
     }
     OUTPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             { "name": "Asheville" },
             { "name": "Buncombe" },
             { "name": "United States" }
-        ],
+        ]},
         "creator": "Miguel"
     }
 
@@ -411,17 +409,17 @@ def test_enrich_location_no_provider_specific_enrich_location2():
     """
     INPUT = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             { "name": "Asheville, North Carolina" },
             { "name": "Greenville, SC" },
             { "name": "San Diego, (C.A.)" },
             { "name": "Athens, Ga." }
-        ],
+        ]},
         "creator": "Miguel"
     }
     EXPECTED = {
         "id": "12345",
-        "spatial": [
+        "aggregatedCHO": {"spatial": [
             {
                 "state": "North Carolina",
                 "iso3166-2": "US-NC",
@@ -442,7 +440,7 @@ def test_enrich_location_no_provider_specific_enrich_location2():
                 "iso3166-2": "US-GA",
                 "name": "Athens, Ga."
             }
-        ],
+        ]},
         "creator": "Miguel"
     }
 

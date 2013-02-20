@@ -502,7 +502,9 @@ WWVv+KcuQW5b/R36/lVLDzXRidZEqaprg4Oi3SjGB+6fp+VDw8uzGqyHLqetbv8AkEXfH/TJ/wDC
 j2MuzH7dDm1TWlOf7Gud3/XJ/wDCpdGXZh7ZFG61TX5RhdEu+vaF/wDCmqMuzH7ZF7wXY6vceMtO
 vb3T7i2hhEgYyRsoGUYdx6kV14SlKNVNoxrTUon/2Q=="""
 
-@simple_service('GET', 'http://purl.org/la/dp/download_test_image', 'download_test_image', 'application/json')
+@simple_service('GET', 'http://purl.org/la/dp/download_test_image',
+    'download_test_image', 'application/json')
+
 def download_preview(extension):
     """
     Special test only module.
@@ -518,12 +520,12 @@ def download_preview(extension):
         "jpg"   -   returns image in jpg format
         "bad"   -   returns no image, "content-type" = "very/bad"
         "500"   -   returns code 500
-        
+
     """
 
-    ext_to_mime = { 
-            'jpg' : {'mime': 'image/jpeg', 'file': image_jpg},
-            'png' : {'mime': 'image/png',  'file': image_png},
+    ext_to_mime = {
+            'jpg': {'mime': 'image/jpeg', 'file': image_jpg},
+            'png': {'mime': 'image/png',  'file': image_png},
             }
 
     if extension in ext_to_mime:
@@ -544,6 +546,3 @@ def download_preview(extension):
         response.code = 500
         response.add_header('content-type', 'text/plain')
         return msg
-    
-    
-

@@ -106,6 +106,9 @@ def enrich(body,ctype):
         "@id": at_id,
         "ingestType": "collection"
     }
+    # Set collection title field from collection_name if no sets
+    if not coll_enrichments[0]:
+        COLL['title'] = collection_name 
     set_ingested_date(COLL)
 
     enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
@@ -122,7 +125,7 @@ def enrich(body,ctype):
     docs = []
     for record in data[u'items']:
         # Preserve record prior to any enrichments
-        record['original_record'] = record.copy()         
+        record['originalRecord'] = record.copy()         
 
         # Add collection information
         record[u'collection'] = {

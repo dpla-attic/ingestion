@@ -17,6 +17,9 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
+from dplaingestion.selector import getprop, setprop, PATH_DELIM
+
+
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
 HTTP_TYPE_TEXT = 'text/plain'
@@ -83,7 +86,7 @@ def filter_dict(_dict, cleaner_func, *args):
     """
     Repeatedly runs cleaner function until all empty leaves are removed (hash stops changing).
     Arguments:
-     d - dictionary to clean;
+     _dict - dictionary to clean;
      cleaner_func - runs given function against passed dictionary;
      *args - arguments will be passed to cleaner func
     Returns:
@@ -96,6 +99,30 @@ def filter_dict(_dict, cleaner_func, *args):
         hash_before = hash_current
         hash_current = hash(str(cleaner_func(d, *args)))
     return d
+
+def filter_path(_dict, path):
+    """
+    Repeatedly runs cleaner function until all empty values are removed from given path (hash stops changing).
+    Arguments:
+     _dict - dictionary to clean;
+     path - a xpath-like path to the value, that must be checked
+    Returns:
+     cleaned dictionary
+    """
+    d = copy.deepcopy(_dict)
+    embracing_path, sep, value_key = path.rpartition(PATH_DELIM)
+    try:
+        dict_to_clean = getprop(d, embracing_path)
+    except KeyError:
+        logger.warning("Attempt to clean non existent path \"%s\"", embracing_path)
+        return _dict
+    else:
+        if value_key:
+            cleaned_dict = filter_dict(dict_to_clean, filter_fields, value_key)
+            setprop(d, embracing_path, cleaned_dict)
+            return d
+        else:
+            return filter_dict(dict_to_clean, filter_fields, embracing_path)
 
 def test_filtering():
     source = {"v1": "", "v2": "value2", "v3": {"vv1": "", "vv2": "v_value2"}, "v4": {}, "v5": {"0": {"name": ""}, "1": {"name": "name_value_1"}}, "v6": ["", "vvalue6", {}, {"v_sub": ""}], "v7": [""]}
@@ -144,4 +171,27 @@ def filter_fields_endpoint(body, ctype, keys):
     check_keys = [k.strip() for k in keys.split(",") if k]
     data = filter_dict(data, filter_fields, check_keys)
     return json.dumps(data)
+
+@simple_service('POST', 'http://purl.org/la/dp/filter_paths', 'filter_paths', HTTP_TYPE_JSON)
+def filter_paths_endpoint(body, ctype, paths):
+    """
+    Cleans elements of json with given xpath-like path if corresponding value is empty;
+    Argument:
+     paths - comma separated list of json paths that should be checked for emptiness in json tree;
+    """
+    try:
+        assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
+        data = json.loads(body)
+    except Exception as e:
+        error_text = "Bad JSON: %s: %s" % (e.__class__.__name__, str(e))
+        logger.exception(error_text)
+        response.code = HTTP_INTERNAL_SERVER_ERROR
+        response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
+        return error_text
+
+    check_paths = [k.strip() for k in paths.split(",") if k]
+    for path in check_paths:
+        data = filter_path(data, path)
+    return json.dumps(data)
+
 

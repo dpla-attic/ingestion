@@ -12,6 +12,8 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
+from dplaingestion import selector
+
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
 HTTP_TYPE_TEXT = 'text/plain'
@@ -35,10 +37,10 @@ def artstor_select_source(body, ctype):
         response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
         return error_text
 
-    original_document_key = u"dplaSourceRecord"
+    original_document_key = u"originalRecord"
     original_sources_key = u"handle"
     artstor_source_prefix = "Image View"
-    source_key = u"source"
+    source_key = u"isShownAt/@id"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
@@ -64,6 +66,12 @@ def artstor_select_source(body, ctype):
         log_json()
         return body
 
-    data[source_key] = source
-    return json.dumps(data)
+    try:
+        selector.setprop(data, source_key, source)
+    except KeyError:
+        logger.error("Can't set value, \"%s\" path does not exist in doc [%s]", source_key, data[u'id'])
+        return body
+    else:
+        return json.dumps(data)
+
 

@@ -6,7 +6,7 @@ from amara.thirdparty import json
 CT_JSON = {"Content-Type": "application/json"}
 
 H = httplib2.Http()
-url = server() + "enrich-subject"
+url = server() + "enrich-subject?prop=subject"
 
 def _get_server_response(body):
     return H.request(url,"POST",body=body,headers=CT_JSON)
@@ -91,7 +91,8 @@ def test_enrich_subject_one_char_string2():
         "spatial": [
             {"name": "Asheville"},
             {"name": "North Carolina"}
-        ]
+        ],
+        "subject" : []
     }
 
     resp, content = _get_server_response(json.dumps(INPUT))

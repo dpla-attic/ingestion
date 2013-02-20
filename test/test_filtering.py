@@ -598,3 +598,78 @@ def test_artstor_doc_filtering_pessimistic():
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
+def test_filtering_by_path():
+    """
+    Filtering by path
+    """
+
+    INPUT_JSON = """{
+    "aggregatedCHO": {
+       "rights": [
+           "",
+           "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
+       ],
+       "title": "The Annunciation",
+       "creator": "Girolamo da Santa Croce, Italian, active 1503-1556",
+       "physicalmedium": [
+           "Paintings",
+           "Painting",
+           "55.6 x 71.1 cm",
+           "Oil on wood panel"
+       ],
+       "relation": "",
+       "spatial": [
+           {
+               "name": ""
+           },
+           {
+               "state": "South Carolina",
+               "name": "Repository: Columbia Museum of Art, Columbia, SC",
+               "iso3166-2": "US-SC"
+           }
+       ],
+       "date": "c. 1540",
+       "type": null,
+       "subject": [
+           {
+               "name": "Annunciation: Mary, Usually Reading, Is Visited by the Angel"
+           }
+       ]
+   }}"""
+
+    EXPECTED  = json.loads("""{
+    "aggregatedCHO": {
+       "rights": [
+           "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
+       ],
+       "title": "The Annunciation",
+       "creator": "Girolamo da Santa Croce, Italian, active 1503-1556",
+       "physicalmedium": [
+           "Paintings",
+           "Painting",
+           "55.6 x 71.1 cm",
+           "Oil on wood panel"
+       ],
+       "relation": "",
+       "spatial": [
+           {
+               "state": "South Carolina",
+               "name": "Repository: Columbia Museum of Art, Columbia, SC",
+               "iso3166-2": "US-SC"
+           }
+       ],
+       "date": "c. 1540",
+       "type": null,
+       "subject": [
+           {
+               "name": "Annunciation: Mary, Usually Reading, Is Visited by the Angel"
+           }
+       ]
+   }}""")
+
+    url = server() + "filter_paths?paths=aggregatedCHO/spatial,aggregatedCHO/rights"
+    resp,content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    assert str(resp.status).startswith("2")
+
+    assert json.loads(content) == EXPECTED

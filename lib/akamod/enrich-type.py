@@ -2,11 +2,12 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-type', 'enrich-type', 'application/json')
-def enrichtype(body,ctype,action="enrich-type",prop="type", alternate="TBD_physicalformat"):
-    """
+def enrichtype(body,ctype,action="enrich-type", prop="aggregatedCHO/type", alternate="aggregatedCHO/physicalMedium"):
+    """   
     Service that accepts a JSON document and enriches the "type" field of that document
     by: 
 
@@ -39,17 +40,21 @@ def enrichtype(body,ctype,action="enrich-type",prop="type", alternate="TBD_physi
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if prop in data:
+    if exists(data,prop):
+        v = getprop(data,prop)
         dctype = []
-        physicalFormat = list(data[alternate]) if alternate in data else []
-        for s in (data[prop] if not isinstance(data[prop],basestring) else [data[prop]]):
+        physicalFormat = getprop(data,alternate) if exists(data,alternate) else []
+        if not isinstance(physicalFormat,list):
+            physicalFormat = [physicalFormat]
+
+        for s in (v if not isinstance(v,basestring) else [v]):
             dctype.append(cleanup(s)) if is_dc_type(cleanup(s)) else physicalFormat.append(s)
 
         if dctype:
-            data[prop] = dctype[0] if len(dctype) == 1 else dctype
+            setprop(data,prop,dctype[0]) if len(dctype) == 1 else setprop(data,prop,dctype)
         else:
-            del data[prop]
+            setprop(data,prop,None)
         if physicalFormat:
-            data[alternate] = physicalFormat[0] if len(physicalFormat) == 1 else physicalFormat
+            setprop(data,alternate,physicalFormat[0]) if len(physicalFormat) == 1 else setprop(data,alternate,physicalFormat)
 
     return json.dumps(data)
