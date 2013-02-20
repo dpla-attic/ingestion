@@ -1,17 +1,21 @@
+import re
+
 from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-import re
+
+from dplaingestion import selector
 
 @simple_service('POST', 'http://purl.org/la/dp/spatial_dates_to_temporal', 'spatial_dates_to_temporal', 'application/json')
-def spatialdatestotemporal(body,ctype,action="spatial_dates_to_temporal",prop="spatial"):
+def spatialdatestotemporal(body,ctype,action="spatial_dates_to_temporal",prop="aggregatedCHO/spatial"):
     """
     Service that accepts a JSON document and moves any dates found in the spatial field to the
     temporal field.
     """
 
     REGEXPS = [" *\d{4}", "( *\d{1,4} *[-/]){2} *\d{1,4}"]
+    SOURCE_RESOURCES_KEY = "aggregatedCHO"
 
     try:
         data = json.loads(body)
@@ -20,13 +24,13 @@ def spatialdatestotemporal(body,ctype,action="spatial_dates_to_temporal",prop="s
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    if prop in data:
+    if SOURCE_RESOURCES_KEY in data and selector.exists(data, prop):
         sp = []
-        if "temporal" in data:
-            temp = data["temporal"]
+        if "temporal" in data[SOURCE_RESOURCES_KEY]:
+            temp = data[SOURCE_RESOURCES_KEY]["temporal"]
         else:
             temp = [] 
-        for d in data[prop]:
+        for d in selector.getprop(data, prop):
             for pattern in REGEXPS:
                 m = re.match(pattern, d["name"])
                 if m:
@@ -38,10 +42,7 @@ def spatialdatestotemporal(body,ctype,action="spatial_dates_to_temporal",prop="s
                 sp.append(d)
 
         if temp:
-            data["temporal"] = temp
-        if sp:
-            data[prop] = sp
-        else:
-            data.pop(prop,None)
+            data[SOURCE_RESOURCES_KEY]["temporal"] = temp
+        selector.setprop(data, prop, sp)
 
     return json.dumps(data)

@@ -17,7 +17,8 @@ def test_spatial_dates_to_temporal1():
     temporal field.
     """
     INPUT = {
-        "spatial" : [
+        "aggregatedCHO": {
+            "spatial" : [
             {"name": "1901-1999"},
             {"name": " 1901 - 1999 "},
             {"name": "1901 - 01 - 01"},
@@ -27,9 +28,10 @@ def test_spatial_dates_to_temporal1():
             {"name": "01 - 01 - 1901"},
             {"name": "1901"},
             {"name": "North Carolina"}
-        ]
+        ]}
     }
     EXPECTED = {
+        "aggregatedCHO": {
         "temporal": [
             {"name": "1901-1999"},
             {"name": " 1901 - 1999 "},
@@ -40,7 +42,7 @@ def test_spatial_dates_to_temporal1():
             {"name": "01 - 01 - 1901"},
             {"name": "1901"}
         ],
-        "spatial" : [{"name": "North Carolina"}]
+        "spatial" : [{"name": "North Carolina"}]}
     }
  
     resp,content = _get_server_response(json.dumps(INPUT)) 
@@ -52,7 +54,7 @@ def test_spatial_dates_to_temporal2():
     Should not change spatial nor add temporal.
     """
     INPUT = {
-        "spatial" : [
+        "aggregatedCHO": {"spatial" : [
             {"name": "Asheville"},
             {"name": "North Carolina"},
             {"name": "12"},
@@ -60,7 +62,7 @@ def test_spatial_dates_to_temporal2():
             {"name": "12-1"},
             {"name": "12-12"},
             {"name": "12-12-"}
-        ]
+        ]}
     }
  
     resp,content = _get_server_response(json.dumps(INPUT)) 
@@ -72,17 +74,16 @@ def test_spatial_dates_to_temporal3():
     Should remove spatial field if only element is a date.
     """
     INPUT = {
-        "spatial" : [
-            {"name": " 1901 - 1999 "}
-        ]
+        "aggregatedCHO": {
+            "spatial": [{"name": " 1901 - 1999 "}]}
     }
     EXPECTED = {
-        "temporal": [
-            {"name": " 1901 - 1999 "}
-        ]
+        "aggregatedCHO": {
+            "temporal": [{"name": " 1901 - 1999 "}],
+            "spatial": []}
     }
- 
-    resp,content = _get_server_response(json.dumps(INPUT)) 
+
+    resp, content = _get_server_response(json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
