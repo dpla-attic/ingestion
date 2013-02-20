@@ -268,6 +268,48 @@ def test_enrich_date_parse_format_date_range4():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
 
+def test_enrich_date_parse_century_date():
+    """Correctly transform a date of format '19th c.'"""
+    INPUT = {
+        "date" : "19th c."
+    }
+    EXPECTED = {
+        u'date' : {
+            u'begin' : u'1800',
+            u'end' : u'1899',
+            "displayDate" : "19th c."
+        }
+    }
+
+    url = server() + "enrich-date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+
+def test_enrich_date_parse_century_date_with_P():
+    """Correctly transform a date of format ['19th c.', 'P']"""
+    INPUT = {
+        "date" : ["19th c.", "P"]
+    }
+    EXPECTED = {
+        u'date' : {
+            u'begin' : u'1800',
+            u'end' : u'1899',
+            "displayDate" : "19th c."
+        }
+    }
+
+    url = server() + "enrich-date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

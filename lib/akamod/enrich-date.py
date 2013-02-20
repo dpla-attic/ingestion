@@ -21,7 +21,14 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
     # default date used by dateutil-python to populate absent date elements during parse,
     # e.g. "1999" would become "1999-01-01" instead of using the current month/day
     # Set this to a date far in the future, so we can use it to check if date parsing just failed
-    DEFAULT_DATETIME = dateutil_parse("3000-01-01") 
+    DEFAULT_DATETIME = dateutil_parse("3000-01-01")
+
+    # normal way to get DEFAULT_DATIMETIME in seconds is:
+    # time.mktime(DEFAULT_DATETIME.timetuple())
+    # but it applies the time zone, which should be added to seconds to get real GMT(UTC)
+    # as simple solution, hardcoded UTC seconds is given
+    DEFAULT_DATETIME_SECS = 32503680000.0 # UTC seconds for "3000-01-01"
+
 
     DATE_RANGE_RE = r'(\S+)\s*-\s*(\S+)'
     def split_date(d):
@@ -51,11 +58,13 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
                 dd = dateutil_parse(d,fuzzy=True,default=DEFAULT_DATETIME)
                 if dd.year == DEFAULT_DATETIME.year:
                     dd = None
-            except:
+            except Exception:
                 try:
-                    dd = timelib.strtodatetime(d)
+                    dd = timelib.strtodatetime(d, now=DEFAULT_DATETIME_SECS)
                 except ValueError:
                     pass
+                except Exception as e:
+                    logger.error(e)
         
             if dd:
                 ddiso = dd.isoformat()
@@ -63,7 +72,8 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
         return dd
 
     year_range = re.compile("(\d{4})\s*-\s*(\d{4})") # simple for digits year range
-    circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_start>\d{2})\s*-\s*(?P<year_end>\d{2})", re.I) # tricky "c. 1970-90" year range
+    circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_begin>\d{2})\s*-\s*(?P<year_end>\d{2})", re.I) # tricky "c. 1970-90" year range
+    century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)\s+c\.", re.I) # for dates with centuries "19th c."
     def parse_date_or_range(d):
         # FIXME: could be more robust here,
         # e.g. use date range regex to handle:
@@ -74,9 +84,14 @@ def enrichdate(body,ctype,action="enrich-format",prop="aggregatedCHO/date"):
             a, b = split_date(d)
         elif circa_range.match(d):
             match = circa_range.match(d)
-            year_start = match.group("century") + match.group("year_start")
+            year_begin = match.group("century") + match.group("year_begin")
             year_end = match.group("century") + match.group("year_end")
-            a, b = robust_date_parser(year_start), robust_date_parser(year_end)
+            a, b = robust_date_parser(year_begin), robust_date_parser(year_end)
+        elif century_date.match(d):
+            match = century_date.match(d)
+            year_begin = (int(match.group("century"))-1) * 100
+            year_end = year_begin + 99
+            a, b = str(year_begin), str(year_end)
         else:
             parsed = robust_date_parser(d)
             a, b = parsed, parsed
