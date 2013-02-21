@@ -92,7 +92,8 @@ MODULES = [
     "dplaingestion.akamod.artstor_identify_object",
     "dplaingestion.akamod.spatial_dates_to_temporal",
     "dplaingestion.akamod.enrich_location",
-    "dplaingestion.akamod.lookup"
+    "dplaingestion.akamod.lookup",
+    "dplaingestion.akamod.georgia_identify_object"
     ]
 
 class download_preview:

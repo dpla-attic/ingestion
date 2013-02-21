@@ -15,6 +15,7 @@
         "http://localhost:8879/enrich-subject",
         "http://localhost:8879/enrich-type",
         "http://localhost:8879/enrich-format",
+        "http://localhost:8879/georgia_identify_object",
         "http://localhost:8879/enrich_location"
     ], 
     "subresources": [
