@@ -39,6 +39,7 @@ def _get_server_response(body, prop=None, target=None, subst=None):
     return H.request(url, "POST", body=body, headers=HEADERS)
 
 
+@nottest
 def test_bad_INPUT_json():
     """
     Should return 500 when getting bad JSON.
@@ -49,6 +50,7 @@ def test_bad_INPUT_json():
 
 
 
+@nottest
 def test_no_params():
     """
     Should return 500 for no params.
@@ -58,6 +60,7 @@ def test_no_params():
     assert resp.status == 500
 
 
+@nottest
 def test_missing_input_field():
     """
     Should return 500 for no param.
@@ -67,6 +70,7 @@ def test_missing_input_field():
     assert resp.status == 500
 
 
+@nottest
 def test_missing_field_in_json():
     """
     Should return the same json for missing INPUT field in json.
@@ -77,6 +81,7 @@ def test_missing_field_in_json():
     assert_same_jsons(INPUT, INPUT)
 
 
+@nottest
 def test_missing_output_field():
     """
     Should return 500 when the OUTPUT field is missing from URL.
@@ -86,6 +91,7 @@ def test_missing_output_field():
     assert resp.status == 500
 
 
+@nottest
 def test_substitution_with_missing_subst_dict():
     """
     Should return the same JSON when the key is missing from substitution.
@@ -98,6 +104,7 @@ def test_substitution_with_missing_subst_dict():
     assert content == "Missing substitution dictionary [aaa]"
 
 
+@nottest
 def test_substitution_with_missing_key():
     """
     Should return the same JSON when the key is missing from substitution.
@@ -111,6 +118,7 @@ def test_substitution_with_missing_key():
     assert_same_jsons(INPUT, content)
 
 
+@nottest
 def test_simple_substitute_for_the_same_field():
     """
     Should return substituted same json field.
@@ -124,6 +132,7 @@ def test_simple_substitute_for_the_same_field():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+@nottest
 def test_simple_substitute_for_different_field():
     """
     Should return substituted another json field.
@@ -135,6 +144,7 @@ def test_simple_substitute_for_different_field():
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
+@nottest
 def test_substitution_for_the_same_field_and_array():
     """
     Should return substituted json when original json is array.
@@ -149,6 +159,7 @@ def test_substitution_for_the_same_field_and_array():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+@nottest
 def test_substitution_for_different_fields_and_array():
     """
     Should return json when original json is array.
@@ -163,6 +174,7 @@ def test_substitution_for_different_fields_and_array():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+@nottest
 def test_dictionary_subsitution():
     """
     Should substitute when there is dictionary field.
@@ -177,6 +189,7 @@ def test_dictionary_subsitution():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+@nottest
 def test_deeper_dictionary_subsitution():
     """
     Should substitute when there is dictionary field.
@@ -199,6 +212,7 @@ def test_deeper_dictionary_subsitution():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+@nottest
 def test_dict_substitution_in_different_field():
     """
     Should add another field when prop is dictionary field.
@@ -221,6 +235,7 @@ def test_dict_substitution_in_different_field():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+@nottest
 def test_substitute_with_list_of_dictionaries():
     """
     Should convert all dicts in a list.
