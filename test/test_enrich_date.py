@@ -321,11 +321,9 @@ def test_enrich_temporal_date():
             "spatial" : [
                 {"name": "1901-1999"},
                 {"name": " 1901 - 1999 "},
-                #{"name": "1901 - 01 - 01"},
                 {"name": " 1901 / 01 / 01"},
                 {"name": "1905-04-12"},
                 {"name": "01/01/1901"},
-                #{"name": "01 - 01 - 1901"},
                 {"name": "1901"},
                 {"name": "North Carolina"}
             ]}
@@ -334,18 +332,16 @@ def test_enrich_temporal_date():
         "aggregatedCHO": {
             "temporal": [
                 {"begin": "1901", "end": "1999", "displayDate": "1901-1999"},
-                {"begin": "1901", "end": "1999", "displayDate": " 1901 - 1999 "},
-                #{"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "1901 - 01 - 01"},
-                {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": " 1901 / 01 / 01"},
+                {"begin": "1901", "end": "1999", "displayDate": "1901 - 1999"},
+                {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "1901 / 01 / 01"},
                 {"begin": "1905-04-12", "end": "1905-04-12", "displayDate": "1905-04-12"},
                 {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "01/01/1901"},
-                #{"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "01 - 01 - 1901"},
                 {"begin": "1901", "end": "1901", "displayDate": "1901"}
             ],
             "spatial" : [{"name": "North Carolina"}]}
     }
 
-    url = server() + "move_dates_to_temporal?prop=spatial"
+    url = server() + "move_dates_to_temporal?prop=aggregatedCHO/spatial"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT), headers=HEADERS)
     assert resp.status == 200
 

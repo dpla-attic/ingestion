@@ -9,6 +9,7 @@
         "http://localhost:8878/move_dates_to_temporal?prop=spatial", 
         "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b", 
         "http://localhost:8878/enrich-date?prop=created",
+        "http://localhost:8878/enrich-temporal-date",
         "http://localhost:8878/enrich-subject", 
         "http://localhost:8878/enrich-type", 
         "http://localhost:8878/enrich-format", 
