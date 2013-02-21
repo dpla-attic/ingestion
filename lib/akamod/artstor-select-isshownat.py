@@ -22,11 +22,6 @@ HTTP_HEADER_TYPE = 'Content-Type'
 @simple_service('POST', 'http://purl.org/la/dp/artstor_select_isshownat', 'artstor_select_isshownat', HTTP_TYPE_JSON)
 def artstor_select_source(body, ctype):
 
-    LOG_JSON_ON_ERROR = True
-    def log_json():
-        if LOG_JSON_ON_ERROR:
-            logger.debug(body)
-
     try:
         assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
@@ -44,12 +39,10 @@ def artstor_select_source(body, ctype):
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
-        log_json()
         return body
 
     if original_sources_key not in data[original_document_key]:
         logger.error("There is no '%s/%s' key in JSON for doc [%s].", original_document_key, original_sources_key, data[u'id'])
-        log_json()
         return body
 
     source = None
@@ -63,7 +56,6 @@ def artstor_select_source(body, ctype):
 
     if not source:
         logger.error("Can't find url with '%s' prefix in [%s] for fetching document source for Artstor.", artstor_source_prefix, data[original_document_key][original_sources_key])
-        log_json()
         return body
 
     try:

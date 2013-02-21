@@ -27,11 +27,6 @@ HTTP_HEADER_TYPE = 'Content-Type'
 @simple_service('POST', 'http://purl.org/la/dp/artstor_identify_object', 'artstor_identify_object', HTTP_TYPE_JSON)
 def artstor_identify_object(body, ctype, download="True"):
 
-    LOG_JSON_ON_ERROR = True
-    def log_json():
-        if LOG_JSON_ON_ERROR:
-            logger.debug(body)
-
     try:
         assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
@@ -48,12 +43,10 @@ def artstor_identify_object(body, ctype, download="True"):
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
-        log_json()
         return body
 
     if original_sources_key not in data[original_document_key]:
         logger.error("There is no '%s/%s' key in JSON for doc [%s].", original_document_key, original_sources_key, data[u'id'])
-        log_json()
         return body
 
     preview_url = None
@@ -67,7 +60,6 @@ def artstor_identify_object(body, ctype, download="True"):
 
     if not preview_url:
         logger.error("Can't find url with '%s' prefix in [%s] for fetching document preview url for Artstor.", artstor_preview_prefix, data[original_document_key][original_sources_key])
-        log_json()
         return body
 
     data["object"] = {"@id": preview_url,
