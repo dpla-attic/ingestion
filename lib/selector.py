@@ -40,6 +40,23 @@ def setprop(obj,path,val,keyErrorAsNone=False):
 
     return setprop(obj[pp],pn,val,keyErrorAsNone)
 
+def delprop(obj,path,keyErrorAsNone=False):
+    """
+    Removes the key-value from obj
+    """
+    if '/' not in path:
+        obj.pop(path,None)
+        return
+
+    pp,pn = tuple(path.lstrip(PATH_DELIM).split(PATH_DELIM,1))
+    if pp not in obj:
+        if not keyErrorAsNone:
+            raise KeyError('Path not found in object: %s (%s)'%(path,pp))
+        else:
+            return None
+
+    return delprop(obj[pp],pn,keyErrorAsNone=False)
+
 def exists(obj,path):
     """
     Returns True if the key path exists in the object

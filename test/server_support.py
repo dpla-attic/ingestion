@@ -72,7 +72,6 @@ MODULES = [
     "freemix_akara.contentdm",
     "freemix_akara.oai",
     "dplaingestion.oai",
-    "zen.akamod.geocoding",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
@@ -90,10 +89,11 @@ MODULES = [
     "dplaingestion.akamod.filter-empty-values",
     "dplaingestion.akamod.artstor-select-isshownat",
     "dplaingestion.akamod.artstor_identify_object",
-    "dplaingestion.akamod.spatial_dates_to_temporal",
+    "dplaingestion.akamod.move_dates_to_temporal",
     "dplaingestion.akamod.enrich_location",
     "dplaingestion.akamod.lookup",
-    "dplaingestion.akamod.georgia_identify_object"
+    "dplaingestion.akamod.georgia_identify_object",
+    "dplaingestion.akamod.bhl_contributor_to_collection"
     ]
 
 class download_preview:

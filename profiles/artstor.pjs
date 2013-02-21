@@ -7,7 +7,8 @@
     "enrichments_rec": [
         "http://localhost:8879/select-id?prop=id", 
         "http://localhost:8879/oai-to-dpla", 
-        "http://localhost:8879/spatial_dates_to_temporal",
+        "http://localhost:8879/move_dates_to_temporal?prop=subject",
+        "http://localhost:8879/move_dates_to_temporal?prop=spatial",
         "http://localhost:8879/artstor_select_isshownat", 
         "http://localhost:8879/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype%2caggregatedCHO%2FphysicalMedium&delim=%3b",
         "http://localhost:8879/enrich-date",
