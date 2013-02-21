@@ -345,7 +345,7 @@ def test_enrich_temporal_date():
             "spatial" : [{"name": "North Carolina"}]}
     }
 
-    url = server() + "spatial_dates_to_temporal"
+    url = server() + "move_dates_to_temporal?prop=spatial"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT), headers=HEADERS)
     assert resp.status == 200
 

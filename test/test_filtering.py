@@ -673,3 +673,7 @@ def test_filtering_by_path():
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
+
+if __name__ == "__main__":
+    raise SystemExit("Use nosetests")

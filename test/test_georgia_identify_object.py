@@ -14,9 +14,8 @@ HEADERS = {
 H = httplib2.Http()
 
 
-
 def test_georgia_identify_object():
-    """Fetching Georgia document thumbnail (schema v3)"""
+    """Fetching Georgia document thumbnail"""
 
     INPUT_JSON = """
     {
@@ -156,3 +155,6 @@ def test_georgia_identify_object():
     assert u"object" in doc and u"@id" in doc[u"object"], "object/@id path not found in document"
     FETCHED_PREVIEW = doc[u"object"][u'@id']
     assert FETCHED_PREVIEW == EXPECTED_PREVIEW, "%s != %s" % (FETCHED_PREVIEW, EXPECTED_PREVIEW)
+
+if __name__ == "__main__":
+    raise SystemExit("Use nosetests")
