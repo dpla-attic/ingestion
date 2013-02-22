@@ -9,6 +9,7 @@ CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
     "Content-Type": "application/json",
     "Context": "{}",
+    "Connection": "close"
     }
 
 H = httplib2.Http()

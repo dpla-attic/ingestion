@@ -4,7 +4,10 @@ from amara.thirdparty import json, httplib2
 from dplaingestion.akamod.enrich_location import \
     from_abbrev, get_isostate, create_dictionaries, remove_space_around_semicolons, STATES
 
-CT_JSON = {"content-type": "application/json"}
+CT_JSON = {
+    "content-type": "application/json", 
+    "Connection": "close"
+}
 
 H = httplib2.Http()
     

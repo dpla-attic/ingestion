@@ -9,10 +9,10 @@ from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
-CT_JSON = {"Content-Type": "application/json"}
 HEADERS = {
             "Content-Type": "application/json",
             "Context": "{}",
+            'Connection': 'close'
           }
 
 H = httplib2.Http()

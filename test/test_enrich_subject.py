@@ -3,7 +3,10 @@ from server_support import server
 from amara.thirdparty import httplib2
 from amara.thirdparty import json
 
-CT_JSON = {"Content-Type": "application/json"}
+CT_JSON = {
+    "Content-Type": "application/json", 
+    "Connection": "close"
+}
 
 H = httplib2.Http()
 url = server() + "enrich-subject?prop=subject"
