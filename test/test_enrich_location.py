@@ -1,15 +1,9 @@
 import sys
-from server_support import server
-from amara.thirdparty import json, httplib2
+from server_support import server, H
+from amara.thirdparty import json
 from dplaingestion.akamod.enrich_location import \
     from_abbrev, get_isostate, create_dictionaries, remove_space_around_semicolons, STATES
 
-CT_JSON = {
-    "content-type": "application/json", 
-    "Connection": "close"
-}
-
-H = httplib2.Http()
     
 # BEGIN remove_space_around_semilocons tests
 def test_remove_space_around_semicolons():
@@ -215,7 +209,7 @@ def test_enrich_location_after_provider_specific_enrich_location1():
     }
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
@@ -253,7 +247,7 @@ def test_enrich_location_after_provider_specific_enrich_location2():
     }
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
@@ -299,7 +293,7 @@ def test_enrich_location_after_provider_specific_enrich_location3():
     }
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
@@ -335,7 +329,7 @@ def test_enrich_location_after_provider_specific_enrich_location4():
     }
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
@@ -371,7 +365,7 @@ def test_enrich_location_after_provider_specific_enrich_location5():
     }
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
@@ -401,7 +395,7 @@ def test_enrich_location_no_provider_specific_enrich_location1():
 
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == OUTPUT
 
@@ -449,7 +443,7 @@ def test_enrich_location_no_provider_specific_enrich_location2():
 
 
     url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 

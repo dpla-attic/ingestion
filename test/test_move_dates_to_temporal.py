@@ -1,20 +1,13 @@
 import sys
-from server_support import server, print_error_log
-from amara.thirdparty import httplib2
+from server_support import server, print_error_log, H
 from amara.thirdparty import json
 
-CT_JSON = {
-    "Content-Type": "application/json", 
-    "Connection": "close"
-}
-
-H = httplib2.Http()
 
 def _get_server_response(body, prop=None):
     url = server() + "move_dates_to_temporal"
     if prop:
         url = "%s?prop=%s" % (url, prop)
-    return H.request(url,"POST",body=body,headers=CT_JSON)
+    return H.request(url,"POST",body=body)
 
 def test_move_dates_to_temporal_no_prop():
     """

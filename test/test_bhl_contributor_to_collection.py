@@ -1,18 +1,11 @@
 import sys
-from server_support import server, print_error_log
-from amara.thirdparty import httplib2
+from server_support import server, print_error_log, H
 from amara.thirdparty import json
 
-CT_JSON = {
-    "Content-Type": "application/json", 
-    "Connection": "close"
-}
-
-H = httplib2.Http()
 url = server() + "bhl_contributor_to_collection"
 
 def _get_server_response(body):
-    return H.request(url,"POST",body=body,headers=CT_JSON)
+    return H.request(url,"POST",body=body)
 
 def test_bhl_contributor_to_collection1():
     """Should do nothing"""

@@ -1,8 +1,7 @@
 
 import sys
-from server_support import server, print_error_log
+from server_support import server, print_error_log, H
 
-from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
@@ -10,15 +9,6 @@ from nose.tools import nottest
 ############################################################################
 ## CONTENTDM
 ## TODO: move to another file
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-            "Content-Type": "application/json",
-            "Context": "{}",
-            "Connection": "close"
-          }
-
-H = httplib2.Http()
 
 
 def contentdm_url(rights_field="r", download="True"):
@@ -57,8 +47,7 @@ def test_contentdm_identify_object_without_download():
             u"left": "right now!"
     }
     url = contentdm_url(u"left", "False")
-    resp, content = H.request(url, "POST",
-            body=json.dumps(INPUT), headers=HEADERS)
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     print_error_log()
     assert str(resp.status).startswith("2")
     result = json.loads(content)
@@ -95,8 +84,7 @@ def test_contentdm_identify_object_with_download():
     }
     url = contentdm_url(u"left", "True")
 
-    resp, content = H.request(url, "POST",
-            body=json.dumps(INPUT), headers=HEADERS)
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
 
     assert str(resp.status).startswith("2")
     result = json.loads(content)
@@ -111,7 +99,7 @@ def test_contentdm_identify_object_bad_json():
     INPUT = ["{...}", "{aaa:'bbb'}", "xxx"]
     for i in INPUT:
         url = contentdm_url()
-        resp, ontent = H.request(url, "POST", body=i, headers=HEADERS)
+        resp, ontent = H.request(url, "POST", body=i)
         assert resp.status == 500
 
 
@@ -124,7 +112,7 @@ def test_contentdm_identify_object_missing_source_field():
         }
     INPUT = json.dumps(INPUT)
     url = contentdm_url()
-    resp, content = H.request(url, "POST", body=INPUT, headers=HEADERS)
+    resp, content = H.request(url, "POST", body=INPUT)
 
     assert_same_jsons(INPUT, content)
 
@@ -148,8 +136,7 @@ def test_contentdm_identify_object_bad_url():
     for bad_url in bad_urls:
         INPUT[u"source"] = bad_url
         url = contentdm_url()
-        resp, content = H.request(url, "POST",
-                body=json.dumps(INPUT), headers=HEADERS)
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
         assert_same_jsons(INPUT, content)
 

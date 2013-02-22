@@ -1,18 +1,7 @@
-from server_support import server
-
-from amara.thirdparty import httplib2
+from server_support import server, H
 from amara.thirdparty import json
 from nose.tools import nottest
 
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-    "Content-Type": "application/json",
-    "Context": "{}",
-    "Connection": "close"
-    }
-
-H = httplib2.Http()
 
 def test_full_filtering():
     """
@@ -29,7 +18,7 @@ def test_full_filtering():
         "prop1": "value1"
     }
     url = server() + "filter_empty_values"
-    resp,content = H.request(url, "POST", body=json.dumps(INPUT), headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -51,7 +40,7 @@ def test_filtering_with_ignore():
         "ignore_me": ""
     }
     url = server() + "filter_empty_values?ignore_key=ignore_me"
-    resp,content = H.request(url, "POST", body=json.dumps(INPUT), headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -73,7 +62,7 @@ def test_filtering_with_given_keys():
         "empty_key": ""
     }
     url = server() + "filter_fields?keys=filter_me"
-    resp,content = H.request(url, "POST", body=json.dumps(INPUT), headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -334,7 +323,7 @@ def test_artstor_doc_filtering_optimistic():
     )
 
     url = server() + "filter_empty_values?ignore_key=dplaSourceRecord"
-    resp,content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -595,7 +584,7 @@ def test_artstor_doc_filtering_pessimistic():
     )
 
     url = server() + "filter_fields?keys=spatial,rights"
-    resp,content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -670,7 +659,7 @@ def test_filtering_by_path():
    }}""")
 
     url = server() + "filter_paths?paths=aggregatedCHO/spatial,aggregatedCHO/rights"
-    resp,content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    resp,content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED

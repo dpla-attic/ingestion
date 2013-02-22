@@ -1,21 +1,11 @@
 import sys
-from server_support import server, print_error_log
+from server_support import server, print_error_log, H
 
-from amara.thirdparty import httplib2
 import os
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-            "Content-Type": "application/json",
-            "Context": "{}",
-            "Connection": "close"
-          }
-
-H = httplib2.Http()
 
 def test_shred1():
     "Valid shredding"
@@ -29,7 +19,7 @@ def test_shred1():
         "prop1": ["lets","go","bluejays"]
     }
     url = server() + "shred?prop=prop1"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -42,7 +32,7 @@ def test_shred2():
     }
     EXPECTED = INPUT
     url = server() + "shred?prop=prop9"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -56,7 +46,7 @@ def test_shred3():
         "p": ["a,d,f", ",,", "g"]
     }
     url = server() + "shred?prop=p&delim=%20"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -70,7 +60,7 @@ def test_shred4():
         "p": ["a","b","c","d","e","f"]
     }
     url = server() + "shred?prop=p"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -86,7 +76,7 @@ def test_shred5():
         "q": ["d","e","f"]
     }
     url = server() + "shred?prop=p,q"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -103,7 +93,7 @@ def test_unshred1():
         "prop1": "lets;go;bluejays"
     }
     url = server() + "shred?action=unshred&prop=prop1"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -116,7 +106,7 @@ def test_unshred2():
     }
     EXPECTED = INPUT
     url = server() + "shred?action=unshred&prop=prop9"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=CT_JSON)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
@@ -136,7 +126,7 @@ def test_oaitodpla_date_parse_format_ca_string():
 
     url = server() + "oai-to-dpla"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -151,7 +141,7 @@ def test_oaitodpla_date_parse_format_bogus_string():
 
     url = server() + "oai-to-dpla"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -172,7 +162,7 @@ def test_enrich_multiple_subject_reformat_to_dict():
 
     url = server() + "enrich-subject?prop=subject"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['subject'] == EXPECTED['subject']
@@ -190,7 +180,7 @@ def test_enrich_single_subject_reformat_to_dict():
 
     url = server() + "enrich-subject?prop=subject"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['subject'] == EXPECTED['subject']
@@ -210,7 +200,7 @@ def test_enrich_subject_cleanup():
 
     url = server() + "enrich-subject?prop=subject"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['subject'] == EXPECTED['subject']
@@ -227,7 +217,7 @@ def test_enrich_type_cleanup():
 
     url = server() + "enrich-type?prop=type&alternate=TBD_physicalformat"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['type'] == EXPECTED['type']
@@ -244,7 +234,7 @@ def test_enrich_format_cleanup_multiple():
 
     url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
@@ -261,7 +251,7 @@ def test_enrich_format_cleanup():
 
     url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
@@ -279,10 +269,10 @@ def test_physical_format_from_format_and_type():
         "TBD_physicalformat": ["Paintings", "Painting", "76.8 x 104 cm", "Oil on canvas"]
     }
 
-    resp, content = H.request(server() + "enrich-type?prop=type&alternate=TBD_physicalformat", "POST", body=json.dumps(INPUT), headers=HEADERS)
+    resp, content = H.request(server() + "enrich-type?prop=type&alternate=TBD_physicalformat", "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     assert json.loads(content)['TBD_physicalformat'] == ["Paintings", "Painting"]
-    resp, content = H.request(server() + "enrich-format?prop=format&alternate=TBD_physicalformat", "POST", body=content, headers=HEADERS)
+    resp, content = H.request(server() + "enrich-format?prop=format&alternate=TBD_physicalformat", "POST", body=content)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']

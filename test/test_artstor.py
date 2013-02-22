@@ -1,19 +1,7 @@
-from server_support import server
+from server_support import server, H
 
-from amara.thirdparty import httplib2
 from amara.thirdparty import json
 from nose.tools import nottest
-
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-    "Content-Type": "application/json",
-    "Context": "{}",
-    "Connection": "close"
-    }
-
-H = httplib2.Http()
-
 
 def test_artstor_identify_object():
     """Fetching Artstor document thumbnail (schema v3)"""
@@ -139,7 +127,7 @@ def test_artstor_identify_object():
     EXPECTED_PREVIEW = "http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg"
 
     url = server() + "artstor_identify_object"
-    resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     doc = json.loads(content)
@@ -273,7 +261,7 @@ def test_artstor_source_fetching():
     EXPECTED_SOURCE = "http://www.artstor.org/artstor/ViewImages?id=8DtZYyMmJloyLyw7eDt5QHgt&userId=gDBAdA%3D%3D"
 
     url = server() + "artstor_select_isshownat"
-    resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
     FETCHED_SOURCE = json.loads(content)[u"isShownAt"][u"@id"]
     assert FETCHED_SOURCE == EXPECTED_SOURCE

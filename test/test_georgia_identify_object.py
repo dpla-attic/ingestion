@@ -1,18 +1,6 @@
-from server_support import server
-
-from amara.thirdparty import httplib2
+from server_support import server, H
 from amara.thirdparty import json
 from nose.tools import nottest
-
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-    "Content-Type": "application/json",
-    "Context": "{}",
-    "Connection": "close"
-    }
-
-H = httplib2.Http()
 
 
 def test_georgia_identify_object():
@@ -149,7 +137,7 @@ def test_georgia_identify_object():
     EXPECTED_PREVIEW = "http://dlg.galileo.usg.edu/columbus/mc2/do-th:evans2"
 
     url = server() + "georgia_identify_object"
-    resp, content = H.request(url, "POST", body=INPUT_JSON, headers=CT_JSON)
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2"), str(resp)
 
     doc = json.loads(content)

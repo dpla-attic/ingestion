@@ -1,19 +1,9 @@
-from amara.thirdparty import httplib2
 from amara.thirdparty import json
 from nose.tools import nottest
 
-from server_support import server
+from server_support import server, H
 from dict_differ import DictDiffer
 
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-    "Content-Type": "application/json",
-    "Context": "{}",
-    "Connection": "close"
-    }
-
-H = httplib2.Http()
 
 def test_enrich_dates_bogus_date():
     """Correctly transform a date value that cannot be parsed"""
@@ -30,7 +20,7 @@ def test_enrich_dates_bogus_date():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -52,7 +42,7 @@ def test_enrich_date_single():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -73,7 +63,7 @@ def test_enrich_date_date_multiple():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -95,7 +85,7 @@ def test_enrich_date_date_parse_format_yyyy_mm_dd():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -116,7 +106,7 @@ def test_enrich_date_parse_format_date_with_slashes():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -138,7 +128,7 @@ def test_enrich_date_date_parse_format_natural_string():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -159,7 +149,7 @@ def test_enrich_date_date_parse_format_ca_string():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -180,7 +170,7 @@ def test_enrich_date_date_parse_format_c_string():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -201,7 +191,7 @@ def test_enrich_date_parse_format_date_range1():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -222,7 +212,7 @@ def test_enrich_date_parse_format_date_range2():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -243,7 +233,7 @@ def test_enrich_date_parse_format_date_range3():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -264,7 +254,7 @@ def test_enrich_date_parse_format_date_range4():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -285,7 +275,7 @@ def test_enrich_date_parse_century_date():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -306,7 +296,7 @@ def test_enrich_date_parse_century_date_with_P():
 
     url = server() + "enrich-date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT),headers=HEADERS)
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -343,11 +333,11 @@ def test_enrich_temporal_date():
     }
 
     url = server() + "move_dates_to_temporal?prop=aggregatedCHO/spatial"
-    resp, content = H.request(url, "POST", body=json.dumps(INPUT), headers=HEADERS)
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert resp.status == 200
 
     url = server() + "enrich-temporal-date"
-    resp, content = H.request(url, "POST", body=content, headers=HEADERS)
+    resp, content = H.request(url, "POST", body=content)
     assert resp.status == 200
 
     REAL = json.loads(content)

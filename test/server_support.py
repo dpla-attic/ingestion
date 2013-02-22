@@ -16,7 +16,27 @@ import httplib
 # XXX I only use one function from here. Bring it into this file?
 import python_support
 
-######
+##############################################################################
+
+class MyHttp:
+    "Class providing request function for calling HTTP service."
+
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Context": "{}",
+        "Connection": "close"
+    }
+
+    def request(self, url, method, body, headers=HEADERS):
+        from amara.thirdparty import httplib2
+        h = httplib2.Http()
+        return h.request(url, method, body, headers)
+
+# Use this object in tests.
+
+H = MyHttp()
+
+##############################################################################
 
 # Set 'False' to keep the temporary directory used for the server tests
 #DELETE_TEMPORARY_SERVER_DIRECTORY = False

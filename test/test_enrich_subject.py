@@ -1,18 +1,11 @@
 import sys
-from server_support import server
-from amara.thirdparty import httplib2
+from server_support import server, H
 from amara.thirdparty import json
 
-CT_JSON = {
-    "Content-Type": "application/json", 
-    "Connection": "close"
-}
-
-H = httplib2.Http()
 url = server() + "enrich-subject?prop=subject"
 
 def _get_server_response(body):
-    return H.request(url,"POST",body=body,headers=CT_JSON)
+    return H.request(url,"POST",body=body)
 
 def test_enrich_subject_capitalize_firs_letter():
     """Should capitalize first letter of each subject"""

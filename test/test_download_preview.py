@@ -2,27 +2,17 @@ import os
 import sys
 import re
 import hashlib
-from server_support import server, print_error_log, get_thumbs_root
+from server_support import server, print_error_log, get_thumbs_root, H
 from dplaingestion.akamod.download_test_image import image_png, image_jpg
-from amara.thirdparty import httplib2
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
-
-CT_JSON = {"Content-Type": "application/json"}
-HEADERS = {
-            "Content-Type": "application/json",
-            "Context": "{}",
-            "Connection": "close"
-          }
-
-H = httplib2.Http()
 
 # URL for current akara server instance.
 url = server() + "download_preview"
 
 
 def _get_server_response(body):
-    return H.request(url, "POST", body=body, headers=HEADERS)
+    return H.request(url, "POST", body=body)
 
 
 def test_download_preview_bad_json():
