@@ -8,8 +8,8 @@
     "enrichments_rec": [
         "http://localhost:8879/select-id",
         "http://localhost:8879/oai-to-dpla",
-        "http://localhost:8889/move_dates_to_temporal?prop=subject",
-        "http://localhost:8889/move_dates_to_temporal?prop=spatial",
+        "http://localhost:8879/move_dates_to_temporal?prop=aggregatedCHO/subject",
+        "http://localhost:8879/move_dates_to_temporal?prop=aggregatedCHO/spatial",
         "http://localhost:8879/shred?prop=aggregatedCHO/subject%2CaggregatedCHO/type&delim=%3b",
         "http://localhost:8879/enrich-date",
         "http://localhost:8879/enrich-temporal-date",
