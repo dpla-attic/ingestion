@@ -13,7 +13,7 @@ from nose.tools import nottest
 
 def contentdm_url(rights_field="r", download="True"):
     return server() + \
-            "contentdm-identify-object?rights_field=%s&download=%s" \
+            "contentdm_identify_object?rights_field=%s&download=%s" \
             % (rights_field, download)
 
 
