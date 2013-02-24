@@ -24,10 +24,10 @@
            "reduce": "_count"
        },
        "dates": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {d = doc.aggregatedCHO.date;if (d.constructor.toString().indexOf('Array') == -1) { d = new Array(d); }for (i=0; i<d.length; i++) {emit(doc['id'], d[i]);}}}"
+           "map": "function(doc) {if (doc.ingestType == 'item') {d = doc.aggregatedCHO.date;if (d.constructor.toString().indexOf('Array') == -1) { d = new Array(d); }for (i=0; i<d.length; i++) {emit(doc['id'], d[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')');}}}"
        },
        "dates_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {d = doc.aggregatedCHO.date;if (d.constructor.toString().indexOf('Array') == -1) { d = new Array(d); }for (i=0; i<d.length; i++) {emit(d[i],1);}}}",
+           "map": "function(doc) {if (doc.ingestType == 'item') {d = doc.aggregatedCHO.date;if (d.constructor.toString().indexOf('Array') == -1) { d = new Array(d); }for (i=0; i<d.length; i++) {emit(d[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')',1);}}}",
            "reduce": "_count"
        },
        "description": {
