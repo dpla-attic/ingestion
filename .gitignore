@@ -6,3 +6,4 @@ data/*
 .idea/*
 *.swp
 caches/*
+*.iml
