@@ -113,7 +113,8 @@ MODULES = [
     "dplaingestion.akamod.enrich_location",
     "dplaingestion.akamod.lookup",
     "dplaingestion.akamod.georgia_identify_object",
-    "dplaingestion.akamod.bhl_contributor_to_collection"
+    "dplaingestion.akamod.bhl_contributor_to_collection",
+    "dplaingestion.akamod.copy_prop"
     ]
 
 class download_preview:
