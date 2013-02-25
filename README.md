@@ -13,7 +13,7 @@ To install or upgrade the ingest subsystem, first install the necessary componen
 
     $ pip install --no-deps --ignore-installed -r requirements.txt
 
-Configure the akara.conf file to point to an existing CouchDB database, changing the "couchdb_database" parameter of the enrich module;
+Configure the akara.conf file to point to an existing CouchDB database, changing the "couch_database", "couch_database_username" and "couch_database_password" parameters of the enrich module;
 
     $ vi akara.conf
 
