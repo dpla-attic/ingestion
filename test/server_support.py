@@ -133,6 +133,19 @@ class lookup:
         'test': 'test_subst',
         'test2': 'test_2_subst'
     }
+
+class identify_object:
+    IGNORE = 0
+    PENDING = 1
+
+class contentdm_identify_object(identify_object):
+    pass
+
+class kentucky_identify_object(identify_object):
+    pass
+
+class artstor_identify_object(identify_object):
+    pass
 """ % dict(config_root = config_root,
            port = port,
            thumbs_root=thumbs_root

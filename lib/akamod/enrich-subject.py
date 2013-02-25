@@ -18,7 +18,7 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject
     as a parameter
     '''   
     
-    REGEXPS = (' -- ','--'), ('\.$',''), ('^\. *','')
+    REGEXPS = (' *-- *','--'), ('\.$',''), ('^\. *','')
 
     def cleanup(s):
         s = s.strip()

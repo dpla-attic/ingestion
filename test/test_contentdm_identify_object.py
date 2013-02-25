@@ -43,7 +43,7 @@ def test_contentdm_identify_object_without_download():
                 "format": "",
                 "rights": "right now!"
             },
-            u"admin": {u"object_status": "ignore"},
+            u"admin": {u"object_status": 0},
             u"left": "right now!"
     }
     url = contentdm_url(u"left", "False")
@@ -79,7 +79,7 @@ def test_contentdm_identify_object_with_download():
                 "format": "",
                 "rights": "right now!"
             },
-            u"admin": {u"object_status": "pending"},
+            u"admin": {u"object_status": 1},
             u"left": "right now!"
     }
     url = contentdm_url(u"left", "True")
