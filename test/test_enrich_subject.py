@@ -1,6 +1,7 @@
 import sys
 from server_support import server, H
 from amara.thirdparty import json
+from dict_differ import DictDiffer, assert_same_jsons, pinfo
 
 url = server() + "enrich-subject?prop=subject"
 
@@ -132,6 +133,43 @@ def test_enrich_subject_remove_period_space():
     assert resp.status == 200
     print str(json.loads(content))
     assert json.loads(content) == EXPECTED
+
+def test_remove_spaces_around_dashes():
+    """Should remove spaces around dashes."""
+    INPUT = {
+        "id": "123",
+        "spatial": [
+            {"name": "Asheville"},
+            {"name": "North Carolina"}
+        ],
+        "subject": [
+            "hello there",
+            "aaa--bbb",
+            "aaa --bbb",
+            "aaa-- bbb",
+            "aaa --  bbb",
+            "aaa  --  bbb    -- ccc - - ddd -- "
+        ]
+    }
+    EXPECTED = {
+        "id": "123",
+        "spatial": [
+            {"name": "Asheville"},
+            {"name": "North Carolina"}
+        ],
+        "subject": [
+            {"name": "Hello there"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb--ccc - - ddd--"},
+        ]
+    }
+    resp, content = _get_server_response(json.dumps(INPUT))
+    assert_same_jsons(json.dumps(EXPECTED), content)
+    assert resp.status == 200
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
