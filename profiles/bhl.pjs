@@ -7,16 +7,19 @@
     "enrichments_rec": [
         "http://localhost:8878/select-id",
         "http://localhost:8878/oai-to-dpla",
-        "http://localhost:8878/move_dates_to_temporal?prop=subject",
-        "http://localhost:8878/move_dates_to_temporal?prop=spatial",
-        "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
+        "http://localhost:8878/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "http://localhost:8878/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "http://localhost:8878/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftitle%2CaggregatedCHO%2Ftype",
         "http://localhost:8878/enrich-date",
-        "http://localhost:8878/enrich-temporal-date",
         "http://localhost:8878/enrich-subject",
+        "http://localhost:8878/move_dates_to_temporal?prop=aggregatedCHO%2Fsubject",
+        "http://localhost:8878/move_dates_to_temporal?prop=aggregatedCHO%2Fspatial",
+        "http://localhost:8878/enrich-temporal-date",
         "http://localhost:8878/enrich-type",
         "http://localhost:8878/enrich-format",
         "http://localhost:8878/enrich_location",
-        "http://localhost:8878/bhl_contributor_to_collection"
+        "http://localhost:8878/bhl_contributor_to_collection",
+        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fcontributor&to_prop=dataProvider&create=True"
     ], 
     "subresources": [
         "item",

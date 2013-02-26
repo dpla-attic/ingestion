@@ -4,6 +4,7 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 from akara import module_config
+from amara.lib.iri import is_absolute
 
 IGNORE = module_config().get('IGNORE')
 PENDING = module_config().get('PENDING')
@@ -34,7 +35,15 @@ def contentdm_identify_object(body, ctype, rights_field="aggregatedCHO/rights", 
 
     handle_field = "originalRecord/handle"
     if exists(data, handle_field):
-        url = getprop(data, handle_field)[1]
+        url = None
+        handle = getprop(data, handle_field)
+        for h in (handle if not isinstance(handle, basestring) else [handle]):
+            if is_absolute(h):
+                url = h
+                break
+        if not url:
+            logger.error("There is no URL in %s." % handle_field)
+            return body
     else:
         msg = "Field %s does not exist" % handle_field
         logger.error(msg)
