@@ -122,9 +122,10 @@ def test_move_dates_to_temporal_subject1():
         "aggregatedCHO": {
             "subject" : [
                 {"name": "(1901-1999)"},
-                {"name": "1901-1999"},
-                {"name": "1901"},
-                {"name": " (1902) "},
+                {"name": "1902-1999"},
+                {"name": "1903"},
+                {"name": " (1904) "},
+                {"name": ".1905?"},
                 {"name": "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works."},
                 {"name": "subject1"}
             ]
@@ -134,13 +135,13 @@ def test_move_dates_to_temporal_subject1():
         "aggregatedCHO": {
             "temporal": [
                 {"name": "1901-1999"},
-                {"name": "1901-1999"},
-                {"name": "1901"},
-                {"name": "1902"},
-                {"name": "1861-1865"}
+                {"name": "1902-1999"},
+                {"name": "1903"},
+                {"name": "1904"},
+                {"name": "1905"}
             ],
             "subject" : [
-                {"name": "United States--History--Civil War, --Soldiers--Pictorial works."},
+                {"name": "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works."},
                 {"name": "subject1"}
             ]
         }
@@ -164,7 +165,12 @@ def test_move_dates_to_temporal_subject2():
                 {"name": "12-"},
                 {"name": "12-1"},
                 {"name": "12-12"},
-                {"name": "12-12-"}
+                {"name": "12-12-"},
+                {"name": "12345"},
+                {"name": "02-02-02-"},
+                {"name": "1984-1999-2011-2013"},
+                {"name": "1234 1234"},
+                {"name": "01/01/13 01/01/13"}
             ]
         }   
     }
