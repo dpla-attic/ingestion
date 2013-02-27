@@ -17,7 +17,7 @@
         "http://localhost:8878/enrich-format", 
         "http://localhost:8878/enrich_location",
         "http://localhost:8878/kentucky_identify_object",
-        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True"
+        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True"
     ], 
     "subresources": [], 
     "last_checked": "2013-02-08T02:07:44.804283", 
