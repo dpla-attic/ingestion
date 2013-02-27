@@ -4,7 +4,7 @@ from akara import module_config, logger
 from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
-from urllib import quote
+from urllib import quote, urlencode
 import datetime
 import uuid
 import base64
@@ -74,15 +74,34 @@ def couch_rev_check_recs(docs, src):
     else:
         logger.debug('Unable to retrieve document revisions via bulk interface: ' + repr(resp))
 
+def couch_rev_check_recs2(docs):
+    '''
+    Insert revisions for all records into structure using CouchDB bulk interface.
+    Uses key ranges to narrow bulk query to the source being ingested.
+    '''
+    uri = join(COUCH_DATABASE, '_all_docs')
+    docs_ids = sorted(docs)
+    start = docs_ids[0]
+    end = docs_ids[-1:][0]
+    uri += "?" + urlencode({"startkey": start, "endkey": end})
+    response, content = H.request(uri, 'GET', headers=COUCH_AUTH_HEADER)
+    if str(response.status).startswith('2'):
+        rows = json.loads(content)["rows"]
+        for r in rows:
+            if r["id"] in docs:
+                docs[r["id"]]["_rev"] = r["value"]["rev"]
+    else:
+        logger.debug('Unable to retrieve document revisions via bulk interface: ' + repr(response))
+
 def set_ingested_date(doc):
     doc[u'ingestDate'] = datetime.datetime.now().isoformat()
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich', 'enrich', 'application/json')
 def enrich(body, ctype):
-    '''   
+    """
     Establishes a pipeline of services identified by an ordered list of URIs provided
     in two request headers, one for collections and one for records
-    '''
+    """
 
     request_headers = copy_headers_to_dict(request.environ)
     source_name = request_headers.get('Source')
@@ -155,3 +174,38 @@ def enrich(body, ctype):
             logger.debug('HTTP error posting to CouchDB: '+repr((resp,content)))
 
     return json.dumps({'docs' : docs})
+
+@simple_service('POST', 'http://purl.org/la/dp/enrich_storage', 'enrich_storage', 'application/json')
+def enrich_storage(body, ctype):
+    """
+    Establishes a pipeline of services identified by an ordered list of URIs provided
+    in request header 'Pipeline-Rec'
+    """
+
+    request_headers = copy_headers_to_dict(request.environ)
+    source_name = request_headers.get('Source')
+    rec_enrichments = request_headers.get(u'Pipeline-Rec','').split(',')
+
+    data = json.loads(body)
+
+    docs = {}
+    for record in data:
+
+        # REVU: do we need update the date
+        # set_ingested_date(record)
+
+        doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
+        doc = json.loads(doc_text)
+        docs[doc["_id"]] = doc
+
+    couch_rev_check_recs2(docs) # REVU: do we need this, if data taken from db, it already contains previous revision
+    couch_docs_text = json.dumps({"docs": docs.values()})
+    if COUCH_DATABASE:
+        resp, content = H.request(join(COUCH_DATABASE, '_bulk_docs'), 'POST',
+            body=couch_docs_text,
+            headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
+        logger.debug("Couch bulk update response: "+content)
+        if not str(resp.status).startswith('2'):
+            logger.debug('HTTP error posting to CouchDB: ' + repr((resp, content)))
+
+    return couch_docs_text

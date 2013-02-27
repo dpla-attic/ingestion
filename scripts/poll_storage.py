@@ -8,7 +8,10 @@ Simple use cases:
     Perform geocoding for all records on a profile
 
 Usage:
-    $ poll_storage.py [-h] [--filter FILTER] [-n PAGE_SIZE] profile pipeline service
+    $ python poll_storage.py [-h] [--filter FILTER] [-n PAGE_SIZE] profile pipeline service
+
+Example:
+    $ python scripts/poll_storage.py -n 100 profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
 """
 
 import argparse
@@ -175,13 +178,17 @@ def main(argv):
     couch = Couch("http://camp.dpla.berkman.temphost.net:5979/dpla", "couchadmin", "couchM3")
     couch.page_size = args.page_size
     docs = []
+    cnt = 0
     for doc in couch.list_profile_doc(profile["name"]):
         docs.append(doc)
+        cnt += 1
         if len(docs) == couch.page_size:
-            enrich(args.service, docs)
+            enrich(args.service, profile, args.pipeline, docs)
+            print "processed", cnt, "documents"
             docs = []
     if docs:
-        enrich(args.service, docs)
+        enrich(args.service, profile, args.pipeline, docs)
+        print "processed", cnt, "documents"
 
 if __name__ == "__main__":
     main(sys.argv)
