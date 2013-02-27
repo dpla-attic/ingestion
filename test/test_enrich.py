@@ -81,6 +81,40 @@ def test_shred5():
 
     assert json.loads(content) == EXPECTED
 
+def test_shred6():
+    "Shredding multiple keys/fields; remove duplicates"
+    INPUT = {
+        "p": "a;b;c;a",
+        "q": "d;e;f;e",
+        "r": ["a;b;c;a", "d;e;f;e"]
+    }
+    EXPECTED = {
+        "p": ["a","b","c"],
+        "q": ["d","e","f"],
+        "r": ["a","b","c","d","e","f"]
+    }
+    url = server() + "shred?prop=p,q,r"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    assert json.loads(content) == EXPECTED
+
+def test_shred7():
+    "Shredding multiple keys/fields; do not remove duplicates"
+    INPUT = {
+        "p": "a;b;c;a",
+        "q": "d;e;f;e",
+        "r": ["a;b;c;a", "d;e;f;e"]
+    }
+    EXPECTED = {
+        "p": ["a","b","c","a"],
+        "q": ["d","e","f","e"],
+        "r": ["a","b","c","a","d","e","f","e"]
+    }
+    url = server() + "shred?prop=p,q,r&keepdup=True"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    assert json.loads(content) == EXPECTED
+
 def test_unshred1():
     "Valid unshredding"
 
@@ -225,16 +259,18 @@ def test_enrich_type_cleanup():
 def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
-        "format" : ["Still Images","image/JPEG","audio","Images",  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
+        "format" : ["Still Images","image/JPEG","audio","Images", 'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
         }
     EXPECTED = {
-        u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
-        u'physicalmedium' : ["Still Images", "Images"]
+        u'format' : [ "image/jpeg", "audio/mpeg" ],
+        u'physicalmedium' : ["Still Images", "audio", "Images", 'application']
         }
 
     url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    print_error_log()
+    assert_same_jsons(EXPECTED, content)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']

@@ -1,8 +1,8 @@
 from amara.thirdparty import json
 from nose.tools import nottest
 
-from server_support import server, H
-from dict_differ import DictDiffer
+from server_support import server, H, print_error_log
+from dict_differ import DictDiffer, assert_same_jsons, pinfo
 
 
 def test_enrich_dates_bogus_date():
@@ -21,6 +21,7 @@ def test_enrich_dates_bogus_date():
     url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    print_error_log()
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -48,24 +49,31 @@ def test_enrich_date_single():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
+
 def test_enrich_date_date_multiple():
     """Correctly transform a multiple date value, and take the earliest"""
     INPUT = {
         "date" : ["1928", "1406"]
     }
     EXPECTED = {
-        u'date' : {
-            u'begin' : u'1406',
-            u'end' : u'1406',
-            'displayDate' : '1406'
-        }
+        u'date' : [
+            {
+                u'begin':       u'1406',
+                u'end':         u'1406',
+                u'displayDate': u'1406'
+            },
+            {
+                u'begin':       u'1928',
+                u'end':         u'1928',
+                u'displayDate': u'1928'
+            }
+        ]
     }
 
     url = server() + "enrich-date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
@@ -88,8 +96,10 @@ def test_enrich_date_date_parse_format_yyyy_mm_dd():
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
+    pinfo(resp, content)
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
+
 
 def test_enrich_date_parse_format_date_with_slashes():
     """Correctly transform a date of format MM/DD/YYYY"""
@@ -130,9 +140,9 @@ def test_enrich_date_date_parse_format_natural_string():
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
+
 
 def test_enrich_date_date_parse_format_ca_string():
     """Correctly transform a date with circa abbreviation (ca.)"""
@@ -155,6 +165,7 @@ def test_enrich_date_date_parse_format_ca_string():
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
 
+
 def test_enrich_date_date_parse_format_c_string():
     """Correctly transform a date with circa abbreviation (c.)"""
     INPUT = {
@@ -175,6 +186,7 @@ def test_enrich_date_date_parse_format_c_string():
 
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
+
 
 def test_enrich_date_parse_format_date_range1():
     """Correctly transform a date of format 1960 - 1970"""
@@ -197,6 +209,7 @@ def test_enrich_date_parse_format_date_range1():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
+
 def test_enrich_date_parse_format_date_range2():
     """Correctly transform a date of format 1960-05-01 - 1960-05-15"""
     INPUT = {
@@ -217,6 +230,7 @@ def test_enrich_date_parse_format_date_range2():
 
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
+
 
 def test_enrich_date_parse_format_date_range3():
     """Correctly transform a date of format 1960-1970"""
@@ -239,6 +253,7 @@ def test_enrich_date_parse_format_date_range3():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
+
 def test_enrich_date_parse_format_date_range4():
     """Correctly transform a date of format 'c. YYYY-YY'"""
     INPUT = {
@@ -259,6 +274,7 @@ def test_enrich_date_parse_format_date_range4():
 
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+
 
 def test_enrich_date_parse_century_date():
     """Correctly transform a date of format '19th c.'"""
@@ -281,6 +297,7 @@ def test_enrich_date_parse_century_date():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
 
+
 def test_enrich_date_parse_century_date_with_P():
     """Correctly transform a date of format ['19th c.', 'P']"""
     INPUT = {
@@ -298,9 +315,10 @@ def test_enrich_date_parse_century_date_with_P():
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-
+    assert_same_jsons(EXPECTED, content)
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+
 
 def test_enrich_temporal_date():
     """Correctly enrich temporal dates"""
@@ -342,6 +360,35 @@ def test_enrich_temporal_date():
 
     REAL = json.loads(content)
     assert REAL == EXPECTED, DictDiffer(REAL, EXPECTED).diff()
+
+
+def test_enrich_date_date_parse_format_natural_string_for_multiple_dates():
+    """Correctly transform a date of format Month, DD, YYYY"""
+    INPUT = {
+        "date" : "May 20, 1928; 2002-01-01"
+    }
+    EXPECTED = {
+        'date' : [
+            {
+              'begin':       u'1928-05-20',
+              'end':         u'1928-05-20',
+              'displayDate': u'May 20, 1928'
+            },
+            {
+              'begin':       u'2002-01-01',
+              'end':         u'2002-01-01',
+              'displayDate': u'2002-01-01'
+            }
+        ]
+    }
+
+    url = server() + "enrich-date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert_same_jsons(EXPECTED, content)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

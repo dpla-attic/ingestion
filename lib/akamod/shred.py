@@ -5,7 +5,7 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/shred', 'shred', 'application/json')
-def shred(body,ctype,action="shred",prop=None,delim=';'):
+def shred(body,ctype,action="shred",prop=None,delim=';',keepdup=None):
     '''   
     Service that accepts a JSON document and "shreds" or "unshreds" the value
     of the field(s) named by the "prop" parameter
@@ -30,7 +30,10 @@ def shred(body,ctype,action="shred",prop=None,delim=';'):
                     v = delim.join(v)
                     setprop(data,p,v)
                 if delim not in v: continue
-                setprop(data,p,[ s.strip() for s in v.split(delim) ])
+
+                shredded = []
+                [shredded.append(s.strip()) for s in v.split(delim) if keepdup or not shredded.count(s.strip())]
+                setprop(data, p, shredded)
             elif action == "unshred":
                 if isinstance(v,list):
                     setprop(data,p,delim.join(v))

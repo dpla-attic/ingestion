@@ -7,7 +7,7 @@ from dplaingestion.selector import delprop, getprop, setprop, exists
 @simple_service('POST', 'http://purl.org/la/dp/copy_prop', 'copy_prop',
     'application/json')
 def copyprop(body,ctype,prop=None,to_prop=None,create=False,key=None,
-    remove=False):
+    remove=None):
     """Copies value in one prop to another prop.
 
     Keyword arguments:
