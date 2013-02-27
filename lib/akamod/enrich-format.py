@@ -22,7 +22,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
     as the 'prop' parameter. Non-IMT's are moved the field defined by the 'alternate' parameter.
     """
 
-    REGEXPS = ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
+    REGEXPS = ('audio/mp3', "audio/mpeg"), ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
     IMT_TYPES = ['application','audio','image','message','model','multipart','text','video']
 
     def cleanup(s):
@@ -33,7 +33,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
         return s
 
     def is_imt(s):
-        imt_regexes = [re.compile('^' + x + '(/|\Z)') for x in IMT_TYPES]
+        imt_regexes = [re.compile('^' + x + '(/)') for x in IMT_TYPES]
         return any(regex.match(s) for regex in imt_regexes)
 
     try :

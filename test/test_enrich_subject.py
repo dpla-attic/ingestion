@@ -3,10 +3,12 @@ from server_support import server, H
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 
-url = server() + "enrich-subject?prop=subject"
+url = server() + "enrich-subject"
 
-def _get_server_response(body):
-    return H.request(url,"POST",body=body)
+
+def _get_server_response(body, prop="subject"):
+    u = url + "?prop=" + prop
+    return H.request(u,"POST",body=body)
 
 def test_enrich_subject_capitalize_firs_letter():
     """Should capitalize first letter of each subject"""
@@ -112,7 +114,9 @@ def test_enrich_subject_remove_period_space():
             ". hi ",
             ".  hi",
             "             . hi there    ",
-            "a banana"
+            "a banana",
+            "''.more complicated....",
+            '""""....even more complicated....."\'""""'
         ]
     }
     EXPECTED = {
@@ -125,14 +129,15 @@ def test_enrich_subject_remove_period_space():
             {"name": "Hello there"},
             {"name": "123"},
             {"name": "Hi there"},
-            {"name": "A banana"}
+            {"name": "A banana"},
+            {"name": "More complicated"},
+            {"name": "Even more complicated"}
         ]
     }
 
     resp, content = _get_server_response(json.dumps(INPUT))
     assert resp.status == 200
-    print str(json.loads(content))
-    assert json.loads(content) == EXPECTED
+    assert_same_jsons(json.dumps(EXPECTED), content)
 
 def test_remove_spaces_around_dashes():
     """Should remove spaces around dashes."""
@@ -170,6 +175,57 @@ def test_remove_spaces_around_dashes():
     assert_same_jsons(json.dumps(EXPECTED), content)
     assert resp.status == 200
 
+def test_enrichment_for_creator_field():
+    """Should remove spaces around dashes."""
+    INPUT = {
+        "id": "123",
+        "spatial": [
+            {"name": "Asheville"},
+            {"name": "North Carolina"}
+        ],
+        "creator": [
+            "hello there",
+            "123",
+            ". hi ",
+            ".  hi",
+            "             . hi there    ",
+            "a banana",
+            "''.more complicated....",
+            '""""....even more complicated....."\'""""',
+            "hello there;;",
+            ";;hello there;;",
+            "aaa--bbb",
+            "aaa --bbb",
+            "aaa-- bbb",
+            "aaa --  bbb",
+            "aaa  --  bbb    -- ccc - - ddd -- "
+        ]
+    }
+    EXPECTED = {
+        "id": "123",
+        "spatial": [
+            {"name": "Asheville"},
+            {"name": "North Carolina"}
+        ],
+        "creator": [
+            {"name": "Hello there"},
+            {"name": "123"},
+            {"name": "Hi there"},
+            {"name": "A banana"},
+            {"name": "More complicated"},
+            {"name": "Even more complicated"},
+            {"name": "Hello there"},
+            {"name": "Hello there"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb--ccc - - ddd--"},
+        ]
+    }
+    resp, content = _get_server_response(json.dumps(INPUT), "creator")
+    assert_same_jsons(json.dumps(EXPECTED), content)
+    assert resp.status == 200
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

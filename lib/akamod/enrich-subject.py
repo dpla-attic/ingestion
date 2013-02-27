@@ -18,7 +18,10 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject
     as a parameter
     '''   
     
-    REGEXPS = (' *-- *','--'), ('\.$',''), ('^\. *','')
+    TAGS_FOR_STRIPPING = '[\.\' ";]*' # Tags for stripping at beginning and at the end.
+    REGEXPS = (' *-- *', '--'), \
+              ('^' + TAGS_FOR_STRIPPING, ''), \
+              (TAGS_FOR_STRIPPING + '$','')
 
     def cleanup(s):
         s = s.strip()

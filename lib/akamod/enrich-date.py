@@ -130,21 +130,27 @@ def enrichdate(body, ctype, action="enrich-format", prop="aggregatedCHO/date"):
         response.add_header(HTTP_HEADER_TYPE,  HTTP_TYPE_TEXT)
         return "Unable to parse body as JSON"
 
-    date_candidates = []
+    dates = []
     for p in prop.split(','):
         if exists(data, p):
             v = getprop(data, p)
-            date_candidates = []
+
             for s in (v if not isinstance(v, basestring) else [v]):
-                a, b = parse_date_or_range(s)
-                date_candidates.append( {
-                        "begin": a,
-                        "end": b,
-                        "displayDate" : s
-                        })
-        date_candidates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
-        if date_candidates:
-            setprop(data, p, date_candidates[0])
+                for part in s.split(";"):
+                    part = part.strip()
+                    a, b = parse_date_or_range(part)
+                    if b != '3000-01-01':
+                        dates.append( {
+                                "begin": a,
+                                "end": b,
+                                "displayDate" : part
+                            })
+    dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
+
+    if len(dates) == 1:
+        setprop(data, p, dates[0])
+    else:
+        setprop(data, p, dates)
 
     return json.dumps(data)
 

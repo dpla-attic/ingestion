@@ -66,6 +66,8 @@ def exists(obj,path):
         found = getprop(obj,path,keyErrorAsNone=False) != None
     except KeyError:
         pass
+    except TypeError:
+        pass
 
     return found
 

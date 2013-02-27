@@ -225,16 +225,18 @@ def test_enrich_type_cleanup():
 def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
-        "format" : ["Still Images","image/JPEG","audio","Images",  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
+        "format" : ["Still Images","image/JPEG","audio","Images", 'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
         }
     EXPECTED = {
-        u'format' : [ "image/jpeg", "audio", "audio/mp3" ],
-        u'physicalmedium' : ["Still Images", "Images"]
+        u'format' : [ "image/jpeg", "audio/mpeg" ],
+        u'physicalmedium' : ["Still Images", "audio", "Images", 'application']
         }
 
     url = server() + "enrich-format?prop=format&alternate=physicalmedium"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    print_error_log()
+    assert_same_jsons(EXPECTED, content)
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
