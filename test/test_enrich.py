@@ -81,6 +81,40 @@ def test_shred5():
 
     assert json.loads(content) == EXPECTED
 
+def test_shred6():
+    "Shredding multiple keys/fields; remove duplicates"
+    INPUT = {
+        "p": "a;b;c;a",
+        "q": "d;e;f;e",
+        "r": ["a;b;c;a", "d;e;f;e"]
+    }
+    EXPECTED = {
+        "p": ["a","b","c"],
+        "q": ["d","e","f"],
+        "r": ["a","b","c","d","e","f"]
+    }
+    url = server() + "shred?prop=p,q,r"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    assert json.loads(content) == EXPECTED
+
+def test_shred7():
+    "Shredding multiple keys/fields; do not remove duplicates"
+    INPUT = {
+        "p": "a;b;c;a",
+        "q": "d;e;f;e",
+        "r": ["a;b;c;a", "d;e;f;e"]
+    }
+    EXPECTED = {
+        "p": ["a","b","c","a"],
+        "q": ["d","e","f","e"],
+        "r": ["a","b","c","a","d","e","f","e"]
+    }
+    url = server() + "shred?prop=p,q,r&keepdup=True"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    assert json.loads(content) == EXPECTED
+
 def test_unshred1():
     "Valid unshredding"
 
