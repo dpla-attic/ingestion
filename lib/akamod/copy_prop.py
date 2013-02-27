@@ -2,13 +2,23 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.selector import delprop, getprop, setprop, exists
 
-@simple_service('POST', 'http://purl.org/la/dp/copy_prop', 'copy_prop', 'application/json')
-def copyprop(body,ctype,prop=None,to_prop=None,create=False,key=None):
-    """ Copies value in prop to to/to[key]/to[i][key],
-        whichever applies. If to does not exist but create is true,
-        to is created.
+@simple_service('POST', 'http://purl.org/la/dp/copy_prop', 'copy_prop',
+    'application/json')
+def copyprop(body,ctype,prop=None,to_prop=None,create=False,key=None,
+    remove=False):
+    """Copies value in one prop to another prop.
+
+    Keyword arguments:
+    body -- the content to load
+    ctype -- the type of content
+    prop -- the prop to copy from (default None)
+    to_prop -- the prop to copy into (default None)
+    create -- creates to_prop if True (default False)
+    key -- the key to use if to_prop is a dict (default None)
+    remove  -- removes prop if True (default False)
+    
     """
 
     try:
@@ -27,16 +37,31 @@ def copyprop(body,ctype,prop=None,to_prop=None,create=False,key=None):
         if isinstance(to_element, basestring):
             setprop(data, to_prop, val)
         else:
-            if not isinstance(to_element, list):
-                to_element = [to_element]
-            for i in range(0,len(to_element)):
-                if key:
-                    if exists(to_element[i], key):
-                        setprop(to_element[i], key, val)
+            # If key is set, assume to_element is dict or list of dicts
+            if key:
+                if not isinstance(to_element, list):
+                    to_element = [to_element]
+                for dict in to_element:
+                    if exists(dict, key):
+                        setprop(dict, key, val)
                     else:
                         msg = "Key %s does not exist in %s" % (key, to_prop)
-                        logger.error(msg)
+                        logger.debug(msg)
+            else:
+                # Handle case where to_element is a list
+                if isinstance(to_element, list):
+                    if isinstance(val, list):
+                        to_element = to_element + val
+                    else:
+                        to_element.append(val)
+                    setprop(data, to_prop, to_element) 
                 else:
-                    setprop(data, to_element[i], val)
+                    # to_prop is dictionary but no key was passed.
+                    msg = "%s is a dictionary but no key was passed" % to_prop
+                    logger.warn(msg)
+                    setprop(data, to_prop, val)
+
+        if remove:
+            delprop(data, prop)
 
     return json.dumps(data)

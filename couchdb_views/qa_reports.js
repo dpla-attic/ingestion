@@ -38,10 +38,10 @@
            "reduce": "_count"
        },
        "format": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {format = doc.aggregatedCHO.physicalmedium;if (format.constructor.toString().indexOf('Array') == -1) { format = new Array(format); }for (i=0; i<format.length; i++) {emit(doc['id'], format[i]);}}}"
+           "map": "function(doc) {if (doc.ingestType == 'item') {format = doc.aggregatedCHO.physicalMedium;if (format.constructor.toString().indexOf('Array') == -1) { format = new Array(format); }for (i=0; i<format.length; i++) {emit(doc['id'], format[i]);}}}"
        },
        "format_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {format = doc.aggregatedCHO.physicalmedium;if (format.constructor.toString().indexOf('Array') == -1) { format = new Array(format); }for (i=0; i<format.length; i++) {emit(format[i],1);}}}",
+           "map": "function(doc) {if (doc.ingestType == 'item') {format = doc.aggregatedCHO.physicalMedium;if (format.constructor.toString().indexOf('Array') == -1) { format = new Array(format); }for (i=0; i<format.length; i++) {emit(format[i],1);}}}",
            "reduce": "_count"
        },
        "type": {
