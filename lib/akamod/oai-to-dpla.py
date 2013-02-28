@@ -11,7 +11,6 @@ from zen import dateparser
 from dateutil.parser import parse as dateutil_parse
 import timelib
 
-GEOPROP = None
 # default date used by dateutil-python to populate absent date elements during parse,
 # e.g. "1999" would become "1999-01-01" instead of using the current month/day
 DEFAULT_DATETIME = dateutil_parse("2000-01-01") 
@@ -46,14 +45,9 @@ CONTEXT = {
 }
 
 def spatial_transform(d):
-    global GEOPROP
     spatial = []
-    for i,s in enumerate((d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]])):
-        sp = { "name": s.strip() }
-        # Check if we have lat/long for this location. Requires geocode earlier in the pipeline
-        if GEOPROP in d and i < len(d[GEOPROP]) and len(d[GEOPROP][i]) > 0:
-            sp["coordinates"] = d[GEOPROP][i]
-        spatial.append(sp)
+    for s in (d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]]):
+        spatial.append({"name": s.strip())
     return {"spatial":spatial}
 
 def is_shown_at_transform(d):
