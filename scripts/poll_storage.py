@@ -45,8 +45,12 @@ class Couch(object):
         db_info = json.loads(self.get(self.uri))
         return db_info['doc_count']
 
-    def _last_profile_doc_id(self, profile_name):
+    def _last_profile_doc_id_old(self, profile_name):
         """
+        Deprecated. Does not work properly when db has more than one
+        document sources (with different profile names)
+        Use: "_last_profile_doc_id" instead
+
         Returns the last document id for the given profile name
 
         Raises ValueError in case of empty result from db for given
@@ -66,6 +70,69 @@ class Couch(object):
             return last_doc_id
         else:
             raise ValueError("Can not get last document id for \"%s\" profile" % profile_name)
+
+    def _last_profile_doc_id(self, profile_name, reduce=False):
+        """
+        Returns the last document id for the given profile name
+
+        Raises ValueError in case of empty result from db for given
+        profile name
+
+        Detects last document id by applying map-reduce request
+        """
+        id_prefix = self._slugify(profile_name)
+        ids_map_reduce = {
+            "map": "function(doc) {if (doc.ingestType == 'item' && doc._id.indexOf('%s') == 0) emit(doc._id, null); }" % id_prefix,
+            "reduce": "function(keys, values, rereduce) { var max = 0, ks = rereduce ? values : keys; for (var i = 1, l = ks.length; i < l; ++i) { if (ks[max] < ks[i]) max = i; } return ks[max];}"
+        }
+        request_parameters = urlencode((
+            ("descending", "true"),
+            ("limit", "1"),
+            ("reduce", "false")
+            ))
+        tmp_view_uri = "_temp_view" + ("" if reduce else "?" + request_parameters)
+        request_uri = join(self.uri, tmp_view_uri)
+        response = json.loads(self.post(request_uri, body=json.dumps(ids_map_reduce)))
+        if response["rows"]:
+            if not reduce:
+                last_doc_id = response["rows"][0]["id"]
+            else:
+                last_doc_id = response["rows"][0]["value"][0]
+            assert last_doc_id.startswith(id_prefix), "Document id must start from profile name, but it is " + last_doc_id
+            return last_doc_id
+        else:
+            raise ValueError("Can not get last document id for \"%s\" profile" % profile_name)
+
+    def _create_doc_id_view(self, profile_name, update=False):
+        """
+        Creates an index (view) of profile's documents ids
+        Allows pagination mechanism to detect last id (stop
+        iteration marker)
+
+        If "update" argument is true, then if such view
+        already exists in database, it will be overwritten
+        by new one
+        """
+        id_prefix = self._slugify(profile_name)
+        design_doc_id = "_design/%s_doc_ids" % id_prefix
+        ids_map_reduce = {
+            "language": "javascript",
+            "views": {
+                "max": {
+                    "map": "function(doc) {if (doc.ingestType == 'item' && doc._id.indexOf('%s') == 0) emit(doc._id, null); }" % id_prefix,
+                    "reduce": "function(keys, values, rereduce) { var max = 0, ks = rereduce ? values : keys; for (var i = 1, l = ks.length; i < l; ++i) { if (ks[max] < ks[i]) max = i; } return ks[max];}"
+                }
+            }
+        }
+        request_uri = join(self.uri, design_doc_id)
+        try:
+            old_view = json.loads(self.get(request_uri))
+        except IOError:
+            self.put(request_uri, body=json.dumps(ids_map_reduce))
+        else:
+            if update:
+                old_view["views"] = ids_map_reduce["views"]
+                self.put(request_uri, body=json.dumps(old_view))
 
     def list_profile_doc(self, profile_name):
         """
@@ -168,6 +235,20 @@ class Couch(object):
         headers = {"Content-type": HTTP_TYPE_JSON}
         headers.update(self.authorization_header)
         response, content = self.http.request(uri, "POST", body=body, headers=headers)
+        if self._successful(response):
+            return content
+        else:
+            raise IOError("%d %s: %s" % (response.status, response.reason, content))
+
+    def put(self, uri, body=None):
+        """
+        Sends a put request to the given URI
+
+        Raises IOError in case of http request problem
+        """
+        headers = {"Content-type": HTTP_TYPE_JSON}
+        headers.update(self.authorization_header)
+        response, content = self.http.request(uri, "PUT", body=body, headers=headers)
         if self._successful(response):
             return content
         else:
