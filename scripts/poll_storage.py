@@ -229,8 +229,8 @@ def couch_credentials(akara_conf_path):
     Had to implement config wrapper, because akara.module_config() does not work
     from this script context
 
-    If in any time in future you will now how to get akara configuration in proper way
-    just update to wrapper to read couch db credentials in another way
+    If in any time in future you will find out how to get akara configuration in proper way
+    just update the wrapper to read couch db credentials in another way
     and remove --akara-config argument from the script parameters.
     """
     cfg = imp.load_source('akara.conf', akara_conf_path)
