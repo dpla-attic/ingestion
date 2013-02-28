@@ -8,17 +8,19 @@ Simple use cases:
     Perform geocoding for all records on a profile
 
 Usage:
-    $ python poll_storage.py [-h] [--filter FILTER] [-n PAGE_SIZE] profile pipeline service
+    $ python poll_storage.py [-h] [-f FILTER] [-c AKARA_CONFIG] [-n PAGE_SIZE] profile pipeline service
 
 Example:
     $ python scripts/poll_storage.py -n 100 profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
     $ python scripts/poll_storage.py -n 50 --filter "_design/artstor_items/_view/all" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
+    $ python scripts/poll_storage.py -c "../akara-local/akara.conf" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
 """
 
 import argparse
 import sys
 import base64
 from urllib import urlencode
+import imp
 
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join
@@ -187,7 +189,8 @@ def define_arguments():
     parser.add_argument("profile", help="The path to profile to be processed")
     parser.add_argument("pipeline", help="The name of an enrichment pipeline in the profile that contains the list of enrichments to be run")
     parser.add_argument("service", help="The URL of the enrichment service")
-    parser.add_argument("--filter", help="Name or identifier for a CouchDB view that would limit the number of records to be processed", default=None, type=str)
+    parser.add_argument("-f", "--filter", help="Name or identifier for a CouchDB view that would limit the number of records to be processed", default=None, type=str)
+    parser.add_argument("-c", "--akara-config", help="The path to Akara config to read source database credentials, default './akara.conf'", default="./akara.conf", type=str)
     parser.add_argument("-n", "--page-size", help="The limit number of record to be processed at once, default 500", default=500, type=int)
     return parser
 
@@ -219,11 +222,26 @@ def enrich(service_url, profile_dict, pipeline_name, docs):
     if not str(response.status).startswith('2'):
         raise IOError("%d %s: %s" % (response.status, response.reason, content))
 
+def couch_credentials(akara_conf_path):
+    """
+    Returns a tuple (dburi, username, password)
+
+    Had to implement config wrapper, because akara.module_config() does not work
+    from this script context
+
+    If in any time in future you will now how to get akara configuration in proper way
+    just update to wrapper to read couch db credentials in another way
+    and remove --akara-config argument from the script parameters.
+    """
+    cfg = imp.load_source('akara.conf', akara_conf_path)
+    return cfg.enrich.couch_database, cfg.enrich.couch_database_username, cfg.enrich.couch_database_password
+
+
 def main(argv):
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
     profile = read_profile(args.profile)
-    couch = Couch("http://camp.dpla.berkman.temphost.net:5979/dpla", "couchadmin", "couchM3")
+    couch = Couch(*couch_credentials(args.akara_config))
     couch.page_size = args.page_size
     list_profile = lambda: couch.list_profile_doc(profile["name"])
     list_view = lambda: couch.list_view_doc(args.filter)
