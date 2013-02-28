@@ -12,6 +12,7 @@ Usage:
 
 Example:
     $ python scripts/poll_storage.py -n 100 profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
+    $ python scripts/poll_storage.py -n 50 --filter "_design/artstor_items/_view/all" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
 """
 
 import argparse
@@ -94,6 +95,53 @@ class Couch(object):
                 yield next_page_row["doc"]
                 break
 
+    def list_view_doc(self, view_path):
+        """
+        Iterates and returns all documents related to the
+        given view path
+
+        Important:
+            Passed view path must contain only view url part of the
+            uri, without host or database name neither nor any request
+            parameters, example: "_design/artstor_items/_view/all"
+
+            View should emit only relevant doc._id ask key with null value,
+            because script will fetch docs by itself
+
+        Proper view example:
+            {
+                "_id": "_design/artstor_items",
+                "language": "javascript",
+                "views": {
+                    "all": {
+                        "map": "function(doc) {
+           	                if (doc.ingestType == 'item' && doc._id.indexOf('artstor') == 0)
+           	    	            emit(doc._id, null)
+           	            }"
+                    }
+                }
+            }
+        """
+        start_key = ""
+        while True:
+            request_parameters = urlencode((
+                ("descending", "false"),
+                ("limit", self.page_size + 1),
+                ("startkey", "\"" + start_key + "\""),
+                ("include_docs", "true")
+                ))
+            request_uri = join(self.uri, view_path + "?" + request_parameters)
+            rows = json.loads(self.get(request_uri))["rows"]
+
+            for row in rows[:-1]:
+                yield row["doc"]
+
+            next_page_row = rows[-1:][0]
+            start_key = next_page_row["id"]
+
+            if len(rows) < self.page_size:
+                yield next_page_row["doc"]
+                break
 
     def get(self, uri):
         """
@@ -139,7 +187,7 @@ def define_arguments():
     parser.add_argument("profile", help="The path to profile to be processed")
     parser.add_argument("pipeline", help="The name of an enrichment pipeline in the profile that contains the list of enrichments to be run")
     parser.add_argument("service", help="The URL of the enrichment service")
-    parser.add_argument("--filter", help="Name or identifier for a CouchDB view that would limit the number of records to be processed")
+    parser.add_argument("--filter", help="Name or identifier for a CouchDB view that would limit the number of records to be processed", default=None, type=str)
     parser.add_argument("-n", "--page-size", help="The limit number of record to be processed at once, default 500", default=500, type=int)
     return parser
 
@@ -177,9 +225,12 @@ def main(argv):
     profile = read_profile(args.profile)
     couch = Couch("http://camp.dpla.berkman.temphost.net:5979/dpla", "couchadmin", "couchM3")
     couch.page_size = args.page_size
+    list_profile = lambda: couch.list_profile_doc(profile["name"])
+    list_view = lambda: couch.list_view_doc(args.filter)
+    list_doc = list_profile if not args.filter else list_view
     docs = []
     cnt = 0
-    for doc in couch.list_profile_doc(profile["name"]):
+    for doc in list_doc():
         docs.append(doc)
         cnt += 1
         if len(docs) == couch.page_size:
