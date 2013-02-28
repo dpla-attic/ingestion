@@ -46,20 +46,26 @@ def pipe(content, ctype, enrichments, wsgi_header):
 
 # FIXME: should be able to optionally skip the revision checks for initial ingest
 def couch_rev_check_coll(docuri,doc):
-    'Add current revision to body so we can update it'
+    """Add current revision to body so we can update it"""
     resp, cont = H.request(docuri,'GET', headers=COUCH_AUTH_HEADER)
     if str(resp.status).startswith('2'):
         doc['_rev'] = json.loads(cont)['_rev']
 
 def couch_rev_check_recs(docs, src):
-    '''
+    """
     Insert revisions for all records into structure using CouchDB bulk interface.
     Uses key ranges to narrow bulk query to the source being ingested.
-    '''
+    """
     uri = join(COUCH_DATABASE,'_all_docs')
     start = quote(COUCH_ID_BUILDER(src,''))
     end = quote(COUCH_ID_BUILDER(src,'Z'*100)) # FIXME. Is this correct?
     uri += '?startkey=%s&endkey=%s'%(start,end)
+    # REVU: it fetches all docs from db again and again for each doc bulk
+    # by killing performance and can cause memory issues with big collections
+    # so, if you need to set revisions for each 100 doc among 10000, you
+    # will be getting by 10000 docs for each hundred (100 times)
+    #
+    # new version is implemented in couch_rev_check_recs2, see details
     resp, cont = H.request(join(COUCH_DATABASE,'_all_docs'), 'GET', headers=COUCH_AUTH_HEADER)
     if str(resp.status).startswith('2'):
         rows = json.loads(cont)["rows"]
@@ -75,10 +81,13 @@ def couch_rev_check_recs(docs, src):
         logger.debug('Unable to retrieve document revisions via bulk interface: ' + repr(resp))
 
 def couch_rev_check_recs2(docs):
-    '''
+    """
     Insert revisions for all records into structure using CouchDB bulk interface.
     Uses key ranges to narrow bulk query to the source being ingested.
-    '''
+
+    Performance improved version of couch_rev_check_recs, but it uses another input format,
+    see a usage in enrich_storage(...) for details
+    """
     uri = join(COUCH_DATABASE, '_all_docs')
     docs_ids = sorted(docs)
     start = docs_ids[0]
@@ -173,7 +182,7 @@ def enrich(body, ctype):
         if not str(resp.status).startswith('2'):
             logger.debug('HTTP error posting to CouchDB: '+repr((resp,content)))
 
-    return json.dumps({'docs' : docs})
+    return json.dumps({'docs' : docs}) # REVU: it is already done in couch_docs_text variable
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_storage', 'enrich_storage', 'application/json')
 def enrich_storage(body, ctype):

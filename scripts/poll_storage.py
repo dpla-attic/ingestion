@@ -3,7 +3,7 @@
 Script to run pipeline against records pulled from a CouchDB view
 
 Simple use cases:
-    Download thumbnail ls for all records related to a profile that have not already been downloaded
+    Download thumbnails for all records related to a profile that have not already been downloaded
     Validate all URLs within records on a profile, and flag records with URLs that don't resolve
     Perform geocoding for all records on a profile
 
