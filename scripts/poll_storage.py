@@ -147,6 +147,7 @@ class Couch(object):
                 ("descending", "false"),
                 ("limit", self.page_size + 1),
                 ("startkey", "\"" + start_key + "\""),
+                ("endkey", "\"" + last_id + "\""),
                 ("include_docs", "true")
             ))
             request_uri = join(self.uri, "_all_docs?" + request_parameters)
@@ -156,13 +157,13 @@ class Couch(object):
                 if "ingestType" in doc and doc["ingestType"] == "item":
                     yield doc
                 if row["id"] == last_id:
-                    break
+                    return
             next_page_row = rows[-1:][0]
             start_key = next_page_row["id"]
 
-            if len(rows) < self.page_size:
+            if len(rows) < self.page_size or next_page_row["id"] == last_id:
                 yield next_page_row["doc"]
-                break
+                return
 
     def list_view_doc(self, view_path):
         """
