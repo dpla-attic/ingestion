@@ -47,7 +47,7 @@ CONTEXT = {
 def spatial_transform(d):
     spatial = []
     for s in (d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]]):
-        spatial.append({"name": s.strip())
+        spatial.append({"name": s.strip()})
     return {"spatial":spatial}
 
 def is_shown_at_transform(d):
