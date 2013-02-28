@@ -1,5 +1,5 @@
 import sys
-from server_support import server, H
+from server_support import server, H, print_error_log
 from amara.thirdparty import json
 from dplaingestion.akamod.enrich_location import \
     from_abbrev, get_isostate, create_dictionaries, remove_space_around_semicolons, STATES
@@ -122,13 +122,13 @@ def test_create_dictionaries_one():
     Should return array with one dictionary as the only element if splitting each spatial field on
     semicolons produces only one string for each spatial field.
     """
-    INPUT = {
+    INPUT = [{
         "city": "Asheville",
         "county": "Buncombe",
         "state": "North Carolina;",
         "country": "United States",
         "iso3166-2": "US-NC"
-    }
+    }]
     EXPECTED = [
         {
             "city": "Asheville",
@@ -142,18 +142,52 @@ def test_create_dictionaries_one():
     OUTPUT = create_dictionaries(INPUT) 
     assert OUTPUT == EXPECTED
 
-def test_create_dictionaries_many():
+def test_create_dictionaries_many1():
     """
     Should return array with dictionaries as elements if splitting each spatial field on
     semicolons produces multiple strings in any spatial field.
     """
-    INPUT = {
+    INPUT = [{
         "city": "La Jolla;Pasadena",
         "county": "San Diego;Los Angeles;Buncombe",
         "state": "California;North Carolina",
         "country": "United States",
         "iso3166-2": "US-CA;US-NC"
-    }
+    }]
+    EXPECTED = [
+        {
+            "city": "La Jolla",
+            "county": "San Diego",
+            "state": "California",
+            "country": "United States",
+            "iso3166-2": "US-CA"
+        },
+        {
+            "city": "Pasadena",
+            "county": "Los Angeles",
+            "state": "North Carolina",
+            "iso3166-2": "US-NC"
+        },
+        {
+            "county": "Buncombe"
+        }
+    ]
+
+    OUTPUT = create_dictionaries(INPUT)
+    assert OUTPUT == EXPECTED
+
+def test_create_dictionaries_many2():
+    """
+    Should return array with dictionaries as elements if splitting each spatial field on
+    semicolons produces multiple strings in any spatial field.
+    """
+    INPUT = [{
+        "city": "La Jolla;Pasadena",
+        "county": "San Diego;Los Angeles;Buncombe",
+        "state": "California;North Carolina",
+        "country": "United States",
+        "iso3166-2": "US-CA;US-NC"
+    }]
     EXPECTED = [
         {
             "city": "La Jolla",
@@ -393,7 +427,6 @@ def test_enrich_location_no_provider_specific_enrich_location1():
         "creator": "Miguel"
     }
 
-
     url = server() + "enrich_location"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
@@ -441,6 +474,50 @@ def test_enrich_location_no_provider_specific_enrich_location2():
         "creator": "Miguel"
     }
 
+    url = server() + "enrich_location"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_enrich_location_no_provider_specific_enrich_location3():
+    """
+    No previous provider-specific location enrichment and contains states
+    and state abbreviations; with semicolons.
+    """
+    INPUT = {
+        "id": "12345",
+        "aggregatedCHO": {"spatial": [
+            { "name": "Asheville, North Carolina; Greenville, SC" },
+            { "name": "San Diego, (C.A.); Athens, Ga." }
+        ]},
+        "creator": "Miguel"
+    }
+    EXPECTED = {
+        "id": "12345",
+        "aggregatedCHO": {"spatial": [
+            {
+                "state": "North Carolina",
+                "iso3166-2": "US-NC",
+                "name" : "Asheville, North Carolina"
+            },
+            {
+                "state": "South Carolina",
+                "iso3166-2": "US-SC",
+                "name": "Greenville, SC"
+            },
+            {
+                "state": "California",
+                "iso3166-2": "US-CA",
+                "name": "San Diego, (C.A.)"
+            },
+            {
+                "state": "Georgia",
+                "iso3166-2": "US-GA",
+                "name": "Athens, Ga."
+            }
+        ]},
+        "creator": "Miguel"
+    }
 
     url = server() + "enrich_location"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))

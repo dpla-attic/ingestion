@@ -28,9 +28,11 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
     if exists(data,prop):
         # Remove any spaces around semicolons first
         v = getprop(data,prop)
-        for k in v[0]:
-            v[0][k] = remove_space_around_semicolons(v[0][k])
+        for d in v:
+            for k in d.keys():
+                d[k] = remove_space_around_semicolons(d[k])
 
+        # If previous enrichment occured, v will only have one element
         if 'state' in v[0]:
             # Handle case where a previous provider-specific location enrichment
             # set the state field
@@ -63,13 +65,14 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
         # If any of the spatial fields contain semi-colons, we need to create
         # multiple dictionaries.
         semicolons = None
-        for k in v[0]:
-            if v[0][k] and  ';' in v[0][k]:
-                semicolons = True
-                break
+        for d in v:
+            for k in d.keys():
+                if d[k] and ';' in d[k]:
+                    semicolons = True
+                    break
 
         if semicolons:
-            setprop(data,prop,create_dictionaries(v[0]))
+            setprop(data,prop,create_dictionaries(v))
 
     return json.dumps(data)
 
@@ -127,36 +130,25 @@ def from_abbrev(strg):
 
 def create_dictionaries(data):
     # Handle multiple values separated by semi-colons in spatial fields
-    all = []
-    if 'city' in data:
-        all.append(filter(None, data['city'].split(';')))
-        all[-1].insert(0,'city')
-    if 'county' in data:
-        all.append(filter(None, data['county'].split(';')))
-        all[-1].insert(0,'county')
-    if 'state' in data:
-        all.append(filter(None, data['state'].split(';')))
-        all[-1].insert(0,'state')
-    if 'country' in data:
-        all.append(filter(None, data['country'].split(';')))
-        all[-1].insert(0,'country')
-    if 'iso3166-2' in data:
-        all.append(filter(None, data['iso3166-2'].split(';')))
-        all[-1].insert(0,'iso3166-2')
+    dicts = []
+    for d in data:
+        all = [] 
+        for k,v in d.iteritems():
+            all.append(filter(None,v.split(";")))
+            all[-1].insert(0,k)
 
-    if all:
-        # Get the length of the longest array
-        total = len(max(all, key=len))
+        if all:
+            # Get the length of the longest array
+            total = len(max(all, key=len))
 
-        # Create dictionaries
-        data = []
-        for i in range(1,total):
-            d = {}
-            for item in all:
-                if i < len(item):
-                    d[item[0]] = item[i]
-            data.append(d)
-    return data
+            # Create dictionaries
+            for i in range(1,total):
+                dict = {}
+                for item in all:
+                    if i < len(item):
+                        dict[item[0]] = item[i]
+                dicts.append(dict)
+    return dicts
 
 def remove_space_around_semicolons(strg):
     strg_arr = strg.split(';')
