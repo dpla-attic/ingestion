@@ -36,8 +36,9 @@ def cleanup(value):
     Returns:
         Converted string.
     """
-    TAGS_FOR_STRIPPING = '[\.\' ";]*' # Tags for stripping at beginning and at the end.
+    TAGS_FOR_STRIPPING = '[\.\' ";,]*' # Tags for stripping at beginning and at the end.
     REGEXPS = (' *-- *', '--'), \
+              ('[\t ]{2,}', ' '), \
               ('^' + TAGS_FOR_STRIPPING, ''), \
               (TAGS_FOR_STRIPPING + '$', '')
 
@@ -46,9 +47,28 @@ def cleanup(value):
         value = re.sub(pattern, replace, value)
     return value
 
+"""
+Fields which should not be changed:
+-- physicalMedium (there are often dimensions in this field)
+-- extent (for the same reason)
+-- descriptions (full text, includes sentences)
+-- rights (full text, includes sentences)
+-- place (may end in an abbreviated state name)
+
+"""
+DEFAULT_PROP = [
+    "aggregatedCHO/language",
+    "aggregatedCHO/title",
+    "aggregatedCHO/creator",
+    "aggregatedCHO/relation",
+    "aggregatedCHO/publisher",
+    "aggregatedCHO/subject",
+    "aggregatedCHO/format",
+]
+
 
 @simple_service('POST', 'http://purl.org/la/dp/cleanup_value', 'cleanup_value', 'application/json')
-def cleanup_value(body, ctype, action="cleanup_value", prop=None):
+def cleanup_value(body, ctype, action="cleanup_value", prop=",".join(DEFAULT_PROP)):
     '''
     Service that accepts a JSON document and enriches the prop field of that document by:
 

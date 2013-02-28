@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-format', 'enrich-format', 'application/json')
-def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alternate="aggregatedCHO/physicalMedium"):
+def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alternate="aggregatedCHO/physicalMedium",typefield="aggregatedCHO/type"):
     """
     Service that accepts a JSON document and enriches the "format" field of that document
     by: 
@@ -14,13 +14,23 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
     a) setting the format to be all lowercase
     b) running through a set of cleanup regex's (e.g. image/jpg -> image/jpeg)
     c) checking to see if the field is a valid IMT, and moving it to a separatee field if not
-       See http://www.iana.org/assignments/media-types for list of valid media-types. We do not
-       require that a subtype be defined. 
-    d) Remove any extra text after the IMT   
-    
+       See http://www.iana.org/assignments/media-types for list of valid media-types.
+       We require that a subtype is defined.
+    d) Remove any extra text after the IMT
+    e) Set type field from format field, if it is not set.
+       The format field is taken if it is a string, or the first element if it is a list.
+       It is then splitted and the first part of IMT is taken.
+
     By default works on the 'format' field, but can be overridden by passing the name of the field to use
     as the 'prop' parameter. Non-IMT's are moved the field defined by the 'alternate' parameter.
     """
+
+    FORMAT_2_TYPE_MAPPINGS = {
+            "audio": "sound",
+            "image": "image",
+            "video": "image",
+            "text": "text"
+    }
 
     REGEXPS = ('audio/mp3', "audio/mpeg"), ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
     IMT_TYPES = ['application','audio','image','message','model','multipart','text','video']
@@ -51,7 +61,13 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
             physicalFormat = [physicalFormat]
 
         for s in (v if not isinstance(v,basestring) else [v]):
-            format.append(cleanup(s)) if is_imt(cleanup(s)) else physicalFormat.append(s)
+            cleaned = cleanup(s)
+            if is_imt(cleaned):
+                if cleaned not in format:
+                    format.append(cleaned)
+            else:
+                if s not in physicalFormat:
+                    physicalFormat.append(s)
 
         if format:
             setprop(data,prop,format[0]) if len(format) == 1 else setprop(data,prop,format)
@@ -59,5 +75,21 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
             setprop(data,prop,None)
         if physicalFormat:
             setprop(data,alternate,physicalFormat[0]) if len(physicalFormat) == 1 else setprop(data,alternate,physicalFormat)
+
+    # Setting the type if it is empty.
+    f = getprop(data, typefield, True)
+    if not f:
+        format = getprop(data, prop)
+        use_format = None
+        if isinstance(format, list) and len(format) > 0:
+            use_format = format[0]
+        elif isinstance(format, basestring):
+            use_format = format
+
+        if use_format:
+            use_format = use_format.split("/")[0]
+
+            if use_format in FORMAT_2_TYPE_MAPPINGS:
+                setprop(data, typefield, FORMAT_2_TYPE_MAPPINGS[use_format])
 
     return json.dumps(data)

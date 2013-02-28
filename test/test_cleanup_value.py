@@ -43,7 +43,12 @@ def test_changing_values():
             "aaa --  bbb",
             "aaa  --  bbb    -- ccc - - ddd -- ",
             ["aaa", "bbb"],
-            [" - aaa", " bbb --  "]
+            [" - aaa", " bbb --  "],
+            "aaa       bbb -- ccc",
+            "...,,,;;;;..,;'''\t\t\t    aaa       --       bbb      ccc       ddd;;;..;,,,,,;;;.....       \t ",
+            "aaa  --  bbb       ccc\t\t\t\t\tddd",
+            "   aaa -- bbb\t\t  \t\t  ccc\t\t\t   ",
+            "\t\taaa\tbbb\t\t"
         ]
 
     EXPECTED = [
@@ -63,15 +68,18 @@ def test_changing_values():
             "aaa--bbb",
             "aaa--bbb--ccc - - ddd--",
             ["aaa", "bbb"],
-            ["- aaa", "bbb--"]
+            ["- aaa", "bbb--"],
+            "aaa bbb--ccc",
+            "aaa--bbb ccc ddd",
+            "aaa--bbb ccc ddd",
+            "aaa--bbb ccc",
+            "aaa\tbbb"
         ]
 
     for i in xrange(0, len(INPUT)):
         data = {}
         data["aaa"] = {"bbb": INPUT[i]}
         r, c = _get_server_response(json.dumps(data), 'aaa%2Fbbb')
-        print_error_log()
-        pinfo(r,c,data)
         exp = {}
         exp["aaa"] = {"bbb": EXPECTED[i]}
         assert_same_jsons(exp, c)
@@ -87,10 +95,11 @@ def test_prop_doesnt_exist():
 
 
 def test_missing_prop():
-    """Should return 500 when prop is not provided."""
+    """Should return 200 when prop is not provided."""
     x = {"aaa": "BBB"}
     r, c = _get_server_response(json.dumps(x))
-    assert r['status'] == '500'
+    assert r['status'] == '200'
+    assert_same_jsons(x, c)
 
 
 def test_json_is_bad():
@@ -98,6 +107,7 @@ def test_json_is_bad():
     x = {"aaa": "BBB"}
     r, c = _get_server_response(json.dumps(x) + "{;-;-;}", 'aaa')
     assert r['status'] == '500'
+
 
 def test_list_of_properties():
     """Should process all properties."""
@@ -114,5 +124,36 @@ def test_list_of_properties():
             "ddd": {"eee": {"fff": ["a", "b", "d"]}}
     }
     r, c = _get_server_response(json.dumps(INPUT), props)
+    assert r['status'] == '200'
+    assert_same_jsons(EXPECTED, c)
+
+
+def test_changes_using_default_prop_value():
+    """Should process all default values."""
+    INPUT = {
+            "aaa": "bbb...",
+            "aggregatedCHO": {
+                "aaa": "bbb...",
+                "creator": "....a -- b....",
+                "language": ["...aaa...", "...bbb;;;.;."],
+                "title": "sss...",
+                "publisher": ["that's me.."],
+                "relation": [".first;", "   second   relation.....   "]
+            },
+            "bbb": "ccc..."
+    }
+    EXPECTED = {
+            "aaa": "bbb...",
+            "aggregatedCHO": {
+                "aaa": "bbb...",
+                "creator": "a--b",
+                "language": ["aaa", "bbb"],
+                "title": "sss",
+                "publisher": ["that's me"],
+                "relation": ["first", "second relation"]
+            },
+            "bbb": "ccc..."
+    }
+    r, c = _get_server_response(json.dumps(INPUT))
     assert r['status'] == '200'
     assert_same_jsons(EXPECTED, c)

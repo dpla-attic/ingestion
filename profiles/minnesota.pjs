@@ -15,7 +15,7 @@
         "http://localhost:8873/move_dates_to_temporal?prop=aggregatedCHO%2Fspatial",
         "http://localhost:8873/enrich-temporal-date",
         "http://localhost:8873/enrich-subject",
-        "http://localhost:8875/cleanup_value?prop=aggregatedCHO%2Fcreator%2CaggregatedCHO%2Fcoverage%2CaggregatedCHO%2Fformat",
+        "http://localhost:8875/cleanup_value",
         "http://localhost:8873/enrich-type", 
         "http://localhost:8873/enrich-format", 
         "http://localhost:8873/mdl-enrich-location", 

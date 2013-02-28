@@ -255,43 +255,49 @@ def test_enrich_type_cleanup():
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['type'] == EXPECTED['type']
-    
+
+
 def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
-        "format" : ["Still Images","image/JPEG","audio","Images", 'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)"]
+        "format" : ["Still Images","image/JPEG","audio","Images",
+            'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
+            "Still Images","image/JPEG","audio","Images",
+            'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
+            ]
         }
     EXPECTED = {
         u'format' : [ "image/jpeg", "audio/mpeg" ],
-        u'physicalmedium' : ["Still Images", "audio", "Images", 'application']
+        u'physicalmedium' : ["Still Images", "audio", "Images", 'application'],
+        u'type': "image"
         }
 
-    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium&typefield=type"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     print_error_log()
     assert_same_jsons(EXPECTED, content)
     assert str(resp.status).startswith("2")
-    result = json.loads(content)
-    assert result['format'] == EXPECTED['format']
-    assert result['physicalmedium'] == EXPECTED['physicalmedium']
-    
+
+
 def test_enrich_format_cleanup():
     "Test format normalization and removal of non IMT formats with one format"
     INPUT = {
         "format" : "image/JPEG"
         }
     EXPECTED = {
-        u'format' : "image/jpeg"
+        u'format' : "image/jpeg",
+        u"type": "image"
         }
 
-    url = server() + "enrich-format?prop=format&alternate=physicalmedium"
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium&typefield=type"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['format'] == EXPECTED['format']
     assert not 'physicalmedium' in result.keys()
+
 
 def test_physical_format_from_format_and_type():
     """
@@ -312,6 +318,89 @@ def test_physical_format_from_format_and_type():
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
+
+
+def test_setting_missing_type_for_missing_format():
+    "Should not change anything."
+    INPUT = {
+                "format": None,
+                "type": ""
+    }
+    js = json.dumps(INPUT)
+
+    url = server() + "enrich-format?prop=format&alternate=physicalmedium&typefield=type"
+
+    resp,content = H.request(url, "POST", body=js)
+    pinfo(content)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert_same_jsons(INPUT, content)
+
+
+def test_setting_missing_type_from_format():
+    "Should set type according to format field."
+    INPUT = {
+            "aggregatedCHO": {
+                "format": "image/jpg",
+            }
+    }
+    EXPECTED = {
+            "aggregatedCHO": {
+                "format": "image/jpeg",
+                "type": "image"
+        }
+    }
+    js = json.dumps(INPUT)
+
+    url = server() + "enrich-format?prop=aggregatedCHO/format&alternate=aggregatedCHO/physicalmedium&typefield=aggregatedCHO/type"
+
+    resp,content = H.request(url, "POST", body=js)
+    pinfo(content)
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert_same_jsons(EXPECTED, content)
+
+
+def test_setting_empty_type_from_format():
+    "Should set empty type according to format field according to type mapping."
+
+    DATA = [
+      {"in": {"format": "audio/mp3"},         "out": {"format": "audio/mpeg",    "type": "sound"}},
+      {"in": {"format": "image/jpg"},         "out": {"format": "image/jpeg",    "type": "image"}},
+      {"in": {"format": "video/mpeg"},        "out": {"format": "video/mpeg",    "type": "image"}},
+      {"in": {"format": "text/calendar"},     "out": {"format": "text/calendar", "type": "text"}},
+      {"in": {"format": "audio"},             "out": {"format": None,            "physicalmedium": "audio"}},
+      {"in": {"format": "something strange"}, "out": {"format": None,            "physicalmedium": "something strange"}},
+    ]
+
+    FORMATS = ["audio"]
+    EXPECTED_TYPES = []
+    INPUT = {
+        "aggregatedCHO": {
+            "format": "FORMAT",
+            "type": ""
+        }
+    }
+    EXPECTED = {
+        "aggregatedCHO": {
+            "format": "FORMAT",
+            "type": "TYPE"
+        }
+    }
+
+    for d in DATA:
+        INPUT["aggregatedCHO"] = d["in"]
+        js = json.dumps(INPUT)
+        url = server() + "enrich-format?prop=aggregatedCHO/format&alternate=aggregatedCHO/physicalmedium"
+
+        resp, content = H.request(url, "POST", body=js)
+        #pinfo(content)
+        pinfo(INPUT)
+        assert str(resp.status).startswith("2")
+
+        EXPECTED["aggregatedCHO"] = d["out"]
+        assert_same_jsons(EXPECTED, content)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
