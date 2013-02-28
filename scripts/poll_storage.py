@@ -142,7 +142,8 @@ class Couch(object):
         id_prefix = self._slugify(profile_name)
         last_id = self._last_profile_doc_id(profile_name)
         start_key = id_prefix
-        while True:
+        has_more = True
+        while has_more:
             request_parameters = urlencode((
                 ("descending", "false"),
                 ("limit", self.page_size + 1),
@@ -157,13 +158,13 @@ class Couch(object):
                 if "ingestType" in doc and doc["ingestType"] == "item":
                     yield doc
                 if row["id"] == last_id:
-                    return
+                    has_more = False
             next_page_row = rows[-1:][0]
             start_key = next_page_row["id"]
 
-            if len(rows) < self.page_size or next_page_row["id"] == last_id:
+            if has_more and (len(rows) < self.page_size or next_page_row["id"] == last_id):
                 yield next_page_row["doc"]
-                return
+                has_more = False
 
     def list_view_doc(self, view_path):
         """
