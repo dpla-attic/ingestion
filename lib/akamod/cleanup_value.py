@@ -41,10 +41,12 @@ def cleanup(value):
               ('[\t ]{2,}', ' '), \
               ('^' + TAGS_FOR_STRIPPING, ''), \
               (TAGS_FOR_STRIPPING + '$', '')
+    
+    if isinstance(value, basestring):
+        value = value.strip()
+        for pattern, replace in REGEXPS:
+            value = re.sub(pattern, replace, value)
 
-    value = value.strip()
-    for pattern, replace in REGEXPS:
-        value = re.sub(pattern, replace, value)
     return value
 
 """
