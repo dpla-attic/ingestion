@@ -85,8 +85,8 @@ class Couch(object):
                 doc = row["doc"]
                 if "ingestType" in doc and doc["ingestType"] == "item":
                     yield doc
-                    if row["id"] == last_id:
-                        break
+                if row["id"] == last_id:
+                    break
             next_page_row = rows[-1:][0]
             start_key = next_page_row["id"]
 
