@@ -155,7 +155,7 @@ def enrichdate(body, ctype, action="enrich-format", prop="aggregatedCHO/date"):
     return json.dumps(data)
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-temporal-date', 'enrich-temporal-date', HTTP_TYPE_JSON)
-def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal", date_key="name"):
+def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal"):
     """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
@@ -175,11 +175,11 @@ def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal", date_key="n
         if exists(data, p):
             v = getprop(data, p)
             for s in v:
-                a, b = parse_date_or_range(s[date_key])
+                a, b = parse_date_or_range(s)
                 date_candidates.append( {
                     "begin": a,
                     "end": b,
-                    "displayDate" : s[date_key]
+                    "displayDate" : s
                 })
     if date_candidates:
         setprop(data, p, date_candidates)

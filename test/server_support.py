@@ -109,7 +109,7 @@ MODULES = [
     "dplaingestion.akamod.filter_empty_values",
     "dplaingestion.akamod.artstor_select_isshownat",
     "dplaingestion.akamod.artstor_identify_object",
-    "dplaingestion.akamod.move_dates_to_temporal",
+    "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
     "dplaingestion.akamod.lookup",
     "dplaingestion.akamod.georgia_identify_object",

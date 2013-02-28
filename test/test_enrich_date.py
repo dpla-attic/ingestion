@@ -328,13 +328,13 @@ def test_enrich_temporal_date():
     INPUT = {
         "aggregatedCHO": {
             "spatial" : [
-                {"name": "1901-1999"},
-                {"name": " 1901 - 1999 "},
-                {"name": " 1901 / 01 / 01"},
-                {"name": "1905-04-12"},
-                {"name": "01/01/1901"},
-                {"name": "1901"},
-                {"name": "North Carolina"}
+                "1901-1999",
+                " 1901 - 1999 ",
+                " 1901 / 01 / 01",
+                "1905-04-12",
+                "01/01/1901",
+                "1901",
+                "North Carolina"
             ]}
     }
     EXPECTED = {
@@ -347,10 +347,10 @@ def test_enrich_temporal_date():
                 {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "01/01/1901"},
                 {"begin": "1901", "end": "1901", "displayDate": "1901"}
             ],
-            "spatial" : [{"name": "North Carolina"}]}
+            "spatial" : ["North Carolina"]}
     }
 
-    url = server() + "move_dates_to_temporal?prop=aggregatedCHO/spatial"
+    url = server() + "move_date_values?prop=aggregatedCHO/spatial"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert resp.status == 200
 

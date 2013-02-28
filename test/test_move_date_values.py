@@ -2,21 +2,20 @@ import sys
 from server_support import server, print_error_log, H
 from amara.thirdparty import json
 
-
 def _get_server_response(body, prop=None):
-    url = server() + "move_dates_to_temporal"
+    url = server() + "move_date_values"
     if prop:
         url = "%s?prop=%s" % (url, prop)
     return H.request(url,"POST",body=body)
 
-def test_move_dates_to_temporal_no_prop():
+def test_move_date_values_no_prop():
     """
     Should do nothing
     """
     INPUT = {
         "aggregatedCHO": {
-            "spatial": [{"name": "1901 - 1999"}],
-            "subject": [{"name": "1901 - 1999"}]
+            "spatial": ["1901 - 1999"],
+            "subject": ["1901 - 1999"]
         }
     }
 
@@ -24,7 +23,7 @@ def test_move_dates_to_temporal_no_prop():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_move_dates_to_temporal_spatial1():
+def test_move_date_values_spatial1():
     """
     Should remove dates from the spatial field and place them in the
     temporal field.
@@ -33,31 +32,31 @@ def test_move_dates_to_temporal_spatial1():
     INPUT = {
         "aggregatedCHO": {
             "spatial" : [
-                {"name": "1901-1999"},
-                {"name": " 1901 - 1999 "},
-                {"name": "1901 - 01 - 01"},
-                {"name": " 1901 / 01 / 01 "},
-                {"name": "1905-04-12"},
-                {"name": "01/01/1901"},
-                {"name": "01 - 01 - 1901"},
-                {"name": "1901"},
-                {"name": "North Carolina"}
+                "1901-1999",
+                " 1901 - 1999 ",
+                "1901 - 01 - 01",
+                " 1901 / 01 / 01 ",
+                "1905-04-12",
+                "01/01/1901",
+                "01 - 01 - 1901",
+                "1901",
+                "North Carolina"
             ]
         }
     }
     EXPECTED = {
         "aggregatedCHO": {
             "temporal": [
-                {"name": "1901-1999"},
-                {"name": "1901 - 1999"},
-                {"name": "1901 - 01 - 01"},
-                {"name": "1901 / 01 / 01"},
-                {"name": "1905-04-12"},
-                {"name": "01/01/1901"},
-                {"name": "01 - 01 - 1901"},
-                {"name": "1901"}
+                "1901-1999",
+                "1901 - 1999",
+                "1901 - 01 - 01",
+                "1901 / 01 / 01",
+                "1905-04-12",
+                "01/01/1901",
+                "01 - 01 - 1901",
+                "1901"
             ],
-            "spatial" : [{"name": "North Carolina"}]
+            "spatial" : ["North Carolina"]
         }
     }
  
@@ -65,7 +64,7 @@ def test_move_dates_to_temporal_spatial1():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_move_dates_to_temporal_spatial2():
+def test_move_date_values_spatial2():
     """
     Should not change spatial nor add temporal.
     """
@@ -73,13 +72,13 @@ def test_move_dates_to_temporal_spatial2():
     INPUT = {
         "aggregatedCHO": {
             "spatial" : [
-                {"name": "Asheville"},
-                {"name": "North Carolina"},
-                {"name": "12"},
-                {"name": "12-"},
-                {"name": "12-1"},
-                {"name": "12-12"},
-                {"name": "12-12-"}
+                "Asheville",
+                "North Carolina",
+                "12",
+                "12-",
+                "12-1",
+                "12-12",
+                "12-12-"
             ]
         }   
     }
@@ -88,7 +87,7 @@ def test_move_dates_to_temporal_spatial2():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_move_dates_to_temporal_spatial3():
+def test_move_date_values_spatial3():
     """
     Should remove spatial field if only element is a date.
     """
@@ -96,14 +95,14 @@ def test_move_dates_to_temporal_spatial3():
     INPUT = {
         "aggregatedCHO": {
             "spatial" : [
-                {"name": " 1901 - 1999 "}
+                " 1901 - 1999 "
             ]
         }
     }
     EXPECTED = {
         "aggregatedCHO": {
             "temporal": [
-                {"name": "1901 - 1999"}
+                "1901 - 1999"
             ]
         }
     } 
@@ -112,7 +111,7 @@ def test_move_dates_to_temporal_spatial3():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_move_dates_to_temporal_subject1():
+def test_move_date_values_subject1():
     """
     Should remove dates from the subject field and place them in the
     temporal field.
@@ -121,28 +120,28 @@ def test_move_dates_to_temporal_subject1():
     INPUT = {
         "aggregatedCHO": {
             "subject" : [
-                {"name": "(1901-1999)"},
-                {"name": "1902-1999"},
-                {"name": "1903"},
-                {"name": " (1904) "},
-                {"name": ".1905?"},
-                {"name": "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works."},
-                {"name": "subject1"}
+                "(1901-1999)",
+                "1902-1999",
+                "1903",
+                " (1904) ",
+                ".1905?",
+                "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works.",
+                "subject1"
             ]
         }
     }
     EXPECTED = {
         "aggregatedCHO": {
             "temporal": [
-                {"name": "1901-1999"},
-                {"name": "1902-1999"},
-                {"name": "1903"},
-                {"name": "1904"},
-                {"name": "1905"}
+                "1901-1999",
+                "1902-1999",
+                "1903",
+                "1904",
+                "1905"
             ],
             "subject" : [
-                {"name": "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works."},
-                {"name": "subject1"}
+                "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works.",
+                "subject1"
             ]
         }
     }
@@ -151,7 +150,7 @@ def test_move_dates_to_temporal_subject1():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_move_dates_to_temporal_subject2():
+def test_move_date_values_subject2():
     """
     Should not change subject nor add temporal.
     """
@@ -159,18 +158,18 @@ def test_move_dates_to_temporal_subject2():
     INPUT = {
         "aggregatedCHO": {
             "subject" : [
-                {"name": "subject1"},
-                {"name": " (subject 2) "},
-                {"name": "(12)"},
-                {"name": "12-"},
-                {"name": "12-1"},
-                {"name": "12-12"},
-                {"name": "12-12-"},
-                {"name": "12345"},
-                {"name": "02-02-02-"},
-                {"name": "1984-1999-2011-2013"},
-                {"name": "1234 1234"},
-                {"name": "01/01/13 01/01/13"}
+                "subject1",
+                " (subject 2) ",
+                "(12)",
+                "12-",
+                "12-1",
+                "12-12",
+                "12-12-",
+                "12345",
+                "02-02-02-",
+                "1984-1999-2011-2013",
+                "1234 1234",
+                "01/01/13 01/01/13"
             ]
         }   
     }
@@ -179,7 +178,7 @@ def test_move_dates_to_temporal_subject2():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_move_dates_to_temporal_subject3():
+def test_move_date_values_subject3():
     """
     Should remove subject field if only element is a date.
     """
@@ -187,14 +186,14 @@ def test_move_dates_to_temporal_subject3():
     INPUT = {
         "aggregatedCHO": {
             "subject" : [
-                {"name": " ( 1901 - 1999 ) "}
+                " ( 1901 - 1999 ) "
             ]
         }
     }
     EXPECTED = {
         "aggregatedCHO": {
             "temporal": [
-                {"name": "1901 - 1999"}
+                "1901 - 1999"
             ]
         }
     } 

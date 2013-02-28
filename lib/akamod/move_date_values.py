@@ -5,8 +5,8 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
 import re
 
-@simple_service('POST', 'http://purl.org/la/dp/move_dates_to_temporal', 'move_dates_to_temporal', 'application/json')
-def movedatestotemporal(body,ctype,action="move_dates_to_temporal",prop=None):
+@simple_service('POST', 'http://purl.org/la/dp/move_date_values', 'move_date_values', 'application/json')
+def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggregatedCHO/temporal"):
     """
     Service that accepts a JSON document and moves any dates found in the prop field to the
     temporal field.
@@ -32,28 +32,26 @@ def movedatestotemporal(body,ctype,action="move_dates_to_temporal",prop=None):
         return "Unable to parse body as JSON"
 
     if exists(data, prop):
-        dprop = getprop(data, prop)
+        values = getprop(data, prop)
         remove = []
-        temporal_field = "aggregatedCHO/temporal"
-        temporal = getprop(data, temporal_field) if exists(data, temporal_field) else []
+        toprop = getprop(data, to_prop) if exists(data, to_prop) else []
         
-        for d in dprop:
-            name = cleanup(d["name"])
+        for v in values:
+            c = cleanup(v)
             for pattern in REGSEARCH:
-                match = re.compile(pattern).findall(name)
-                if len(match) == 1:
-                    m = "".join(match[0])
-                    if not re.sub(m,"",name).strip():
-                        temporal.append({"name": m})
-                        remove.append(d)
-                        break
+                m = re.compile(pattern).findall(c)
+                if len(m) == 1 and not re.sub(m[0],"",c).strip():
+                    toprop.append(m[0])
+                    # Append the non-cleaned value to remove
+                    remove.append(v)
+                    break
 
-        if temporal:
-            setprop(data, temporal_field, temporal)
-            if dprop == remove:
+        if toprop:
+            setprop(data, to_prop, toprop)
+            if len(values) == len(remove):
                 delprop(data, prop)
             else:
-                setprop(data, prop, [d for d in dprop if d not in remove])
+                setprop(data, prop, [v for v in values if v not in remove])
             
 
     return json.dumps(data)
