@@ -40,6 +40,7 @@ class Couch(object):
         self.http = httplib2.Http()
         self.http.force_exception_to_status_code = True
         self.page_size = 500
+        self._last_profile_doc_id = self._last_profile_doc_id_lex
 
     def doc_count(self):
         db_info = json.loads(self.get(self.uri))
@@ -69,7 +70,7 @@ class Couch(object):
         else:
             raise ValueError("Can not get last document id for \"%s\" profile" % profile_name)
 
-    def _last_profile_doc_id(self, profile_name, reduce=False):
+    def _last_profile_doc_id_mr(self, profile_name, reduce=False):
         """
         Returns the last document id for the given profile name
 
