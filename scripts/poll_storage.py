@@ -58,7 +58,7 @@ class Couch(object):
         request_parameters = urlencode((
             ("descending", "true"),
             ("limit", "1"),
-            ("startkey", "\"" + id_prefix + "\"Z") # Z can be any char > "-" in lexicographical order
+            ("startkey", "\"" + id_prefix + "Z\"") # Z can be any char > "-" in lexicographical order
         ))
         request_uri = join(self.uri, "_all_docs?" + request_parameters)
         response = json.loads(self.get(request_uri))
