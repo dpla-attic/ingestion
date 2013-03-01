@@ -102,37 +102,6 @@ class Couch(object):
         else:
             raise ValueError("Can not get last document id for \"%s\" profile" % profile_name)
 
-    def _create_doc_id_view(self, profile_name, update=False):
-        """
-        Creates an index (view) of profile's documents ids
-        Allows pagination mechanism to detect last id (stop
-        iteration marker)
-
-        If "update" argument is true, then if such view
-        already exists in database, it will be overwritten
-        by new one
-        """
-        id_prefix = self._slugify(profile_name)
-        design_doc_id = "_design/%s_doc_ids" % id_prefix
-        ids_map_reduce = {
-            "language": "javascript",
-            "views": {
-                "max": {
-                    "map": "function(doc) {if (doc.ingestType == 'item' && doc._id.indexOf('%s') == 0) emit(doc._id, null); }" % id_prefix,
-                    "reduce": "function(keys, values, rereduce) { var max = 0, ks = rereduce ? values : keys; for (var i = 1, l = ks.length; i < l; ++i) { if (ks[max] < ks[i]) max = i; } return ks[max];}"
-                }
-            }
-        }
-        request_uri = join(self.uri, design_doc_id)
-        try:
-            old_view = json.loads(self.get(request_uri))
-        except IOError:
-            self.put(request_uri, body=json.dumps(ids_map_reduce))
-        else:
-            if update:
-                old_view["views"] = ids_map_reduce["views"]
-                self.put(request_uri, body=json.dumps(old_view))
-
     def list_profile_doc(self, profile_name):
         """
         Iterates and returns all documents related to the
