@@ -63,7 +63,7 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
             # enrichment occured. Convert spatial from list of strings to
             # dictionary.
             sp = []
-            for s in v:
+            for s in (v if not isinstance(v, basestring) else [v]):
                 d= {}
                 d['name'] = remove_space_around_semicolons(s)
                 isostate = get_isostate(s, frm_abbrev="Yes")
