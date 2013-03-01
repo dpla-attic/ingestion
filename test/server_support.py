@@ -115,7 +115,8 @@ MODULES = [
     "dplaingestion.akamod.georgia_identify_object",
     "dplaingestion.akamod.bhl_contributor_to_collection",
     "dplaingestion.akamod.copy_prop",
-    "dplaingestion.akamod.cleanup_value"
+    "dplaingestion.akamod.cleanup_value",
+    "dplaingestion.akamod.artstor_cleanup"
     ]
 
 class download_preview:
