@@ -93,6 +93,8 @@ def couch_rev_check_recs(docs):
     Input:
      {doc["_id"]: doc, ...}
     """
+    if not docs:
+        return
     uri = join(COUCH_DATABASE, '_all_docs')
     docs_ids = sorted(docs)
     start = docs_ids[0]
