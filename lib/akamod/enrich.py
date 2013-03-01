@@ -89,7 +89,7 @@ def couch_rev_check_recs(docs):
     Insert revisions for all records into structure using CouchDB bulk interface.
     Uses key ranges to narrow bulk query to the source being ingested.
 
-    Performance improved version of couch_rev_check_recs, but it uses another input format:
+    Performance improved version of couch_rev_check_recs_old, but it uses another input format:
     Input:
      {doc["_id"]: doc, ...}
     """
