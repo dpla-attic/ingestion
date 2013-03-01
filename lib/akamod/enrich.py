@@ -51,15 +51,19 @@ def couch_rev_check_coll(docuri,doc):
     if str(resp.status).startswith('2'):
         doc['_rev'] = json.loads(cont)['_rev']
 
-def couch_rev_check_recs(docs, src):
+def couch_rev_check_recs_old(docs, src):
     """
     Insert revisions for all records into structure using CouchDB bulk interface.
     Uses key ranges to narrow bulk query to the source being ingested.
+
+    Deprecated: has performance issue
     """
+
     uri = join(COUCH_DATABASE,'_all_docs')
     start = quote(COUCH_ID_BUILDER(src,''))
     end = quote(COUCH_ID_BUILDER(src,'Z'*100)) # FIXME. Is this correct?
     uri += '?startkey=%s&endkey=%s'%(start,end)
+
     # REVU: it fetches all docs from db again and again for each doc bulk
     # by killing performance and can cause memory issues with big collections
     # so, if you need to set revisions for each 100 doc among 10000, you
@@ -80,13 +84,14 @@ def couch_rev_check_recs(docs, src):
     else:
         logger.debug('Unable to retrieve document revisions via bulk interface: ' + repr(resp))
 
-def couch_rev_check_recs2(docs):
+def couch_rev_check_recs(docs):
     """
     Insert revisions for all records into structure using CouchDB bulk interface.
     Uses key ranges to narrow bulk query to the source being ingested.
 
-    Performance improved version of couch_rev_check_recs, but it uses another input format,
-    see a usage in enrich_storage(...) for details
+    Performance improved version of couch_rev_check_recs, but it uses another input format:
+    Input:
+     {doc["_id"]: doc, ...}
     """
     uri = join(COUCH_DATABASE, '_all_docs')
     docs_ids = sorted(docs)
@@ -152,7 +157,7 @@ def enrich(body, ctype):
             logger.debug("Error storing collection in Couch: "+repr((resp,cont)))
 
     # Then the records
-    docs = []
+    docs = {}
     for record in data[u'items']:
         # Preserve record prior to any enrichments
         record['originalRecord'] = record.copy()         
@@ -170,10 +175,10 @@ def enrich(body, ctype):
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
-        docs.append(doc)
+        docs[doc["_id"]] = doc # after pipe doc must have _id
 
-    couch_rev_check_recs(docs, source_name)
-    couch_docs_text = json.dumps({"docs":docs})
+    couch_rev_check_recs(docs)
+    couch_docs_text = json.dumps({"docs": docs.values()})
     if COUCH_DATABASE:
         resp, content = H.request(join(COUCH_DATABASE,'_bulk_docs'), 'POST',
             body=couch_docs_text,
@@ -182,7 +187,7 @@ def enrich(body, ctype):
         if not str(resp.status).startswith('2'):
             logger.debug('HTTP error posting to CouchDB: '+repr((resp,content)))
 
-    return json.dumps({'docs' : docs}) # REVU: it is already done in couch_docs_text variable
+    return couch_docs_text
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_storage', 'enrich_storage', 'application/json')
 def enrich_storage(body, ctype):
@@ -192,22 +197,18 @@ def enrich_storage(body, ctype):
     """
 
     request_headers = copy_headers_to_dict(request.environ)
-    source_name = request_headers.get('Source')
+    # source_name = request_headers.get('Source')
     rec_enrichments = request_headers.get(u'Pipeline-Rec','').split(',')
 
     data = json.loads(body)
 
     docs = {}
     for record in data:
-
-        # REVU: do we need update the date
-        # set_ingested_date(record)
-
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
         docs[doc["_id"]] = doc
 
-    couch_rev_check_recs2(docs) # REVU: do we need this, if data taken from db, it already contains previous revision
+    couch_rev_check_recs(docs)
     couch_docs_text = json.dumps({"docs": docs.values()})
     if COUCH_DATABASE:
         resp, content = H.request(join(COUCH_DATABASE, '_bulk_docs'), 'POST',
