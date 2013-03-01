@@ -45,22 +45,20 @@ class Couch(object):
         db_info = json.loads(self.get(self.uri))
         return db_info['doc_count']
 
-    def _last_profile_doc_id_old(self, profile_name):
+    def _last_profile_doc_id_lex(self, profile_name):
         """
-        Deprecated. Does not work properly when db has more than one
-        document sources (with different profile names)
-        Use: "_last_profile_doc_id" instead
-
         Returns the last document id for the given profile name
 
         Raises ValueError in case of empty result from db for given
         profile name
+
+        Detects last document id by applying lexicographical order logic
         """
         id_prefix = self._slugify(profile_name)
         request_parameters = urlencode((
             ("descending", "true"),
             ("limit", "1"),
-            ("endkey", "\"" + id_prefix + "\"")
+            ("startkey", "\"" + id_prefix + "\"Z") # Z can be any char > "-" in lexicographical order
         ))
         request_uri = join(self.uri, "_all_docs?" + request_parameters)
         response = json.loads(self.get(request_uri))
