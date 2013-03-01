@@ -31,24 +31,24 @@ def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="aggregatedC
             logger.error("Spatial is empty.")
             return json.dumps(data)
         elif fields == 1:
-            sp["country"] = v[0]["name"]
+            sp["country"] = v[0]
         elif fields == 2:
-            sp["state"]   = v[0]["name"]
-            sp["country"] = v[1]["name"]
+            sp["state"]   = v[0]
+            sp["country"] = v[1]
         elif fields == 3:
-            sp["county"]  = v[0]["name"]
-            sp["state"]   = v[1]["name"]
-            sp["country"] = v[2]["name"]
+            sp["county"]  = v[0]
+            sp["state"]   = v[1]
+            sp["country"] = v[2]
         elif fields == 4:
-            sp["city"]    = v[0]["name"]
-            sp["county"]  = v[1]["name"]
-            sp["state"]   = v[2]["name"]
-            sp["country"] = v[3]["name"]
+            sp["city"]    = v[0]
+            sp["county"]  = v[1]
+            sp["state"]   = v[2]
+            sp["country"] = v[3]
         else:
-            sp["city"]    = v[0]["name"]
-            sp["county"]  = v[2]["name"]
-            sp["state"]   = v[3]["name"]
-            sp["country"] = v[4]["name"]
+            sp["city"]    = v[0]
+            sp["county"]  = v[2]
+            sp["state"]   = v[3]
+            sp["country"] = v[4]
 
         if sp:
             sp = [sp]

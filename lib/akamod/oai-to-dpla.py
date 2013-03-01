@@ -44,12 +44,6 @@ CONTEXT = {
    "name": "xsd:string"
 }
 
-def spatial_transform(d):
-    spatial = []
-    for s in (d["coverage"] if not isinstance(d["coverage"],basestring) else [d["coverage"]]):
-        spatial.append({"name": s.strip()})
-    return {"spatial":spatial}
-
 def is_shown_at_transform(d):
     source = ""
     for s in (d["handle"] if not isinstance(d["handle"],basestring) else [d["handle"]]):
@@ -67,7 +61,7 @@ def is_shown_at_transform(d):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "contributor"      : lambda d: {"contributor": d.get("contributor",None)},
-    "coverage"         : spatial_transform,
+    "coverage"         : lambda d: {"spatial": d.get("coverage",None)},
     "creator"          : lambda d: {"creator": d.get("creator",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "date"             : lambda d: {"date": d.get("date",None)},

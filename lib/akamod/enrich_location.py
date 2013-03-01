@@ -26,41 +26,52 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
         return "Unable to parse body as JSON"
 
     if exists(data,prop):
-        # Remove any spaces around semicolons first
         v = getprop(data,prop)
-        for d in v:
-            for k in d.keys():
-                d[k] = remove_space_around_semicolons(d[k])
 
-        # If previous enrichment occured, v will only have one element
-        if 'state' in v[0]:
-            # Handle case where a previous provider-specific location enrichment
-            # set the state field
-            isostate = get_isostate(v[0]['state'])
-            # It may be the case that the 'state' field does not contain a State name
-            if isostate[0]:
-                v[0]['iso3166-2'] = isostate[0]
-                v[0]['state'] = isostate[1]
-            else:
-                # Remove bogus state
-                del v[0]['state']
-        elif 'city' in v[0] or 'county' in v[0] or 'country' in v[0]:
-            # Handle case where a previous provider-specific location enrichment
-            # did not set the state field
-            for val in v[0].values():
-                isostate = get_isostate(val)
+        # If prior provider-specific location enrichment occured,
+        # v[0] will be a dictrionary
+        if isinstance(v[0], dict):
+            for k in v[0].keys():
+                v[0][k] = remove_space_around_semicolons(v[0][k])
+
+            if 'state' in v[0]:
+                # Handle case where a previous provider-specific location
+                # enrichment set the state field
+                isostate = get_isostate(v[0]['state'])
+                # It may be the case that the 'state' field does not contain a
+                # State name
                 if isostate[0]:
                     v[0]['iso3166-2'] = isostate[0]
                     v[0]['state'] = isostate[1]
-                    break
+                else:
+                    # We may want to keep whatever non-State value was placed in
+                    # state
+                    v[0]['name'] = v[0]['state']
+                    # Remove bogus state
+                    del v[0]['state']
+            else:
+                # Handle case where a previous provider-specific location
+                # enrichment did not set the state field
+                for val in v[0].values():
+                    isostate = get_isostate(val)
+                    if isostate[0]:
+                        v[0]['iso3166-2'] = isostate[0]
+                        v[0]['state'] = isostate[1]
+                        break
         else:
             # Handle the case where no previous provider-specific location
-            # enrichment occured
-            for d in v:
-                isostate = get_isostate(d['name'], frm_abbrev="Yes")
+            # enrichment occured. Convert spatial from list of strings to
+            # dictionary.
+            sp = []
+            for s in v:
+                d= {}
+                d['name'] = remove_space_around_semicolons(s)
+                isostate = get_isostate(s, frm_abbrev="Yes")
                 if isostate[0]:
                     d['iso3166-2'] = isostate[0]
                     d['state'] = isostate[1]
+                sp.append(d)
+            v = sp
 
         # If any of the spatial fields contain semi-colons, we need to create
         # multiple dictionaries.
@@ -71,8 +82,7 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
                     semicolons = True
                     break
 
-        if semicolons:
-            setprop(data,prop,create_dictionaries(v))
+        setprop(data,prop,(create_dictionaries(v) if semicolons else v))
 
     return json.dumps(data)
 

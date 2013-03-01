@@ -369,7 +369,7 @@ def test_enrich_location_after_provider_specific_enrich_location4():
 
 def test_enrich_location_after_provider_specific_enrich_location5():
     """
-    Should remoe state if previous specific-provider location set incorrect state.
+    Should remove incorrect state field but place value in name field.
     """
     INPUT = {
         "id": "12345",
@@ -389,7 +389,8 @@ def test_enrich_location_after_provider_specific_enrich_location5():
             {
                 "city": "Anoka",
                 "county": "Minnesota",
-                "country": "Mississippi River"
+                "country": "Mississippi River",
+                "name": "United States"
             },
             {
                 "city": "Champlin"
@@ -411,9 +412,9 @@ def test_enrich_location_no_provider_specific_enrich_location1():
     INPUT = {
         "id": "12345",
         "aggregatedCHO": {"spatial": [
-            { "name": "Asheville" },
-            { "name": "Buncombe" },
-            { "name": "United States" }
+            "Asheville",
+            "Buncombe",
+            "United States"
         ]},
         "creator": "Miguel"
     }
@@ -440,10 +441,10 @@ def test_enrich_location_no_provider_specific_enrich_location2():
     INPUT = {
         "id": "12345",
         "aggregatedCHO": {"spatial": [
-            { "name": "Asheville, North Carolina" },
-            { "name": "Greenville, SC" },
-            { "name": "San Diego, (C.A.)" },
-            { "name": "Athens, Ga." }
+            "Asheville, North Carolina",
+            "Greenville, SC",
+            "San Diego, (C.A.)",
+            "Athens"
         ]},
         "creator": "Miguel"
     }
@@ -466,9 +467,7 @@ def test_enrich_location_no_provider_specific_enrich_location2():
                 "name": "San Diego, (C.A.)"
             },
             {
-                "state": "Georgia",
-                "iso3166-2": "US-GA",
-                "name": "Athens, Ga."
+                "name": "Athens"
             }
         ]},
         "creator": "Miguel"
@@ -487,8 +486,8 @@ def test_enrich_location_no_provider_specific_enrich_location3():
     INPUT = {
         "id": "12345",
         "aggregatedCHO": {"spatial": [
-            { "name": "Asheville, North Carolina; Greenville, SC" },
-            { "name": "San Diego, (C.A.); Athens, Ga." }
+            "Asheville, North Carolina; Greenville, SC",
+            "San Diego, (C.A.); Athens"
         ]},
         "creator": "Miguel"
     }
@@ -511,9 +510,7 @@ def test_enrich_location_no_provider_specific_enrich_location3():
                 "name": "San Diego, (C.A.)"
             },
             {
-                "state": "Georgia",
-                "iso3166-2": "US-GA",
-                "name": "Athens, Ga."
+                "name": "Athens"
             }
         ]},
         "creator": "Miguel"
