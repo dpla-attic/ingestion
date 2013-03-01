@@ -10,6 +10,7 @@
         "http://localhost:8873/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
         "http://localhost:8873/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
         "http://localhost:8873/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftitle%2CaggregatedCHO%2Ftype",
+        "http://localhost:8873/shred?prop=isShownAt%2Fformat",
         "http://localhost:8873/move_date_values?prop=aggregatedCHO%2Fsubject",
         "http://localhost:8873/move_date_values?prop=aggregatedCHO%2Fspatial",
         "http://localhost:8873/enrich-date",  
