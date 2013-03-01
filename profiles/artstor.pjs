@@ -30,7 +30,7 @@
     "last_checked": "2013-02-05T18:29:41.395772", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
-        "name": "ARTstor OAICatMuseum"
+        "name": "ArtStor"
     }, 
     "type": "oai", 
     "endpoint_URL": "http://localhost:8879/dpla-list-records?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler&oaiset="
