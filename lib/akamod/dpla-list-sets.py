@@ -42,13 +42,12 @@ from dplaingestion.oai import oaiservice
 LISTSETS_SERVICE_ID = 'http://purl.org/la.dp/dpla-list-sets'
 
 @simple_service('GET', LISTSETS_SERVICE_ID, 'oai.listsets.json', 'application/json')
-def listsets(endpoint, limit=100):
+def listsets(endpoint, limit=None):
     """
     e.g.:
 
     curl "http://localhost:8880/oai.listsets.json?limit=10"
     """
-    limit = int(limit)
     remote = oaiservice(endpoint, logger)
-    sets = remote.list_sets()[:limit]
+    sets = remote.list_sets()[:int(limit)] if limit else remote.list_sets()
     return json.dumps(sets, indent=4)

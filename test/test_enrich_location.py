@@ -521,5 +521,23 @@ def test_enrich_location_no_provider_specific_enrich_location3():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
+def test_enrich_location_spatial_string():
+    """Should handle spatial as string"""
+    INPUT = {
+        "aggregatedCHO": {
+            "spatial": "42 36. 00. N, 72 23. 55. W"
+        }
+    }
+    EXPECTED = {
+        "aggregatedCHO": { "spatial": [
+            {"name": "42 36. 00. N, 72 23. 55. W"}
+        ]}
+    }
+
+    url = server() + "enrich_location"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
