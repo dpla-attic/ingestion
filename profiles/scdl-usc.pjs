@@ -18,13 +18,11 @@
         "http://localhost:8878/enrich-temporal-date",
         "http://localhost:8878/enrich-subject", 
         "http://localhost:8878/cleanup_value",
-        "http://localhost:8878/cleanup_value?prop=aggregatedCHO%2Fcreator%2CaggregatedCHO%2Fcoverage%2CaggregatedCHO%2Fformat", 
         "http://localhost:8878/enrich-type", 
         "http://localhost:8878/enrich-format", 
         "http://localhost:8878/contentdm_identify_object",
         "http://localhost:8878/enrich_location",
         "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True"
-        "http://localhost:8878/cleanup_value?prop=aggregatedCHO%2Fcreator%2CaggregatedCHO%2Fcoverage%2CaggregatedCHO%2Fformat", 
     ], 
     "subresources": [
     ], 
