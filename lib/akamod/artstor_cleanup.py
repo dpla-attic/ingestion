@@ -38,7 +38,7 @@ def artstor_cleanup(body, ctype):
         for item in selector.getprop(data, data_provider_key):
             if isinstance(item, basestring):
                 cleaned_data_provider.append(item.replace("Repository:", "").lstrip())
-        selector.setprop(data, data_provider_key, cleaned_data_provider)
+        selector.setprop(data, data_provider_key, "; ".join(cleaned_data_provider))
 
     return json.dumps(data)
 

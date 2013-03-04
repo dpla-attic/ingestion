@@ -22,7 +22,7 @@
         "http://localhost:8879/enrich-format", 
         "http://localhost:8879/artstor_identify_object",
         "http://localhost:8879/filter_paths?paths=aggregatedCHO%2Fspatial%2CaggregatedCHO%2Frights%2CisShownAt%2Frights%2Cobject%2Frights",
-        "http://localhost:8879/copy_prop?prop=aggregatedCHO%2Fspatial&to_prop=dataProvider&create=True",
+        "http://localhost:8879/copy_prop?prop=aggregatedCHO%2Fspatial&to_prop=dataProvider&create=True&remove=True",
         "http://localhost:8879/artstor_cleanup",
         "http://localhost:8879/enrich_location"
     ], 
