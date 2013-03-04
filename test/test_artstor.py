@@ -415,9 +415,29 @@ def test_artstor_cleanup_data_provider():
         ]
     }
     EXPECTED = {
+        "dataProvider": "Columbia Museum of Art, Columbia, SC"
+    }
+    url = server() + "artstor_cleanup"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    data = json.loads(content)
+    assert data["dataProvider"] == EXPECTED["dataProvider"], DictDiffer(data, EXPECTED).diff()
+
+
+def test_artstor_cleanup_multi_valued_data_provider():
+    """
+    Remove "Repository:" from Artstor multi-valued data provider
+    """
+
+    INPUT = {
         "dataProvider": [
-            "Columbia Museum of Art, Columbia, SC"
+            "Repository: Columbia Museum of Art, Columbia, SC1",
+            "Repository: Columbia Museum of Art, Columbia, SC2",
+            "Repository: Columbia Museum of Art, Columbia, SC3",
         ]
+    }
+    EXPECTED = {
+        "dataProvider": "Columbia Museum of Art, Columbia, SC1; Columbia Museum of Art, Columbia, SC2; Columbia Museum of Art, Columbia, SC3"
     }
     url = server() + "artstor_cleanup"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
@@ -551,9 +571,7 @@ def test_artstor_data_provider_copy_prop_and_cleanup():
 }
     """
 
-    EXPECTED_DATA_PROVIDER = [
-        "Columbia Museum of Art, Columbia, SC",
-    ]
+    EXPECTED_DATA_PROVIDER = "Columbia Museum of Art, Columbia, SC"
     url = server() + "copy_prop?prop=aggregatedCHO%2Fspatial&to_prop=dataProvider&create=True"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
