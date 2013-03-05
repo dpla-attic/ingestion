@@ -79,6 +79,20 @@
            "map": "function(doc) {if (doc.ingestType == 'item') {rights = doc.aggregatedCHO.rights;if (rights.constructor.toString().indexOf('Array') == -1) { rights = new Array(rights); }for (i=0; i<rights.length; i++) {emit(rights[i],1);}}}",
            "reduce": "_count"
        },
+       "provider": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {provider = doc.provider;if (provider.constructor.toString().indexOf('Array') == -1) { provider = new Array(provider); }for (i=0; i<provider.length; i++) {emit(doc['id'], provider[i]['name']);}}}"
+       },
+       "provider_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {provider = doc.provider;if (provider.constructor.toString().indexOf('Array') == -1) { provider = new Array(provider); }for (i=0; i<provider.length; i++) {emit(provider[i]['name'],1);}}}",
+           "reduce": "_count"
+       },
+       "data_provider": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {dataProvider = doc.dataProvider;if (dataProvider.constructor.toString().indexOf('Array') == -1) { dataProvider = new Array(dataProvider); }for (i=0; i<dataProvider.length; i++) {emit(doc['id'], dataProvider[i]);}}}"
+       },
+       "data_provider_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {dataProvider = doc.dataProvider;if (dataProvider.constructor.toString().indexOf('Array') == -1) { dataProvider = new Array(dataProvider); }for (i=0; i<dataProvider.length; i++) {emit(dataProvider[i],1);}}}",
+           "reduce": "_count"
+       },
        "collection": {
            "map": "function(doc) {if (doc.ingestType == 'item') {cname = doc.collection.name;emit(doc['id'], cname);}}"
        },

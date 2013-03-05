@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Before executing this script, ensure that a design document with the
+# contents of couchdb_views/qa_reports.js exists in the CouchDB database.
+# Upload the compressed directory to https://drive.google.com/#folders/0B0qFRp7UGda6U1NoZE9tTTJmZ1U
+
+username="couchadmin"
+password="couchM3"
+provider="scdl"
+port=5978
+
+report[0]="type"
+report[1]="title"
+report[2]="dates"
+report[3]="format"
+report[4]="rights"
+report[5]="subject"
+report[6]="creator"
+report[7]="provider"
+report[8]="publisher"
+report[9]="collection"
+report[10]="description"
+report[11]="spatial_name"
+report[12]="spatial_state"
+report[13]="data_provider"
+
+dir="${provider}_exports"
+rm -r $dir
+mkdir $dir
+
+for i in "${report[@]}"
+do
+       curl -o $dir/$i "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/lists/_list/csv/$i"
+       curl -o "${dir}/${i}_count" "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/lists/_list/count_csv/${i}_count?group=true"
+done
+
+zip -r "${dir}.zip" $dir
