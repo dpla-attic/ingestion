@@ -23,7 +23,8 @@
         "http://localhost:8879/enrich-format", 
         "http://localhost:8879/artstor_identify_object",
         "http://localhost:8879/filter_paths?paths=aggregatedCHO%2Fspatial%2CaggregatedCHO%2Frights%2CisShownAt%2Frights%2Cobject%2Frights",
-        "http://localhost:8879/enrich_location"
+        "http://localhost:8879/enrich_location",
+        "http://localhost:8879/enrich_language"
     ], 
     "subresources": [
         "SetDPLA"

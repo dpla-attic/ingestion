@@ -22,7 +22,8 @@
         "http://localhost:8878/enrich-format", 
         "http://localhost:8878/contentdm_identify_object",
         "http://localhost:8878/enrich_location",
-        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True"
+        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
+        "http://localhost:8879/enrich_language"
     ], 
     "subresources": [], 
     "last_checked": "2013-01-25T14:06:37.805661", 

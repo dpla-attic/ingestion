@@ -264,6 +264,7 @@ def test_enrich_format_cleanup_multiple():
             'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
             "Still Images","image/JPEG","audio","Images",
             'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
+            "Images/jpeg", "images/jpeg"
             ]
         }
     EXPECTED = {
