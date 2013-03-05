@@ -323,8 +323,6 @@ def test_enrich_date_parse_century_date_with_P():
 def test_enrich_temporal_date():
     """Correctly enrich temporal dates"""
 
-    # TODO: disabled dates are not supported by enrich-date parsers
-
     INPUT = {
         "aggregatedCHO": {
             "spatial" : [
