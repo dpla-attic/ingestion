@@ -210,6 +210,88 @@ def test_enrich_date_parse_format_date_range1():
     assert result['date'] == EXPECTED[u'date']
 
 
+def test_date_with_brackets():
+    """Should transform date with brackets."""
+
+    ranges = [
+        "[1960-05-01]",
+        "[  1960-05-01  ]"
+    ]
+
+    for r in ranges:
+        INPUT = {"date": r}
+        EXPECTED = {
+            u'date' : {
+                u'begin' : u'1960-05-01',
+                u'end' : u'1960-05-01',
+                "displayDate" : "1960-05-01"
+            }
+        }
+
+        url = server() + "enrich-date?prop=date"
+
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+        assert str(resp.status).startswith("2")
+        print_error_log()
+        assert_same_jsons(EXPECTED, content)
+
+
+def test_range_years_with_brackets():
+    """Should transform dates range with brackets."""
+    ranges = [
+            ("1960 - 1963]",    "1960 - 1963"),
+            ("[ 1960 - 1963 ]", "1960 - 1963"),
+            ("[1960 / 1963]",   "1960 / 1963"),
+            ("[ 1960 / 1963 ]", "1960 / 1963"),
+    ]
+
+    for r in ranges:
+        INPUT = {"date": r[0]}
+        EXPECTED = {
+            u'date' : {
+                u'begin' : u'1960',
+                u'end' : u'1963',
+                "displayDate" : r[1]
+            }
+        }
+
+        url = server() + "enrich-date?prop=date"
+
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+        assert str(resp.status).startswith("2")
+        print_error_log()
+        assert_same_jsons(EXPECTED, content)
+
+
+def test_range_with_brackets():
+    """Should transform date range with brackets."""
+
+    ranges = [
+            ("1960-05-01 - 1960-05-15",     "1960-05-01 - 1960-05-15"),
+            ("[ 1960-05-01 - 1960-05-15 ]", "1960-05-01 - 1960-05-15"),
+            ("[1960-05-01 - 1960-05-15]",   "1960-05-01 - 1960-05-15"),
+            ("[1960-05-01 / 1960-05-15]",   "1960-05-01 / 1960-05-15"),
+    ]
+
+    for r in ranges:
+        INPUT = {"date": r[0]}
+        EXPECTED = {
+            u'date' : {
+                u'begin' : u'1960-05-01',
+                u'end' : u'1960-05-15',
+                "displayDate" : r[1]
+            }
+        }
+
+        url = server() + "enrich-date?prop=date"
+
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+        assert str(resp.status).startswith("2")
+        print_error_log()
+        assert_same_jsons(EXPECTED, content)
+
+
+
 def test_enrich_date_parse_format_date_range2():
     """Correctly transform a date of format 1960-05-01 - 1960-05-15"""
     INPUT = {
@@ -274,6 +356,7 @@ def test_enrich_date_parse_format_date_range4():
 
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+
 
 
 def test_enrich_date_parse_century_date():
@@ -352,14 +435,14 @@ def test_enrich_temporal_date():
 
     url = server() + "move_date_values?prop=aggregatedCHO/spatial"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    print_error_log()
     assert resp.status == 200
 
     url = server() + "enrich-temporal-date"
     resp, content = H.request(url, "POST", body=content)
+    print_error_log()
     assert resp.status == 200
-
-    REAL = json.loads(content)
-    assert REAL == EXPECTED, DictDiffer(REAL, EXPECTED).diff()
+    assert_same_jsons(EXPECTED, content)
 
 
 def test_enrich_date_date_parse_format_natural_string_for_multiple_dates():

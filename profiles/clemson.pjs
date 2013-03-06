@@ -24,24 +24,9 @@
         "http://localhost:8878/contentdm_identify_object", 
         "http://localhost:8878/enrich_location", 
         "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
-        "http://localhost:8879/enrich_language"
+        "http://localhost:8878/enrich_language"
     ], 
     "subresources": [
-        "gmb", 
-        "ctm", 
-        "cfb", 
-        "spg", 
-        "jfb", 
-        "jbt", 
-        "pre", 
-        "dnc", 
-        "scp", 
-        "swl", 
-        "weg", 
-        "ghs", 
-        "wsb", 
-        "mbe", 
-        "gcj"
     ], 
     "last_checked": "2013-02-21T22:30:37.158910", 
     "contributor": {

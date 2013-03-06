@@ -11,6 +11,7 @@ from zen import dateparser
 from dplaingestion.selector import getprop, setprop, exists
 
 
+
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
 HTTP_TYPE_TEXT = 'text/plain'
@@ -29,8 +30,12 @@ DEFAULT_DATETIME_SECS = 32503680000.0 # UTC seconds for "3000-01-01"
 
 
 DATE_RANGE_RE = r'(\S+)\s*-\s*(\S+)'
+DATE_RANGE_EXT_RE = r'(\S+)\s*[-/]\s*(\S+)'
 def split_date(d):
-    range = [robust_date_parser(x) for x in re.search(DATE_RANGE_RE,d).groups()]
+    reg = DATE_RANGE_EXT_RE
+    if len(d.split("/")) == 3: #so th date is like "2001 / 01 / 01"
+        reg = DATE_RANGE_RE
+    range = [robust_date_parser(x) for x in re.search(reg,d).groups()]
     return range
 
 DATE_8601 = '%Y-%m-%d'
@@ -69,7 +74,7 @@ def robust_date_parser(d):
             return ddiso[:ddiso.index('T')]
     return dd
 
-year_range = re.compile("(\d{4})\s*-\s*(\d{4})") # simple for digits year range
+year_range = re.compile("(\d{4})\s*[-/]\s*(\d{4})") # simple for digits year range
 circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_begin>\d{2})\s*-\s*(?P<year_end>\d{2})", re.I) # tricky "c. 1970-90" year range
 century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)\s+c\.", re.I) # for dates with centuries "19th c."
 def parse_date_or_range(d):
@@ -78,7 +83,7 @@ def parse_date_or_range(d):
     # June 1941 - May 1945
     # 1941-06-1945-05
     # and do not confuse with just YYYY-MM-DD regex
-    if ' - ' in d or year_range.match(d):
+    if ' - ' in d or (len(d.split("/")) == 2) or year_range.match(d):
         a, b = split_date(d)
     elif circa_range.match(d):
         match = circa_range.match(d)
@@ -94,6 +99,11 @@ def parse_date_or_range(d):
         parsed = robust_date_parser(d)
         a, b = parsed, parsed
     return a, b
+
+
+def remove_brackets_and_strip(d):
+    """Removed brackets from the date (range)."""
+    return re.sub(r"(^\s*\[\s*|\s*\]\s*$)", '', d).strip()
 
 
 def test_parse_date_or_range():
@@ -137,13 +147,13 @@ def enrichdate(body, ctype, action="enrich-format", prop="aggregatedCHO/date"):
 
             for s in (v if not isinstance(v, basestring) else [v]):
                 for part in s.split(";"):
-                    part = part.strip()
-                    a, b = parse_date_or_range(part)
+                    stripped = remove_brackets_and_strip(part)
+                    a, b = parse_date_or_range(stripped)
                     if b != '3000-01-01':
                         dates.append( {
                                 "begin": a,
                                 "end": b,
-                                "displayDate" : part
+                                "displayDate" : stripped
                             })
     dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
 
@@ -175,11 +185,12 @@ def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal"):
         if exists(data, p):
             v = getprop(data, p)
             for s in v:
-                a, b = parse_date_or_range(s)
+                stripped = remove_brackets_and_strip(s)
+                a, b = parse_date_or_range(stripped)
                 date_candidates.append( {
                     "begin": a,
                     "end": b,
-                    "displayDate" : s
+                    "displayDate" : stripped
                 })
     if date_candidates:
         setprop(data, p, date_candidates)

@@ -36,7 +36,7 @@ def cleanup(value):
     Returns:
         Converted string.
     """
-    TAGS_FOR_STRIPPING = '[\.\' ";,]*' # Tags for stripping at beginning and at the end.
+    TAGS_FOR_STRIPPING = '[\.\' \r\t\n";,]*' # Tags for stripping at beginning and at the end.
     REGEXPS = (' *-- *', '--'), \
               ('[\t ]{2,}', ' '), \
               ('^' + TAGS_FOR_STRIPPING, ''), \

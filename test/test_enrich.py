@@ -242,10 +242,10 @@ def test_enrich_subject_cleanup():
 def test_enrich_type_cleanup():
     "Test type normalization"
     INPUT = {
-        "type" : ["Still Images","Text","Statue"]
+        "type" : ["Still Images", "Moving Images", "Moving Image", "Text","Statue"]
         }
     EXPECTED = {
-        u'type' : [ "image", "text" ],
+        u'type' : [ "image", "moving image", "moving image", "text" ],
         u'TBD_physicalformat' : ["Statue"]
         }
 
@@ -254,6 +254,7 @@ def test_enrich_type_cleanup():
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
+    pinfo(content)
     assert result['type'] == EXPECTED['type']
 
 
@@ -368,7 +369,7 @@ def test_setting_empty_type_from_format():
     DATA = [
       {"in": {"format": "audio/mp3"},         "out": {"format": "audio/mpeg",    "type": "sound"}},
       {"in": {"format": "image/jpg"},         "out": {"format": "image/jpeg",    "type": "image"}},
-      {"in": {"format": "video/mpeg"},        "out": {"format": "video/mpeg",    "type": "image"}},
+      {"in": {"format": "video/mpeg"},        "out": {"format": "video/mpeg",    "type": "moving image"}},
       {"in": {"format": "text/calendar"},     "out": {"format": "text/calendar", "type": "text"}},
       {"in": {"format": "audio"},             "out": {"format": None,            "physicalmedium": "audio"}},
       {"in": {"format": "something strange"}, "out": {"format": None,            "physicalmedium": "something strange"}},

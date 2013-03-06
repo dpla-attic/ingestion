@@ -28,7 +28,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
     FORMAT_2_TYPE_MAPPINGS = {
             "audio": "sound",
             "image": "image",
-            "video": "image",
+            "video": "moving image",
             "text": "text"
     }
 
