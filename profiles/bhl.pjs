@@ -23,7 +23,7 @@
         "http://localhost:8878/enrich_location",
         "http://localhost:8878/bhl_contributor_to_collection",
         "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
-        "http://localhost:8879/enrich_language"
+        "http://localhost:8878/enrich_language"
     ], 
     "subresources": [
         "item",
