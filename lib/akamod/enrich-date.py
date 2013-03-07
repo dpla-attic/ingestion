@@ -124,22 +124,18 @@ def test_parse_date_or_range():
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
 
-@simple_service('POST', 'http://purl.org/la/dp/enrich-date', 'enrich-date', HTTP_TYPE_JSON)
-def enrichdate(body, ctype, action="enrich-format", prop="aggregatedCHO/date"):
-    """
-    Service that accepts a JSON document and extracts the "created date" of the item, using the
-    following rules:
+def convert_dates(data, prop, earliest):
+    """Converts dates.
 
-    a) Looks in the list of fields specified by the 'prop' parameter
-    b) Extracts all dates, and sets the created date to the earliest date 
-    """
-    try :
-        data = json.loads(body)
-    except:
-        response.code = HTTP_INTERNAL_SERVER_ERROR
-        response.add_header(HTTP_HEADER_TYPE,  HTTP_TYPE_TEXT)
-        return "Unable to parse body as JSON"
+    Arguments:
+        data     Dict - Data for conversion.
+        prop     Str  - Properties dividided with comma.
+        earliest Bool - True  - the function will set only the earliest date.
+                        False - the function will set all dates.
 
+    Returns:
+        Nothing, the replacement is done in place.
+    """
     dates = []
     for p in prop.split(','):
         if exists(data, p):
@@ -155,23 +151,47 @@ def enrichdate(body, ctype, action="enrich-format", prop="aggregatedCHO/date"):
                                 "end": b,
                                 "displayDate" : stripped
                             })
+
     dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
 
-    if len(dates) == 1:
-        setprop(data, p, dates[0])
+    value_to_set = dates
+    if earliest:
+        value_to_set = dates[0]
+
+    if value_to_set:
+        setprop(data, p, value_to_set)
     else:
-        setprop(data, p, dates)
+        delprop(data, p)
 
-    return json.dumps(data)
 
-@simple_service('POST', 'http://purl.org/la/dp/enrich-temporal-date', 'enrich-temporal-date', HTTP_TYPE_JSON)
-def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal"):
+@simple_service('POST', 'http://purl.org/la/dp/enrich_earliest_date', 'enrich_earliest_date', HTTP_TYPE_JSON)
+def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="aggregatedCHO/date"):
     """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
 
     a) Looks in the list of fields specified by the 'prop' parameter
-    b) Extracts all dates, and sets the created date to the earliest date
+    b) Extracts all dates, and sets the created date to the earliest date 
+    """
+    try :
+        data = json.loads(body)
+    except:
+        response.code = HTTP_INTERNAL_SERVER_ERROR
+        response.add_header(HTTP_HEADER_TYPE,  HTTP_TYPE_TEXT)
+        return "Unable to parse body as JSON"
+
+    convert_dates(data, prop, True)
+    return json.dumps(data)
+
+
+@simple_service('POST', 'http://purl.org/la/dp/enrich_date', 'enrich_date', HTTP_TYPE_JSON)
+def enrich_date(body, ctype, action="enrich_date", prop="aggregatedCHO/temporal"):
+    """
+    Service that accepts a JSON document and extracts the "created date" of the item, using the
+    following rules:
+
+    a) Looks in the list of fields specified by the 'prop' parameter
+    b) Extracts all dates
     """
     try :
         data = json.loads(body)
@@ -180,19 +200,5 @@ def enrich_temporal_date(body, ctype, prop="aggregatedCHO/temporal"):
         response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
         return "Unable to parse body as JSON"
 
-    date_candidates = []
-    for p in prop.split(','):
-        if exists(data, p):
-            v = getprop(data, p)
-            for s in v:
-                stripped = remove_brackets_and_strip(s)
-                a, b = parse_date_or_range(stripped)
-                date_candidates.append( {
-                    "begin": a,
-                    "end": b,
-                    "displayDate" : stripped
-                })
-    if date_candidates:
-        setprop(data, p, date_candidates)
-
+    convert_dates(data, prop, False)
     return json.dumps(data)
