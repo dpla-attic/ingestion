@@ -457,6 +457,23 @@ def test_enrich_date_date_parse_format_natural_string_for_multiple_dates():
     result = json.loads(content)
     assert_same_jsons(EXPECTED, content)
 
+def test_no_date_field():
+    """Handle case where date field doesn't exist"""
+    INPUT = {
+        "hat" : "fits"
+    }
+    EXPECTED = {
+        "hat" : "fits"
+    }
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+
+
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

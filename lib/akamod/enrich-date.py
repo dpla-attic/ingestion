@@ -8,7 +8,7 @@ from amara.thirdparty import json
 from dateutil.parser import parse as dateutil_parse
 from zen import dateparser
 
-from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.selector import getprop, setprop, delprop, exists
 
 
 
@@ -155,7 +155,7 @@ def convert_dates(data, prop, earliest):
     dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
 
     value_to_set = dates
-    if earliest:
+    if earliest and dates:
         value_to_set = dates[0]
 
     if value_to_set:
