@@ -1,40 +1,39 @@
 {
-    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=http://www.biodiversitylibrary.org/oai",
+    "list_sets": "/oai.listsets.json?endpoint=http://www.biodiversitylibrary.org/oai",
     "enrichments_coll": [
-        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=http://www.biodiversitylibrary.org/oai"
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://www.biodiversitylibrary.org/oai"
     ], 
     "name": "bhl", 
     "enrichments_rec": [
-        "http://localhost:8878/select-id",
-        "http://localhost:8878/oai-to-dpla",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "http://localhost:8878/shred?prop=isShownAt%2Fformat",
-        "http://localhost:8878/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "http://localhost:8878/move_date_values?prop=aggregatedCHO%2Fspatial",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fspatial&delim=--",
-        "http://localhost:8878/enrich_earliest_date",
-        "http://localhost:8878/enrich-subject",
-        "http://localhost:8878/enrich_date",
+        "/select-id",
+        "/oai-to-dpla",
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=isShownAt%2Fformat",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "/shred?prop=aggregatedCHO%2Fspatial&delim=--",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
         "http://localhost:8875/cleanup_value",
-        "http://localhost:8878/enrich-type",
-        "http://localhost:8878/enrich-format",
-        "http://localhost:8878/enrich_location",
-        "http://localhost:8878/bhl_contributor_to_collection",
-        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
-        "http://localhost:8878/enrich_language"
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/bhl_contributor_to_collection",
+        "/copy_prop?prop=aggregatedCHO%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
+        "/enrich_language"
     ], 
     "subresources": [
         "item",
         "articlepdf",
         "title"
     ], 
-    "last_checked": "2013-01-18T16:26:40.094739",
     "contributor": {
         "@id": "http://dp.la/api/contributor/bhl",
         "name": "Biodiversity Heritage Library"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://www.biodiversitylibrary.org/oai&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://www.biodiversitylibrary.org/oai&oaiset="
 }

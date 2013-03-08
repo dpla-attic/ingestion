@@ -3,7 +3,6 @@
     "name": "nara", 
     "enrichments_rec": [], 
     "subresources": [], 
-    "last_checked": "2013-01-09T23:26:27.345343", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/nara", 
         "name": "National Archives"

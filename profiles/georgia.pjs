@@ -1,29 +1,29 @@
 {
-    "list_sets": "http://localhost:8879/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai",
+    "list_sets": "/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai",
     "type": "oai",
     "name": "georgia",
     "enrichments_coll": [
-        "http://localhost:8879/oai-set-name?sets_service=http://localhost:8879/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai"
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai"
     ], 
     "enrichments_rec": [
-        "http://localhost:8879/select-id",
-        "http://localhost:8879/oai-to-dpla",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "http://localhost:8879/shred?prop=isShownAt%2Fformat",
-        "http://localhost:8879/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "http://localhost:8879/move_date_values?prop=aggregatedCHO%2Fspatial",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fspatial&delim=--",
-        "http://localhost:8879/enrich_earliest_date",
-        "http://localhost:8879/enrich_date",
-        "http://localhost:8879/enrich-subject",
-        "http://localhost:8875/cleanup_value",
-        "http://localhost:8879/enrich-type",
-        "http://localhost:8879/enrich-format",
-        "http://localhost:8879/georgia_identify_object",
-        "http://localhost:8879/enrich_location",
-        "http://localhost:8879/enrich_language"
+        "/select-id",
+        "/oai-to-dpla",
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=isShownAt%2Fformat",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "/shred?prop=aggregatedCHO%2Fspatial&delim=--",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject",
+        "/cleanup_value",
+        "/enrich-type",
+        "/enrich-format",
+        "/georgia_identify_object",
+        "/enrich_location",
+        "/enrich_language"
     ], 
     "subresources": [
         "dpla"
@@ -33,5 +33,5 @@
         "@id": "http://dp.la/api/contributor/georgia", 
         "name": "Digital Library of Georgia"
     }, 
-    "endpoint_URL": "http://localhost:8879/dpla-list-records?endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
 }

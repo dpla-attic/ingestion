@@ -1,37 +1,36 @@
 {
-    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe",
+    "list_sets": "/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe",
     "enrichments_coll": [
-        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe"
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe"
     ], 
     "name": "scdl-charleston", 
     "enrichments_rec": [
-        "http://localhost:8878/select-id", 
-        "http://localhost:8878/oai-to-dpla", 
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
-        "http://localhost:8878/shred?prop=isShownAt%2Fformat",
-        "http://localhost:8878/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "http://localhost:8878/move_date_values?prop=aggregatedCHO%2Fspatial",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fspatial&delim=--",
-        "http://localhost:8878/enrich_earliest_date", 
-        "http://localhost:8878/enrich_date",
-        "http://localhost:8878/enrich-subject", 
-        "http://localhost:8878/cleanup_value",
-        "http://localhost:8878/enrich-type", 
-        "http://localhost:8878/enrich-format", 
-        "http://localhost:8878/contentdm_identify_object",
-        "http://localhost:8878/enrich_location",
-        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
-        "http://localhost:8878/enrich_language"
+        "/select-id", 
+        "/oai-to-dpla", 
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
+        "/shred?prop=isShownAt%2Fformat",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "/shred?prop=aggregatedCHO%2Fspatial&delim=--",
+        "/enrich_earliest_date", 
+        "/enrich_date",
+        "/enrich-subject", 
+        "/cleanup_value",
+        "/enrich-type", 
+        "/enrich-format", 
+        "/contentdm_identify_object",
+        "/enrich_location",
+        "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
+        "/enrich_language"
     ], 
     "subresources": [], 
-    "last_checked": "2013-01-25T14:06:37.805661", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-charleston", 
         "name": "South Carolina Digital Library - College of Charleston"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="
 }
