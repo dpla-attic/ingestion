@@ -60,12 +60,6 @@ def process_profile(out,profile_f):
             process(profile,subr)
             time.sleep(sleep)
 
-    # Update profile metadata and save
-    profile[u'last_checked'] = datetime.datetime.now().isoformat()
-    fprof = open(profile_f,'w')
-    json.dump(profile,fprof,indent=4)
-    fprof.close()
-
     return True
 
 ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
