@@ -104,7 +104,8 @@ def couch_rev_check_recs(docs):
     docs_ids = sorted(docs)
     start = docs_ids[0]
     end = docs_ids[-1:][0]
-    uri += "?" + urlencode({"startkey": start, "endkey": end})
+#    uri += "?" + urlencode({"startkey": start, "endkey": end})
+    uri += '?startkey="%s"&endkey="%s"'%(start,end)
     response, content = H.request(uri, 'GET', headers=COUCH_AUTH_HEADER)
     if str(response.status).startswith('2'):
         rows = json.loads(content)["rows"]

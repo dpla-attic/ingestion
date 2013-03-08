@@ -225,7 +225,7 @@ def define_arguments():
     Defines command line arguments for the current script
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("base_uri", help="The base URI for the server hosting the enrichment pipeline")
+    parser.add_argument("uri_base", help="The base URI for the server hosting the enrichment pipeline")
     parser.add_argument("profile", help="The path to the profile(s) to be processed", nargs="+")
     return parser
 
@@ -235,7 +235,7 @@ def main(argv):
     args = parser.parse_args(argv[1:])
     for profile in args.profile:
         print >> sys.stderr, 'Processing profile: '+profile
-        process_profile(args.base_uri, profile)
+        process_profile(args.uri_base, profile)
 
 if __name__ == '__main__':
     main(sys.argv)
