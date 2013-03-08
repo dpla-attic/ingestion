@@ -3,6 +3,7 @@
 # Usage: python poll_profiles.py <profiles-glob> <enrichment-service-URI>
 
 import sys, os, glob, fnmatch
+import argparse
 import base64
 import datetime, time
 from itertools import groupby
@@ -18,12 +19,13 @@ import xmltodict
 #ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.path.dirname(srcdir+os.sep),"%s_%s.xml"%(htype.replace(' ',''),hid))
 ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.sep.join(os.path.dirname(srcdir+os.sep).split(os.sep)[:-1]),"*","%s_%s.xml"%(htype.replace(' ',''),hid))
 
-ENRICH = None # enrichment service URI
+URI_BASE = None
+ENRICH = "/enrich" # enrichment service URI
 H = httplib2.Http('/tmp/.pollcache')
 H.force_exception_as_status_code = True
 
-def process_profile(out,profile_f):
-    global ENRICH
+def process_profile(uri_base, profile_f):
+    global URI_BASE, ENRICH
 
     fprof = open(profile_f,'r')
     try:
@@ -42,7 +44,9 @@ def process_profile(out,profile_f):
     # Pause in secs between collection ingests
     sleep = profile.get(u'sleep',0)
 
-    ENRICH = out
+    URI_BASE = uri_base
+    if not is_absolute(ENRICH):
+        ENRICH = URI_BASE + ENRICH
 
     subResources = profile.get(u'subresources')
     blacklist = profile.get(u'blacklist',[])
@@ -133,6 +137,7 @@ def process_arc_all(profile):
 def enrich_coll(profile,subr,content):
     # Enrich retrieved data
     global ENRICH
+    
     headers = {
         "Content-Type": "application/json",
         "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
@@ -156,10 +161,13 @@ def process_oai_coll(profile,subr):
     # If multiple requests are required to harvest all information from a resource, they will
     # give us 'resumption tokens' after each request until we are done. Passing the resumption
     # token will provide the next batch of results
+    global URI_BASE
 
     request_more, resumption_token = True, ""
     while request_more:
         endpoint = profile[u'endpoint_URL'] + (subr if subr != profile[u'name'] else "")
+        if not is_absolute(endpoint):
+            endpoint = URI_BASE + endpoint
         if resumption_token:
             endpoint += '&' + urlencode({'resumption_token': resumption_token})
         print >> sys.stderr, endpoint
@@ -178,7 +186,10 @@ def process_oai_coll(profile,subr):
 
 def process_oai_all(profile,blacklist=[]):
     # Get all sets
+    global URI_BASE
     url = profile[u'list_sets']
+    if not is_absolute(url):
+        url = URI_BASE + url
     resp, content = H.request(url)
     if not resp[u'status'].startswith('2'):
         print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
@@ -209,8 +220,22 @@ TYPE_PROCESSORS = {
     ('oai','all'): process_oai_all,
 }
 
-if __name__ == '__main__':
+def define_arguments():
+    """
+    Defines command line arguments for the current script
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("base_uri", help="The base URI for the server hosting the enrichment pipeline")
+    parser.add_argument("profile", help="The path to the profile(s) to be processed", nargs="+")
+    return parser
 
-    for profile in glob.iglob(sys.argv[1]):
+
+def main(argv):
+    parser = define_arguments()
+    args = parser.parse_args(argv[1:])
+    for profile in args.profile:
         print >> sys.stderr, 'Processing profile: '+profile
-        process_profile(sys.argv[2], profile)
+        process_profile(args.base_uri, profile)
+
+if __name__ == '__main__':
+    main(sys.argv)
