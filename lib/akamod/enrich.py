@@ -19,7 +19,8 @@ COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
 # FIXME it's looking like an id builder needs to be part of the profile. Or UUID as fallback?
 COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'id','no-id').strip().replace(" ","__"))
 
-COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
+if COUCH_DATABASE_USERNAME and COUCH_DATABASE_PASSWORD:
+    COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
 
 # FIXME: this should be JSON-LD, but CouchDB doesn't support +json yet
 CT_JSON = {'Content-Type': 'application/json'}
@@ -146,7 +147,8 @@ def enrich(body, ctype):
     COLL = {
         "_id": cid,
         "@id": at_id,
-        "ingestType": "collection"
+        "ingestType": "collection",
+        "title": data.get("title",None)
     }
     # Set collection title field from collection_name if no sets
     if not coll_enrichments[0]:

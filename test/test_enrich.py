@@ -262,9 +262,9 @@ def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
         "format" : ["Still Images","image/JPEG","audio","Images",
-            'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
+            'application', "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
             "Still Images","image/JPEG","audio","Images",
-            'application',  "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
+            'application', "audio/mp3 (1.46 MB; 1 min., 36 sec.)",
             "Images/jpeg", "images/jpeg"
             ]
         }
@@ -303,8 +303,8 @@ def test_enrich_format_cleanup():
 
 def test_physical_format_from_format_and_type():
     """
-    Test physical format appending from format and type fields
-    """
+Test physical format appending from format and type fields
+"""
     INPUT = {
         "format": ["76.8 x 104 cm", "Oil on canvas"],
         "type": ["Paintings", "Painting"]
@@ -367,12 +367,12 @@ def test_setting_empty_type_from_format():
     "Should set empty type according to format field according to type mapping."
 
     DATA = [
-      {"in": {"format": "audio/mp3"},         "out": {"format": "audio/mpeg",    "type": "sound"}},
-      {"in": {"format": "image/jpg"},         "out": {"format": "image/jpeg",    "type": "image"}},
-      {"in": {"format": "video/mpeg"},        "out": {"format": "video/mpeg",    "type": "moving image"}},
-      {"in": {"format": "text/calendar"},     "out": {"format": "text/calendar", "type": "text"}},
-      {"in": {"format": "audio"},             "out": {"format": None,            "physicalmedium": "audio"}},
-      {"in": {"format": "something strange"}, "out": {"format": None,            "physicalmedium": "something strange"}},
+      {"in": {"format": "audio/mp3"}, "out": {"format": "audio/mpeg", "type": "sound"}},
+      {"in": {"format": "image/jpg"}, "out": {"format": "image/jpeg", "type": "image"}},
+      {"in": {"format": "video/mpeg"}, "out": {"format": "video/mpeg", "type": "moving image"}},
+      {"in": {"format": "text/calendar"}, "out": {"format": "text/calendar", "type": "text"}},
+      {"in": {"format": "audio"}, "out": {"format": None, "physicalmedium": "audio"}},
+      {"in": {"format": "something strange"}, "out": {"format": None, "physicalmedium": "something strange"}},
     ]
 
     FORMATS = ["audio"]
