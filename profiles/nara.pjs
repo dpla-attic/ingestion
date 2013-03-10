@@ -1,13 +1,28 @@
 {
     "enrichments_coll": [], 
     "name": "nara", 
-    "enrichments_rec": [], 
+    "enrichments_rec": [
+        "/select-id?prop=_id", 
+        "/arc-to-dpla", 
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate", 
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation", 
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype", 
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject",
+        "/cleanup_value",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language",
+        "/copy_prop?prop=aggregatedCHO%2Frights&to_prop=aggregatedCHO%2FhasView&key=rights"
+    ], 
     "subresources": [], 
-    "last_checked": "2013-01-09T23:26:27.345343", 
+    "last_checked": "2013-03-09T14:02:39.094687", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/nara", 
-        "name": "National Archives"
+        "name": "National Archives and Records Administration"
     }, 
     "type": "arc", 
-    "endpoint_URL": "file:/tmp/nara/"
+    "endpoint_URL": "file:/home/miguel/naratest/"
 }

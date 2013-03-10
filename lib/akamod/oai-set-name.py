@@ -2,6 +2,7 @@ import sys
 from akara.services import simple_service
 from akara import request, response
 from akara import logger
+from amara.lib.iri import is_absolute
 from amara.thirdparty import json, httplib2
 
 @simple_service('POST', 'http://purl.org/la/dp/oai-set-name', 'oai-set-name', 'application/json')
@@ -32,6 +33,11 @@ def oaisetname(body,ctype,sets_service=None):
         response.add_header('content-type','text/plain')
         return "No Collection header found"
 
+    if not is_absolute(sets_service):
+        prefix = request.environ['wsgi.url_scheme'] + '://' 
+        prefix += request.environ['HTTP_HOST'] if request.environ.get('HTTP_HOST') else request.environ['SERVER_NAME']
+        sets_service = prefix + sets_service
+        
     H = httplib2.Http('/tmp/.cache')
     H.force_exception_as_status_code = True
     resp, content = H.request(sets_service)

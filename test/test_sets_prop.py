@@ -62,7 +62,6 @@ def test_sets_prop_unset():
 
     resp,content = _get_server_response(json.dumps(INPUT), prop=prop)
     assert resp.status == 200
-    print >> sys.stderr, str(json.loads(content))
     assert json.loads(content) == EXPECTED
 
 if __name__ == "__main__":

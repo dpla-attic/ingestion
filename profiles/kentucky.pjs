@@ -1,33 +1,33 @@
 {
     "enrichments_coll": [], 
     "name": "kentucky", 
-    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=http://kdl.kyvl.org/catalog/oai/", 
+    "list_sets": "/oai.listsets.json?endpoint=http://kdl.kyvl.org/catalog/oai/", 
     "enrichments_rec": [
-        "http://localhost:8878/select-id", 
-        "http://localhost:8878/oai-to-dpla", 
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "http://localhost:8878/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "http://localhost:8878/shred?prop=isShownAt%2Fformat",
-        "http://localhost:8878/move_date_values?prop=aggregatedCHO%2Fsubject", 
-        "http://localhost:8878/move_date_values?prop=aggregatedCHO%2Fspatial", 
-        "http://localhost:8878/enrich-date",
-        "http://localhost:8878/enrich-temporal-date",
-        "http://localhost:8878/enrich-subject", 
+        "/select-id", 
+        "/oai-to-dpla", 
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=isShownAt%2Fformat",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject", 
+        "/move_date_values?prop=aggregatedCHO%2Fspatial", 
+        "/shred?prop=aggregatedCHO%2Fspatial&delim=--",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject", 
         "http://localhost:8875/cleanup_value",
-        "http://localhost:8878/enrich-type", 
-        "http://localhost:8878/enrich-format", 
-        "http://localhost:8878/enrich_location",
-        "http://localhost:8878/kentucky_identify_object",
-        "http://localhost:8878/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
-        "http://localhost:8879/enrich_language"
+        "/enrich-type", 
+        "/enrich-format", 
+        "/enrich_location",
+        "/kentucky_identify_object",
+        "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
+        "/enrich_language"
     ], 
     "subresources": [], 
-    "last_checked": "2013-02-08T02:07:44.804283", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/kdl", 
         "name": "Kentucky Digital Library"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://kdl.kyvl.org/catalog/oai/&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://kdl.kyvl.org/catalog/oai/&oaiset="
 }

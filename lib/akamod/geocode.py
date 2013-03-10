@@ -4,6 +4,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from zen.akamod import geolookup_service
+from dplaingestion.selector import getprop, setprop, exists
 
 GEOLOOKUP = geolookup_service()
 
@@ -17,8 +18,10 @@ def lookup_place(p):
 @simple_service('POST', 'http://purl.org/la/dp/geocode', 'geocode', 'application/json')
 def geocode(body,ctype,prop=None,newprop=None):
     '''   
-    Service that accepts a JSON document and "unshreds" the value of the
-    field named by the "prop" parameter
+    Service that annotates an inbound JSON document with the lat/long for a
+    given property of that document. If newprop is not specified, the property
+    is overwritten with the lat/long, otherwise a new property is added. Both
+    strings and list of strings are supported.
     '''   
 
     try :
@@ -28,15 +31,14 @@ def geocode(body,ctype,prop=None,newprop=None):
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if prop not in data:
-        return json.dumps(data) # graceful abort
+    if exists(data,prop):
+        if not newprop:
+            newprop = prop
 
-    if not newprop:
-        newprop = prop
-
-    if hasattr(data[prop],'__iter__'): # Handle strings and iterables
-        data[newprop] = [ lookup_place(place) for place in data[prop] ]
-    else:
-        data[newprop] = lookup_place(data[prop])
+        val = getprop(data,prop)
+        if isinstance(val,list):
+            setprop(data,newprop,[ lookup_place(place) for place in val ])
+        else:
+            setprop(data,newprop,lookup_place(val))
 
     return json.dumps(data)

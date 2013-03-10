@@ -18,7 +18,7 @@ def test_enrich_dates_bogus_date():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     print_error_log()
@@ -41,7 +41,7 @@ def test_enrich_date_single():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -56,26 +56,18 @@ def test_enrich_date_date_multiple():
         "date" : ["1928", "1406"]
     }
     EXPECTED = {
-        u'date' : [
-            {
+        u'date' : {
                 u'begin':       u'1406',
                 u'end':         u'1406',
                 u'displayDate': u'1406'
-            },
-            {
-                u'begin':       u'1928',
-                u'end':         u'1928',
-                u'displayDate': u'1928'
-            }
-        ]
+        }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-    result = json.loads(content)
-    assert result['date'] == EXPECTED[u'date']
+    assert_same_jsons(EXPECTED, content)
 
 
 def test_enrich_date_date_parse_format_yyyy_mm_dd():
@@ -91,7 +83,7 @@ def test_enrich_date_date_parse_format_yyyy_mm_dd():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -114,7 +106,7 @@ def test_enrich_date_parse_format_date_with_slashes():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -136,7 +128,7 @@ def test_enrich_date_date_parse_format_natural_string():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -157,7 +149,7 @@ def test_enrich_date_date_parse_format_ca_string():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -179,7 +171,7 @@ def test_enrich_date_date_parse_format_c_string():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -201,7 +193,7 @@ def test_enrich_date_parse_format_date_range1():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -228,7 +220,7 @@ def test_date_with_brackets():
             }
         }
 
-        url = server() + "enrich-date?prop=date"
+        url = server() + "enrich_earliest_date?prop=date"
 
         resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
@@ -255,7 +247,7 @@ def test_range_years_with_brackets():
             }
         }
 
-        url = server() + "enrich-date?prop=date"
+        url = server() + "enrich_earliest_date?prop=date"
 
         resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
@@ -283,7 +275,7 @@ def test_range_with_brackets():
             }
         }
 
-        url = server() + "enrich-date?prop=date"
+        url = server() + "enrich_earliest_date?prop=date"
 
         resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
@@ -305,7 +297,7 @@ def test_enrich_date_parse_format_date_range2():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -327,7 +319,7 @@ def test_enrich_date_parse_format_date_range3():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -349,7 +341,7 @@ def test_enrich_date_parse_format_date_range4():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -372,7 +364,7 @@ def test_enrich_date_parse_century_date():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -394,7 +386,7 @@ def test_enrich_date_parse_century_date_with_P():
         }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -406,7 +398,7 @@ def test_enrich_date_parse_century_date_with_P():
 def test_enrich_temporal_date():
     """Correctly enrich temporal dates"""
 
-    # TODO: disabled dates are not supported by enrich-date parsers
+    # TODO: disabled dates are not supported by enrich_earliest_date parsers
 
     INPUT = {
         "aggregatedCHO": {
@@ -425,10 +417,10 @@ def test_enrich_temporal_date():
             "temporal": [
                 {"begin": "1901", "end": "1999", "displayDate": "1901-1999"},
                 {"begin": "1901", "end": "1999", "displayDate": "1901 - 1999"},
+                {"begin": "1901", "end": "1901", "displayDate": "1901"},
                 {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "1901 / 01 / 01"},
-                {"begin": "1905-04-12", "end": "1905-04-12", "displayDate": "1905-04-12"},
                 {"begin": "1901-01-01", "end": "1901-01-01", "displayDate": "01/01/1901"},
-                {"begin": "1901", "end": "1901", "displayDate": "1901"}
+                {"begin": "1905-04-12", "end": "1905-04-12", "displayDate": "1905-04-12"},
             ],
             "spatial" : ["North Carolina"]}
     }
@@ -438,7 +430,7 @@ def test_enrich_temporal_date():
     print_error_log()
     assert resp.status == 200
 
-    url = server() + "enrich-temporal-date"
+    url = server() + "enrich_date"
     resp, content = H.request(url, "POST", body=content)
     print_error_log()
     assert resp.status == 200
@@ -451,26 +443,36 @@ def test_enrich_date_date_parse_format_natural_string_for_multiple_dates():
         "date" : "May 20, 1928; 2002-01-01"
     }
     EXPECTED = {
-        'date' : [
-            {
+        'date' : {
               'begin':       u'1928-05-20',
               'end':         u'1928-05-20',
               'displayDate': u'May 20, 1928'
-            },
-            {
-              'begin':       u'2002-01-01',
-              'end':         u'2002-01-01',
-              'displayDate': u'2002-01-01'
-            }
-        ]
+              }
     }
 
-    url = server() + "enrich-date?prop=date"
+    url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert_same_jsons(EXPECTED, content)
+
+def test_no_date_field():
+    """Handle case where date field doesn't exist"""
+    INPUT = {
+        "hat" : "fits"
+    }
+    EXPECTED = {
+        "hat" : "fits"
+    }
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+
+
 
 
 if __name__ == "__main__":
