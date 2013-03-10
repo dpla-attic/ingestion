@@ -8,12 +8,12 @@ Simple use cases:
     Perform geocoding for all records on a profile
 
 Usage:
-    $ python poll_storage.py [-h] [-f FILTER] [-c AKARA_CONFIG] [-n PAGE_SIZE] profile pipeline service
+    $ python poll_storage.py [-h] [-f FILTER] [-c AKARA_CONFIG] [-n PAGE_SIZE] uri_base profile pipeline
 
 Example:
-    $ python scripts/poll_storage.py -n 100 profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
-    $ python scripts/poll_storage.py -n 50 --filter "_design/artstor_items/_view/all" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
-    $ python scripts/poll_storage.py -c "../akara-local/akara.conf" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
+    $ python scripts/poll_storage.py -n 100 http://localhost:8879 profiles/artstor.pjs geocode
+    $ python scripts/poll_storage.py -n 50 --filter "_design/artstor_items/_view/all" http://localhost:8879 profiles/artstor.pjs geocode
+    $ python scripts/poll_storage.py -c "../akara-local/akara.conf" http://localhost:8879 profiles/artstor.pjs geocode
 """
 
 import argparse
