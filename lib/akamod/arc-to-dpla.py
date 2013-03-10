@@ -135,10 +135,10 @@ def subject_and_spatial_transform(d):
 def rights_transform(d):
     rights = []
 
-    r = arc_group_extraction(d, "access-restriction", "restriction-status")
+    r = arc_group_extraction(d, "access-restriction", "restriction-status")[0]
     if r:
         rights.append("Restrictions: %s" % r)
-    r = arc_group_extraction(d, "use-restriction", "use-status")
+    r = arc_group_extraction(d, "use-restriction", "use-status")[0]
     if r:
         rights.append("Use status: %s" % r)
 
