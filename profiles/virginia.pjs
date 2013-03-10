@@ -1,27 +1,27 @@
 {
-    "list_sets": "http://localhost:8879/oai.listsets.json?endpoint=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS",
+    "list_sets": "/oai.listsets.json?endpoint=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS",
     "enrichments_coll": [
-        "http://localhost:8879/oai-set-name?sets_service=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS"
+        "/oai-set-name?sets_service=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS"
     ], 
     "name": "virginia",
     "enrichments_rec": [
-        "http://localhost:8879/select-id?prop=id", 
-        "http://localhost:8879/oai-to-dpla",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "http://localhost:8879/shred?prop=isShownAt%2Fformat",
-        "http://localhost:8879/shred?prop=aggregatedCHO%2FphysicalMedium&delim=%3b",
-        "http://localhost:8879/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "http://localhost:8879/move_date_values?prop=aggregatedCHO%2Fspatial",
-        "http://localhost:8879/enrich-date",
-        "http://localhost:8879/enrich-subject", 
-        "http://localhost:8879/enrich-temporal-date",
-        "http://localhost:8879/cleanup_value",
-        "http://localhost:8879/enrich-type", 
-        "http://localhost:8879/enrich-format",
-        "http://localhost:8879/enrich_location",
-        "http://localhost:8879/enrich_language"
+        "/select-id?prop=id", 
+        "/oai-to-dpla",
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=isShownAt%2Fformat",
+        "/shred?prop=aggregatedCHO%2FphysicalMedium&delim=%3b",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "/enrich-date",
+        "/enrich-subject", 
+        "/enrich-temporal-date",
+        "/cleanup_value",
+        "/enrich-type", 
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language"
     ], 
     "subresources": [
         "SetDPLA"
@@ -32,5 +32,5 @@
         "name": "University of Virginia Library"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8879/dpla-list-records?endpoint=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS&oaiset="
 }
