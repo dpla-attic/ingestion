@@ -218,11 +218,90 @@ def process_oai_all(profile,blacklist=[]):
         process_oai_coll(profile,subr)
         time.sleep(sleep)
 
+# Used for Smithsonian data
+def process_edan_all(profile, blacklist=None):
+    src_URL = profile.get('endpoint_URL')
+    assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
+    src_dir = src_URL[5:]
+
+    collections = {}
+    os.system("rm /tmp/coll_*")
+    print "Walking directory: " + src_dir
+    for (root, dirs, files) in os.walk(src_dir):
+        for filename in fnmatch.filter(files, '*_DPLA.xml'):
+            item_fn = os.path.join(root,filename)
+            item_f = open(item_fn,'r')
+            documents = ARC_PARSE(item_f)['response']['result']
+            item_f.close()
+
+            for item in documents["doc"]:
+                desc_non = item["descriptiveNonRepeating"]
+                item["_id"] = desc_non["record_ID"]
+
+                hier_items = item["freetext"]
+
+                for k, v in hier_items.items():
+                    x = (v if isinstance(v, list) else [v])
+
+                    for hi in x:
+                        if not 'label' in hi:
+                            continue
+
+                        hid = hi['label']
+                        htitle = hi['#text']
+
+                        if hid not in collections:
+                            # Grab series information from item
+                            coll = {}
+                            coll['id'] = hid
+                            coll['title'] = htitle
+                            coll['items'] = []
+                            collections[hid] = coll
+                        else:
+                            coll = collections[hid]
+
+                        # Create tmp file to hold collections items
+                        coll_fn = "/tmp/coll_%s" % coll['id']
+                        coll_f = open(coll_fn,'a')
+                        coll_f.write(str(item)+"\n")
+                        coll_f.close()
+                        
+
+    from collections import OrderedDict
+    limit = 1000
+    for cid in collections:
+        # Open tmp collection file and append items
+        coll_fn = "/tmp/coll_%s" % cid
+        coll_f = open(coll_fn, 'r')
+        lines = coll_f.readlines()
+        coll_f.close()
+        os.remove(coll_fn)
+
+        step = 0
+        i = 0
+        for line in lines:
+            collections[cid]['items'].append(eval(line))
+            i += 1
+
+            if i == limit or line == lines[-1]:
+                print >> sys.stderr, "Enriching collection " + cid
+
+                enrich_coll(profile,cid,json.dumps(collections[cid]))
+                del collections[cid]['items'][:]
+                i = 0
+
+            step += 1
+
+        del collections[cid]['items']
+
+
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
     ('arc','all'): process_arc_all,
     ('oai','coll'): process_oai_coll,
     ('oai','all'): process_oai_all,
+    ('edan','coll'): None,
+    ('edan','all'): process_edan_all,
 }
 
 def define_arguments():
