@@ -1,0 +1,18 @@
+{
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe"
+    ],
+    "name": "smithsonian",
+    "list_sets": "/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe",
+    "enrichments_rec": [
+        "/select-id",
+        "/oai-to-dpla",
+    ],
+    "subresources": [ ],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/smithsonian",
+        "name": "Smithsonian"
+    },
+    "type": "oai",
+    "endpoint_URL": "/dpla-list-records?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="
+}
