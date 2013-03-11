@@ -10,6 +10,6 @@
         "@id": "http://dp.la/api/contributor/smithsonian",
         "name": "Smithsonian"
     },
-    "type": "arc",
-    "endpoint_URL": "file:/home/szymon/smithsonian"
+    "type": "edan",
+    "endpoint_URL": "file:/home/szymon/smithsonian/"
 }
