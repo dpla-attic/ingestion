@@ -3,13 +3,14 @@
     "name": "smithsonian",
     "list_sets": "",
     "enrichments_rec": [
-        "/select-id"
-    ],
+        "/select-id?prop=descriptiveNonRepeating%2Frecord_link",
+	"/edan-to-dpla" 
+   ],
     "subresources": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/smithsonian",
         "name": "Smithsonian"
     },
     "type": "edan",
-    "endpoint_URL": "file:/home/szymon/smithsonian/"
+    "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
 }
