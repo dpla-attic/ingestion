@@ -268,32 +268,38 @@ def process_edan_all(profile, blacklist=None):
         desc_non = item["descriptiveNonRepeating"]
         item["_id"] = desc_non["record_ID"]
 
-        hier_items = item["freetext"]
+        freetext = item["freetext"]
 
-        for k, v in hier_items.items():
-            x = (v if isinstance(v, list) else [v])
+        if not "setName" in freetext: # So there is no collection
+            return True #XML parser need to get True here to continue parsing
 
-            for hi in x:
-                if not '@label' in hi:
-                    continue
-                hid = hi['@label']
-                htitle = hi['#text']
+        colls = freetext["setName"]
+        it = colls
+        if not isinstance(colls, list):
+            it = [colls]
 
-                if hid not in collections:
-                    # Grab series information from item
-                    coll = {}
-                    coll['id'] = hid
-                    coll['title'] = htitle
-                    coll['items'] = []
-                    collections[hid] = coll
-                else:
-                    coll = collections[hid]
+        for c in it: 
+            if not "#text" in c:
+                continue
+            
+            hid = c["#text"]
+            htitle = c["#text"]
+            
+            if hid not in collections:
+                # Grab series information from item
+                coll = {}
+                coll['id'] = hid
+                coll['title'] = htitle
+                coll['items'] = []
+                collections[hid] = coll
+            else:
+                coll = collections[hid]
 
-                # Create tmp file to hold collections items
-                coll_fn = cache_file_name(cache_dir, coll['id'])
-                coll_f = open(coll_fn,'a')
-                coll_f.write(str(item)+"\n")
-                coll_f.close()
+            # Create tmp file to hold collections items
+            coll_fn = cache_file_name(cache_dir, coll['id'])
+            coll_f = open(coll_fn,'a')
+            coll_f.write(str(item)+"\n")
+            coll_f.close()
 
         return True
 
