@@ -240,7 +240,7 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "physical-occurrences"  : extent_transform,
-    "creators"              : creator_transform,
+    "freetext/name"              : creator_transform,
 #    "hierarchy"             : is_part_of_transform,
 #    "release-dates"         : lambda d: date_transform(d,"release-dates","release-date"),
 #    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates","broadcast-date"),
@@ -285,12 +285,24 @@ def edantodpla(body,ctype,geoprop=None):
         "aggregatedCHO": {}
     }
 
+    logger.debug("x"*60)
     # Apply all transformation rules from original document
-    for p in data.keys():
-        if p in CHO_TRANSFORMER:
-            out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data))
-        if p in AGGREGATION_TRANSFORMER:
-            out.update(AGGREGATION_TRANSFORMER[p](data))
+    for k, v in CHO_TRANSFORMER.items():
+        if exists(data, k):
+            out["aggregatedCHO"].update(v(data))
+    #for p in data.keys():
+    #    if p in CHO_TRANSFORMER:
+    #        out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data))
+
+    for k, v in AGGREGATION_TRANSFORMER.items():
+        logger.debug(k)
+        logger.debug(v)
+        if exists(data, k):
+            logger.debug("FOUND")
+            out.update(v(data))
+
+    #    if p in AGGREGATION_TRANSFORMER:
+    #        out.update(AGGREGATION_TRANSFORMER[p](data))
 
     # Apply transformations that are dependent on more than one
     # original document  field
@@ -299,6 +311,7 @@ def edantodpla(body,ctype,geoprop=None):
     #out["aggregatedCHO"].update(subject_and_spatial_transform(data))
     #out.update(has_view_transform(data))
 
+    logger.debug("x"*60)
 
     if exists(out, "aggregatedCHO/date"):
         logger.debug("OUTTYPE: %s"%getprop(out, "aggregatedCHO/date"))
