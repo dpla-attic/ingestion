@@ -220,21 +220,24 @@ def process_oai_all(profile,blacklist=[]):
 
 
 def get_current_username():
-    """TODO"""
+    """Returns the name of the current user."""
     import os
     import pwd
     return pwd.getpwuid( os.getuid() )[ 0 ]
 
 
 def create_temp_dir(operation=""):
-    """Returns a new temp dir"""
+    """Returns a new temp dir.
+    
+    The temp dir is created using current user name and provided operation.
+    """
     import tempfile
     prefix = "%s_%s" % (get_current_username(), operation)
     return tempfile.mkdtemp(prefix=prefix)
 
 
 def normalize_collection_name(collection_name):
-    """Removes bad characters from collection names."""
+    """Removes bad characters from collection names, to have safe filenames."""
     import re
     x = re.sub(r'[/() \t]', r'_', collection_name)
     x = re.sub(r'_+', r'_', x)
@@ -257,7 +260,6 @@ def process_edan_all(profile, blacklist=None):
 
     def cache_file_name(cache_dir, collection):
         f = os.path.join(cache_dir, "coll_" + normalize_collection_name(collection))
-        #print "Using %s for collection: [%s] and cache_dir: [%s]" % (f, collection, cache_dir)
         return f
 
     def handle_document(_, item):
