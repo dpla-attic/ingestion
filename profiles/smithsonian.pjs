@@ -12,5 +12,5 @@
         "name": "Smithsonian"
     },
     "type": "edan",
-    "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
+    "endpoint_URL": "file:/home/szymon/smithsonian/"
 }
