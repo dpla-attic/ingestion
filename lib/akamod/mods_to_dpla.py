@@ -1,0 +1,127 @@
+from akara import logger
+from akara import request, response
+from akara.services import simple_service
+from amara.lib.iri import is_absolute
+from amara.thirdparty import json
+from functools import partial
+import base64
+import sys
+import re
+from zen import dateparser
+from dateutil.parser import parse as dateutil_parse
+import timelib
+
+
+CONTEXT = {
+    "@vocab": "http://purl.org/dc/terms/",
+    "dpla": "http://dp.la/terms/",
+    "edm": "http://www.europeana.eu/schemas/edm/",
+    "LCSH": "http://id.loc.gov/authorities/subjects",
+    "name": "xsd:string",
+    "collection" : "dpla:aggregation",
+    "aggregatedDigitalResource" : "dpla:aggregatedDigitalResource",
+    "originalRecord" : "dpla:originalRecord",
+    "state": "dpla:state",
+    "coordinates": "dpla:coordinates",
+    "stateLocatedIn" : "dpla:stateLocatedIn",
+    "aggregatedCHO" : "edm:aggregatedCHO",
+    "dataProvider" : "edm:dataProvider",
+    "hasView" : "edm:hasView",
+    "isShownAt" : "edm:isShownAt",
+    "object" : "edm:object",
+    "provider" : "edm:provider",
+    "begin" : {
+        "@id" : "dpla:dateRangeStart",
+        "@type": "xsd:date"
+    },
+    "end" : {
+        "@id" : "dpla:dateRangeEnd",
+        "@type": "xsd:date"
+    },
+    "name": "xsd:string"
+}
+
+def is_shown_at_transform(d):
+    source = ""
+    for s in (d["handle"] if not isinstance(d["handle"],basestring) else [d["handle"]]):
+        if is_absolute(s):
+            source = s
+            break
+    return {
+        "isShownAt" : {
+            "@id" : source,
+            "format" : d.get("format",None)
+        }
+    }
+
+# Structure mapping the original property to a function returning a single
+# item dict representing the new property and its value
+CHO_TRANSFORMER = {
+    "contributor"      : lambda d: {"contributor": d.get("contributor",None)},
+    "coverage"         : lambda d: {"spatial": d.get("coverage",None)},
+    "creator"          : lambda d: {"creator": d.get("creator",None)},
+    "description"      : lambda d: {"description": d.get("description",None)},
+    "date"             : lambda d: {"date": d.get("date",None)},
+    "language"         : lambda d: {"language": d.get("language",None)},
+    "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
+    "relation"         : lambda d: {"relation": d.get("relation",None)},
+    "rights"           : lambda d: {"rights": d.get("rights",None)},
+    "subject"          : lambda d: {"subject": d.get("subject",None)},
+    "title"            : lambda d: {"title": d.get("title",None)},
+    "type"             : lambda d: {"type": d.get("type",None)}
+}
+
+AGGREGATION_TRANSFORMER = {
+    "collection"       : lambda d: {"collection": d.get("collection",None)},
+    "id"               : lambda d: {"id": d.get("id",None), "@id" : "http://dp.la/api/items/"+d.get("id","")},
+    "_id"              : lambda d: {"_id": d.get("_id",None)},
+    "handle"           : is_shown_at_transform,
+    "originalRecord"   : lambda d: {"originalRecord": d.get("originalRecord",None)},
+    "source"           : lambda d: {"dataProvider": d.get("source",None)},
+
+    "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
+    "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)}
+}
+
+@simple_service('POST', 'http://purl.org/la/dp/mods-to-dpla', 'mods_to_dpla', 'application/ld+json')
+def mods_to_dpla(body, ctype, geoprop=None):
+    """
+    Convert output of JSON-ified MODS/METS format into the DPLA JSON-LD format.
+
+    Parameter "geoprop" specifies the property name containing lat/long coords
+    """
+
+    try :
+        data = json.loads(body)
+    except:
+        response.code = 500
+        response.add_header('content-type','text/plain')
+        return "Unable to parse body as JSON"
+
+    global GEOPROP
+    GEOPROP = geoprop
+
+    out = {
+        "@context": CONTEXT,
+        "aggregatedCHO" : {}
+    }
+
+    # Apply all transformation rules from original document to aggregatedCHO
+    for p in data.keys():
+        if p in CHO_TRANSFORMER:
+            out['aggregatedCHO'].update(CHO_TRANSFORMER[p](data))
+        if p in AGGREGATION_TRANSFORMER:
+            out.update(AGGREGATION_TRANSFORMER[p](data))
+
+    # Additional content not from original document
+
+    if 'HTTP_CONTRIBUTOR' in request.environ:
+        try:
+            out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
+        except Exception as e:
+            logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
+
+    # Strip out keys with None/null values?
+    out = dict((k,v) for (k,v) in out.items() if v)
+
+    return json.dumps(out)
