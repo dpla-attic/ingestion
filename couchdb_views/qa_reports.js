@@ -99,6 +99,27 @@
        "collection_count": {
            "map": "function(doc) {if (doc.ingestType == 'item') {cname = doc.collection.name;emit(cname,1);}}",
            "reduce": "_count"
+       },
+       "contributor": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {contributor = doc.aggregatedCHO.contributor;if (contributor.constructor.toString().indexOf('Array') == -1) { contributor = new Array(contributor); }for (i=0; i<contributor.length; i++) {emit(doc['id'], contributor[i]);}}}"
+       },
+       "contributor_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {contributor = doc.aggregatedCHO.contributor;if (contributor.constructor.toString().indexOf('Array') == -1) { contributor = new Array(contributor); }for (i=0; i<contributor.length; i++) {emit(contributor[i],1);}}}",
+           "reduce": "_count"
+       },
+       "language": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {language = doc.aggregatedCHO.language;if (language.constructor.toString().indexOf('Array') == -1) { language = new Array(language); }for (i=0; i<language.length; i++) {emit(doc['id'], language[i]['name']);}}}"
+       },
+       "language_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {language = doc.aggregatedCHO.language;if (language.constructor.toString().indexOf('Array') == -1) { language = new Array(language); }for (i=0; i<language.length; i++) {emit(language[i]['name'],1);}}}",
+           "reduce": "_count"
+       },
+       "temporal": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {temporal = doc.aggregatedCHO.temporal;if (temporal.constructor.toString().indexOf('Array') == -1) { temporal = new Array(temporal); }for (i=0; i<temporal.length; i++) {emit(doc['id'], temporal[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')');}}}"
+       },
+       "temporal_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {temporal = doc.aggregatedCHO.temporal;if (temporal.constructor.toString().indexOf('Array') == -1) { temporal = new Array(temporal); }for (i=0; i<temporal.length; i++) {emit(temporal[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')',1);}}}",
+           "reduce": "_count"
        }
    },
    "lists": {
