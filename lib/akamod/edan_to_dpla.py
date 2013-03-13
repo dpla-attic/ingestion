@@ -41,6 +41,28 @@ CONTEXT = {
    }
 }
 
+
+def transform_description(d):
+    description = None
+    items = arc_group_extraction(d, "freetext", "notes")
+    for item in (items if isinstance(items, list) else [items]):
+        if "@label" in item and item["@label"] == "Notes":
+            if "#text" in item:
+                description = item["#text"]
+                break;
+    return {"description": description} if description else {}
+
+
+def extract_date(d, group_key, item_key):
+    dates = []
+    items = arc_group_extraction(d, group_key, item_key)
+    for item in (items if isinstance(items, list) else [items]):
+        if "#text" in item:
+            dates.append(item["#text"])
+
+    return {"date": "; ".join(dates)} if dates else {}
+
+
 def date_transform(d, groupKey, itemKey):
     date = None
     if isinstance(itemKey, list):
@@ -95,6 +117,75 @@ def creator_transform(d):
     return {"creator": creator} if creator else {}
 
 
+def transform_format(d):
+    f = []
+    labels = ["Physical description", "Medium"]
+    formats = arc_group_extraction(d, "freetext", "physicalDescription")
+    [f.append(e["#text"]) for e in formats if e["@label"] in labels]
+
+    return {"format": f} if f else {}
+
+
+def transform_rights(d):
+    p = []
+    ps = arc_group_extraction(d, "freetext", "creditLine")
+    if ps != [None]:
+        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Credit line"]
+
+    ps = arc_group_extraction(d, "freetext", "objectRights")
+    if ps != [None]:
+        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Rights"]
+
+    return {"rights": p} if p else {}
+
+
+def transform_publisher(d):
+    p = []
+    ps = arc_group_extraction(d, "freetext", "publisher")
+    if ps:
+        [p.append(e["#text"]) for e in ps]
+
+    return {"publisher": p} if p else {}
+
+
+def transform_place(d):
+    place = []
+    labels = ["Place", "Country", "Site"]
+    places = arc_group_extraction(d, "freetext", "place")
+    [place.append(e["#text"]) for e in places if e["@label"] in labels]
+
+    return {"place": place} if place else {}
+
+def transform_title(d):
+    p = []
+    labels = ["Title", "Object Name"]
+    ps = arc_group_extraction(d, "title")
+    if ps != [None]:
+        [p.append(e["#text"]) for e in ps if e["@label"] in labels]
+    
+    return {"title": p} if p else {}
+
+def transform_subject(d):
+    p = []
+    ps = arc_group_extraction(d, "freetext", "topic")
+    if ps != [None]:
+        [p.append(e["#text"]) for e in ps if e["@label"] == "Topic"]
+    
+    ps = arc_group_extraction(d, "freetext", "culture")
+    if ps != [None]:
+        [p.append(e["#text"]) for e in ps if e["@label"] == "Nationality"]
+
+    return {"subject": p} if p else {}
+
+
+def transform_identifier(d):
+    extent = []
+    extents = arc_group_extraction(d, "freetext", "identifier")
+    [extent.append(e) for e in extents if e["@label"].startswith("Catalog") or e["@label"].startswith("Accession")]
+
+    return {"extent": extent} if extent else {}
+
+
 def extent_transform(d):
     extent = []
     extents = arc_group_extraction(d, "freetext", "physicalDescription")
@@ -134,17 +225,6 @@ def subject_and_spatial_transform(d):
     
     return v
 
-def rights_transform(d):
-    rights = []
-
-    r = arc_group_extraction(d, "access-restriction", "restriction-status")[0]
-    if r:
-        rights.append("Restrictions: %s" % r)
-    r = arc_group_extraction(d, "use-restriction", "use-status")[0]
-    if r:
-        rights.append("Use status: %s" % r)
-
-    return {"rights": "; ".join(filter(None,rights))} if rights else {}
 
 def type_transform(d):
     type = []
@@ -237,9 +317,18 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
-    "physical-occurrences"  : extent_transform,
+    "freetext/physicalDescription" : extent_transform,
     "freetext/name"         : creator_transform,
-    "freetext/setName"       : is_part_of_transform,
+    "freetext/setName"      : is_part_of_transform,
+    "freetext/date"         : lambda d: extract_date(d,"freetext","date"),
+    "freetext/notes"        : transform_description,
+    "freetext/identifier"   : transform_identifier,
+    "language"              : lambda d: {"language": d.get("language") },
+    "freetext/physicalDescription" : transform_format,
+    "freetext/place"        : transform_place,
+    "freetext/publisher"    : transform_publisher,
+    "title"                 : transform_title,
+
 #    "release-dates"         : lambda d: date_transform(d,"release-dates","release-date"),
 #    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates","broadcast-date"),
 #    "production-dates"      : lambda d: date_transform(d,"production-dates","production-date"),
@@ -288,24 +377,15 @@ def edantodpla(body,ctype,geoprop=None):
     for k, v in CHO_TRANSFORMER.items():
         if exists(data, k):
             out["aggregatedCHO"].update(v(data))
-    #for p in data.keys():
-    #    if p in CHO_TRANSFORMER:
-    #        out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data))
-
     for k, v in AGGREGATION_TRANSFORMER.items():
-        logger.debug(k)
-        logger.debug(v)
         if exists(data, k):
-            logger.debug("FOUND")
             out.update(v(data))
-
-    #    if p in AGGREGATION_TRANSFORMER:
-    #        out.update(AGGREGATION_TRANSFORMER[p](data))
 
     # Apply transformations that are dependent on more than one
     # original document  field
     #out["aggregatedCHO"].update(type_transform(data))
-    #out["aggregatedCHO"].update(rights_transform(data))
+    out["aggregatedCHO"].update(transform_rights(data))
+    out["aggregatedCHO"].update(transform_subject(data))
     #out["aggregatedCHO"].update(subject_and_spatial_transform(data))
     #out.update(has_view_transform(data))
 
