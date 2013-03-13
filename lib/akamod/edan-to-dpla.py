@@ -54,12 +54,10 @@ def date_transform(d, groupKey, itemKey):
 
 def is_part_of_transform(d):
     is_part_of = []
-    lods = ["series", "file unit"]
-    items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
+    items = arc_group_extraction(d, "freetext", "setName")
     for item in (items if isinstance(items, list) else [items]):
-        if item["hierarchy-item-lod"].lower() in lods:
-            is_part_of.append("%s: %s" % (item["hierarchy-item-lod"],
-                                          item["hierarchy-item-title"]))
+        if "#text" in item:
+            is_part_of.append(item["#text"])
 
     return {"isPartOf": "; ".join(is_part_of)} if is_part_of else {}
 
@@ -79,12 +77,12 @@ def is_shown_at_transform(d):
 
 
 def collection_transform(d):
-    collection = getprop(d, "collection")
-    items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
+    collections = []
+    items = arc_group_extraction(d, "freetext", "setName")
     for item in (items if isinstance(items, list) else [items]):
-        if item["hierarchy-item-id"] == collection["name"]:
-            setprop(collection, "name", item["hierarchy-item-title"])
-    return {"collection": collection} if collection else {}
+        if "#text" in item:
+            collections.append(item["#text"])
+    return {"collection": collections} if collections else {}
 
 
 def creator_transform(d):
@@ -240,8 +238,8 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "physical-occurrences"  : extent_transform,
-    "freetext/name"              : creator_transform,
-#    "hierarchy"             : is_part_of_transform,
+    "freetext/name"         : creator_transform,
+    "freetext/setName"       : is_part_of_transform,
 #    "release-dates"         : lambda d: date_transform(d,"release-dates","release-date"),
 #    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates","broadcast-date"),
 #    "production-dates"      : lambda d: date_transform(d,"production-dates","production-date"),
@@ -256,9 +254,9 @@ AGGREGATION_TRANSFORMER = {
     "id"                    : lambda d: {"id": d.get("id"), "@id" : "http://dp.la/api/items/"+d.get("id","")},
     "_id"                   : lambda d: {"_id": d.get("_id")},
     "originalRecord"        : lambda d: {"originalRecord": d.get("originalRecord",None)},
-#    "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
-#    "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
-#    "collection"            : collection_transform,
+    "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
+    "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
+    "collection"            : lambda d: {"collection": d.get("collection")},
 #    "arc-id-desc"           : is_shown_at_transform
 }
 
