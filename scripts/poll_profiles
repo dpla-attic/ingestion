@@ -248,7 +248,7 @@ def process_mets_coll(profile, subr):
         if "mods" in doc_content:
             item = doc_content["mods"]
             for _id_dict in item["identifier"]:
-                if _id_dict["type"] == "pid":
+                if _id_dict["type"] == "uri":
                     item["_id"] = _id_dict["#text"]
                     items.append(item)
                     count += 1
