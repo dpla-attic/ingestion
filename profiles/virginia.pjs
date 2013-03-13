@@ -1,12 +1,10 @@
 {
-    "list_sets": "/oai.listsets.json?endpoint=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS",
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS"
-    ], 
+    "list_sets": "",
+    "enrichments_coll": [],
     "name": "virginia",
     "enrichments_rec": [
         "/select-id?prop=id", 
-        "/oai-to-dpla",
+        "/mods-to-dpla",
         "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
         "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
         "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
@@ -24,13 +22,13 @@
         "/enrich_language"
     ], 
     "subresources": [
-        "SetDPLA"
+        "744806"
     ], 
     "last_checked": "2013-02-05T18:29:41.395772", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/virginia",
         "name": "University of Virginia Library"
     }, 
-    "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A744806/methods/uva-lib%3AmetsSDef/getMETS&oaiset="
+    "type": "mets",
+    "endpoint_URL": "http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A{0}/methods/uva-lib%3AmetsSDef/getMETS"
 }

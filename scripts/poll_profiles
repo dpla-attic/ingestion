@@ -62,7 +62,7 @@ def process_profile(uri_base, profile_f):
             sys.exit(1)
 
         for subr in subResources:
-            process(profile,subr)
+            process(profile, subr)
             time.sleep(sleep)
 
     return True
@@ -218,11 +218,26 @@ def process_oai_all(profile,blacklist=[]):
         process_oai_coll(profile,subr)
         time.sleep(sleep)
 
+def process_mets_coll(profile, subr):
+    global URI_BASE
+    endpoint = profile[u'endpoint_URL'].format(subr)
+    resp, content = H.request(endpoint)
+    if not resp[u'status'].startswith('2'):
+        print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+    endpoint_content = ARC_PARSE(content)
+    for d in endpoint_content["mets:mets"]:
+        if "mets:dmdSec" in d:
+            print d[0]
+    exit(0)
+
+
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
     ('arc','all'): process_arc_all,
     ('oai','coll'): process_oai_coll,
     ('oai','all'): process_oai_all,
+    ('mets', 'coll'): process_mets_coll,
+    ('mets', 'all'): None,
 }
 
 def define_arguments():
