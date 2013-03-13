@@ -74,6 +74,7 @@ def date_transform(d, groupKey, itemKey):
 
     return {"date": date} if date else {}
 
+
 def is_part_of_transform(d):
     is_part_of = []
     items = arc_group_extraction(d, "freetext", "setName")
@@ -82,6 +83,7 @@ def is_part_of_transform(d):
             is_part_of.append(item["#text"])
 
     return {"isPartOf": "; ".join(is_part_of)} if is_part_of else {}
+
 
 def source_transform(d):
     source = None
@@ -156,6 +158,7 @@ def transform_place(d):
 
     return {"place": place} if place else {}
 
+
 def transform_title(d):
     p = []
     labels = ["Title", "Object Name"]
@@ -164,6 +167,7 @@ def transform_title(d):
         [p.append(e["#text"]) for e in ps if e["@label"] in labels]
     
     return {"title": p} if p else {}
+
 
 def transform_subject(d):
     p = []
@@ -241,6 +245,7 @@ def type_transform(d):
 
     return {"type": "; ".join(type)} if type else {}
 
+
 def has_view_transform(d):
     has_view = []
 
@@ -270,6 +275,7 @@ def has_view_transform(d):
         has_view = add_views(has_view, len(url), url)
 
     return {"hasView": has_view} if has_view else {}
+
 
 def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
     """
@@ -317,26 +323,17 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
-    "freetext/physicalDescription" : extent_transform,
-    "freetext/name"         : creator_transform,
-    "freetext/setName"      : is_part_of_transform,
-    "freetext/date"         : lambda d: extract_date(d,"freetext","date"),
-    "freetext/notes"        : transform_description,
-    "freetext/identifier"   : transform_identifier,
-    "language"              : lambda d: {"language": d.get("language") },
-    "freetext/physicalDescription" : transform_format,
-    "freetext/place"        : transform_place,
-    "freetext/publisher"    : transform_publisher,
-    "title"                 : transform_title,
-
-#    "release-dates"         : lambda d: date_transform(d,"release-dates","release-date"),
-#    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates","broadcast-date"),
-#    "production-dates"      : lambda d: date_transform(d,"production-dates","production-date"),
-#    "coverage-dates"        : lambda d: date_transform(d,"coverage-dates",["cov-start-date","cov-end-date"]),
-#    "copyright-dates"       : lambda d: date_transform(d,"copyright-dates","copyright-date"),
-#    "title"                 : lambda d: {"title": d.get("title-only")},
-#    "scope-content-note"    : lambda d: {"description": d.get("scope-content-note")}, 
-#    "languages"             : lambda d: {"language": arc_group_extraction(d,"languages","language")}
+    "freetext/physicalDescription"  : extent_transform,
+    "freetext/name"                 : creator_transform,
+    "freetext/setName"              : is_part_of_transform,
+    "freetext/date"                 : lambda d: extract_date(d,"freetext","date"),
+    "freetext/notes"                : transform_description,
+    "freetext/identifier"           : transform_identifier,
+    "language"                      : lambda d: {"language": d.get("language") },
+    "freetext/physicalDescription"  : transform_format,
+    "freetext/place"                : transform_place,
+    "freetext/publisher"            : transform_publisher,
+    "title"                         : transform_title,
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -346,7 +343,6 @@ AGGREGATION_TRANSFORMER = {
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
     "collection"            : lambda d: {"collection": d.get("collection")},
-#    "arc-id-desc"           : is_shown_at_transform
 }
 
 @simple_service("POST", "http://purl.org/la/dp/edan-to-dpla", "edan-to-dpla", "application/ld+json")
@@ -405,6 +401,7 @@ def edantodpla(body,ctype,geoprop=None):
     out = dict((k,v) for (k,v) in out.items() if v)
 
     return json.dumps(out)
+
 
 creator_field_names = [
 "Architect",
