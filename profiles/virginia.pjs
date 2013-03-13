@@ -3,7 +3,7 @@
     "enrichments_coll": [],
     "name": "virginia",
     "enrichments_rec": [
-        "/select-id?prop=id", 
+        "/select-id?prop=_id",
         "/mods-to-dpla",
         "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
         "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
