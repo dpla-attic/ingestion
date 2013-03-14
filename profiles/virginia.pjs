@@ -4,22 +4,7 @@
     "name": "virginia",
     "enrichments_rec": [
         "/select-id?prop=_id",
-        "/mods-to-dpla",
-        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "/shred?prop=isShownAt%2Fformat",
-        "/shred?prop=aggregatedCHO%2FphysicalMedium&delim=%3b",
-        "/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "/move_date_values?prop=aggregatedCHO%2Fspatial",
-        "/enrich-date",
-        "/enrich-subject", 
-        "/enrich-temporal-date",
-        "/cleanup_value",
-        "/enrich-type", 
-        "/enrich-format",
-        "/enrich_location",
-        "/enrich_language"
+        "/mods-to-dpla"
     ], 
     "subresources": [
         "744806"
