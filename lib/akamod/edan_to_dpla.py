@@ -174,28 +174,35 @@ def transform_spatial(d):
             if "#text" in p:
                 place.append(p["#text"])
     
-    
+    if len(place) == 1:
+        place = place[0]
 
-    city_keys    = ["City", "Town"]
-    state_keys   = ["State", "Province", "Department", "Country", "District", "Republic", "Sea", "Gulf", "Bay"]
-    county_keys  = ["County", "Island"]
-    country_L1_keys = ["Continent", "Ocean"]
-    country_L2_keys = ["Country", "Nation", "Sea", "Gulf", "Bay", "Sound"]
 
-    geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
-    for g in geo:
-        
-        if not g:
-            continue
-
+    def convert_location(location, name):
+        """Converts one location to a spatial record."""
+        city_keys    = ["City", "Town"]
+        state_keys   = ["State", "Province", "Department", "Country", "District", "Republic", "Sea", "Gulf", "Bay"]
+        county_keys  = ["County", "Island"]
+        country_L1_keys = ["Continent", "Ocean"]
+        country_L2_keys = ["Country", "Nation", "Sea", "Gulf", "Bay", "Sound"]
         cities    = []
         states    = []
         counties  = []
         countries = []
         regions   = []
         points    = []
-        logger.debug("GEO: " + str(g))
-        for k, v in g.items():
+        
+        res = {}
+        def update(res, name, val):
+            if not val:
+                return
+            if len(val) == 1:
+                res.update({name: val[0]})
+            elif val:
+                res.update({name: val})
+        
+        for k, v in location.items():
+            logger.debug("k:%s, v:%s" % (k,v))
             if not ("#text" in v and "@type" in v):
                 continue
             tp = v["@type"]
@@ -207,37 +214,50 @@ def transform_spatial(d):
                 states.append(tx)
             elif k == "L4" and tp in county_keys:
                 counties.append(tx)
-            elif k == "L1" and tp in country_L1_keys:
-                countries.append(tx)
+            #elif k == "L1" and tp in country_L1_keys:
+            #    countries.append(tx)
             elif k == "L2" and tp in country_L2_keys:
                 countries.append(tx)
-            elif k in ["L1", "L2", "L3", "L4", "L5"]:
+            elif k in [ "L2", "L3", "L4", "L5"]:
                 regions.append(tx)
             elif k == "points":
                 logger.debug("POINTS: " + str(v))
 
-        res = {}
-        def update(res, name, val):
-            if isinstance(val, basestring):
-                res.update({name: val})
-            elif isinstance(val, list):
-                res.update({name: ";".join(val)})
 
         update(res, "name", place)
         update(res, "city", cities)
         update(res, "state", states)
         update(res, "county", counties)
+        update(res, "country", countries)
         update(res, "region", regions)
         update(res, "lat_long", points)
         
-        result.append(res)
+        return res
+
+    logger.debug("ID:" + d["_id"])
+    logger.debug(d["indexedStructured"]["geoLocation"])
+    geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
+    logger.debug("GEO SIZE: " + str(len(geo)))
+
+    for g in geo:
+        
+        if not g:
+            continue
+
+        logger.debug("GEO: " + str(g))
+        loc = convert_location(g, place)
+        if loc:
+            result.append(loc)
+
 
     logger.debug(result)
-    # Reading points
-
     
-    #logger.debug("ID:" + d["_id"])
-    ret = {"spatial": result} if result else {}
+    ret = {}
+    if len(result) == 1:
+        ret = {"spatial": result[0]}
+    elif result:
+        ret = {"spatial": result}
+
     logger.debug("RESULT: " + str(ret))
     return ret
 
@@ -427,7 +447,7 @@ AGGREGATION_TRANSFORMER = {
     "collection"            : lambda d: {"collection": d.get("collection")},
 }
 
-@simple_service("POST", "http://purl.org/la/dp/edan-to-dpla", "edan-to-dpla", "application/ld+json")
+@simple_service("POST", "http://purl.org/la/dp/edan_to_dpla", "edan_to_dpla", "application/ld+json")
 def edantodpla(body,ctype,geoprop=None):
     """   
     Convert output of JSON-ified EDAN (Smithsonian) format into the DPLA JSON-LD format.
