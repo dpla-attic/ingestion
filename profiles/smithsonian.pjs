@@ -4,7 +4,24 @@
     "list_sets": "",
     "enrichments_rec": [
         "/select-id?prop=descriptiveNonRepeating%2Frecord_link",
-	"/edan-to-dpla" 
+	"/edan-to-dpla", 
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
+        "/shred?prop=isShownAt%2Fformat",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "/shred?prop=aggregatedCHO%2Fspatial&delim=--",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject", 
+        "/cleanup_value",
+        "/enrich-type", 
+        "/enrich-format", 
+        "/enrich_location",
+        "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
+        "/enrich_language"
    ],
     "subresources": [],
     "contributor": {
@@ -12,5 +29,5 @@
         "name": "Smithsonian"
     },
     "type": "edan",
-    "endpoint_URL": "file:/home/szymon/smithsonian/"
+    "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
 }
