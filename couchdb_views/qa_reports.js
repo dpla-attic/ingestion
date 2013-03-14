@@ -10,10 +10,10 @@
            "reduce": "_count"
        },
        "creator": {
-           "map": "function(doc) { if (doc.ingestType == 'item') { creator = doc.aggregatedCHO.creator; if (creator.constructor.toString().indexOf('Array') == -1) { creator = new Array(creator); } for (i=0; i<creator.length; i++) { emit(doc['id'], creator[i]['name']);}}}"
+           "map": "function(doc) { if (doc.ingestType == 'item') { creator = doc.aggregatedCHO.creator; if (creator.constructor.toString().indexOf('Array') == -1) { creator = new Array(creator); } for (i=0; i<creator.length; i++) { emit(doc['id'], creator[i]);}}}"
        },
        "creator_count": {
-           "map": "function(doc) { if (doc.ingestType == 'item') { creator = doc.aggregatedCHO.creator; if (creator.constructor.toString().indexOf('Array') == -1) { creator = new Array(creator); } for (i=0; i<creator.length; i++) { emit(creator[i]['name'],1);}}}",
+           "map": "function(doc) { if (doc.ingestType == 'item') { creator = doc.aggregatedCHO.creator; if (creator.constructor.toString().indexOf('Array') == -1) { creator = new Array(creator); } for (i=0; i<creator.length; i++) { emit(creator[i],1);}}}",
            "reduce": "_count"
        },
        "publisher": {
