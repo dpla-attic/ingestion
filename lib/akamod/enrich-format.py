@@ -79,7 +79,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
 
     # Setting the type if it is empty.
     f = getprop(data, typefield, True)
-    if not f:
+    if not f and exists(data, prop):
         format = getprop(data, prop)
         use_format = None
         if isinstance(format, list) and len(format) > 0:
