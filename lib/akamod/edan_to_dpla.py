@@ -46,12 +46,26 @@ def transform_description(d):
     description = None
     items = arc_group_extraction(d, "freetext", "notes")
     for item in (items if isinstance(items, list) else [items]):
-        if "@label" in item and item["@label"] == "Notes":
+        if "@label" in item and item["@label"] == "Description":
             if "#text" in item:
                 description = item["#text"]
                 break;
     return {"description": description} if description else {}
 
+
+def transform_date(d):
+    logger.debug("DATE")
+    date = None
+    dates = arc_group_extraction(d, "freetext", "date")
+    for item in dates:
+        logger.debug(item)
+        if "@label" in item and "#text" in item:
+            logger.debug("A")
+            if item["@label"] == "Date":
+                date = item["#text"]
+                break
+    logger.debug("END DATE")
+    return {"date": date} if date else {}
 
 def extract_date(d, group_key, item_key):
     dates = []
@@ -132,7 +146,7 @@ def transform_rights(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "creditLine")
     if ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Credit line"]
+        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Credit Line"]
 
     ps = arc_group_extraction(d, "freetext", "objectRights")
     if ps != [None]:
@@ -150,13 +164,82 @@ def transform_publisher(d):
     return {"publisher": p} if p else {}
 
 
-def transform_place(d):
+def transform_spatial(d):
+    result = []
     place = []
-    labels = ["Place", "Country", "Site"]
+    
     places = arc_group_extraction(d, "freetext", "place")
-    [place.append(e["#text"]) for e in places if e["@label"] in labels]
+    for p in places:
+        if isinstance(p, dict):
+            if "#text" in p:
+                place.append(p["#text"])
+    
+    
 
-    return {"place": place} if place else {}
+    city_keys    = ["City", "Town"]
+    state_keys   = ["State", "Province", "Department", "Country", "District", "Republic", "Sea", "Gulf", "Bay"]
+    county_keys  = ["County", "Island"]
+    country_L1_keys = ["Continent", "Ocean"]
+    country_L2_keys = ["Country", "Nation", "Sea", "Gulf", "Bay", "Sound"]
+
+    geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
+    for g in geo:
+        
+        if not g:
+            continue
+
+        cities    = []
+        states    = []
+        counties  = []
+        countries = []
+        regions   = []
+        points    = []
+        logger.debug("GEO: " + str(g))
+        for k, v in g.items():
+            if not ("#text" in v and "@type" in v):
+                continue
+            tp = v["@type"]
+            tx = v["#text"]
+
+            if k == "L5" and tp in city_keys:
+                cities.append(tx)
+            elif k == "L3" and tp in state_keys:
+                states.append(tx)
+            elif k == "L4" and tp in county_keys:
+                counties.append(tx)
+            elif k == "L1" and tp in country_L1_keys:
+                countries.append(tx)
+            elif k == "L2" and tp in country_L2_keys:
+                countries.append(tx)
+            elif k in ["L1", "L2", "L3", "L4", "L5"]:
+                regions.append(tx)
+            elif k == "points":
+                logger.debug("POINTS: " + str(v))
+
+        res = {}
+        def update(res, name, val):
+            if isinstance(val, basestring):
+                res.update({name: val})
+            elif isinstance(val, list):
+                res.update({name: ";".join(val)})
+
+        update(res, "name", place)
+        update(res, "city", cities)
+        update(res, "state", states)
+        update(res, "county", counties)
+        update(res, "region", regions)
+        update(res, "lat_long", points)
+        
+        result.append(res)
+
+    logger.debug(result)
+    # Reading points
+
+    
+    #logger.debug("ID:" + d["_id"])
+    ret = {"spatial": result} if result else {}
+    logger.debug("RESULT: " + str(ret))
+    return ret
 
 
 def transform_title(d):
@@ -183,17 +266,17 @@ def transform_subject(d):
 
 
 def transform_identifier(d):
-    extent = []
-    extents = arc_group_extraction(d, "freetext", "identifier")
-    [extent.append(e) for e in extents if e["@label"].startswith("Catalog") or e["@label"].startswith("Accession")]
+    identifier = []
+    ids = arc_group_extraction(d, "freetext", "identifier")
+    [identifier.append(e["#text"]) for e in ids if e["@label"].startswith("Catalog") or e["@label"].startswith("Accession")]
 
-    return {"extent": extent} if extent else {}
+    return {"identifier": identifier} if identifier else {}
 
 
 def extent_transform(d):
     extent = []
     extents = arc_group_extraction(d, "freetext", "physicalDescription")
-    [extent.append(e) for e in extents if e["@label"] == "Dimensions"]
+    [extent.append(e["#text"]) for e in extents if e["@label"] == "Dimensions"]
 
     return {"extent": extent} if extent else {}
 
@@ -326,12 +409,11 @@ CHO_TRANSFORMER = {
     "freetext/physicalDescription"  : extent_transform,
     "freetext/name"                 : creator_transform,
     "freetext/setName"              : is_part_of_transform,
-    "freetext/date"                 : lambda d: extract_date(d,"freetext","date"),
+    "freetext/date"                 : transform_date,
     "freetext/notes"                : transform_description,
     "freetext/identifier"           : transform_identifier,
     "language"                      : lambda d: {"language": d.get("language") },
     "freetext/physicalDescription"  : transform_format,
-    "freetext/place"                : transform_place,
     "freetext/publisher"            : transform_publisher,
     "title"                         : transform_title,
 }
@@ -382,6 +464,8 @@ def edantodpla(body,ctype,geoprop=None):
     #out["aggregatedCHO"].update(type_transform(data))
     out["aggregatedCHO"].update(transform_rights(data))
     out["aggregatedCHO"].update(transform_subject(data))
+    out["aggregatedCHO"].update(transform_spatial(data))
+    logger.debug(out["aggregatedCHO"])
     #out["aggregatedCHO"].update(subject_and_spatial_transform(data))
     #out.update(has_view_transform(data))
 
