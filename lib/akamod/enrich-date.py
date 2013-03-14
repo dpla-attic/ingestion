@@ -29,8 +29,8 @@ DEFAULT_DATETIME = dateutil_parse(DEFAULT_DATETIME_STR)
 DEFAULT_DATETIME_SECS = 32503680000.0 # UTC seconds for "3000-01-01"
 
 
-DATE_RANGE_RE = r'(\S+)\s*-\s*(\S+)'
-DATE_RANGE_EXT_RE = r'(\S+)\s*[-/]\s*(\S+)'
+DATE_RANGE_RE = r'([0-9-]+)\s*-\s*([0-9-]+)'
+DATE_RANGE_EXT_RE = r'([0-9-]+)\s*[-/]\s*([0-9-]+)'
 def split_date(d):
     reg = DATE_RANGE_EXT_RE
     if len(d.split("/")) == 3: #so th date is like "2001 / 01 / 01"
