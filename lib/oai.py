@@ -115,7 +115,22 @@ class oaiservice(object):
         return sets
 
     def get_record(self, id):
-        pass
+        params = {'verb': 'GetRecord', 'metadataPrefix': 'oai_dc', 'identifier': id}
+        qstr = urllib.urlencode(params)
+        url = self.root + '?' + qstr
+        self.logger.debug('OAI request URL: {0}'.format(url))
+        start_t = time.time()
+        resp, content = self.h.request(url)
+        retrieved_t = time.time()
+        self.logger.debug('Retrieved in {0}s',format(retrieved_t - start_t))
+        doc = bindery.parse(url, model=OAI_GETRECORD_MODEL)
+
+        record, rid = metadata_dict(generate_metadata(doc), nesteddict=False)
+        for id_, props in (record if isinstance(record, list) else [record]):
+            for k, v in props.iteritems():
+                props[k] = [ U(item) for item in v ]
+
+        return {'record' : record}
 
     def search(self, term):
         qstr = urllib.urlencode({'verb' : 'GetRecord', 'metadataPrefix': 'oai_dc', 'identifier': dspace_id})

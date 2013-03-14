@@ -30,7 +30,8 @@ def copyprop(body,ctype,prop=None,to_prop=None,create=False,key=None,
         return "Unable to parse body as JSON"
 
     if exists(data, prop) and create and not exists(data, to_prop):
-        setprop(data, to_prop, "")
+        val = {} if key else ""
+        setprop(data, to_prop, val)
 
     if exists(data, prop) and exists(data, to_prop):
         val = getprop(data, prop)
@@ -49,7 +50,7 @@ def copyprop(body,ctype,prop=None,to_prop=None,create=False,key=None,
                 if not isinstance(to_element, list):
                     to_element = [to_element]
                 for dict in to_element:
-                    if exists(dict, key):
+                    if exists(dict, key) or create:
                         setprop(dict, key, val)
                     else:
                         msg = "Key %s does not exist in %s" % (key, to_prop)

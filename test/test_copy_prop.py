@@ -641,5 +641,54 @@ def test_copy_prop_no_replace3():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED2
 
+def test_copy_prop_to_prop_create_dict_key1():
+    """Should copy to_prop into new dict with key"""
+    prop1 = "key1"
+    prop2 = "aggregatedCHO/key2"
+    to_prop = "aggregatedCHO/to_dict"
+    key1 = "key1"
+    key2 = "key2" 
+    create = True
+
+    INPUT = {
+        "key1": "value1",
+        "aggregatedCHO": {
+            "key2": "value2",
+            "key3": "value3"
+        },
+        "key4": "value4"
+    }
+    EXPECTED1 = {
+        "key1": "value1",
+        "aggregatedCHO": {
+            "key2": "value2",
+            "key3": "value3",
+            "to_dict" : {"key1": "value1"}
+        },
+        "key4": "value4"
+    }
+    EXPECTED2 = {
+        "key1": "value1",
+        "aggregatedCHO": {
+            "key2": "value2",
+            "key3": "value3",
+            "to_dict" : {
+                "key1": "value1",
+                "key2": "value2"
+            }
+        },
+        "key4": "value4"
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop1,
+        to_prop=to_prop, key=key1, create=create)
+    assert resp.status == 200
+    assert json.loads(content) ==  EXPECTED1
+
+    resp,content = _get_server_response(json.dumps(EXPECTED1), prop=prop2,
+        to_prop=to_prop, key=key2, create=create)
+    assert resp.status == 200
+    assert json.loads(content) ==  EXPECTED2
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

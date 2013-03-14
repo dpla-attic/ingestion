@@ -4,6 +4,8 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 import re
+import os
+from amara.lib.iri import is_absolute
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-format', 'enrich-format', 'application/json')
 def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alternate="aggregatedCHO/physicalMedium",typefield="aggregatedCHO/type"):
@@ -32,9 +34,16 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
             "text": "text"
     }
 
-    REGEXPS = ('audio/mp3', "audio/mpeg"), ('images/jpeg', 'image/jpeg'), ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
-    IMT_TYPES = ['application','audio','image','message','model','multipart','text','video']
+    REGEXPS = ('audio/mp3', 'audio/mpeg'), ('images/jpeg', 'image/jpeg'),\
+              ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'),\
+              ('img/jpg', 'image/jpeg'), ('^jpeg$','image/jpeg'),\
+              ('^jpg$', 'image/jpeg'), ('\W$','')
+    IMT_TYPES = ['application', 'audio', 'image', 'message', 'model',
+                 'multipart', 'text', 'video']
 
+    def get_ext(s):
+        return os.path.splitext(s)[1].split('.')[1]
+        
     def cleanup(s):
         s = s.lower().strip()
         for pattern, replace in REGEXPS:
@@ -62,6 +71,8 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
             physicalFormat = [physicalFormat]
 
         for s in (v if not isinstance(v,basestring) else [v]):
+            if is_absolute(s):
+                s = get_ext(s)
             cleaned = cleanup(s)
             if is_imt(cleaned):
                 if cleaned not in format:

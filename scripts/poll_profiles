@@ -49,10 +49,14 @@ def process_profile(uri_base, profile_f):
     if not is_absolute(ENRICH):
         ENRICH = URI_BASE + ENRICH
 
+    getRecord = profile.get(u'get_record', None)
     subResources = profile.get(u'subresources')
     blacklist = profile.get(u'blacklist',[])
     ptype = profile.get(u'type').lower()
-    if not subResources: # i.e. all subresources
+    if getRecord:
+        process = TYPE_PROCESSORS.get((ptype,'rec'))
+        process(profile)
+    elif not subResources: # i.e. all subresources
         process = TYPE_PROCESSORS.get((ptype,'all'))
         process(profile,blacklist)
     else:
@@ -157,6 +161,18 @@ def enrich_coll(profile,subr,content):
     if not str(resp.status).startswith('2'):
         print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
 
+def process_oai_rec(profile):
+    endpoint = profile[u'get_record']
+    print >> sys.stderr, endpoint
+
+    resp, content = H.request(endpoint)
+    if not str(resp.status).startswith('2'):
+        print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+        return False
+
+    subr = profile[u'name']
+    enrich_coll(profile,subr,content)
+
 def process_oai_coll(profile,subr):
     # For now, a simplifying assumption that string concatenation produces a
     # full URI from the combination of the endpoint URL and each subresource id.
@@ -223,6 +239,7 @@ TYPE_PROCESSORS = {
     ('arc','all'): process_arc_all,
     ('oai','coll'): process_oai_coll,
     ('oai','all'): process_oai_all,
+    ('oai','rec'): process_oai_rec,
 }
 
 def define_arguments():
