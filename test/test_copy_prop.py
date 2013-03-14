@@ -8,7 +8,7 @@ CT_JSON = {"Content-Type": "application/json"}
 H = httplib2.Http()
 
 def _get_server_response(body, prop=None, to_prop=None, create=None, key=None,
-    remove=None):
+    remove=None, no_replace=None):
     url = server() + "copy_prop?prop=%s&to_prop=%s" % (prop, to_prop)
     if create:
         url = "%s&create=%s" % (url, create)
@@ -16,6 +16,8 @@ def _get_server_response(body, prop=None, to_prop=None, create=None, key=None,
         url = "%s&key=%s" % (url, key)
     if remove:
         url = "%s&remove=%s" % (url, remove)
+    if no_replace:
+        url = "%s&no_replace=%s" % (url, no_replace)
     return H.request(url, "POST", body=body, headers=CT_JSON)
 
 def test_copy_prop_rights1():
@@ -536,6 +538,108 @@ def test_copy_prop_to_prop_dict_no_key():
         to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) ==  EXPECTED
+
+def test_copy_prop_no_replace1():
+    """Should create list of prop string and append to_prop"""
+    prop = "aggregatedCHO/source"
+    to_prop = "aggregatedCHO/description"
+    no_replace = True
+
+    INPUT = {
+        "aggregatedCHO": {
+            "description" : "Description string.",
+            "source": "Source string."
+        }
+    }
+    EXPECTED = {
+        "aggregatedCHO": {
+            "description": [
+                "Description string.",
+                "Source string."
+            ],
+            "source": "Source string."
+        }
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+        to_prop=to_prop, no_replace=no_replace)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_copy_prop_no_replace2():
+    """Should create list of prop string and append to_prop"""
+    prop = "aggregatedCHO/source"
+    to_prop = "aggregatedCHO/description"
+    no_replace = True
+
+    INPUT = {
+        "aggregatedCHO": {
+            "description" : "Description string.",
+            "source": ["Source string1.", "Source string2."]
+        }
+    }
+    EXPECTED = {
+        "aggregatedCHO": {
+            "description": [
+                "Description string.",
+                "Source string1.",
+                "Source string2."
+            ],
+            "source": ["Source string1.", "Source string2."]
+        }
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+        to_prop=to_prop, no_replace=no_replace)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_copy_prop_no_replace3():
+    """Should create list of prop string and append to_prop"""
+    prop1 = "aggregatedCHO/source1"
+    prop2 = "aggregatedCHO/source2"
+    to_prop = "aggregatedCHO/description"
+    no_replace = True
+
+    INPUT = {
+        "aggregatedCHO": {
+            "description" : "Description string.",
+            "source1": "Source1 string1.",
+            "source2": ["Source2 string1.", "Source2 string2."]
+        }
+    }
+    EXPECTED1 = {
+        "aggregatedCHO": {
+            "description": [
+                "Description string.",
+                "Source1 string1."
+            ],
+            "source1": "Source1 string1.",
+            "source2": ["Source2 string1.", "Source2 string2."]
+        }
+    }
+    EXPECTED2 = {
+        "aggregatedCHO": {
+            "description": [
+                "Description string.",
+                "Source1 string1.",
+                "Source2 string1.",
+                "Source2 string2."
+            ],
+            "source1": "Source1 string1.",
+            "source2": ["Source2 string1.", "Source2 string2."]
+        }
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop1,
+        to_prop=to_prop, no_replace=no_replace)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED1
+
+    resp,content = _get_server_response(json.dumps(EXPECTED1), prop=prop2,
+        to_prop=to_prop, no_replace=no_replace)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED2
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
