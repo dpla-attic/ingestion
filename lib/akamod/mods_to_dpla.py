@@ -15,7 +15,7 @@ from dplaingestion.selector import getprop as selector_getprop, exists
 
 
 def getprop(d, p):
-    selector_getprop(d, p, True)
+    return selector_getprop(d, p, True)
 
 CONTEXT = {
     "@vocab": "http://purl.org/dc/terms/",
@@ -42,8 +42,7 @@ CONTEXT = {
     "end" : {
         "@id" : "dpla:dateRangeEnd",
         "@type": "xsd:date"
-    },
-    "name": "xsd:string"
+    }
 }
 
 def physical_description_handler(d, p):
@@ -69,7 +68,7 @@ def subject_handler(d, p):
 
 def location_handler(d, p):
     location = getprop(d, p)
-    format = getprop(d, "physicalDescription/internetMediaType", True)
+    format = getprop(d, "physicalDescription/internetMediaType")
     out = {}
     try:
         for _dict in location:
@@ -107,7 +106,7 @@ CHO_TRANSFORMER = {
 }
 
 AGGREGATION_TRANSFORMER = {
-    "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/"+getprop(d, p)},
+    "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
