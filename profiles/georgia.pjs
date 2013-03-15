@@ -1,9 +1,9 @@
 {
-    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai",
+    "list_sets": "/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai",
     "type": "oai",
     "name": "georgia",
     "enrichments_coll": [
-        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai"
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai"
     ], 
     "enrichments_rec": [
         "/select-id",
@@ -32,5 +32,5 @@
         "@id": "http://dp.la/api/contributor/georgia", 
         "name": "Digital Library of Georgia"
     }, 
-    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
 }
