@@ -102,37 +102,6 @@ def process_primo_all(profile, blacklist=None):
 
     return True
 
-def process_primo_all(profile, blacklist=None):
-    # TODO flag to stop requesting
-    request_more = True
-    index = 1
-    while request_more:
-        collection = {}
-        collection['id'] = 1
-        collection['name'] = "mwdl"
-        collection['items'] = []
-        endpoint = "%s&bulkSize=%s&indx=%s" % (profile[u'endpoint_URL'], profile[u'bulk_size'], index)
-
-        resp, content = H.request(endpoint)
-        if not resp[u'status'].startswith('2'):
-            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
-            request_more = False
-
-        print >> sys.stderr, "Index: %s" % index
-        
-        endpoint_content = ARC_PARSE(content)
-        items = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['DOC']
-        for item in (items if isinstance(items, list) else [items]):
-            item['_id'] = item['PrimoNMBib']['record']['control']['recordid']
-            collection['items'].append(item)
-        enrich_coll(profile, collection['name'], json.dumps({'items':collection['items']}))
-        index += int(profile[u'bulk_size'])
-
-        if index > 5000:
-            request_more = False
-
-    return True
-
 ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
 
 #def skip_cdata(path,key,data):
