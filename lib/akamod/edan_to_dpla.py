@@ -94,9 +94,13 @@ def is_part_of_transform(d):
     items = arc_group_extraction(d, "freetext", "setName")
     for item in (items if isinstance(items, list) else [items]):
         if "#text" in item:
-            is_part_of.append(item["#text"])
+            is_part_of.append({"title": item["#text"]})
 
-    return {"isPartOf": "; ".join(is_part_of)} if is_part_of else {}
+    res = is_part_of
+    if len(res) == 1:
+        res = res[0]
+    
+    return {"isPartOf": res} if res else {}
 
 
 def source_transform(d):
@@ -108,29 +112,38 @@ def source_transform(d):
     return {"source": source} if source else {}
 
 
-def is_shown_at_transform(d):
-    object = "http://research.archives.gov/description/%s" % d["arc-id-desc"]
-
-    return {"isShownAt": object}
+def transform_is_shown_at(d):
+    propname = "descriptiveNonRepeating/record_link"
+    obj = getprop(d, propname, False)
+    return {"isShownAt": obj} if obj else {}
 
 
 def collection_transform(d):
+    import re
     collections = []
     items = arc_group_extraction(d, "freetext", "setName")
     for item in (items if isinstance(items, list) else [items]):
         if "#text" in item:
-            collections.append(item["#text"])
+            c = item["#text"]
+            c = re.sub(r'[,]', '', c)
+            c = re.sub(r'\s+', '--', c)
+            collections.append(c)
     return {"collection": collections} if collections else {}
 
 
 def creator_transform(d):
-    creator = None
+    creator = []
     creators = arc_group_extraction(d, "freetext", "name")
     for c in (creators if isinstance(creators, list) else [creators]):
         if c["@label"] in creator_field_names:
-            creator = c["#text"]
-            break;
-    return {"creator": creator} if creator else {}
+            if "#text" in c:
+                creator.append(c["#text"])
+
+    res = creator
+    if len(creator) == 1:
+        res = res[0]
+
+    return {"creator": res} if res else {}
 
 
 def transform_format(d):
@@ -139,7 +152,10 @@ def transform_format(d):
     formats = arc_group_extraction(d, "freetext", "physicalDescription")
     [f.append(e["#text"]) for e in formats if e["@label"] in labels]
 
-    return {"format": f} if f else {}
+    res = f
+    if len(res) == 1:
+        res = res[0]
+    return {"format": res} if res else {}
 
 
 def transform_rights(d):
@@ -152,7 +168,11 @@ def transform_rights(d):
     if ps != [None]:
         [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Rights"]
 
-    return {"rights": p} if p else {}
+    res = p
+    if len(p) == 1:
+        res = p[0]
+
+    return {"rights": res} if res else {}
 
 
 def transform_publisher(d):
@@ -167,6 +187,7 @@ def transform_publisher(d):
 def transform_spatial(d):
     result = []
     place = []
+    location_states = []
     
     places = arc_group_extraction(d, "freetext", "place")
     for p in places:
@@ -212,6 +233,7 @@ def transform_spatial(d):
                 cities.append(tx)
             elif k == "L3" and tp in state_keys:
                 states.append(tx)
+                location_states.append(tx)
             elif k == "L4" and tp in county_keys:
                 counties.append(tx)
             #elif k == "L1" and tp in country_L1_keys:
@@ -235,7 +257,6 @@ def transform_spatial(d):
         return res
 
     logger.debug("ID:" + d["_id"])
-    logger.debug(d["indexedStructured"]["geoLocation"])
     geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
     logger.debug("GEO SIZE: " + str(len(geo)))
 
@@ -258,21 +279,72 @@ def transform_spatial(d):
     elif result:
         ret = {"spatial": result}
 
+    # Also add currentLocation
+    l = list(set(location_states))
+    if len(l) == 1:
+        l = l[0]
+
+    if l:
+        ret.update({"currentLocation": l}) 
+
     logger.debug("RESULT: " + str(ret))
     return ret
 
 
-def transform_title(d):
-    p = []
-    labels = ["Title", "Object Name"]
-    ps = arc_group_extraction(d, "title")
-    if ps != [None]:
-        [p.append(e["#text"]) for e in ps if e["@label"] in labels]
+def transform_online_media(d):
+
+
+    media = arc_group_extraction(d, "descriptiveNonRepeating", "online_media")
+    if media == [None]:
+        return {}
     
+    media = media[0]
+    c = 0
+    if "@mediaCount" in media:
+        c = media["@mediaCount"]
+    try:
+        c = int(c)
+    except ValueError as e:
+        logger.error("Couldn't convert %s to int" % c)
+        return {}
+    if not "media" in media:
+        return {}
+
+    m = media
+    if c == 1:
+        m = [media["media"]]
+
+    res = []
+    for mm in m:
+        item = {}
+        if "@type" in mm:
+            item["format"] = mm["@type"]
+        if "rights" in mm:
+            item["rights"] = mm["rights"]
+        if item.keys():
+            res.append(item)
+
+    if len(res) == 1:
+        return {"hasView": res[0]}
+    if len(res) > 1:
+        return {"hasView": res}
+    return {}
+
+def transform_title(d):
+    p = None
+    labels = ["Title", "Object Name"]
+    ps = arc_group_extraction(d, "descriptiveNonRepeating", "title")
+    logger.debug("TITLE")
+    if ps != [None]:
+        for e in ps:
+            if e["@label"] in labels:
+                p = e["#text"]
+    
+    logger.debug("TITLE " + str(ps))
     return {"title": p} if p else {}
 
-
 def transform_subject(d):
+
     p = []
     ps = arc_group_extraction(d, "freetext", "topic")
     if ps != [None]:
@@ -282,7 +354,23 @@ def transform_subject(d):
     if ps != [None]:
         [p.append(e["#text"]) for e in ps if e["@label"] == "Nationality"]
 
-    return {"subject": p} if p else {}
+    fields = ["topic","name","culture","tax_kingdom","tax_phylum",
+              "tax_division","tax_class","tax_order","tax_family",
+              "tax_sub-family","scientific_name","common_name","strat_group",
+              "strat_formation","strat_member"]
+    if "freetext" in d:
+        for key, item in d["freetext"].items():
+            if key in fields:
+                if "#text" in item:
+                    p.append(item["#text"])
+
+    res = list(set(p))
+    #logger.debug("SUBJECT:" + str(res))
+    if len(res) == 1:
+        res = res[0]
+
+    #logger.debug("SUBJECT:" + str(res))
+    return {"subject": res} if res else {}
 
 
 def transform_identifier(d):
@@ -290,7 +378,20 @@ def transform_identifier(d):
     ids = arc_group_extraction(d, "freetext", "identifier")
     [identifier.append(e["#text"]) for e in ids if e["@label"].startswith("Catalog") or e["@label"].startswith("Accession")]
 
-    return {"identifier": identifier} if identifier else {}
+    id = identifier
+    if len(identifier) == 1:
+        id = identifier[0]
+
+    return {"identifier": id} if id else {}
+
+
+def transform_data_provider(d):
+    ds = None
+    dss = arc_group_extraction(d, "descriptiveNonRepeating", "dataProvider")
+    if dss != [None]:
+        ds = dss[0]
+
+    return {"data_source": ds} if ds else {}
 
 
 def extent_transform(d):
@@ -331,6 +432,22 @@ def subject_and_spatial_transform(d):
         [v["spatial"].append(s) for s in spatial if not v["spatial"].count(s)]
     
     return v
+
+
+def slugify_field(data, fieldname):
+    if exists(data, fieldname):
+        import re
+        p = getprop(data, fieldname)
+        parts = p.split("/")
+        c = parts[-1:]
+        if c:
+            c = c[0]
+            c = re.sub(r'[,]', '', c)
+            c = re.sub(r'\s+', '--', c)
+            parts[len(parts)-1] = c
+            slugged = "/".join(parts)
+            logger.debug("SLUG:[%s][%s]" % (p, slugged))
+            setprop(data, fieldname, slugged)
 
 
 def type_transform(d):
@@ -435,7 +552,9 @@ CHO_TRANSFORMER = {
     "language"                      : lambda d: {"language": d.get("language") },
     "freetext/physicalDescription"  : transform_format,
     "freetext/publisher"            : transform_publisher,
-    "title"                         : transform_title,
+    "descriptiveNonRepeating/title" : transform_title,
+    "descriptiveNonRepeating/data_source" : transform_data_provider,
+    #"descriptiveNonRepeating/online_media" : transform_online_media,
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -488,6 +607,13 @@ def edantodpla(body,ctype,geoprop=None):
     logger.debug(out["aggregatedCHO"])
     #out["aggregatedCHO"].update(subject_and_spatial_transform(data))
     #out.update(has_view_transform(data))
+
+    out.update(transform_is_shown_at(data))
+
+
+    logger.debug(out)
+
+    slugify_field(out, "collection/@id")
 
     logger.debug("x"*60)
 
