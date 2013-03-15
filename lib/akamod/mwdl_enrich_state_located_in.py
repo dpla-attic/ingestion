@@ -4,13 +4,13 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 
-@simple_service('POST', 'http://purl.org/la/dp/mwdl_enrich_location',
-                'mwdl_enrich_location', 'application/json')
-def mwdlenrichlocation(body, ctype, action="mdl_enrich_location",
-                       prop="aggregatedCHO/spatial"):
+@simple_service('POST', 'http://purl.org/la/dp/mwdl_enrich_state_located_in',
+                'mwdl_enrich_state_located_in', 'application/json')
+def mwdlenrichstatelocatedin(body, ctype, action="mdl_enrich_state_located_in",
+                             prop="aggregatedCHO/stateLocatedIn"):
     """
-    Service that accepts a JSON document and enriches the "spatial" field of
-    that document by:
+    Service that accepts a JSON document and enriches the "stateLocatedIn"
+    field of that document by:
 
     For primary use with MWDL documents.
     """
@@ -23,14 +23,14 @@ def mwdlenrichlocation(body, ctype, action="mdl_enrich_location",
         return "Unable to parse body as JSON"
 
     if exists(data,prop):
-        spatial = []
+        sli = []
         values = getprop(data,prop)
         for v in values.split(";"):
             if STATE_CODES.get(v):
-                spatial.append(STATE_CODES[v])
+                sli.append(STATE_CODES[v])
             else:
-                spatial.append(v)
-        setprop(data, prop, "; ".join(spatial))
+                sli.append(v)
+        setprop(data, prop, "; ".join(sli))
 
     return json.dumps(data)
 

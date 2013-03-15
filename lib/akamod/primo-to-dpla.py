@@ -44,12 +44,6 @@ CONTEXT = {
    }
 }
 
-def title_transform(d, p):
-    title = getprop(d, p)
-    alt_field = RECORD + "display/lds10"
-    alt = getprop(d, alt_field) if exists(d, alt_field) else None
-    return [title, alt] if alt else title
-
 def web_resource_transform(d, url):
     format_field = RECORD + "display/format"
     format = getprop(d, format_field) if exists(d, format_field) else None
@@ -62,6 +56,7 @@ def multi_transform(d, key, props):
         p = RECORD + p
         if exists(d, p):
             v = getprop(d, p)
+            if not v: continue
             if not isinstance(v, list):
                 v = [v]
             [values.append(s) for s in v if s not in values]
@@ -71,7 +66,6 @@ def multi_transform(d, key, props):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
-    RECORD + "display/contributor"  : lambda d, p: {"contributor": getprop(d, p)},
     RECORD + "display/creator"      : lambda d, p: {"creator": getprop(d, p)},
     RECORD + "search/creationdate"  : lambda d, p: {"date": getprop(d, p)},
     RECORD + "search/description"   : lambda d, p: {"description": getprop(d, p)},
@@ -81,8 +75,8 @@ CHO_TRANSFORMER = {
     RECORD + "display/rights"       : lambda d, p: {"rights": getprop(d, p)},
     RECORD + "display/subject"      : lambda d, p: {"subject": getprop(d, p)},
     RECORD + "display/lds09"        : lambda d, p: {"temporal": getprop(d, p)},
-    RECORD + "display/title"        : lambda d, p: {"title": title_transform(d, p)},
-    RECORD + "display/lds18"        : lambda d, p: {"type": getprop(d, p)}
+    RECORD + "display/lds18"        : lambda d, p: {"type": getprop(d, p)},
+    RECORD + "search/lsr03"         : lambda d, p: {"stateLocatedIn": getprop(d, p)}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -131,10 +125,14 @@ def primotodpla(body,ctype,geoprop=None):
 
     # Apply transformations that are dependent on more than one
     # original document field
-    sp_props = ["display/lds08", "search/lsr14", "search/lsr03"]
+    id_props = ["control/recordid", "display/identifier"]
+    sp_props = ["display/lds08", "search/lsr14"]
     ipo_props = ["display/lds04", "search/lsr13"]
+    title_props = ["display/title", "display/lds10"]
+    out["aggregatedCHO"].update(multi_transform(data, "identifier", id_props))
     out["aggregatedCHO"].update(multi_transform(data, "spatial", sp_props))
     out["aggregatedCHO"].update(multi_transform(data, "isPartOf", ipo_props))
+    out["aggregatedCHO"].update(multi_transform(data, "title", title_props))
 
     dp_props = ["display/lds03", "search/lsr12"]
     out.update(multi_transform(data, "dataProvider", dp_props))
