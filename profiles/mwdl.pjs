@@ -1,0 +1,31 @@
+{
+    "bulk_size": "500", 
+    "enrichments_coll": [], 
+    "name": "mwdl", 
+    "enrichments_rec": [
+        "http://localhost:8881/select-id?prop=_id", 
+        "http://localhost:8881/primo-to-dpla",
+        "http://localhost:8881/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "http://localhost:8881/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "http://localhost:8881/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "http://localhost:8881/shred?prop=isShownAt%2Fformat",
+        "http://localhost:8881/mwdl_enrich_location",
+        "http://localhost:8881/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "http://localhost:8881/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "http://localhost:8881/enrich-date",
+        "http://localhost:8881/enrich-subject",
+        "http://localhost:8881/cleanup_value",
+        "http://localhost:8881/enrich-type",
+        "http://localhost:8881/enrich-format",
+        "http://localhost:8881/enrich_location",
+        "http://localhost:8881/enrich_language",
+        "http://localhost:8881/sets_prop?prop=aggregatedCHO%2FphysicalMedium"
+    ], 
+    "last_checked": "2013-03-05T17:30:21.689809", 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/mwdl", 
+        "name": "Mountain West Digital Library"
+    }, 
+    "type": "primo", 
+    "endpoint_URL": "http://thoth.library.utah.edu:1701/PrimoWebServices/xservice/search/brief?institution=MWDL&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources"
+}
