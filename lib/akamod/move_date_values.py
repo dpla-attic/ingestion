@@ -17,7 +17,12 @@ def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggre
         return body
 
     REGSUB = ("\(", ""), ("\)", ""), ("\.",""), ("\?","")
-    REGSEARCH = ["\d{1,4} *[-/] *\d{1,4} *[-/] *\d{1,4}", "\d{4} *[-/] *\d{4}", "\d{4}"]
+    REGSEARCH = [
+        "\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}",
+        "\d{1,4} *[-/] *\d{1,4} *[-/] *\d{1,4}",
+        "\d{4} *[-/] *\d{4}",
+        "\d{4}"
+        ]
 
     def cleanup(s):
         for p,r in REGSUB:

@@ -117,7 +117,8 @@ MODULES = [
     "dplaingestion.akamod.copy_prop",
     "dplaingestion.akamod.cleanup_value",
     "dplaingestion.akamod.sets_prop",
-    "dplaingestion.akamod.enrich_language"
+    "dplaingestion.akamod.enrich_language",
+    "dplaingestion.akamod.dpla-get-record"
     ]
 
 class download_preview:

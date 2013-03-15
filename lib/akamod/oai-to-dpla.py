@@ -53,7 +53,7 @@ def is_shown_at_transform(d):
     return {
         "isShownAt" : { 
             "@id" : source,
-            "format" : d.get("format",None)
+            "format": d.get("format", None)
             }
         }
 

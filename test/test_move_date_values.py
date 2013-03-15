@@ -2,10 +2,12 @@ import sys
 from server_support import server, print_error_log, H
 from amara.thirdparty import json
 
-def _get_server_response(body, prop=None):
+def _get_server_response(body, prop=None, to_prop=None):
     url = server() + "move_date_values"
     if prop:
         url = "%s?prop=%s" % (url, prop)
+    if to_prop:
+        url = "%s&to_prop=%s" % (url, to_prop)
     return H.request(url,"POST",body=body)
 
 def test_move_date_values_no_prop():
@@ -199,6 +201,33 @@ def test_move_date_values_subject3():
     } 
  
     resp,content = _get_server_response(json.dumps(INPUT),prop) 
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_move_date_values_to_date():
+    """
+    Should remove subject field if only element is a date.
+    """
+    prop = "aggregatedCHO/spatial"
+    to_prop = "aggregatedCHO/date"
+    INPUT = {
+        "aggregatedCHO": {
+            "spatial" : [
+                "1861-12-30/1862-07-13",
+                "(1862/12/30 - 1863/07/13)"
+            ]
+        }
+    }
+    EXPECTED = {
+        "aggregatedCHO": {
+            "date": [
+                "1861-12-30/1862-07-13",
+                "1862/12/30 - 1863/07/13"
+            ]
+        }
+    } 
+ 
+    resp,content = _get_server_response(json.dumps(INPUT),prop,to_prop) 
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 

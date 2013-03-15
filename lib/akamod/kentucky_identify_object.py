@@ -38,10 +38,10 @@ def kentucky_identify_object(body, ctype, rights_field="aggregatedCHO/rights", d
         url = getprop(data, relation_field)
     else:
         msg = "Field %s does not exist" % relation_field
-        logger.error(msg)
+        logger.debug(msg)
         return body
 
-    base_url, ext = os.path.splitext(url)  
+    base_url, ext = os.path.splitext(url)
     thumb_url = "%s_tb%s" % (base_url, ext)
 
     rights = None

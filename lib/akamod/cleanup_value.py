@@ -19,15 +19,15 @@ def convert(data, prop):
     if exists(data, prop):
         v = getprop(data, prop)
         if isinstance(v, basestring):
-            setprop(data, prop, cleanup(v))
+            setprop(data, prop, cleanup(v, prop))
         elif isinstance(v, list):
             temp = []
             for val in v:
-                temp.append(cleanup(val))
+                temp.append(cleanup(val, prop))
             setprop(data, prop, temp)
 
 
-def cleanup(value):
+def cleanup(value, prop):
     """ Performs a cleanup of value using a bunch of regexps.
 
     Arguments:
@@ -36,7 +36,10 @@ def cleanup(value):
     Returns:
         Converted string.
     """
-    TAGS_FOR_STRIPPING = '[\.\' \r\t\n";,]*' # Tags for stripping at beginning and at the end.
+    # Do not remove double quotes from title
+    dquote = '' if prop == "aggregatedCHO/title" else '"'
+    # Tags for stripping at beginning and at the end.
+    TAGS_FOR_STRIPPING = '[\.\' \r\t\n;,%s]*' % dquote
     REGEXPS = (' *-- *', '--'), \
               ('[\t ]{2,}', ' '), \
               ('^' + TAGS_FOR_STRIPPING, ''), \
