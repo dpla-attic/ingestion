@@ -47,7 +47,9 @@ def enrichformat(body, ctype, action="enrich-format",
                  'multipart', 'text', 'video']
 
     def get_ext(s):
-        return os.path.splitext(s)[1].split('.')[1]
+        ext = os.path.splitext(s)[1].split('.')
+
+        return ext[1] if len(ext) == 2 else ""
         
     def cleanup(s):
         s = s.lower().strip()
@@ -79,7 +81,7 @@ def enrichformat(body, ctype, action="enrich-format",
             cleaned = cleanup(s)
             if is_imt(cleaned):
                 if exists(data, "hasView") and not \
-                   exists(has_view, "hasView/format") and \
+                   exists(data, "hasView/format") and \
                    cleaned not in hasview_format:
                     hasview_format.append(cleaned)
                 else:
@@ -95,9 +97,9 @@ def enrichformat(body, ctype, action="enrich-format",
             delprop(data, prop)
         if hasview_format:
             if len(hasview_format) == 1:
-                setprop(data, "hasView", hasview_format[0])
+                setprop(data, "hasView/format", hasview_format[0])
             else:
-                setprop(data, "hasView", hasview_format)
+                setprop(data, "hasView/format", hasview_format)
 
     # Setting the type if it is empty.
     t = getprop(data, type_field, True)

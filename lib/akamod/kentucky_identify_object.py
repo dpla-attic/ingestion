@@ -42,9 +42,7 @@ def kentucky_identify_object(body, ctype, download="True"):
         return body
 
     base_url, ext = os.path.splitext(url)
-    thumb_url = "%s_tb%s" % (base_url, ext)
-
-    data["object"] = thumb_url
+    data["object"] = "%s_tb%s" % (base_url, ext)
 
     status = IGNORE
     if download == "True":
