@@ -402,7 +402,7 @@ def test_enrich_temporal_date():
     # TODO: disabled dates are not supported by enrich_earliest_date parsers
 
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial" : [
                 "1901-1999",
                 " 1901 - 1999 ",
@@ -414,7 +414,7 @@ def test_enrich_temporal_date():
             ]}
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "temporal": [
                 {"begin": "1901", "end": "1999", "displayDate": "1901-1999"},
                 {"begin": "1901", "end": "1999", "displayDate": "1901 - 1999"},
@@ -426,7 +426,7 @@ def test_enrich_temporal_date():
             "spatial" : ["North Carolina"]}
     }
 
-    url = server() + "move_date_values?prop=aggregatedCHO/spatial"
+    url = server() + "move_date_values?prop=sourceResource/spatial"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     print_error_log()
     assert resp.status == 200

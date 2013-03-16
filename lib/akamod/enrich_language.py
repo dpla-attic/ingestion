@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_language', 'enrich_language', 'application/json')
-def enrich_language(body, ctype, action="enrich_language", prop="aggregatedCHO/language"):
+def enrich_language(body, ctype, action="enrich_language", prop="sourceResource/language"):
     '''
     Service that accepts a JSON document and enriches the "language" field of that document
     by:

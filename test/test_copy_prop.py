@@ -22,13 +22,13 @@ def _get_server_response(body, prop=None, to_prop=None, create=None, key=None,
 
 def test_copy_prop_rights1():
     """Should do nothing"""
-    prop = "aggregatedCHO/rights"
+    prop = "sourceResource/rights"
     to_prop = "isShownAt"
     key = "rights"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2"
         },
@@ -42,13 +42,13 @@ def test_copy_prop_rights1():
 
 def test_copy_prop_rights2():
     """Should do nothing"""
-    prop = "aggregatedCHO/rights"
+    prop = "sourceResource/rights"
     to_prop = "isShownAt"
     key = "rights"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights"
@@ -62,8 +62,8 @@ def test_copy_prop_rights2():
     assert json.loads(content) == INPUT
 
 def test_copy_prop_rights3():
-    """Should copy aggregatedCHO/rights to isShownAt"""
-    prop = "aggregatedCHO/rights"
+    """Should copy sourceResource/rights to isShownAt"""
+    prop = "sourceResource/rights"
     to_prop = "isShownAt"
     key = "rights"
 
@@ -74,7 +74,7 @@ def test_copy_prop_rights3():
             "key2": "value2",
             "rights": ""
         },
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights"
@@ -88,7 +88,7 @@ def test_copy_prop_rights3():
             "key2": "value2",
             "rights": "These are the rights"
         },
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights"
@@ -102,10 +102,10 @@ def test_copy_prop_rights3():
     assert json.loads(content) == EXPECTED
 
 def test_copy_prop_rights4():
-    """Should copy aggregatedCHO/rights to isShownAt then remove
-       aggregatedCHO/rights
+    """Should copy sourceResource/rights to isShownAt then remove
+       sourceResource/rights
     """
-    prop = "aggregatedCHO/rights"
+    prop = "sourceResource/rights"
     to_prop = "isShownAt"
     key = "rights"
     remove = True
@@ -117,7 +117,7 @@ def test_copy_prop_rights4():
             "key2": "value2",
             "rights": ""
         },
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights"
@@ -131,7 +131,7 @@ def test_copy_prop_rights4():
             "key2": "value2",
             "rights": "These are the rights"
         },
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2"
         },
@@ -144,14 +144,14 @@ def test_copy_prop_rights4():
     assert json.loads(content) == EXPECTED
 
 def test_copy_prop_rights5():
-    """Should copy aggregatedCHO/rights to aggregatedCHO/hasView items"""
-    prop = "aggregatedCHO/rights"
-    to_prop = "aggregatedCHO/hasView"
+    """Should copy sourceResource/rights to sourceResource/hasView items"""
+    prop = "sourceResource/rights"
+    to_prop = "sourceResource/hasView"
     key = "rights"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights",
@@ -170,7 +170,7 @@ def test_copy_prop_rights5():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights",
@@ -194,17 +194,17 @@ def test_copy_prop_rights5():
     assert json.loads(content) == EXPECTED
 
 def test_copy_prop_rights6():
-    """Should copy aggregatedCHO/rights to aggregatedCHO/hasView items
-       then remove aggregatedCHO/rights
+    """Should copy sourceResource/rights to sourceResource/hasView items
+       then remove sourceResource/rights
     """
-    prop = "aggregatedCHO/rights"
-    to_prop = "aggregatedCHO/hasView"
+    prop = "sourceResource/rights"
+    to_prop = "sourceResource/hasView"
     key = "rights"
     remove = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights",
@@ -223,7 +223,7 @@ def test_copy_prop_rights6():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "hasView": [
@@ -246,21 +246,21 @@ def test_copy_prop_rights6():
     assert json.loads(content) == EXPECTED
 
 def test_copy_prop_contributor1():
-    """Should copy aggregatedCHO/contributor to dataProvider"""
-    prop = "aggregatedCHO/contributor"
+    """Should copy sourceResource/contributor to dataProvider"""
+    prop = "sourceResource/contributor"
     to_prop = "dataProvider"
     create = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         }
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -273,24 +273,24 @@ def test_copy_prop_contributor1():
     assert json.loads(content) == EXPECTED
 
 def test_copy_prop_contributor2():
-    """Should copy aggregatedCHO/contributor to dataProvider then remove
-        aggregatedCHO/contributor
+    """Should copy sourceResource/contributor to dataProvider then remove
+        sourceResource/contributor
     """
-    prop = "aggregatedCHO/contributor"
+    prop = "sourceResource/contributor"
     to_prop = "dataProvider"
     create = True
     remove = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         }
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1"
         },
         "dataProvider": "Natural History Museum Library, London"
@@ -303,12 +303,12 @@ def test_copy_prop_contributor2():
 
 def test_copy_prop_contributor3():
     """Should overwrite dataProvider (create = False)"""
-    prop = "aggregatedCHO/contributor"
+    prop = "sourceResource/contributor"
     to_prop = "dataProvider"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -316,7 +316,7 @@ def test_copy_prop_contributor3():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -330,15 +330,15 @@ def test_copy_prop_contributor3():
 
 def test_copy_prop_contributor4():
     """Should overwrite dataProvider (create = False) then remove
-       aggregatedCHO/contributor
+       sourceResource/contributor
     """
-    prop = "aggregatedCHO/contributor"
+    prop = "sourceResource/contributor"
     to_prop = "dataProvider"
     remove = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -346,7 +346,7 @@ def test_copy_prop_contributor4():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1"
         },
         "dataProvider": "Natural History Museum Library, London"
@@ -359,13 +359,13 @@ def test_copy_prop_contributor4():
   
 def test_copy_prop_contributor5():
     """Should overwrite dataProvider (create = True)"""
-    prop = "aggregatedCHO/contributor"
+    prop = "sourceResource/contributor"
     to_prop = "dataProvider"
     create = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -373,7 +373,7 @@ def test_copy_prop_contributor5():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -387,16 +387,16 @@ def test_copy_prop_contributor5():
 
 def test_copy_prop_contributor6():
     """Should overwrite dataProvider (create = True) then remove
-       aggregatedCHO/contributor
+       sourceResource/contributor
     """
-    prop = "aggregatedCHO/contributor"
+    prop = "sourceResource/contributor"
     to_prop = "dataProvider"
     create = True
     remove = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "contributor": "Natural History Museum Library, London"
         },
@@ -404,7 +404,7 @@ def test_copy_prop_contributor6():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1"
         },
         "dataProvider": "Natural History Museum Library, London"
@@ -417,12 +417,12 @@ def test_copy_prop_contributor6():
 
 def test_copy_prop_list_to_list():
     """Should join prop into to_prop"""
-    prop = "aggregatedCHO/from_list"
-    to_prop = "aggregatedCHO/to_list"
+    prop = "sourceResource/from_list"
+    to_prop = "sourceResource/to_list"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_list": ["1", "2", "3"],
             "to_list" : ["a", "b", "c"],
@@ -432,7 +432,7 @@ def test_copy_prop_list_to_list():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_list": ["1", "2", "3"],
             "to_list" : ["a", "b", "c", "1", "2", "3"],
@@ -448,12 +448,12 @@ def test_copy_prop_list_to_list():
 
 def test_copy_prop_string_to_list():
     """Should append to to_prop"""
-    prop = "aggregatedCHO/from_string"
-    to_prop = "aggregatedCHO/to_list"
+    prop = "sourceResource/from_string"
+    to_prop = "sourceResource/to_list"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_string": "stringy",
             "to_list" : ["a", "b", "c"],
@@ -463,7 +463,7 @@ def test_copy_prop_string_to_list():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_string": "stringy",
             "to_list" : ["a", "b", "c", "stringy"],
@@ -479,12 +479,12 @@ def test_copy_prop_string_to_list():
 
 def test_copy_prop_dict_to_list():
     """Should append to to_prop"""
-    prop = "aggregatedCHO/from_dict"
-    to_prop = "aggregatedCHO/to_list"
+    prop = "sourceResource/from_dict"
+    to_prop = "sourceResource/to_list"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_dict": {"key1": "value1"},
             "to_list" : ["a", "b", "c"],
@@ -494,7 +494,7 @@ def test_copy_prop_dict_to_list():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_dict": {"key1": "value1"},
             "to_list" : ["a", "b", "c", {"key1": "value1"}],
@@ -510,12 +510,12 @@ def test_copy_prop_dict_to_list():
 
 def test_copy_prop_to_prop_dict_no_key():
     """Should overwrite to_prop with prop"""
-    prop = "aggregatedCHO/from_dict"
-    to_prop = "aggregatedCHO/to_dict"
+    prop = "sourceResource/from_dict"
+    to_prop = "sourceResource/to_dict"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_dict": {"key1": "value1"},
             "to_dict" : {"key2": "value2"},
@@ -525,7 +525,7 @@ def test_copy_prop_to_prop_dict_no_key():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1": "value1",
             "from_dict": {"key1": "value1"},
             "to_dict" : {"key1": "value1"},

@@ -54,7 +54,7 @@ def cleanup(value, prop):
 
 """
 Fields which should not be changed:
--- physicalMedium (there are often dimensions in this field)
+-- format (there are often dimensions in this field)
 -- extent (for the same reason)
 -- descriptions (full text, includes sentences)
 -- rights (full text, includes sentences)
@@ -62,13 +62,13 @@ Fields which should not be changed:
 
 """
 DEFAULT_PROP = [
-    "aggregatedCHO/language",
-    "aggregatedCHO/title",
-    "aggregatedCHO/creator",
-    "aggregatedCHO/relation",
-    "aggregatedCHO/publisher",
-    "aggregatedCHO/subject",
-    "aggregatedCHO/format",
+    "sourceResource/language",
+    "sourceResource/title",
+    "sourceResource/creator",
+    "sourceResource/relation",
+    "sourceResource/publisher",
+    "sourceResource/subject",
+    "sourceResource/format",
 ]
 
 

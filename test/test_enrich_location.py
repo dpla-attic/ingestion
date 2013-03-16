@@ -218,7 +218,7 @@ def test_enrich_location_after_provider_specific_enrich_location1():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -230,7 +230,7 @@ def test_enrich_location_after_provider_specific_enrich_location1():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -256,7 +256,7 @@ def test_enrich_location_after_provider_specific_enrich_location2():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville;",
                 "county": "Buncombe;",
@@ -268,7 +268,7 @@ def test_enrich_location_after_provider_specific_enrich_location2():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -292,7 +292,7 @@ def test_enrich_location_after_provider_specific_enrich_location3():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville; La Jolla",
                 "county": "Buncombe;San Diego",
@@ -304,7 +304,7 @@ def test_enrich_location_after_provider_specific_enrich_location3():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -337,7 +337,7 @@ def test_enrich_location_after_provider_specific_enrich_location4():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville; La Jolla",
                 "county": "Buncombe;San Diego",
@@ -348,7 +348,7 @@ def test_enrich_location_after_provider_specific_enrich_location4():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Asheville",
                 "county": "Buncombe",
@@ -373,7 +373,7 @@ def test_enrich_location_after_provider_specific_enrich_location5():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Anoka; Champlin",
                 "county": "Minnesota",
@@ -385,7 +385,7 @@ def test_enrich_location_after_provider_specific_enrich_location5():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "city": "Anoka",
                 "county": "Minnesota",
@@ -411,7 +411,7 @@ def test_enrich_location_no_provider_specific_enrich_location1():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             "Asheville",
             "Buncombe",
             "United States"
@@ -420,7 +420,7 @@ def test_enrich_location_no_provider_specific_enrich_location1():
     }
     OUTPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             { "name": "Asheville" },
             { "name": "Buncombe" },
             { "name": "United States" }
@@ -440,7 +440,7 @@ def test_enrich_location_no_provider_specific_enrich_location2():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             "Asheville, North Carolina",
             "Greenville, SC",
             "San Diego, (C.A.)",
@@ -450,7 +450,7 @@ def test_enrich_location_no_provider_specific_enrich_location2():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "state": "North Carolina",
                 "iso3166-2": "US-NC",
@@ -485,7 +485,7 @@ def test_enrich_location_no_provider_specific_enrich_location3():
     """
     INPUT = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             "Asheville, North Carolina; Greenville, SC",
             "San Diego, (C.A.); Athens"
         ]},
@@ -493,7 +493,7 @@ def test_enrich_location_no_provider_specific_enrich_location3():
     }
     EXPECTED = {
         "id": "12345",
-        "aggregatedCHO": {"spatial": [
+        "sourceResource": {"spatial": [
             {
                 "state": "North Carolina",
                 "iso3166-2": "US-NC",
@@ -524,12 +524,12 @@ def test_enrich_location_no_provider_specific_enrich_location3():
 def test_enrich_location_spatial_string():
     """Should handle spatial as string"""
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial": "42 36. 00. N, 72 23. 55. W"
         }
     }
     EXPECTED = {
-        "aggregatedCHO": { "spatial": [
+        "sourceResource": { "spatial": [
             {"name": "42 36. 00. N, 72 23. 55. W"}
         ]}
     }

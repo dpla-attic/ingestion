@@ -163,7 +163,7 @@ def convert_dates(data, prop, earliest):
         delprop(data, p)
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_earliest_date', 'enrich_earliest_date', HTTP_TYPE_JSON)
-def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="aggregatedCHO/date"):
+def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="sourceResource/date"):
     """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:
@@ -183,7 +183,7 @@ def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="aggre
 
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_date', 'enrich_date', HTTP_TYPE_JSON)
-def enrich_date(body, ctype, action="enrich_date", prop="aggregatedCHO/temporal"):
+def enrich_date(body, ctype, action="enrich_date", prop="sourceResource/temporal"):
     """
     Service that accepts a JSON document and extracts the "created date" of the item, using the
     following rules:

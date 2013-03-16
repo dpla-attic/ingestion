@@ -5,7 +5,7 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/mdl-enrich-location', 'mdl-enrich-location', 'application/json')
-def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="aggregatedCHO/spatial"):
+def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="sourceResource/spatial"):
     """
     Service that accepts a JSON document and enriches the "spatial" field of that document by:
 

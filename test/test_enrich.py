@@ -249,9 +249,10 @@ def test_enrich_type_cleanup():
         u'TBD_physicalformat' : ["Statue"]
         }
 
-    url = server() + "enrich-type?prop=type&alternate=TBD_physicalformat"
+    url = server() + "enrich-type?prop=type&format_field=TBD_physicalformat"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    print_error_log()
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     pinfo(content)
@@ -270,14 +271,12 @@ def test_enrich_format_cleanup_multiple():
         }
     EXPECTED = {
         u'format' : [ "image/jpeg", "audio/mpeg" ],
-        u'physicalmedium' : ["Still Images", "audio", "Images", 'application'],
         u'type': "image"
         }
 
-    url = server() + "enrich-format?prop=format&alternate=physicalmedium&typefield=type"
+    url = server() + "enrich-format?prop=format&type_field=type"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
     assert_same_jsons(EXPECTED, content)
     assert str(resp.status).startswith("2")
 
@@ -292,7 +291,7 @@ def test_enrich_format_cleanup():
         u"type": "image"
         }
 
-    url = server() + "enrich-format?prop=format&alternate=physicalmedium&typefield=type"
+    url = server() + "enrich-format?prop=format&type_field=type"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -309,17 +308,17 @@ Test physical format appending from format and type fields
         "format": ["76.8 x 104 cm", "Oil on canvas"],
         "type": ["Paintings", "Painting"]
     }
-    EXPECTED = {
-        "TBD_physicalformat": ["Paintings", "Painting", "76.8 x 104 cm", "Oil on canvas"]
+    EXPECTED1 = {
+        "format": ["76.8 x 104 cm", "Oil on canvas", "Paintings", "Painting"]
     }
+    EXPECTED2 = {}
 
-    resp, content = H.request(server() + "enrich-type?prop=type&alternate=TBD_physicalformat", "POST", body=json.dumps(INPUT))
+    resp, content = H.request(server() + "enrich-type?prop=type&format_field=format", "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-    assert json.loads(content)['TBD_physicalformat'] == ["Paintings", "Painting"]
-    resp, content = H.request(server() + "enrich-format?prop=format&alternate=TBD_physicalformat", "POST", body=content)
+    assert json.loads(content) == EXPECTED1
+    resp, content = H.request(server() + "enrich-format?prop=format&type_field=type", "POST", body=content)
     assert str(resp.status).startswith("2")
-    result = json.loads(content)
-    assert result['TBD_physicalformat'] == EXPECTED['TBD_physicalformat']
+    assert json.loads(content) == EXPECTED2
 
 
 def test_setting_missing_type_for_missing_format():
@@ -330,7 +329,7 @@ def test_setting_missing_type_for_missing_format():
     }
     js = json.dumps(INPUT)
 
-    url = server() + "enrich-format?prop=format&alternate=physicalmedium&typefield=type"
+    url = server() + "enrich-format?prop=format&type_field=type"
 
     resp,content = H.request(url, "POST", body=js)
     pinfo(content)
@@ -338,23 +337,22 @@ def test_setting_missing_type_for_missing_format():
     result = json.loads(content)
     assert_same_jsons(INPUT, content)
 
-
 def test_setting_missing_type_from_format():
     "Should set type according to format field."
     INPUT = {
-            "aggregatedCHO": {
+            "sourceResource": {
                 "format": "image/jpg",
             }
     }
     EXPECTED = {
-            "aggregatedCHO": {
+            "sourceResource": {
                 "format": "image/jpeg",
                 "type": "image"
         }
     }
     js = json.dumps(INPUT)
 
-    url = server() + "enrich-format?prop=aggregatedCHO/format&alternate=aggregatedCHO/physicalmedium&typefield=aggregatedCHO/type"
+    url = server() + "enrich-format?prop=sourceResource/format&type_field=sourceResource/type"
 
     resp,content = H.request(url, "POST", body=js)
     pinfo(content)
@@ -367,40 +365,41 @@ def test_setting_empty_type_from_format():
     "Should set empty type according to format field according to type mapping."
 
     DATA = [
-      {"in": {"format": "audio/mp3"}, "out": {"format": "audio/mpeg", "type": "sound"}},
-      {"in": {"format": "image/jpg"}, "out": {"format": "image/jpeg", "type": "image"}},
-      {"in": {"format": "video/mpeg"}, "out": {"format": "video/mpeg", "type": "moving image"}},
-      {"in": {"format": "text/calendar"}, "out": {"format": "text/calendar", "type": "text"}},
-      {"in": {"format": "audio"}, "out": {"format": None, "physicalmedium": "audio"}},
-      {"in": {"format": "something strange"}, "out": {"format": None, "physicalmedium": "something strange"}},
+      {"in": {"format": "audio/mp3"},         "out": {"format": "audio/mpeg",    "type": "sound"}},
+      {"in": {"format": "image/jpg"},         "out": {"format": "image/jpeg",    "type": "image"}},
+      {"in": {"format": "video/mpeg"},        "out": {"format": "video/mpeg",    "type": "moving image"}},
+      {"in": {"format": "text/calendar"},     "out": {"format": "text/calendar", "type": "text"}},
+      {"in": {"format": "audio"},             "out": {}},
+      {"in": {"format": "something strange"}, "out": {}}
     ]
 
     FORMATS = ["audio"]
     EXPECTED_TYPES = []
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "format": "FORMAT",
             "type": ""
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "format": "FORMAT",
             "type": "TYPE"
         }
     }
 
     for d in DATA:
-        INPUT["aggregatedCHO"] = d["in"]
+        INPUT["sourceResource"] = d["in"]
         js = json.dumps(INPUT)
-        url = server() + "enrich-format?prop=aggregatedCHO/format&alternate=aggregatedCHO/physicalmedium"
+        url = server() + "enrich-format?prop=sourceResource/format"
 
         resp, content = H.request(url, "POST", body=js)
         #pinfo(content)
         pinfo(INPUT)
+        
         assert str(resp.status).startswith("2")
 
-        EXPECTED["aggregatedCHO"] = d["out"]
+        EXPECTED["sourceResource"] = d["out"]
         assert_same_jsons(EXPECTED, content)
 
 

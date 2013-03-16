@@ -15,12 +15,12 @@ def _get_server_response(body, prop=None, value=None):
 
 def test_sets_prop_set():
     """Should set prop to value"""
-    prop = "aggregatedCHO/rights"
+    prop = "sourceResource/rights"
     value = "rights"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "rights": "value2"
         },
@@ -28,7 +28,7 @@ def test_sets_prop_set():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "rights": "rights"
         },
@@ -42,11 +42,11 @@ def test_sets_prop_set():
 
 def test_sets_prop_unset():
     """Should unset prop"""
-    prop = "aggregatedCHO/rights"
+    prop = "sourceResource/rights"
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "rights": "value2"
         },
@@ -54,7 +54,7 @@ def test_sets_prop_unset():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1"
         },
         "key2": "value2"

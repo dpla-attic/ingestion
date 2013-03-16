@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, delprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/move_date_values', 'move_date_values', 'application/json')
-def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggregatedCHO/temporal"):
+def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="sourceResource/temporal"):
     """
     Service that accepts a JSON document and moves any dates found in the prop field to the
     temporal field.

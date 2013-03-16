@@ -15,7 +15,7 @@ def test_move_date_values_no_prop():
     Should do nothing
     """
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial": ["1901 - 1999"],
             "subject": ["1901 - 1999"]
         }
@@ -30,9 +30,9 @@ def test_move_date_values_spatial1():
     Should remove dates from the spatial field and place them in the
     temporal field.
     """
-    prop = "aggregatedCHO/spatial"
+    prop = "sourceResource/spatial"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial" : [
                 "1901-1999",
                 " 1901 - 1999 ",
@@ -47,7 +47,7 @@ def test_move_date_values_spatial1():
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "temporal": [
                 "1901-1999",
                 "1901 - 1999",
@@ -70,9 +70,9 @@ def test_move_date_values_spatial2():
     """
     Should not change spatial nor add temporal.
     """
-    prop = "aggregatedCHO/spatial"
+    prop = "sourceResource/spatial"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial" : [
                 "Asheville",
                 "North Carolina",
@@ -93,16 +93,16 @@ def test_move_date_values_spatial3():
     """
     Should remove spatial field if only element is a date.
     """
-    prop = "aggregatedCHO/spatial"
+    prop = "sourceResource/spatial"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial" : [
                 " 1901 - 1999 "
             ]
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "temporal": [
                 "1901 - 1999"
             ]
@@ -118,9 +118,9 @@ def test_move_date_values_subject1():
     Should remove dates from the subject field and place them in the
     temporal field.
     """
-    prop = "aggregatedCHO/subject"
+    prop = "sourceResource/subject"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "subject" : [
                 "(1901-1999)",
                 "1902-1999",
@@ -133,7 +133,7 @@ def test_move_date_values_subject1():
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "temporal": [
                 "1901-1999",
                 "1902-1999",
@@ -156,9 +156,9 @@ def test_move_date_values_subject2():
     """
     Should not change subject nor add temporal.
     """
-    prop = "aggregatedCHO/subject"
+    prop = "sourceResource/subject"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "subject" : [
                 "subject1",
                 " (subject 2) ",
@@ -184,16 +184,16 @@ def test_move_date_values_subject3():
     """
     Should remove subject field if only element is a date.
     """
-    prop = "aggregatedCHO/subject"
+    prop = "sourceResource/subject"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "subject" : [
                 " ( 1901 - 1999 ) "
             ]
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "temporal": [
                 "1901 - 1999"
             ]
