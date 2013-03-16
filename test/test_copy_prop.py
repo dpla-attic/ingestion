@@ -541,18 +541,18 @@ def test_copy_prop_to_prop_dict_no_key():
 
 def test_copy_prop_no_replace1():
     """Should create list of prop string and append to_prop"""
-    prop = "aggregatedCHO/source"
-    to_prop = "aggregatedCHO/description"
+    prop = "sourceResource/source"
+    to_prop = "sourceResource/description"
     no_replace = True
 
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description" : "Description string.",
             "source": "Source string."
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description": [
                 "Description string.",
                 "Source string."
@@ -568,18 +568,18 @@ def test_copy_prop_no_replace1():
 
 def test_copy_prop_no_replace2():
     """Should create list of prop string and append to_prop"""
-    prop = "aggregatedCHO/source"
-    to_prop = "aggregatedCHO/description"
+    prop = "sourceResource/source"
+    to_prop = "sourceResource/description"
     no_replace = True
 
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description" : "Description string.",
             "source": ["Source string1.", "Source string2."]
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description": [
                 "Description string.",
                 "Source string1.",
@@ -596,20 +596,20 @@ def test_copy_prop_no_replace2():
 
 def test_copy_prop_no_replace3():
     """Should create list of prop string and append to_prop"""
-    prop1 = "aggregatedCHO/source1"
-    prop2 = "aggregatedCHO/source2"
-    to_prop = "aggregatedCHO/description"
+    prop1 = "sourceResource/source1"
+    prop2 = "sourceResource/source2"
+    to_prop = "sourceResource/description"
     no_replace = True
 
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description" : "Description string.",
             "source1": "Source1 string1.",
             "source2": ["Source2 string1.", "Source2 string2."]
         }
     }
     EXPECTED1 = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description": [
                 "Description string.",
                 "Source1 string1."
@@ -619,7 +619,7 @@ def test_copy_prop_no_replace3():
         }
     }
     EXPECTED2 = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "description": [
                 "Description string.",
                 "Source1 string1.",
@@ -644,15 +644,15 @@ def test_copy_prop_no_replace3():
 def test_copy_prop_to_prop_create_dict_key1():
     """Should copy to_prop into new dict with key"""
     prop1 = "key1"
-    prop2 = "aggregatedCHO/key2"
-    to_prop = "aggregatedCHO/to_dict"
+    prop2 = "sourceResource/key2"
+    to_prop = "sourceResource/to_dict"
     key1 = "key1"
     key2 = "key2" 
     create = True
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key2": "value2",
             "key3": "value3"
         },
@@ -660,7 +660,7 @@ def test_copy_prop_to_prop_create_dict_key1():
     }
     EXPECTED1 = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key2": "value2",
             "key3": "value3",
             "to_dict" : {"key1": "value1"}
@@ -669,7 +669,7 @@ def test_copy_prop_to_prop_create_dict_key1():
     }
     EXPECTED2 = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key2": "value2",
             "key3": "value3",
             "to_dict" : {

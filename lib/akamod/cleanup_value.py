@@ -37,7 +37,7 @@ def cleanup(value, prop):
         Converted string.
     """
     # Do not remove double quotes from title
-    dquote = '' if prop == "aggregatedCHO/title" else '"'
+    dquote = '' if prop == "sourceResource/title" else '"'
     # Tags for stripping at beginning and at the end.
     TAGS_FOR_STRIPPING = '[\.\' \r\t\n;,%s]*' % dquote
     REGEXPS = (' *-- *', '--'), \

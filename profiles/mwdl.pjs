@@ -5,13 +5,12 @@
     "enrichments_rec": [
         "/select-id?prop=_id", 
         "/primo-to-dpla",
-        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "/shred?prop=isShownAt%2Fformat",
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
         "/mwdl_enrich_state_located_in",
-        "/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "/move_date_values?prop=sourceResource%2Fsubject",
+        "/move_date_values?prop=sourceResource%2Fspatial",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject",
@@ -19,9 +18,9 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
-        "/enrich_location?prop=aggregatedCHO%2FstateLocatedIn",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/enrich_language",
-        "/sets_prop?prop=aggregatedCHO%2FphysicalMedium"
+        "/sets_prop?prop=sourceResource%2FphysicalMedium"
     ], 
     "last_checked": "2013-03-05T17:30:21.689809", 
     "contributor": {

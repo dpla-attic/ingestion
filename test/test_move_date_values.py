@@ -208,10 +208,10 @@ def test_move_date_values_to_date():
     """
     Should remove subject field if only element is a date.
     """
-    prop = "aggregatedCHO/spatial"
-    to_prop = "aggregatedCHO/date"
+    prop = "sourceResource/spatial"
+    to_prop = "sourceResource/date"
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "spatial" : [
                 "1861-12-30/1862-07-13",
                 "(1862/12/30 - 1863/07/13)"
@@ -219,7 +219,7 @@ def test_move_date_values_to_date():
         }
     }
     EXPECTED = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "date": [
                 "1861-12-30/1862-07-13",
                 "1862/12/30 - 1863/07/13"
