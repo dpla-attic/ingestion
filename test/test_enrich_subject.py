@@ -153,7 +153,10 @@ def test_remove_spaces_around_dashes():
             "aaa --bbb",
             "aaa-- bbb",
             "aaa --  bbb",
-            "aaa  --  bbb    -- ccc - - ddd -- "
+            "aaa  --  bbb    -- ccc - - ddd -- ",
+            "aaa- -bbb",
+            "aaa - -bbb",
+            "aaa - - bbb - - ccc"
         ]
     }
     EXPECTED = {
@@ -168,7 +171,10 @@ def test_remove_spaces_around_dashes():
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
-            {"name": "Aaa--bbb--ccc - - ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb--ccc"}
         ]
     }
     resp, content = _get_server_response(json.dumps(INPUT))
@@ -220,7 +226,7 @@ def test_enrichment_for_creator_field():
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
-            {"name": "Aaa--bbb--ccc - - ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"},
         ]
     }
     resp, content = _get_server_response(json.dumps(INPUT), "creator")
