@@ -115,6 +115,16 @@ def test_shred7():
     assert str(resp.status).startswith("2")
     assert json.loads(content) == EXPECTED
 
+def test_shred8():
+    "Shredding list with one value should return list with one value"
+    INPUT = {
+        "p": ["a"],
+    }
+    url = server() + "shred?prop=p"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    assert json.loads(content) == INPUT
+
 def test_unshred1():
     "Valid unshredding"
 
