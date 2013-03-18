@@ -44,6 +44,7 @@ def test_move_date_values_spatial1():
                 "1901",
                 "02/1901 - 02/1902",
                 "1901-02 / 1902-02",
+                "1930s",
                 "North Carolina"
             ]
         }
@@ -61,6 +62,7 @@ def test_move_date_values_spatial1():
                 "1901",
                 "02/1901 - 02/1902",
                 "1901-02 / 1902-02",
+                "1930s"
             ],
             "spatial" : ["North Carolina"]
         }
