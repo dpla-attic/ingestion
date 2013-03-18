@@ -66,10 +66,24 @@
            "reduce": "_count"
        },
        "spatial_name": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(doc['id'], spatial[i]['name'])};}}}"
+           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('name' in spatial[i]) {emit(doc['id'], spatial[i]['name'])};}}}"
        },
        "spatial_name_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(spatial[i]['name'],1)};}}}",
+           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('name' in spatial[i]) {emit(spatial[i]['name'],1)};}}}",
+           "reduce": "_count"
+       },
+       "state_located_in_state": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('state' in sli[i]) {emit(doc['id'], sli[i]['state'])};}}}"
+       },
+       "state_located_in_state_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('state' in sli[i]) {emit(sli[i]['state'],1)};}}}",
+           "reduce": "_count"
+       },
+       "state_located_in_name": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('name' in sli[i]) {emit(doc['id'], sli[i]['name'])};}}}"
+       },
+       "state_located_in_name_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('name' in sli[i]) {emit(sli[i]['name'],1)};}}}",
            "reduce": "_count"
        },
        "rights": {
