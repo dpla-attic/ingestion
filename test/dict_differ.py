@@ -52,7 +52,7 @@ class DictDiffer:
                 diff[k] = ('KEY NOT FOUND IN SECOND DICT', self.first[k])
             elif self.first[k] != self.second[k]:
                 diff[k] = {"DIFFERENT VALUES":
-                            {'FIRST DICT': self.first[k],
+                            {'FIRST DICT ': self.first[k],
                               'SECOND DICT': self.second[k]}
                             }
 
