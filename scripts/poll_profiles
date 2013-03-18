@@ -194,6 +194,8 @@ def enrich_coll(profile,subr,content):
 
 def process_oai_rec(profile):
     endpoint = profile[u'get_record']
+    if not is_absolute(endpoint):
+        endpoint = URI_BASE + endpoint
     print >> sys.stderr, endpoint
 
     resp, content = H.request(endpoint)

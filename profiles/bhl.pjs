@@ -13,10 +13,10 @@
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
+        "/cleanup_value",
         "/enrich_earliest_date",
         "/enrich-subject",
         "/enrich_date",
-        "/cleanup_value",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
@@ -25,14 +25,13 @@
         "/enrich_language"
     ], 
     "subresources": [
-        "item",
-        "articlepdf",
-        "title"
+        "item"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/bhl",
         "name": "Biodiversity Heritage Library"
     }, 
     "type": "oai", 
+    "get_record": "/dpla-get-record?endpoint=http://www.biodiversitylibrary.org/oai&id=oai:biodiversitylibrary.org:item/124318",
     "endpoint_URL": "/dpla-list-records?endpoint=http://www.biodiversitylibrary.org/oai&oaiset="
 }
