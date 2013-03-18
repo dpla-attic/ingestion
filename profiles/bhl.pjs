@@ -14,6 +14,7 @@
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
         "/cleanup_value",
+        "/cleanup_value?prop=sourceResource%2Fdate",
         "/enrich_earliest_date",
         "/enrich-subject",
         "/enrich_date",
@@ -32,6 +33,5 @@
         "name": "Biodiversity Heritage Library"
     }, 
     "type": "oai", 
-    "get_record": "/dpla-get-record?endpoint=http://www.biodiversitylibrary.org/oai&id=oai:biodiversitylibrary.org:item/124318",
     "endpoint_URL": "/dpla-list-records?endpoint=http://www.biodiversitylibrary.org/oai&oaiset="
 }
