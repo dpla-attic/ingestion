@@ -1,15 +1,8 @@
 from akara import logger
 from akara import request, response
 from akara.services import simple_service
-from amara.lib.iri import is_absolute
 from amara.thirdparty import json
-from functools import partial
 import base64
-import sys
-import re
-from zen import dateparser
-from dateutil.parser import parse as dateutil_parse
-import timelib
 
 from dplaingestion.selector import getprop as selector_getprop, exists
 
@@ -55,9 +48,9 @@ def physical_description_handler(d, p):
             for sub_dict in note:
                 if isinstance(sub_dict, dict) and "displayLabel" in sub_dict:
                     if sub_dict["displayLabel"] == "size inches":
-                        out["extent"] = sub_dict["#text"]
+                        out["extent"] = sub_dict.get("#text")
                     if sub_dict["displayLabel"] == "condition":
-                        out["description"] = sub_dict["#text"]
+                        out["description"] = sub_dict.get("#text")
         if "form" in _dict:
             out["format"] = getprop(_dict, "form/#text")
     return out
@@ -91,11 +84,11 @@ def location_handler(d, p):
                 for url_dict in _dict["url"]:
                     if url_dict and "access" in url_dict:
                         if url_dict["access"] == "object in context":
-                            out["isShownAt"] = url_dict["#text"]
+                            out["isShownAt"] = url_dict.get("#text")
                         if url_dict["access"] == "preview":
-                            out["object"] = url_dict["#text"]
+                            out["object"] = url_dict.get("#text")
                         if url_dict["access"] == "raw object":
-                            out["hasView"] = {"@id:": url_dict["#text"], "format": format}
+                            out["hasView"] = {"@id:": url_dict.get("#text"), "format": format}
             if "physicalLocation" in _dict and isinstance(_dict["physicalLocation"], basestring):
                 out["dataProvider"] = _dict["physicalLocation"]
     except Exception as e:
@@ -111,11 +104,11 @@ def creator_handler(d, p):
             for name_part in creator_dict["namePart"]:
                 # preserve parsing order
                 if name_part["type"] == "given":
-                    parsed.append(name_part["#text"])
+                    parsed.append(name_part.get("#text"))
                 if name_part["type"] == "family":
-                    parsed.append(name_part["#text"])
+                    parsed.append(name_part.get("#text"))
                 if name_part["type"] == "date":
-                    parsed.append(name_part["#text"])
+                    parsed.append(name_part.get("#text"))
             return {"creator": ", ".join(parsed)}
         if creator_dict["type"] == "corporate":
             return {"creator": creator_dict["namePart"]}
@@ -136,7 +129,7 @@ CHO_TRANSFORMER = {
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
     "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
-    "identifier": lambda d, p: {"identifier": "-".join(s["#text"] for s in getprop(d, p) if s["type"] == "uri")}
+    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if s["type"] == "uri")}
 }
 
 AGGREGATION_TRANSFORMER = {
