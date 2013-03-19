@@ -4,7 +4,9 @@
     "name": "virginia",
     "enrichments_rec": [
         "/select-id?prop=_id",
-        "/mods-to-dpla"
+        "/mods-to-dpla",
+        "/copy_prop?prop=sourceRecord%2Frights&to_prop=hasView%2Frights&create=True",
+        "/enrich_date?prop=sourceRecord%2Fdate"
     ], 
     "subresources": [
         "744806"

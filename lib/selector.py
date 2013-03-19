@@ -9,12 +9,6 @@ def getprop(obj,path,keyErrorAsNone=False):
     """
     if '/' not in path:
         if keyErrorAsNone:
-            if isinstance(obj, list):
-                f = open('/Users/alexey/Work/ingestion/output.txt', 'w')
-                f.write(path + "\n")
-                f.write(str(obj))
-                f.close()
-                return None
             return obj.get(path)
         else:
             return obj[path]
