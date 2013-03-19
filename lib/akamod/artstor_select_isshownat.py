@@ -35,7 +35,7 @@ def artstor_select_source(body, ctype):
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
     artstor_source_prefix = "Image View"
-    source_key = u"isShownAt/@id"
+    source_key = u"isShownAt"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])

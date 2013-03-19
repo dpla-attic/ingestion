@@ -12,7 +12,7 @@ def test_bhl_contributor_to_collection1():
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "key2": "value2"
         },
@@ -33,7 +33,7 @@ def test_bhl_contributor_to_collection2():
 
     INPUT = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "contributor": "Missouri Botanical Garden, Peter H. Raven Library"
         },
@@ -44,7 +44,7 @@ def test_bhl_contributor_to_collection2():
     }
     EXPECTED = {
         "key1": "value1",
-        "aggregatedCHO": {
+        "sourceResource": {
             "key1" : "value1",
             "contributor": "Missouri Botanical Garden, Peter H. Raven Library"
         },

@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-subject', 'enrich-subject', 'application/json')
-def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject"):
+def enrichsubject(body,ctype,action="enrich-subject",prop="sourceResource/subject"):
     '''   
     Service that accepts a JSON document and enriches the "subject" field of that document
     by: 

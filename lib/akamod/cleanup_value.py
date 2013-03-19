@@ -19,15 +19,15 @@ def convert(data, prop):
     if exists(data, prop):
         v = getprop(data, prop)
         if isinstance(v, basestring):
-            setprop(data, prop, cleanup(v))
+            setprop(data, prop, cleanup(v, prop))
         elif isinstance(v, list):
             temp = []
             for val in v:
-                temp.append(cleanup(val))
+                temp.append(cleanup(val, prop))
             setprop(data, prop, temp)
 
 
-def cleanup(value):
+def cleanup(value, prop):
     """ Performs a cleanup of value using a bunch of regexps.
 
     Arguments:
@@ -36,7 +36,10 @@ def cleanup(value):
     Returns:
         Converted string.
     """
-    TAGS_FOR_STRIPPING = '[\.\' \r\t\n";,]*' # Tags for stripping at beginning and at the end.
+    # Do not remove double quotes from title
+    dquote = '' if prop == "sourceResource/title" else '"'
+    # Tags for stripping at beginning and at the end.
+    TAGS_FOR_STRIPPING = '[\.\' \r\t\n;,%s]*' % dquote
     REGEXPS = (' *-- *', '--'), \
               ('[\t ]{2,}', ' '), \
               ('^' + TAGS_FOR_STRIPPING, ''), \
@@ -51,7 +54,7 @@ def cleanup(value):
 
 """
 Fields which should not be changed:
--- physicalMedium (there are often dimensions in this field)
+-- format (there are often dimensions in this field)
 -- extent (for the same reason)
 -- descriptions (full text, includes sentences)
 -- rights (full text, includes sentences)
@@ -59,13 +62,13 @@ Fields which should not be changed:
 
 """
 DEFAULT_PROP = [
-    "aggregatedCHO/language",
-    "aggregatedCHO/title",
-    "aggregatedCHO/creator",
-    "aggregatedCHO/relation",
-    "aggregatedCHO/publisher",
-    "aggregatedCHO/subject",
-    "aggregatedCHO/format",
+    "sourceResource/language",
+    "sourceResource/title",
+    "sourceResource/creator",
+    "sourceResource/relation",
+    "sourceResource/publisher",
+    "sourceResource/subject",
+    "sourceResource/format",
 ]
 
 

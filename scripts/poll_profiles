@@ -49,10 +49,14 @@ def process_profile(uri_base, profile_f):
     if not is_absolute(ENRICH):
         ENRICH = URI_BASE + ENRICH
 
+    getRecord = profile.get(u'get_record', None)
     subResources = profile.get(u'subresources')
     blacklist = profile.get(u'blacklist',[])
     ptype = profile.get(u'type').lower()
-    if not subResources: # i.e. all subresources
+    if getRecord:
+        process = TYPE_PROCESSORS.get((ptype,'rec'))
+        process(profile)
+    elif not subResources: # i.e. all subresources
         process = TYPE_PROCESSORS.get((ptype,'all'))
         process(profile,blacklist)
     else:
@@ -64,6 +68,38 @@ def process_profile(uri_base, profile_f):
         for subr in subResources:
             process(profile, subr)
             time.sleep(sleep)
+
+    return True
+
+def process_primo_all(profile, blacklist=None):
+    # TODO flag to stop requesting
+    request_more = True
+    index = 0
+    while request_more:
+        collection = {}
+        collection['id'] = 1
+        collection['name'] = "mwdl"
+        collection['items'] = []
+        endpoint = "%s&bulkSize=%s&indx=%s" % (profile[u'endpoint_URL'], profile[u'bulk_size'], index)
+
+        resp, content = H.request(endpoint)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            request_more = False
+
+        endpoint_content = ARC_PARSE(content)
+	total_hits = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['TOTALHITS']
+	print >> sys.stderr, "%s of %s total documents" % (index, total_hits)
+        items = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['DOC']
+
+        for item in (items if isinstance(items, list) else [items]):
+            item['_id'] = item['PrimoNMBib']['record']['control']['recordid']
+            collection['items'].append(item)
+	    index += 1
+        enrich_coll(profile, collection['name'], json.dumps({'items':collection['items']}))
+
+        if int(index) == int(total_hits):
+            request_more = False
 
     return True
 
@@ -157,6 +193,20 @@ def enrich_coll(profile, subr, content):
     if not str(resp.status).startswith('2'):
         print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
     exit(0)
+
+def process_oai_rec(profile):
+    endpoint = profile[u'get_record']
+    if not is_absolute(endpoint):
+        endpoint = URI_BASE + endpoint
+    print >> sys.stderr, endpoint
+
+    resp, content = H.request(endpoint)
+    if not str(resp.status).startswith('2'):
+        print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+        return False
+
+    subr = profile[u'name']
+    enrich_coll(profile,subr,content)
 
 def process_oai_coll(profile,subr):
     # For now, a simplifying assumption that string concatenation produces a
@@ -270,6 +320,9 @@ TYPE_PROCESSORS = {
     ('arc','all'): process_arc_all,
     ('oai','coll'): process_oai_coll,
     ('oai','all'): process_oai_all,
+    ('oai','rec'): process_oai_rec,
+    ('primo','coll'): None,
+    ('primo','all'): process_primo_all
     ('mets', 'coll'): process_mets_coll,
     ('mets', 'all'): None,
 }

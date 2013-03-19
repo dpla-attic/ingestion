@@ -11,10 +11,8 @@ from nose.tools import nottest
 ## TODO: move to another file
 
 
-def contentdm_url(rights_field="r", download="True"):
-    return server() + \
-            "contentdm_identify_object?rights_field=%s&download=%s" \
-            % (rights_field, download)
+def contentdm_url(download="True"):
+    return server() + "contentdm_identify_object?download=%s" % download
 
 
 def test_contentdm_identify_object_without_download():
@@ -37,16 +35,12 @@ def test_contentdm_identify_object_without_download():
                 "handle":
                     ["aaa", "http://repository.clemson.edu/u?/scp,104"]
                 },
-            u"object": {
-                "@id": "http://repository.clemson.edu/cgi-bin/" +
-                        "thumbnail.exe?CISOROOT=/scp&CISOPTR=104",
-                "format": "",
-                "rights": "right now!"
-            },
+            u"object": ("http://repository.clemson.edu/cgi-bin/" +
+                        "thumbnail.exe?CISOROOT=/scp&CISOPTR=104"),
             u"admin": {u"object_status": 0},
             u"left": "right now!"
     }
-    url = contentdm_url(u"left", "False")
+    url = contentdm_url("False")
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     print_error_log()
     assert str(resp.status).startswith("2")
@@ -73,16 +67,12 @@ def test_contentdm_identify_object_with_download():
             u"originalRecord": {
                 "handle": ["aaa", "http://repository.clemson.edu/u?/scp,104"]
                 },
-            u"object": {
-                "@id": "http://repository.clemson.edu/cgi-bin/" +
-                    "thumbnail.exe?CISOROOT=/scp&CISOPTR=104",
-                "format": "",
-                "rights": "right now!"
-            },
+            u"object": ("http://repository.clemson.edu/cgi-bin/" +
+                        "thumbnail.exe?CISOROOT=/scp&CISOPTR=104"),
             u"admin": {u"object_status": 1},
             u"left": "right now!"
     }
-    url = contentdm_url(u"left", "True")
+    url = contentdm_url("True")
 
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
 

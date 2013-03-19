@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/contributor_to_collection',
     'bhl_contributor_to_collection', 'application/json')
-def bhlcontributortocollection(body,ctype,contributor_field="aggregatedCHO/contributor"):
+def bhlcontributortocollection(body,ctype,contributor_field="sourceResource/contributor"):
     """ Copies BHL contributor field value to collection field
     """
 

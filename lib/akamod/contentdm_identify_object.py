@@ -11,7 +11,7 @@ PENDING = module_config().get('PENDING')
 
 @simple_service('POST', 'http://purl.org/la/dp/contentdm_identify_object',
     'contentdm_identify_object', 'application/json')
-def contentdm_identify_object(body, ctype, rights_field="aggregatedCHO/rights", download="True"):
+def contentdm_identify_object(body, ctype, download="True"):
     """
     Responsible for: adding a field to a document with the URL where we
     should expect to the find the thumbnail
@@ -72,15 +72,8 @@ def contentdm_identify_object(body, ctype, rights_field="aggregatedCHO/rights", 
         return body
 
     # Thumb url field.
-    thumb_url = "%scgi-bin/thumbnail.exe?CISOROOT=%s&CISOPTR=%s" % \
+    data["object"] = "%scgi-bin/thumbnail.exe?CISOROOT=%s&CISOPTR=%s" % \
         (base_url, p[0], p[1])
-
-    # Gettings the rights field
-    rights = None
-    if exists(data, rights_field):
-        rights = getprop(data, rights_field)
-
-    data["object"] = {"@id": thumb_url, "format": "", "rights": rights}
 
     status = IGNORE
     if download == "True":

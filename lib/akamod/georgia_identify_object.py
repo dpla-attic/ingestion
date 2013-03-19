@@ -62,9 +62,7 @@ def georgia_identify_object(body, ctype, download="True"):
 
     preview_url = preview_url_pattern % {"repo": repo, "coll": coll, "item": item}
 
-    data["object"] = {"@id": preview_url,
-                      "format": None,
-                      "rights": selector.getprop(data, "aggregatedCHO/rights", keyErrorAsNone=True)}
+    data["object"] = preview_url
 
     status = IGNORE
     if download == "True":

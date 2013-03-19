@@ -176,7 +176,7 @@ def enrich(body, ctype):
         # Add collection information
         record[u'collection'] = {
             '@id' : at_id,
-            'name' : enriched_collection.get('title',"")
+            'title' : enriched_collection.get('title',"")
         }
         if 'description' in enriched_collection:
             record[u'collection']['description'] = enriched_collection.get('description',"")
