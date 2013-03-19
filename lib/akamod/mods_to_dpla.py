@@ -93,8 +93,9 @@ def location_handler(d, p):
                         if url_dict["access"] == "object in context":
                             out["isShownAt"] = {"@id:": url_dict["#text"], "format": format}
                         if url_dict["access"] == "preview":
+                            out["object"] = url_dict["#text"]
+                        if url_dict["access"] == "raw object":
                             out["hasView"] = {"@id:": url_dict["#text"], "format": format}
-                            out["object"] = {"@id:": url_dict["#text"], "format": format}
             if "physicalLocation" in _dict and isinstance(_dict["physicalLocation"], basestring):
                 out["dataProvider"] = _dict["physicalLocation"]
     except Exception as e:
