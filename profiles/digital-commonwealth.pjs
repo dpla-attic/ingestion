@@ -16,6 +16,7 @@
         "http://localhost:8881/shred?prop=sourceResource%2Fspatial&delim=--",
         "http://localhost:8881/enrich-subject",
         "http://localhost:8881/enrich-date",
+        "http://localhost:8881/cleanup_value",
         "http://localhost:8881/enrich-temporal-date",
         "http://localhost:8881/enrich-type",
         "http://localhost:8881/enrich-format",
