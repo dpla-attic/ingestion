@@ -9,6 +9,7 @@
         "/enrich_date?prop=sourceRecord%2Fdate",
         "/enrich-type?prop=sourceRecord%2Ftype&alternate=sourceRecord%2Fformat",
         "/enrich-format?prop=hasView%2Fformat&alternate=sourceRecord%2Fformat&typefield=sourceRecord%2Ftype",
+        "/enrich_location?prop=sourceRecord%2Fspatial",
         "/enrich_language?prop=sourceRecord%2Flanguage"
     ], 
     "subresources": [
