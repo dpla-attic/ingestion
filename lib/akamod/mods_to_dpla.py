@@ -59,7 +59,7 @@ def physical_description_handler(d, p):
                     if sub_dict["displayLabel"] == "condition":
                         out["description"] = sub_dict["#text"]
         if "form" in _dict:
-            out["format"] = getprop(_dict, "form/authority")
+            out["format"] = getprop(_dict, "form/#text")
     return out
 
 def subject_handler(d, p):
