@@ -5,11 +5,13 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
 import re
 
-@simple_service('POST', 'http://purl.org/la/dp/move_date_values', 'move_date_values', 'application/json')
-def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggregatedCHO/temporal"):
+@simple_service('POST', 'http://purl.org/la/dp/move_date_values',
+                'move_date_values', 'application/json')
+def movedatevalues(body, ctype, action="move_date_values", prop=None,
+                   to_prop="sourceResource/temporal"):
     """
-    Service that accepts a JSON document and moves any dates found in the prop field to the
-    temporal field.
+    Service that accepts a JSON document and moves any dates found in the prop
+    field to the temporal field.
     """
 
     if not prop:
@@ -19,9 +21,13 @@ def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggre
     REGSUB = ("\(", ""), ("\)", ""), ("\.",""), ("\?","")
     REGSEARCH = [
         "\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}",
+        "\d{1,2} *[-/] *\d{4} *[-/] *\d{1,2} *[-/] *\d{4}",
+        "\d{4} *[-/] *\d{1,2} *[-/] *\d{4} *[-/] *\d{1,2}",
         "\d{1,4} *[-/] *\d{1,4} *[-/] *\d{1,4}",
         "\d{4} *[-/] *\d{4}",
-        "\d{4}"
+        "\d{1,2} *[-/] *\d{4}",
+        "\d{4} *[-/] *\d{1,2}",
+        "\d{4}s?"
         ]
 
     def cleanup(s):
@@ -41,7 +47,7 @@ def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggre
         remove = []
         toprop = getprop(data, to_prop) if exists(data, to_prop) else []
         
-        for v in values:
+        for v in (values if isinstance(values, list) else [values]):
             c = cleanup(v)
             for pattern in REGSEARCH:
                 m = re.compile(pattern).findall(c)

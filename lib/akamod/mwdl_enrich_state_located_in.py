@@ -7,7 +7,7 @@ from dplaingestion.selector import getprop, setprop, exists
 @simple_service('POST', 'http://purl.org/la/dp/mwdl_enrich_state_located_in',
                 'mwdl_enrich_state_located_in', 'application/json')
 def mwdlenrichstatelocatedin(body, ctype, action="mdl_enrich_state_located_in",
-                             prop="aggregatedCHO/stateLocatedIn"):
+                             prop="sourceResource/stateLocatedIn"):
     """
     Service that accepts a JSON document and enriches the "stateLocatedIn"
     field of that document by:

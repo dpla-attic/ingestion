@@ -28,7 +28,7 @@ CONTEXT = {
    "state": "dpla:state",
    "coordinates": "dpla:coordinates",
    "stateLocatedIn" : "dpla:stateLocatedIn",
-   "aggregatedCHO" : "edm:aggregatedCHO",
+   "sourceResource" : "edm:sourceResource",
    "dataProvider" : "edm:dataProvider",
    "hasView" : "edm:hasView",
    "isShownAt" : "edm:isShownAt",
@@ -43,11 +43,6 @@ CONTEXT = {
      "@type": "xsd:date"
    }
 }
-
-def web_resource_transform(d, url):
-    format_field = RECORD + "display/format"
-    format = getprop(d, format_field) if exists(d, format_field) else None
-    return {"@id": url, "format": format} if format else {"@id": url}
 
 def multi_transform(d, key, props):
     values = []
@@ -85,8 +80,8 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
-    RECORD + "control/recordid"  : lambda d, p: {"isShownAt": web_resource_transform(d, URL + getprop(d, p))},
-    LINKS + "thumbnail"          : lambda d, p: {"object": web_resource_transform(d, getprop(d, p))}
+    RECORD + "control/recordid"  : lambda d, p: {"isShownAt": URL + getprop(d, p)},
+    LINKS + "thumbnail"          : lambda d, p: {"object": getprop(d, p)}
 }
 
 @simple_service("POST", "http://purl.org/la/dp/primo-to-dpla", "primo-to-dpla", "application/ld+json")
@@ -109,7 +104,7 @@ def primotodpla(body,ctype,geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "aggregatedCHO": {}
+        "sourceResource": {}
     }
 
     # For ARC, "data" is the source record so set it here
@@ -118,7 +113,7 @@ def primotodpla(body,ctype,geoprop=None):
     # Apply all transformation rules from original document
     for p in CHO_TRANSFORMER:
         if exists(data, p):
-            out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data, p))
+            out["sourceResource"].update(CHO_TRANSFORMER[p](data, p))
     for p in AGGREGATION_TRANSFORMER:
         if exists(data, p):
             out.update(AGGREGATION_TRANSFORMER[p](data, p))
@@ -129,10 +124,10 @@ def primotodpla(body,ctype,geoprop=None):
     sp_props = ["display/lds08", "search/lsr14"]
     ipo_props = ["display/lds04", "search/lsr13"]
     title_props = ["display/title", "display/lds10"]
-    out["aggregatedCHO"].update(multi_transform(data, "identifier", id_props))
-    out["aggregatedCHO"].update(multi_transform(data, "spatial", sp_props))
-    out["aggregatedCHO"].update(multi_transform(data, "isPartOf", ipo_props))
-    out["aggregatedCHO"].update(multi_transform(data, "title", title_props))
+    out["sourceResource"].update(multi_transform(data, "identifier", id_props))
+    out["sourceResource"].update(multi_transform(data, "spatial", sp_props))
+    out["sourceResource"].update(multi_transform(data, "isPartOf", ipo_props))
+    out["sourceResource"].update(multi_transform(data, "title", title_props))
 
     dp_props = ["display/lds03", "search/lsr12"]
     out.update(multi_transform(data, "dataProvider", dp_props))

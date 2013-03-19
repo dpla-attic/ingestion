@@ -595,7 +595,7 @@ def test_filtering_by_path():
     """
 
     INPUT_JSON = """{
-    "aggregatedCHO": {
+    "sourceResource": {
        "rights": [
            "",
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
@@ -629,7 +629,7 @@ def test_filtering_by_path():
    }}"""
 
     EXPECTED  = json.loads("""{
-    "aggregatedCHO": {
+    "sourceResource": {
        "rights": [
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
        ],
@@ -658,7 +658,7 @@ def test_filtering_by_path():
        ]
    }}""")
 
-    url = server() + "filter_paths?paths=aggregatedCHO/spatial,aggregatedCHO/rights"
+    url = server() + "filter_paths?paths=sourceResource/spatial,sourceResource/rights"
     resp,content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 

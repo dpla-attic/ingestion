@@ -74,7 +74,7 @@ def process_profile(uri_base, profile_f):
 def process_primo_all(profile, blacklist=None):
     # TODO flag to stop requesting
     request_more = True
-    index = 1
+    index = 0
     while request_more:
         collection = {}
         collection['id'] = 1
@@ -87,17 +87,18 @@ def process_primo_all(profile, blacklist=None):
             print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
             request_more = False
 
-        print >> sys.stderr, "Index: %s" % index
-        
         endpoint_content = ARC_PARSE(content)
+	total_hits = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['TOTALHITS']
+	print >> sys.stderr, "%s of %s total documents" % (index, total_hits)
         items = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['DOC']
+
         for item in (items if isinstance(items, list) else [items]):
             item['_id'] = item['PrimoNMBib']['record']['control']['recordid']
             collection['items'].append(item)
+	    index += 1
         enrich_coll(profile, collection['name'], json.dumps({'items':collection['items']}))
-        index += int(profile[u'bulk_size'])
 
-        if index > 5000:
+        if int(index) == int(total_hits):
             request_more = False
 
     return True
@@ -194,6 +195,8 @@ def enrich_coll(profile,subr,content):
 
 def process_oai_rec(profile):
     endpoint = profile[u'get_record']
+    if not is_absolute(endpoint):
+        endpoint = URI_BASE + endpoint
     print >> sys.stderr, endpoint
 
     resp, content = H.request(endpoint)
