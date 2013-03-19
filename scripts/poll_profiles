@@ -288,6 +288,7 @@ def normalize_collection_name(collection_name):
     import re
     x = re.sub(r'[/() \t]', r'_', collection_name)
     x = re.sub(r'_+', r'_', x)
+    x = re.sub(r':', r'_', x)
     return x.lower()
 
 
@@ -329,7 +330,7 @@ def process_edan_all(profile, blacklist=None):
             if not "#text" in c:
                 continue
             
-            hid = c["#text"]
+            hid = normalize_collection_name(c["#text"])
             htitle = c["#text"]
             
             if hid not in collections:
