@@ -267,6 +267,7 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
       </header>
       <metadata>
         <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:subject ak:rel="local-name()" ak:value=".">Nuclear disarmament</dc:subject>
           <dc:creator ak:rel="local-name()" ak:value=".">Cohen, Joshua</dc:creator>
           <dc:date ak:rel="local-name()" ak:value=".">2004-08-20T19:48:34Z</dc:date>
           <dc:date>2004-08-20T19:48:34Z</dc:date>

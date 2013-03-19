@@ -1,0 +1,32 @@
+{
+    "list_sets": "http://localhost:8881/oai.listsets.json?endpoint=http://digitalcommonwealth.org/oai-pmh-repository/request",
+    "enrichments_coll": [
+        "http://localhost:8881/oai-set-name?sets_service=http://localhost:8881/oai.listsets.json?endpoint=http://digitalcommonwealth.org/oai-pmh-repository/request"
+    ], 
+    "name": "digital-commonwealth", 
+    "enrichments_rec": [
+        "http://localhost:8881/select-id",
+        "http://localhost:8881/oai-to-dpla",
+        "http://localhost:8881/shred?prop=sourceRecord%2Fcontributor%2CsourceRecord%2Fcreator%2CsourceRecord%2Fdate",
+        "http://localhost:8881/shred?prop=sourceRecord%2Flanguage%2CsourceRecord%2Fpublisher%2CsourceRecord%2Frelation",
+        "http://localhost:8881/shred?prop=sourceRecord%2Fsubject%2CsourceRecord%2Ftype%2CsourceResource%2Fformat",
+        "http://localhost:8881/cleanup_value",
+        "http://localhost:8881/move_date_values?prop=sourceRecord%2Fsubject",
+        "http://localhost:8881/move_date_values?prop=sourceRecord%2Fspatial",
+        "http://localhost:8881/shred?prop=sourceResource%2Fspatial&delim=--",
+        "http://localhost:8881/enrich-subject",
+        "http://localhost:8881/enrich-date",
+        "http://localhost:8881/enrich-temporal-date",
+        "http://localhost:8881/enrich-type",
+        "http://localhost:8881/enrich-format",
+        "http://localhost:8881/enrich_location",
+        "http://localhost:8881/contentdm_identify_object"
+    ], 
+    "blacklist": ["3","5","6","8","13","18","19","20","27","41","177"],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/digital-commonwealth",
+        "name": "Digital Commonwealth"
+    }, 
+    "type": "oai", 
+    "endpoint_URL": "http://localhost:8881/dpla-list-records?endpoint=http://digitalcommonwealth.org/oai-pmh-repository/request&oaiset="
+}

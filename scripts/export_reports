@@ -33,6 +33,9 @@ report[13]="description"
 report[14]="spatial_name"
 report[15]="spatial_state"
 report[16]="data_provider"
+report[17]="state_located_in_name"
+report[18]="state_located_in_state"
+
 
 dir="${provider}_exports"
 rm -r $dir "${dir}.zip"

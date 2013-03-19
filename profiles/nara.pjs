@@ -4,18 +4,18 @@
     "enrichments_rec": [
         "/select-id?prop=_id", 
         "/arc-to-dpla", 
-        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate", 
-        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation", 
-        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype", 
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate", 
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation", 
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat", 
+        "/cleanup_value",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject",
-        "/cleanup_value",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
         "/enrich_language",
-        "/copy_prop?prop=aggregatedCHO%2Frights&to_prop=aggregatedCHO%2FhasView&key=rights"
+        "/copy_prop?prop=sourceResource%2Frights&to_prop=sourceResource%2FhasView&key=rights"
     ], 
     "subresources": [], 
     "last_checked": "2013-03-09T14:02:39.094687", 

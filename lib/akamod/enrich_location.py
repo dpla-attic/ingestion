@@ -8,7 +8,7 @@ from dplaingestion.selector import getprop, setprop, exists
 REGEXPS = ('\.',''), ('\(',''), ('\)',''), ('-',''), (',','')
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_location', 'enrich_location', 'application/json')
-def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spatial"):
+def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spatial"):
     """
     Service that accepts a JSON document and enriches the "spatial" field of that document by
     iterating through the spatial fields and mapping to the state and iso3166-2, if not already

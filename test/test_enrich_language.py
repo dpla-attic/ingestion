@@ -46,12 +46,12 @@ def test_no_params_with_languages():
     Should return converted JSON for no param.
     """
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "language": "aaa"
         }
     }
     resp, content = _get_server_response(json.dumps(INPUT))
-    INPUT["aggregatedCHO"]["language"] = {"name": "aaa"}
+    INPUT["sourceResource"]["language"] = {"name": "aaa"}
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
@@ -62,12 +62,12 @@ def test_no_params_with_many_languages():
     Should return converted JSON for no param.
     """
     INPUT = {
-        "aggregatedCHO": {
+        "sourceResource": {
             "language": ["aaa", "bbb"]
         }
     }
     resp, content = _get_server_response(json.dumps(INPUT))
-    INPUT["aggregatedCHO"]["language"] = [{"name": "aaa"}, {"name": "bbb"}]
+    INPUT["sourceResource"]["language"] = [{"name": "aaa"}, {"name": "bbb"}]
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
