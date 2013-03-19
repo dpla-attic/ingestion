@@ -54,17 +54,13 @@ def transform_description(d):
 
 
 def transform_date(d):
-    logger.debug("DATE")
     date = None
     dates = arc_group_extraction(d, "freetext", "date")
     for item in dates:
-        logger.debug(item)
         if "@label" in item and "#text" in item:
-            logger.debug("A")
             if item["@label"] == "Date":
                 date = item["#text"]
                 break
-    logger.debug("END DATE")
     return {"date": date} if date else {}
 
 def extract_date(d, group_key, item_key):
@@ -223,7 +219,6 @@ def transform_spatial(d):
                 res.update({name: val})
         
         for k, v in location.items():
-            logger.debug("k:%s, v:%s" % (k,v))
             if not ("#text" in v and "@type" in v):
                 continue
             tp = v["@type"]
@@ -243,7 +238,7 @@ def transform_spatial(d):
             elif k in [ "L2", "L3", "L4", "L5"]:
                 regions.append(tx)
             elif k == "points":
-                logger.debug("POINTS: " + str(v))
+                points.append(v)
 
 
         update(res, "name", place)
@@ -256,22 +251,18 @@ def transform_spatial(d):
         
         return res
 
-    logger.debug("ID:" + d["_id"])
     geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
-    logger.debug("GEO SIZE: " + str(len(geo)))
 
     for g in geo:
         
         if not g:
             continue
 
-        logger.debug("GEO: " + str(g))
         loc = convert_location(g, place)
         if loc:
             result.append(loc)
 
 
-    logger.debug(result)
     
     ret = {}
     if len(result) == 1:
@@ -287,7 +278,6 @@ def transform_spatial(d):
     if l:
         ret.update({"currentLocation": l}) 
 
-    logger.debug("RESULT: " + str(ret))
     return ret
 
 
@@ -334,13 +324,11 @@ def transform_title(d):
     p = None
     labels = ["Title", "Object Name"]
     ps = arc_group_extraction(d, "descriptiveNonRepeating", "title")
-    logger.debug("TITLE")
     if ps != [None]:
         for e in ps:
             if e["@label"] in labels:
                 p = e["#text"]
     
-    logger.debug("TITLE " + str(ps))
     return {"title": p} if p else {}
 
 def transform_subject(d):
@@ -365,11 +353,9 @@ def transform_subject(d):
                     p.append(item["#text"])
 
     res = list(set(p))
-    #logger.debug("SUBJECT:" + str(res))
     if len(res) == 1:
         res = res[0]
 
-    #logger.debug("SUBJECT:" + str(res))
     return {"subject": res} if res else {}
 
 
@@ -421,7 +407,6 @@ def subject_and_spatial_transform(d):
         s = arc_group_extraction(p, "reference-units", "reference-unit",
                                  "state")[0]
         if s:
-            logger.debug("SP: %s"%s)
             spatial.append(s)
    
     if subject:
@@ -446,7 +431,6 @@ def slugify_field(data, fieldname):
             c = re.sub(r'\s+', '--', c)
             parts[len(parts)-1] = c
             slugged = "/".join(parts)
-            logger.debug("SLUG:[%s][%s]" % (p, slugged))
             setprop(data, fieldname, slugged)
 
 
@@ -589,7 +573,6 @@ def edantodpla(body,ctype,geoprop=None):
         "aggregatedCHO": {}
     }
 
-    logger.debug("x"*60)
     # Apply all transformation rules from original document
     for k, v in CHO_TRANSFORMER.items():
         if exists(data, k):
@@ -604,21 +587,12 @@ def edantodpla(body,ctype,geoprop=None):
     out["aggregatedCHO"].update(transform_rights(data))
     out["aggregatedCHO"].update(transform_subject(data))
     out["aggregatedCHO"].update(transform_spatial(data))
-    logger.debug(out["aggregatedCHO"])
     #out["aggregatedCHO"].update(subject_and_spatial_transform(data))
     #out.update(has_view_transform(data))
 
     out.update(transform_is_shown_at(data))
 
-
-    logger.debug(out)
-
     slugify_field(out, "collection/@id")
-
-    logger.debug("x"*60)
-
-    if exists(out, "aggregatedCHO/date"):
-        logger.debug("OUTTYPE: %s"%getprop(out, "aggregatedCHO/date"))
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:
