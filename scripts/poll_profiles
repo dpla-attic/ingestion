@@ -322,7 +322,7 @@ TYPE_PROCESSORS = {
     ('oai','all'): process_oai_all,
     ('oai','rec'): process_oai_rec,
     ('primo','coll'): None,
-    ('primo','all'): process_primo_all
+    ('primo','all'): process_primo_all,
     ('mets', 'coll'): process_mets_coll,
     ('mets', 'all'): None,
 }
