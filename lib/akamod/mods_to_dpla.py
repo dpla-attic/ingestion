@@ -46,14 +46,20 @@ CONTEXT = {
 }
 
 def physical_description_handler(d, p):
-    note = getprop(d, p)
+    pd = getprop(d, p)
     out = {}
-    for _dict in note:
-        if isinstance(_dict, dict) and "displayLabel" in _dict:
-            if _dict["displayLabel"] == "size inches":
-                out["extent"] = _dict["#text"]
-            if _dict["displayLabel"] == "condition":
-                out["description"] = _dict["#text"]
+    pd = pd if isinstance(pd, list) else [pd]
+    for _dict in pd:
+        if "note" in _dict:
+            note = getprop(_dict, "note")
+            for sub_dict in note:
+                if isinstance(sub_dict, dict) and "displayLabel" in sub_dict:
+                    if sub_dict["displayLabel"] == "size inches":
+                        out["extent"] = sub_dict["#text"]
+                    if sub_dict["displayLabel"] == "condition":
+                        out["description"] = sub_dict["#text"]
+        if "form" in _dict:
+            out["format"] = getprop(_dict, "form/authority")
     return out
 
 def subject_handler(d, p):
@@ -66,9 +72,18 @@ def subject_handler(d, p):
             subjects["subject"].append(getprop(_dict, "name/namePart"))
     return subjects
 
+def get_media_type(d):
+    pd = getprop(d, "physicalDescription")
+    pd = pd if isinstance(pd, list) else [pd]
+    for _dict in pd:
+        try:
+            return selector_getprop(_dict, "internetMediaType")
+        except KeyError:
+            pass
+
 def location_handler(d, p):
     location = getprop(d, p)
-    format = getprop(d, "physicalDescription/internetMediaType")
+    format = get_media_type(d)
     out = {}
     try:
         for _dict in location:
@@ -95,14 +110,13 @@ def location_handler(d, p):
 CHO_TRANSFORMER = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
     "name/namePart": lambda d, p: {"creator": getprop(d, p)},
-    "physicalDescription/note": physical_description_handler,
-    "physicalDescription/form/authority": lambda d, p: {"format": getprop(d, p)},
+    "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
     "accessCondition": lambda d, p: {"rights": [s["#text"] for s in getprop(d, p) if "#text" in s]},
     "subject": subject_handler,
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
-    "originInfo/dateCreated": lambda d, p: {"date": getprop(d, p)}
+    "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)}
 }
 
 AGGREGATION_TRANSFORMER = {
