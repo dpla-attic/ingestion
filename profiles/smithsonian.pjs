@@ -3,7 +3,7 @@
     "name": "smithsonian",
     "list_sets": "",
     "enrichments_rec": [
-        "/select-id?prop=descriptiveNonRepeating%2Frecord_link",
+        "/edan_select_id",
 	"/edan_to_dpla", 
         "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
         "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
@@ -25,5 +25,5 @@
         "name": "Smithsonian Institutions"
     },
     "type": "edan",
-    "endpoint_URL": "file:/home/szymon/smithsonian/"
+    "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
 }
