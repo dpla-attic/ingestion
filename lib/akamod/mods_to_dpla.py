@@ -102,6 +102,24 @@ def location_handler(d, p):
     finally:
         return out
 
+def creator_handler(d, p):
+    creator_dict = getprop(d, p)
+    if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
+        if creator_dict["type"] == "personal":
+            parsed = []
+            for name_part in creator_dict["namePart"]:
+                # preserve parsing order
+                if name_part["type"] == "given":
+                    parsed.append(name_part["#text"])
+                if name_part["type"] == "family":
+                    parsed.append(name_part["#text"])
+                if name_part["type"] == "date":
+                    parsed.append(name_part["#text"])
+            return {"creator": ", ".join(parsed)}
+        if creator_dict["type"] == "corporate":
+            return {"creator": creator_dict["namePart"]}
+
+
 
 
 
@@ -109,7 +127,7 @@ def location_handler(d, p):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
-    "name/namePart": lambda d, p: {"creator": getprop(d, p)},
+    "name": creator_handler,
     "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
     "accessCondition": lambda d, p: {"rights": [s["#text"] for s in getprop(d, p) if "#text" in s]},
