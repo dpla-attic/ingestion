@@ -13,6 +13,7 @@
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation%2CsourceResource%2Fformat",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftitle%2CsourceResource%2Ftype%2CsourceResource%2Fcreator",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
+        "/cleanup_value",
         "/move_date_values?prop=sourceResource%2Fspatial&to_prop=sourceResource%2Fdate",
         "/enrich_earliest_date",
         "/enrich-subject",
@@ -23,8 +24,7 @@
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=sourceResource%2FstateLocatedIn&create=True&remove=True",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider&remove=True",
-        "/georgia_identify_object",
-        "/cleanup_value"
+        "/georgia_identify_object"
     ], 
     "subresources": [
         "dpla"

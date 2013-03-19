@@ -8,19 +8,18 @@
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
+        "/cleanup_value",
         "/mwdl_enrich_state_located_in",
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject",
-        "/cleanup_value",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/enrich_language",
-        "/sets_prop?prop=sourceResource%2FphysicalMedium"
+        "/enrich_language"
     ], 
     "last_checked": "2013-03-05T17:30:21.689809", 
     "contributor": {
