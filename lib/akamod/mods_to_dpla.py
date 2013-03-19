@@ -134,7 +134,8 @@ CHO_TRANSFORMER = {
     "subject": subject_handler,
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
-    "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)}
+    "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
+    "identifier": lambda d, p: {"identifier": "-".join(s["#text"] for s in getprop(d, p) if s["type"] == "uri")}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -167,18 +168,18 @@ def mods_to_dpla(body, ctype, geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "aggregatedCHO" : {}
+        "sourceRecord" : {}
     }
 
     # Apply all transformation rules from original document
     for p in CHO_TRANSFORMER:
         if exists(data, p):
-            out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data, p))
+            out["sourceRecord"].update(CHO_TRANSFORMER[p](data, p))
     for p in AGGREGATION_TRANSFORMER:
         if exists(data, p):
             out.update(AGGREGATION_TRANSFORMER[p](data, p))
-    if "spatial" in out["aggregatedCHO"]:
-        out["aggregatedCHO"]["spatial"]["currentLocation"] = "Virginia"
+    if "spatial" in out["sourceRecord"]:
+        out["sourceRecord"]["spatial"]["currentLocation"] = "Virginia"
 
     # Additional content not from original document
 
