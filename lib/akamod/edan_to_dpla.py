@@ -114,7 +114,7 @@ def source_transform(d):
 
 def transform_is_shown_at(d):
     propname = "descriptiveNonRepeating/record_link"
-    obj = getprop(d, propname, False)
+    obj = getprop(d, propname, True)
     return {"isShownAt": obj} if obj else {}
 
 
