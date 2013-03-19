@@ -9,7 +9,7 @@
         "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
         "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
         "/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
-        "/shred?prop=isShownAt%2Fformat",
+        "/shred?prop=sourceResource%2Fformat",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject", 

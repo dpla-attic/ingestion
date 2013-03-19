@@ -25,7 +25,7 @@ CONTEXT = {
    "state": "dpla:state",                             
    "coordinates": "dpla:coordinates",
    "stateLocatedIn" : "dpla:stateLocatedIn",
-   "aggregatedCHO" : "edm:aggregatedCHO",
+   "sourceResource" : "edm:sourceResource",
    "dataProvider" : "edm:dataProvider",
    "hasView" : "edm:hasView",
    "isShownAt" : "edm:isShownAt",
@@ -586,26 +586,26 @@ def edantodpla(body,ctype,geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "aggregatedCHO": {}
+        "sourceResource": {}
     }
 
     logger.debug("x"*60)
     # Apply all transformation rules from original document
     for k, v in CHO_TRANSFORMER.items():
         if exists(data, k):
-            out["aggregatedCHO"].update(v(data))
+            out["sourceResource"].update(v(data))
     for k, v in AGGREGATION_TRANSFORMER.items():
         if exists(data, k):
             out.update(v(data))
 
     # Apply transformations that are dependent on more than one
     # original document  field
-    #out["aggregatedCHO"].update(type_transform(data))
-    out["aggregatedCHO"].update(transform_rights(data))
-    out["aggregatedCHO"].update(transform_subject(data))
-    out["aggregatedCHO"].update(transform_spatial(data))
-    logger.debug(out["aggregatedCHO"])
-    #out["aggregatedCHO"].update(subject_and_spatial_transform(data))
+    #out["sourceResource"].update(type_transform(data))
+    out["sourceResource"].update(transform_rights(data))
+    out["sourceResource"].update(transform_subject(data))
+    out["sourceResource"].update(transform_spatial(data))
+    logger.debug(out["sourceResource"])
+    #out["sourceResource"].update(subject_and_spatial_transform(data))
     #out.update(has_view_transform(data))
 
     out.update(transform_is_shown_at(data))
@@ -617,8 +617,8 @@ def edantodpla(body,ctype,geoprop=None):
 
     logger.debug("x"*60)
 
-    if exists(out, "aggregatedCHO/date"):
-        logger.debug("OUTTYPE: %s"%getprop(out, "aggregatedCHO/date"))
+    if exists(out, "sourceResource/date"):
+        logger.debug("OUTTYPE: %s"%getprop(out, "sourceResource/date"))
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:
