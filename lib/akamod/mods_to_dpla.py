@@ -29,7 +29,7 @@ CONTEXT = {
     "state": "dpla:state",
     "coordinates": "dpla:coordinates",
     "stateLocatedIn" : "dpla:stateLocatedIn",
-    "aggregatedCHO" : "edm:aggregatedCHO",
+    "sourceResource" : "edm:sourceResource",
     "dataProvider" : "edm:dataProvider",
     "hasView" : "edm:hasView",
     "isShownAt" : "edm:isShownAt",
@@ -91,7 +91,7 @@ def location_handler(d, p):
                 for url_dict in _dict["url"]:
                     if url_dict and "access" in url_dict:
                         if url_dict["access"] == "object in context":
-                            out["isShownAt"] = {"@id:": url_dict["#text"], "format": format}
+                            out["isShownAt"] = url_dict["#text"]
                         if url_dict["access"] == "preview":
                             out["object"] = url_dict["#text"]
                         if url_dict["access"] == "raw object":
