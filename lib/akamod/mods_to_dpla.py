@@ -162,18 +162,18 @@ def mods_to_dpla(body, ctype, geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "sourceRecord" : {}
+        "sourceResource" : {}
     }
 
     # Apply all transformation rules from original document
     for p in CHO_TRANSFORMER:
         if exists(data, p):
-            out["sourceRecord"].update(CHO_TRANSFORMER[p](data, p))
+            out["sourceResource"].update(CHO_TRANSFORMER[p](data, p))
     for p in AGGREGATION_TRANSFORMER:
         if exists(data, p):
             out.update(AGGREGATION_TRANSFORMER[p](data, p))
-    if "spatial" in out["sourceRecord"]:
-        out["sourceRecord"]["spatial"]["currentLocation"] = "Virginia"
+    if "spatial" in out["sourceResource"]:
+        out["sourceResource"]["spatial"]["currentLocation"] = "Virginia"
 
     # Additional content not from original document
 

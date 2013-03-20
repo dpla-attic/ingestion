@@ -5,14 +5,14 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/mods-to-dpla",
-        "/copy_prop?prop=sourceRecord%2Frights&to_prop=hasView%2Frights&create=True",
+        "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",
         "/cleanup_value",
-        "/enrich-subject?prop=sourceRecord%2Fsubject",
-        "/enrich_date?prop=sourceRecord%2Fdate",
-        "/enrich-type?prop=sourceRecord%2Ftype&alternate=sourceRecord%2Fformat",
-        "/enrich-format?prop=hasView%2Fformat&alternate=sourceRecord%2Fformat&typefield=sourceRecord%2Ftype",
-        "/enrich_location?prop=sourceRecord%2Fspatial",
-        "/enrich_language?prop=sourceRecord%2Flanguage"
+        "/enrich-subject",
+        "/enrich_date?prop=sourceResource%2Fdate",
+        "/enrich-type",
+        "/enrich-format?prop=hasView%2Fformat&type_field=sourceResource%2Ftype",
+        "/enrich_location",
+        "/enrich_language"
     ], 
     "subresources": [
         "744806"
