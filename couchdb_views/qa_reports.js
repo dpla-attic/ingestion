@@ -108,10 +108,10 @@
            "reduce": "_count"
        },
        "collection": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {cname = doc.collection.name;emit(doc['id'], cname);}}"
+           "map": "function(doc) {if (doc.ingestType == 'item') {ctitle = doc.collection.title;emit(doc['id'], ctitle);}}"
        },
        "collection_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {cname = doc.collection.name;emit(cname,1);}}",
+           "map": "function(doc) {if (doc.ingestType == 'item') {ctitle = doc.collection.title;emit(ctitle,1);}}",
            "reduce": "_count"
        },
        "contributor": {

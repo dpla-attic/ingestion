@@ -69,6 +69,7 @@ DEFAULT_PROP = [
     "sourceResource/publisher",
     "sourceResource/subject",
     "sourceResource/format",
+    "sourceResource/date"
 ]
 
 
