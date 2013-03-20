@@ -62,15 +62,12 @@ def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
 
         if dctype:
             if len(dctype) == 1:
-                setprop(data, prop, dctype[0])
-            else:
-                setprop(data, prop, dctype)
+                dctype = dctype[0]
+            setprop(data, prop, dctype)
         else:
             delprop(data, prop)
+
         if f:
-            if len(f) == 1:
-                setprop(data, format_field, f[0])
-            else:
-                setprop(data, format_field, f)
+            setprop(data, format_field, f)
 
     return json.dumps(data)

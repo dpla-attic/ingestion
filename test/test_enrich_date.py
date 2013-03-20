@@ -471,7 +471,28 @@ def test_no_date_field():
     assert str(resp.status).startswith("2")
     result = json.loads(content)
 
+def test_dates_with_question_marks():
+    """Handle dates with question marks"""
+    INPUT = ["1928?", "1928? - 1929?", "1928?/1929?",
+             "1928? / 1929?", "1928? - 1929", "1928 - 1929?"]
+    EXPECTED = [
+        {"begin": "1928", "end": "1928", "displayDate": "1928?"},
+        {"begin": "1928", "end": "1929", "displayDate": "1928? - 1929?"},
+        {"begin": "1928", "end": "1929", "displayDate": "1928?/1929?"},
+        {"begin": "1928", "end": "1929", "displayDate": "1928? / 1929?"},
+        {"begin": "1928", "end": "1929", "displayDate": "1928? - 1929"},
+        {"begin": "1928", "end": "1929", "displayDate": "1928 - 1929?"}
+    ]
 
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": EXPECTED[i]}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(content, expected)
 
 
 if __name__ == "__main__":

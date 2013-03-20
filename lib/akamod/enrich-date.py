@@ -33,7 +33,7 @@ def split_date(d):
     if len(d.split("/")) == 3: #so th date is like "2001 / 01 / 01"
         reg = DATE_RANGE_RE
     range = [robust_date_parser(x) for x in re.search(reg,d).groups()]
-    return range
+    return filter(None, range)
 
 DATE_8601 = '%Y-%m-%d'
 def robust_date_parser(d):
@@ -51,8 +51,9 @@ def robust_date_parser(d):
 
     Returns None if it fails
     """
+    q = re.split("(\?$)", d)
     circa_re = re.compile("(ca\.|c\.)", re.I)
-    dd = dateparser.to_iso8601(re.sub(circa_re, "", d, count=0).strip()) # simple cleanup prior to parse
+    dd = dateparser.to_iso8601(re.sub(circa_re, "", q[0], count=0).strip()) # simple cleanup prior to parse
     if dd is None:
         try:
             dd = dateutil_parse(d, fuzzy=True, default=DEFAULT_DATETIME)
@@ -69,6 +70,8 @@ def robust_date_parser(d):
         if dd:
             ddiso = dd.isoformat()
             return ddiso[:ddiso.index('T')]
+    if len(q) != 1 and dd:
+        dd += q[1]
     return dd
 
 year_range = re.compile("(\d{4})\s*[-/]\s*(\d{4})") # simple for digits year range
@@ -140,7 +143,8 @@ def convert_dates(data, prop, earliest):
 
             for s in (v if not isinstance(v, basestring) else [v]):
                 for part in s.split(";"):
-                    stripped = remove_brackets_and_strip(part)
+                    display_date = remove_brackets_and_strip(part)
+                    stripped  = re.sub("\?", "", display_date)
                     if len(stripped) < 4:
                         continue
                     a, b = parse_date_or_range(stripped)
@@ -148,7 +152,7 @@ def convert_dates(data, prop, earliest):
                         dates.append( {
                                 "begin": a,
                                 "end": b,
-                                "displayDate" : stripped
+                                "displayDate" : display_date
                             })
 
     dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
