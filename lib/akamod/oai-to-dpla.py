@@ -60,6 +60,13 @@ def spatial_transform(d):
 
     return {"spatial": spatial} if spatial else {}
 
+def spatial_transform(d):
+    spatial = getprop(d, "coverage")
+    if spatial and not isinstance(spatial, list):
+        spatial = [spatial]
+
+    return {"spatial": spatial} if spatial else {}
+
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
