@@ -192,7 +192,6 @@ def enrich_coll(profile, subr, content):
     resp, content = H.request(ENRICH, 'POST' ,body=content, headers=headers)
     if not str(resp.status).startswith('2'):
         print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
-    exit(0)
 
 def process_oai_rec(profile):
     endpoint = profile[u'get_record']
