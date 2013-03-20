@@ -10,6 +10,7 @@
         "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
         "/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
         "/shred?prop=sourceResource%2Fformat",
+        "/copy_prop?prop=sourceResource%2Ftemporal&to_prop=sourceResource%2Fdate&create=True",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject", 

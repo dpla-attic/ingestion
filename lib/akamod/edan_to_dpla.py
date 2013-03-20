@@ -54,14 +54,13 @@ def transform_description(d):
 
 
 def transform_date(d):
-    date = None
+    date = []
     dates = arc_group_extraction(d, "freetext", "date")
     for item in dates:
         if "@label" in item and "#text" in item:
-            if item["@label"] == "Date":
-                date = item["#text"]
-                break
-    return {"date": date} if date else {}
+            date.append(item["#text"])
+            
+    return {"temporal": date} if date else {}
 
 def extract_date(d, group_key, item_key):
     dates = []
@@ -109,9 +108,17 @@ def source_transform(d):
 
 
 def transform_is_shown_at(d):
-    propname = "descriptiveNonRepeating/record_link"
+    propname = "descriptiveNonRepeating/online_media/media/#text"
+    
     obj = getprop(d, propname, True)
     return {"isShownAt": obj} if obj else {}
+
+
+def transform_object(d):
+    propname = "descriptiveNonRepeating/online_media/media/@thumbnail"
+    
+    obj = getprop(d, propname, True)
+    return {"object": obj} if obj else {}
 
 
 def collection_transform(d):
@@ -144,7 +151,7 @@ def creator_transform(d):
 
 def transform_format(d):
     f = []
-    labels = ["Physical description", "Medium"]
+    labels = ["Physical description", "Physical description", "Medium"]
     formats = arc_group_extraction(d, "freetext", "physicalDescription")
     [f.append(e["#text"]) for e in formats if e["@label"] in labels]
 
@@ -334,9 +341,10 @@ def transform_title(d):
 def transform_subject(d):
 
     p = []
+    topic_labels = ["Topic", "subject", "event"]
     ps = arc_group_extraction(d, "freetext", "topic")
     if ps != [None]:
-        [p.append(e["#text"]) for e in ps if e["@label"] == "Topic"]
+        [p.append(e["#text"]) for e in ps if e["@label"] in topic_labels]
     
     ps = arc_group_extraction(d, "freetext", "culture")
     if ps != [None]:
@@ -589,6 +597,7 @@ def edantodpla(body,ctype,geoprop=None):
     out["sourceResource"].update(transform_spatial(data))
 
     out.update(transform_is_shown_at(data))
+    out.update(transform_object(data))
 
     slugify_field(out, "collection/@id")
 
