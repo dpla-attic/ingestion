@@ -29,7 +29,12 @@
         "/enrich_language"
     ], 
     "subresources": [
-        "SetDPLA"
+        "DPLAIndiana",
+        "DPLAKress",
+        "DPLAYCBA",
+        "DPLADallas",
+        "DPLAWalters",
+        "DPLAYaleArt"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
