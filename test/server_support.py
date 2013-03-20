@@ -136,7 +136,8 @@ class download_preview:
 class lookup:
     lookup_mapping = {
         'test': 'test_subst',
-        'test2': 'test_2_subst'
+        'test2': 'test_2_subst',
+        'dc_data_provider': 'DC_DATA_PROVIDER'
     }
 
 class identify_object:

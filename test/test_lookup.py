@@ -30,8 +30,6 @@ def _get_server_response(body, prop=None, target=None, subst=None):
     return H.request(url, "POST", body=body)
 
 
-
-
 def test_bad_INPUT_json():
     """
     Should return 500 when getting bad JSON.
@@ -39,9 +37,6 @@ def test_bad_INPUT_json():
     INPUT = '{"aaabbb: eeee}'
     resp, content = _get_server_response(INPUT, "a", "b")
     assert resp.status == 500
-
-
-
 
 
 def test_no_params():
@@ -53,8 +48,6 @@ def test_no_params():
     assert resp.status == 500
 
 
-
-
 def test_missing_input_field():
     """
     Should return 500 for no param.
@@ -62,8 +55,6 @@ def test_missing_input_field():
     INPUT = '{"aaa":"bbb"}'
     resp, content = _get_server_response(INPUT)
     assert resp.status == 500
-
-
 
 
 def test_missing_field_in_json():
@@ -76,8 +67,6 @@ def test_missing_field_in_json():
     assert_same_jsons(INPUT, INPUT)
 
 
-
-
 def test_missing_output_field():
     """
     Should return 500 when the OUTPUT field is missing from URL.
@@ -85,8 +74,6 @@ def test_missing_output_field():
     INPUT = '{"aaa":"bbb"}'
     resp, content = _get_server_response(INPUT, "a", "", "test")
     assert resp.status == 500
-
-
 
 
 def test_substitution_with_missing_subst_dict():
@@ -99,8 +86,6 @@ def test_substitution_with_missing_subst_dict():
     print_error_log()
     assert resp.status == 500
     assert content == "Missing substitution dictionary [aaa]"
-
-
 
 
 def test_substitution_with_missing_key():
@@ -116,8 +101,6 @@ def test_substitution_with_missing_key():
     assert_same_jsons(INPUT, content)
 
 
-
-
 def test_simple_substitute_for_the_same_field():
     """
     Should return substituted same json field.
@@ -131,8 +114,6 @@ def test_simple_substitute_for_the_same_field():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
-
-
 def test_simple_substitute_for_different_field():
     """
     Should return substituted another json field.
@@ -143,7 +124,6 @@ def test_simple_substitute_for_different_field():
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
-
 
 
 def test_substitution_for_the_same_field_and_array():
@@ -160,7 +140,6 @@ def test_substitution_for_the_same_field_and_array():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
-
 def test_substitution_for_different_fields_and_array():
     """
     Should return json when original json is array.
@@ -175,7 +154,6 @@ def test_substitution_for_different_fields_and_array():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
-
 def test_dictionary_subsitution():
     """
     Should substitute when there is dictionary field.
@@ -188,7 +166,6 @@ def test_dictionary_subsitution():
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
-
 
 
 def test_deeper_dictionary_subsitution():
@@ -213,7 +190,6 @@ def test_deeper_dictionary_subsitution():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
-
 def test_dict_substitution_in_different_field():
     """
     Should add another field when prop is dictionary field.
@@ -234,8 +210,6 @@ def test_dict_substitution_in_different_field():
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
-
-
 
 
 def test_substitute_with_list_of_dictionaries():
@@ -269,8 +243,37 @@ def test_substitute_with_list_of_dictionaries():
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
-# TODO Add test with list of dictionaries
-# TODO add test with dictionary with list
+
+def test_missing_value_in_dict():
+    """Should do nothing when there is no such value in dictionary."""
+    INPUT = {"a": "b"}
+    resp, content = _get_server_response(json.dumps(INPUT), "a", "x", "test")
+    print_error_log()
+    pinfo(resp, content)
+
+    assert resp.status == 200
+    assert_same_jsons(content, INPUT)
+
+
+def test_dc_data_provider():
+    """Should convert data providers for Digital Commonwealth."""
+    data = [
+        ("Beverly High School", "Beverly High School Digital Collection"),
+        ("Brookline Public Library", "Brookline Photograph Collection"),
+        ("C/W MARS", "Amherst Collection"),
+        ("Essex Agricultural and Technical High School", "Essex Aggie Digital Collection"),
+        ("Framingham State University", "Henry Whittemore Library"),
+    ]
+    for d in data:
+        INPUT = {"a": d[1]}
+        EXPECTED_OUTPUT = {"a": d[1], "b": d[0]}
+        resp, content = _get_server_response(json.dumps(INPUT), "a", "b", "dc_data_provider")
+        print_error_log()
+        pinfo(resp, content)
+
+        assert resp.status == 200
+        assert_same_jsons(content, EXPECTED_OUTPUT)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
