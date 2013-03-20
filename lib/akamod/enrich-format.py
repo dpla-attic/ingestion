@@ -70,6 +70,7 @@ def enrichformat(body, ctype, action="enrich-format",
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
+    imt_values = []
     if exists(data, prop):
         v = getprop(data, prop)
         format = []
@@ -80,41 +81,41 @@ def enrichformat(body, ctype, action="enrich-format",
                 s = get_ext(s)
             cleaned = cleanup(s)
             if is_imt(cleaned):
+                # Append to imt_values for use in type
+                imt_values.append(cleaned)
+                # Move IMT values to hasView/format else discard
                 if exists(data, "hasView") and not \
                    exists(data, "hasView/format") and \
                    cleaned not in hasview_format:
                     hasview_format.append(cleaned)
-                else:
-                    if cleaned not in format:
-                        format.append(cleaned)
+            else:
+                # Retain non-IMT values in sourceResource/format, non-cleaned
+                if s not in format:
+                    format.append(s)
 
         if format:
             if len(format) == 1:
-                setprop(data, prop, format[0])
-            else:
-                setprop(data, prop, format)
+                format = format[0]
+            setprop(data, prop, format)
         else:
             delprop(data, prop)
+
         if hasview_format:
             if len(hasview_format) == 1:
-                setprop(data, "hasView/format", hasview_format[0])
-            else:
-                setprop(data, "hasView/format", hasview_format)
+                hasview_format = hasview_format[0]
+            setprop(data, "hasView/format", hasview_format)
 
     # Setting the type if it is empty.
-    t = getprop(data, type_field, True)
-    if not t and exists(data, prop):
-        format = getprop(data, prop)
-        use_format = None
-        if isinstance(format, list) and len(format) > 0:
-            use_format = format[0]
-        elif isinstance(format, basestring):
-            use_format = format
+    if not exists(data, type_field) and imt_values:
+        type = []
+        for imt in imt_values:
+            t = getprop(FORMAT_2_TYPE_MAPPINGS, imt.split("/")[0], True)
+            if t and t not in type:
+                type.append(t)
 
-        if use_format:
-            use_format = use_format.split("/")[0]
-
-            if use_format in FORMAT_2_TYPE_MAPPINGS:
-                setprop(data, type_field, FORMAT_2_TYPE_MAPPINGS[use_format])
+        if type:
+            if len(type) == 1:
+                type = type[0]
+            setprop(data, type_field, type) 
 
     return json.dumps(data)
