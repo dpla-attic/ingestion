@@ -3,6 +3,7 @@
 # Usage: python poll_profiles.py <profiles-glob> <enrichment-service-URI>
 
 import sys, os, glob, fnmatch
+import argparse
 import base64
 import datetime, time
 from itertools import groupby
@@ -11,6 +12,7 @@ from amara.thirdparty import json, httplib2
 from amara.lib.iri import is_absolute, join
 from amara import bindery
 import xmltodict
+from math import floor
 
 # FIXME Turns out this isn't always correct. Sometimes Series files are located in
 # different directories than its Item files. No clear deterministic path between
@@ -18,12 +20,13 @@ import xmltodict
 #ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.path.dirname(srcdir+os.sep),"%s_%s.xml"%(htype.replace(' ',''),hid))
 ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.sep.join(os.path.dirname(srcdir+os.sep).split(os.sep)[:-1]),"*","%s_%s.xml"%(htype.replace(' ',''),hid))
 
-ENRICH = None # enrichment service URI
+URI_BASE = None
+ENRICH = "/enrich" # enrichment service URI
 H = httplib2.Http('/tmp/.pollcache')
 H.force_exception_as_status_code = True
 
-def process_profile(out,profile_f):
-    global ENRICH
+def process_profile(uri_base, profile_f):
+    global URI_BASE, ENRICH
 
     fprof = open(profile_f,'r')
     try:
@@ -42,7 +45,9 @@ def process_profile(out,profile_f):
     # Pause in secs between collection ingests
     sleep = profile.get(u'sleep',0)
 
-    ENRICH = out
+    URI_BASE = uri_base
+    if not is_absolute(ENRICH):
+        ENRICH = URI_BASE + ENRICH
 
     subResources = profile.get(u'subresources')
     blacklist = profile.get(u'blacklist',[])
@@ -60,12 +65,6 @@ def process_profile(out,profile_f):
             process(profile,subr)
             time.sleep(sleep)
 
-    # Update profile metadata and save
-    profile[u'last_checked'] = datetime.datetime.now().isoformat()
-    fprof = open(profile_f,'w')
-    json.dump(profile,fprof,indent=4)
-    fprof.close()
-
     return True
 
 ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
@@ -76,69 +75,74 @@ ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',forc
 #    return key, data
 #
 #ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',postprocessor=skip_cdata)
-def process_arc_all(profile):
+def process_arc_all(profile,blacklist=None):
     src_URL = profile.get('endpoint_URL')
     assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
     src_dir = src_URL[5:]
 
-    collections = {} # this could get big unless we can figure out a way to scope it
+    collections = {} 
+    os.system("rm /tmp/coll_*")
     print "Walking directory: "+src_dir
     for (root, dirs, files) in os.walk(src_dir):
-        items = []
         for filename in fnmatch.filter(files, 'Item_*.xml'):
             item_fn = os.path.join(root,filename)
             item_f = open(item_fn,'r')
             item = ARC_PARSE(item_f)['archival-description']
+            item_f.close()
 
             # set our generic identifier property
-            item['id'] = item['arc-id']
+            item['_id'] = item['arc-id']
 
             hier_items = item['hierarchy']['hierarchy-item']
-            for hi in hier_items:
+            for hi in (hier_items if isinstance(hier_items,list) else [hier_items]):
                 htype = hi['hierarchy-item-lod']
-                if not htype.lower() == 'series': continue # only interested in Series objects as collections
+                # Record Group mapped to collection
+                if not htype.lower() == 'record group': continue
 
                 hid = hi['hierarchy-item-id']
 
                 if hid not in collections:
-                    # Parse the series/collection file
-                    try:
-                        hier_rf = ARC_RELATED_FILE(root,htype,hid)
-                        print "Related file: "+hier_rf
-                        hier_fname = glob.glob(hier_rf)[0]
-                        print "  Found as: "+hier_fname
-                        hier_f = open(hier_fname,'r')
-                    except Exception as e:
-                        print >> sys.stderr, "Couldn't find referenced Series file (%s) from %s"%((hier_fname,item_fn))
-                        print >> sys.stderr, repr(e)
-                        continue
-
-                    hier = ARC_PARSE(hier_f)['archival-description']
-                    hier_f.close()
-
-                    cid = hier['arc-id']
-                    #assert hid == cid, "Unexpected difference in ARC IDs between Item reference and retrieved Series"
-
+                    # Grab series information from item
                     coll = {}
-                    coll['id'] = cid
-                    coll['label'] = hier.get('title','')
+                    coll['id'] = hid
+                    coll['title'] = hi['hierarchy-item-title']
                     coll['items'] = []
-                    collections[cid] = coll
+                    collections[hid] = coll
                 else:
-                    coll = collections[cid]
+                    coll = collections[hid]
 
-                coll['items'].append(item)
+                # Create tmp file to hold collections items
+                coll_fn = "/tmp/coll_%s" % coll['id']
+                coll_f = open(coll_fn,'a')
+                coll_f.write(str(item)+"\n")
+                coll_f.close()
 
-            #print json.dumps(item,indent=4)
-            items.append(item)
-
+    limit = 1000
     for cid in collections:
-        # FIXME need way to pass in the label
-        enrich_coll(profile,cid,json.dumps({'items':collections[cid]['items']}))
+        # Open tmp collection file and append items
+        coll_fn = "/tmp/coll_%s" % cid
+        coll_f = open(coll_fn, 'r')
+        lines = coll_f.readlines()
+        coll_f.close()
+        os.remove(coll_fn)
+
+        i = 0
+        for line in lines:
+            collections[cid]['items'].append(eval(line))
+            i += 1
+
+            if i == limit or line == lines[-1]:
+                print >> sys.stderr, "Enriching collection %s" % cid
+                enrich_coll(profile,cid,json.dumps(collections[cid]))
+                del collections[cid]['items'][:]
+                i = 0   
+
+        del collections[cid]['items']
 
 def enrich_coll(profile,subr,content):
     # Enrich retrieved data
     global ENRICH
+    
     headers = {
         "Content-Type": "application/json",
         "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
@@ -162,10 +166,13 @@ def process_oai_coll(profile,subr):
     # If multiple requests are required to harvest all information from a resource, they will
     # give us 'resumption tokens' after each request until we are done. Passing the resumption
     # token will provide the next batch of results
+    global URI_BASE
 
     request_more, resumption_token = True, ""
     while request_more:
         endpoint = profile[u'endpoint_URL'] + (subr if subr != profile[u'name'] else "")
+        if not is_absolute(endpoint):
+            endpoint = URI_BASE + endpoint
         if resumption_token:
             endpoint += '&' + urlencode({'resumption_token': resumption_token})
         print >> sys.stderr, endpoint
@@ -184,7 +191,10 @@ def process_oai_coll(profile,subr):
 
 def process_oai_all(profile,blacklist=[]):
     # Get all sets
+    global URI_BASE
     url = profile[u'list_sets']
+    if not is_absolute(url):
+        url = URI_BASE + url
     resp, content = H.request(url)
     if not resp[u'status'].startswith('2'):
         print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
@@ -215,8 +225,22 @@ TYPE_PROCESSORS = {
     ('oai','all'): process_oai_all,
 }
 
-if __name__ == '__main__':
+def define_arguments():
+    """
+    Defines command line arguments for the current script
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("uri_base", help="The base URI for the server hosting the enrichment pipeline")
+    parser.add_argument("profile", help="The path to the profile(s) to be processed", nargs="+")
+    return parser
 
-    for profile in glob.iglob(sys.argv[1]):
+
+def main(argv):
+    parser = define_arguments()
+    args = parser.parse_args(argv[1:])
+    for profile in args.profile:
         print >> sys.stderr, 'Processing profile: '+profile
-        process_profile(sys.argv[2], profile)
+        process_profile(args.uri_base, profile)
+
+if __name__ == '__main__':
+    main(sys.argv)

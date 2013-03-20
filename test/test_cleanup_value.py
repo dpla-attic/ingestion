@@ -48,7 +48,10 @@ def test_changing_values():
             "...,,,;;;;..,;'''\t\t\t    aaa       --       bbb      ccc       ddd;;;..;,,,,,;;;.....       \t ",
             "aaa  --  bbb       ccc\t\t\t\t\tddd",
             "   aaa -- bbb\t\t  \t\t  ccc\t\t\t   ",
-            "\t\taaa\tbbb\t\t"
+            "\t\taaa\tbbb\t\t",
+            """..  \t\t
+                  sss ddd
+                  \t\t .. """
         ]
 
     EXPECTED = [
@@ -73,7 +76,8 @@ def test_changing_values():
             "aaa--bbb ccc ddd",
             "aaa--bbb ccc ddd",
             "aaa--bbb ccc",
-            "aaa\tbbb"
+            "aaa\tbbb",
+            """sss ddd"""
         ]
 
     for i in xrange(0, len(INPUT)):
@@ -138,7 +142,7 @@ def test_changes_using_default_prop_value():
                 "language": ["...aaa...", "...bbb;;;.;."],
                 "title": "sss...",
                 "publisher": ["that's me.."],
-                "relation": [".first;", "   second   relation.....   "]
+                "relation": [".first;", """   second   relation..... \n. """, "\r\t\n\t\raaaa\r\n\t  ..."]
             },
             "bbb": "ccc..."
     }
@@ -150,7 +154,7 @@ def test_changes_using_default_prop_value():
                 "language": ["aaa", "bbb"],
                 "title": "sss",
                 "publisher": ["that's me"],
-                "relation": ["first", "second relation"]
+                "relation": ["first", "second relation", "aaaa"]
             },
             "bbb": "ccc..."
     }

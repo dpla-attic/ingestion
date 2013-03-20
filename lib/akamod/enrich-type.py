@@ -21,7 +21,7 @@ def enrichtype(body,ctype,action="enrich-type", prop="aggregatedCHO/type", alter
     """
 
     REGEXPS = ('images','image'), ('still image','image')
-    DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image', 'interactive resource', 'model', 'party', 'physical object',
+    DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image', 'interactive resource', 'model', 'moving image', 'party', 'physical object',
                 'place', 'service', 'software', 'sound', 'text']
 
     def cleanup(s):

@@ -57,15 +57,22 @@ def is_shown_at_transform(d):
             }
         }
 
+def spatial_transform(d):
+    spatial = d["coverage"]
+    if spatial and not isinstance(spatial, list):
+        spatial = [spatial]
+
+    return {"spatial": spatial} if spatial else {}
+
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "contributor"      : lambda d: {"contributor": d.get("contributor",None)},
-    "coverage"         : lambda d: {"spatial": d.get("coverage",None)},
+    "coverage"         : spatial_transform,
     "creator"          : lambda d: {"creator": d.get("creator",None)},
     "description"      : lambda d: {"description": d.get("description",None)},
     "date"             : lambda d: {"date": d.get("date",None)},
-    "language"         : lambda d: {"language": {"name" : d.get("language",None)}},
+    "language"         : lambda d: {"language": d.get("language",None)},
     "publisher"        : lambda d: {"publisher": d.get("publisher",None)},
     "relation"         : lambda d: {"relation": d.get("relation",None)},
     "rights"           : lambda d: {"rights": d.get("rights",None)},

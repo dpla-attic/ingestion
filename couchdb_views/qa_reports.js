@@ -58,11 +58,39 @@
            "map": "function(doc) {if (doc.ingestType == 'item') {sub = doc.aggregatedCHO.subject;if (sub.constructor.toString().indexOf('Array') == -1) { sub = new Array(sub); }for (i=0; i<sub.length; i++) {emit(sub[i].name,1);}}}",
            "reduce": "_count"
        },
-       "state": {
+       "spatial_state": {
            "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.aggregatedCHO.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(doc['id'], spatial[i]['state'])};}}}"
        },
-       "state_count": {
+       "spatial_state_count": {
            "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.aggregatedCHO.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(spatial[i]['state'],1)};}}}",
+           "reduce": "_count"
+       },
+       "spatial_name": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.aggregatedCHO.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(doc['id'], spatial[i]['name'])};}}}"
+       },
+       "spatial_name_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.aggregatedCHO.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(spatial[i]['name'],1)};}}}",
+           "reduce": "_count"
+       },
+       "rights": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {rights = doc.aggregatedCHO.rights;if (rights.constructor.toString().indexOf('Array') == -1) { rights = new Array(rights); }for (i=0; i<rights.length; i++) {emit(doc['id'], rights[i]);}}}"
+       },
+       "rights_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {rights = doc.aggregatedCHO.rights;if (rights.constructor.toString().indexOf('Array') == -1) { rights = new Array(rights); }for (i=0; i<rights.length; i++) {emit(rights[i],1);}}}",
+           "reduce": "_count"
+       },
+       "provider": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {provider = doc.provider;if (provider.constructor.toString().indexOf('Array') == -1) { provider = new Array(provider); }for (i=0; i<provider.length; i++) {emit(doc['id'], provider[i]['name']);}}}"
+       },
+       "provider_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {provider = doc.provider;if (provider.constructor.toString().indexOf('Array') == -1) { provider = new Array(provider); }for (i=0; i<provider.length; i++) {emit(provider[i]['name'],1);}}}",
+           "reduce": "_count"
+       },
+       "data_provider": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {dataProvider = doc.dataProvider;if (dataProvider.constructor.toString().indexOf('Array') == -1) { dataProvider = new Array(dataProvider); }for (i=0; i<dataProvider.length; i++) {emit(doc['id'], dataProvider[i]);}}}"
+       },
+       "data_provider_count": {
+           "map": "function(doc) {if (doc.ingestType == 'item') {dataProvider = doc.dataProvider;if (dataProvider.constructor.toString().indexOf('Array') == -1) { dataProvider = new Array(dataProvider); }for (i=0; i<dataProvider.length; i++) {emit(dataProvider[i],1);}}}",
            "reduce": "_count"
        },
        "collection": {

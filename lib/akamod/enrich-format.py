@@ -28,11 +28,11 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
     FORMAT_2_TYPE_MAPPINGS = {
             "audio": "sound",
             "image": "image",
-            "video": "image",
+            "video": "moving image",
             "text": "text"
     }
 
-    REGEXPS = ('audio/mp3', "audio/mpeg"), ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
+    REGEXPS = ('audio/mp3', "audio/mpeg"), ('images/jpeg', 'image/jpeg'), ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'), ('img/jpg', 'image/jpeg'), ('\W$','')
     IMT_TYPES = ['application','audio','image','message','model','multipart','text','video']
 
     def cleanup(s):
@@ -43,6 +43,7 @@ def enrichformat(body,ctype,action="enrich-format",prop="isShownAt/format",alter
         return s
 
     def is_imt(s):
+        logger.debug("Checking: " + s)
         imt_regexes = [re.compile('^' + x + '(/)') for x in IMT_TYPES]
         return any(regex.match(s) for regex in imt_regexes)
 

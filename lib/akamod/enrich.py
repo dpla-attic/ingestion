@@ -3,7 +3,7 @@ from akara import request, response
 from akara import module_config, logger
 from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
-from amara.lib.iri import join
+from amara.lib.iri import join, is_absolute
 from urllib import quote, urlencode
 import datetime
 import uuid
@@ -19,7 +19,8 @@ COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
 # FIXME it's looking like an id builder needs to be part of the profile. Or UUID as fallback?
 COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'id','no-id').strip().replace(" ","__"))
 
-COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
+if COUCH_DATABASE_USERNAME and COUCH_DATABASE_PASSWORD:
+    COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
 
 # FIXME: this should be JSON-LD, but CouchDB doesn't support +json yet
 CT_JSON = {'Content-Type': 'application/json'}
@@ -33,12 +34,16 @@ def pipe(content, ctype, enrichments, wsgi_header):
     body = json.dumps(content)
     for uri in enrichments:
         if not uri: continue # in case there's no pipeline
+        if not is_absolute(uri):
+            prefix = request.environ['wsgi.url_scheme'] + '://' 
+            prefix += request.environ['HTTP_HOST'] if request.environ.get('HTTP_HOST') else request.environ['SERVER_NAME']
+            uri = prefix + uri
         headers = copy_headers_to_dict(request.environ, exclude=[wsgi_header])
         headers['content-type'] = ctype
         logger.debug("Calling url: %s " % uri)
         resp, cont = H.request(uri, 'POST', body=body, headers=headers)
         if not str(resp.status).startswith('2'):
-            logger.debug("Error in enrichment pipeline at %s: %s"%(uri,repr(resp)))
+            logger.warn("Error in enrichment pipeline at %s: %s"%(uri,repr(resp)))
             continue
 
         body = cont
@@ -82,7 +87,8 @@ def couch_rev_check_recs_old(docs, src):
             if id in revs:
                 doc['_rev'] = revs[id]
     else:
-        logger.debug('Unable to retrieve document revisions via bulk interface: ' + repr(resp))
+        logger.warn('Unable to retrieve document revisions via bulk interface: ' + repr(resp))
+        logger.warn('Request old: ' + uri)
 
 def couch_rev_check_recs(docs):
     """
@@ -99,7 +105,8 @@ def couch_rev_check_recs(docs):
     docs_ids = sorted(docs)
     start = docs_ids[0]
     end = docs_ids[-1:][0]
-    uri += "?" + urlencode({"startkey": start, "endkey": end})
+#    uri += "?" + urlencode({"startkey": start, "endkey": end})
+    uri += '?startkey="%s"&endkey="%s"'%(start,end)
     response, content = H.request(uri, 'GET', headers=COUCH_AUTH_HEADER)
     if str(response.status).startswith('2'):
         rows = json.loads(content)["rows"]
@@ -107,7 +114,8 @@ def couch_rev_check_recs(docs):
             if r["id"] in docs:
                 docs[r["id"]]["_rev"] = r["value"]["rev"]
     else:
-        logger.debug('Unable to retrieve document revisions via bulk interface: ' + repr(response))
+        logger.warn('Unable to retrieve document revisions via bulk interface: ' + repr(response))
+        logger.warn('Request: ' + uri)
 
 def set_ingested_date(doc):
     doc[u'ingestDate'] = datetime.datetime.now().isoformat()
@@ -139,7 +147,8 @@ def enrich(body, ctype):
     COLL = {
         "_id": cid,
         "@id": at_id,
-        "ingestType": "collection"
+        "ingestType": "collection",
+        "title": data.get("title",None)
     }
     # Set collection title field from collection_name if no sets
     if not coll_enrichments[0]:
@@ -156,7 +165,7 @@ def enrich(body, ctype):
             body=json.dumps(enriched_collection),
             headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
         if not str(resp.status).startswith('2'):
-            logger.debug("Error storing collection in Couch: "+repr((resp,cont)))
+            logger.warn("Error storing collection in Couch: "+repr((resp,cont)))
 
     # Then the records
     docs = {}
@@ -187,7 +196,7 @@ def enrich(body, ctype):
             headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
         logger.debug("Couch bulk update response: "+content)
         if not str(resp.status).startswith('2'):
-            logger.debug('HTTP error posting to CouchDB: '+repr((resp,content)))
+            logger.warn('HTTP error posting to CouchDB: '+repr((resp,content)))
 
     return couch_docs_text
 
@@ -218,6 +227,6 @@ def enrich_storage(body, ctype):
             headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
         logger.debug("Couch bulk update response: "+content)
         if not str(resp.status).startswith('2'):
-            logger.debug('HTTP error posting to CouchDB: ' + repr((resp, content)))
+            logger.warn('HTTP error posting to CouchDB: ' + repr((resp, content)))
 
     return couch_docs_text

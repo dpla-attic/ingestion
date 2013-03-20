@@ -1,35 +1,36 @@
 {
     "enrichments_coll": [
-        "http://localhost:8873/oai-set-name?sets_service=http://localhost:8873/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php"
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php"
     ], 
     "name": "minnesota", 
-    "list_sets": "http://localhost:8873/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php",
+    "list_sets": "/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php",
     "enrichments_rec": [
-        "http://localhost:8873/select-id", 
-        "http://localhost:8873/oai-to-dpla", 
-        "http://localhost:8873/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "http://localhost:8873/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "http://localhost:8873/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftitle%2CaggregatedCHO%2Ftype",
-        "http://localhost:8873/shred?prop=isShownAt%2Fformat",
-        "http://localhost:8873/move_date_values?prop=aggregatedCHO%2Fsubject",
-        "http://localhost:8873/move_date_values?prop=aggregatedCHO%2Fspatial",
-        "http://localhost:8873/enrich-date",  
-        "http://localhost:8873/enrich-temporal-date",
-        "http://localhost:8873/enrich-subject",
+        "/select-id", 
+        "/oai-to-dpla", 
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=isShownAt%2Fformat",
+        "/move_date_values?prop=aggregatedCHO%2Fsubject",
+        "/move_date_values?prop=aggregatedCHO%2Fspatial",
+        "http://localhost:8878/shred?prop=aggregatedCHO%2Fspatial&delim=--",
+        "/enrich_earliest_date",  
+        "/enrich_date",
+        "/enrich-subject",
         "http://localhost:8875/cleanup_value",
-        "http://localhost:8873/enrich-type", 
-        "http://localhost:8873/enrich-format", 
-        "http://localhost:8873/mdl-enrich-location", 
-        "http://localhost:8873/enrich_location",
-        "http://localhost:8873/contentdm_identify_object",
-        "http://localhost:8873/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True"
+        "/enrich-type", 
+        "/enrich-format", 
+        "/mdl-enrich-location", 
+        "/enrich_location",
+        "/contentdm_identify_object",
+        "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
+        "/enrich_language"
     ], 
     "subresources": [], 
-    "last_checked": "2013-02-09T00:42:56.968417", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/mdl", 
         "name": "Minnesota Digital Library"
     }, 
     "type": "oai", 
-    "endpoint_URL": "http://localhost:8873/dpla-list-records?endpoint=http://reflections.mndigital.org/oai/oai2.php&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://reflections.mndigital.org/oai/oai2.php&oaiset="
 }

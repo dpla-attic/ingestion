@@ -8,12 +8,12 @@ Simple use cases:
     Perform geocoding for all records on a profile
 
 Usage:
-    $ python poll_storage.py [-h] [-f FILTER] [-c AKARA_CONFIG] [-n PAGE_SIZE] profile pipeline service
+    $ python poll_storage.py [-h] [-f FILTER] [-c AKARA_CONFIG] [-n PAGE_SIZE] uri_base profile pipeline
 
 Example:
-    $ python scripts/poll_storage.py -n 100 profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
-    $ python scripts/poll_storage.py -n 50 --filter "_design/artstor_items/_view/all" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
-    $ python scripts/poll_storage.py -c "../akara-local/akara.conf" profiles/artstor.pjs geocode http://localhost:8879/enrich_storage
+    $ python scripts/poll_storage.py -n 100 http://localhost:8879 profiles/artstor.pjs geocode
+    $ python scripts/poll_storage.py -n 50 --filter "_design/artstor_items/_view/all" http://localhost:8879 profiles/artstor.pjs geocode
+    $ python scripts/poll_storage.py -c "../akara-local/akara.conf" http://localhost:8879 profiles/artstor.pjs geocode
 """
 
 import argparse
@@ -27,7 +27,7 @@ from amara.lib.iri import join
 
 
 HTTP_TYPE_JSON = 'application/json'
-
+ENRICH = "/enrich_storage" # enrichment service URI
 
 class Couch(object):
     """
@@ -237,9 +237,9 @@ def define_arguments():
     Defines command line arguments for the current script
     """
     parser = argparse.ArgumentParser()
+    parser.add_argument("uri_base", help="The base URI for the server hosting the enrichment pipeline")
     parser.add_argument("profile", help="The path to profile to be processed")
     parser.add_argument("pipeline", help="The name of an enrichment pipeline in the profile that contains the list of enrichments to be run")
-    parser.add_argument("service", help="The URL of the enrichment service")
     parser.add_argument("-f", "--filter", help="Name or identifier for a CouchDB view that would limit the number of records to be processed", default=None, type=str)
     parser.add_argument("-c", "--akara-config", help="The path to Akara config to read source database credentials, default './akara.conf'", default="./akara.conf", type=str)
     parser.add_argument("-n", "--page-size", help="The limit number of record to be processed at once, default 500", default=500, type=int)
@@ -259,7 +259,11 @@ def enrich(service_url, profile_dict, pipeline_name, docs):
     for processing
 
     Raises IOError if enrichment service returns unsuccessful response code
+    Raises ValueError if pipeline does not exist in the profile
     """
+    if not pipeline_name in profile_dict:
+        raise ValueError("Pipine \"%s\" does not exist in this profile" % (pipeline_name))
+
     http = httplib2.Http()
     http.force_exception_to_status_code = True
     headers = {
@@ -303,11 +307,11 @@ def main(argv):
         docs.append(doc)
         cnt += 1
         if len(docs) == couch.page_size:
-            enrich(args.service, profile, args.pipeline, docs)
+            enrich(args.uri_base + ENRICH, profile, args.pipeline, docs)
             print "processed", cnt, "documents"
             docs = []
     if docs:
-        enrich(args.service, profile, args.pipeline, docs)
+        enrich(args.uri_base + ENRICH, profile, args.pipeline, docs)
         print "processed", cnt, "documents"
 
 if __name__ == "__main__":
