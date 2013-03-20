@@ -39,13 +39,13 @@ def test_georgia_identify_object():
            "French, L. Virginia (Lucy Virginia), 1825-1881"
        ]
    },
-   "aggregatedCHO": {
+   "sourceResource": {
        "publisher": "Columbus, Ga. : Columbus State University, Schwob Library, Archives",
        "rights": "Permission to publish original material from the Louise Jones Dubose Papers must be obtained from the Columbus State University Archives. Use of the following credit line for publication or exhibit is required: [Title of Collection], Columbus State University Archives, Columbus, Georgia.",
        "description": "Georgia author Augusta Jane Evans writes Mrs. Lucy Virginia French, Tennessee poet who wrote under the name of L'Inconue and editor of Atlanta's Crusader, in a letter dated January 13, 1861 to refuse the addition of her name to a pro-Union memorial to be presented at the Georgia State Convention. Evans indicates that she advocates secession. ",
        "title": "Letter from Augusta Jane Evans to Mrs. L.V. French, January 13, 1861 ",
        "creator": "Evans, Augusta J. (Augusta Jane), 1835-1909",
-       "physicalMedium": "Letters (correspondence)",
+       "format": "Letters (correspondence)",
        "date": {
            "begin": "2005",
            "end": "2005",
@@ -88,11 +88,7 @@ def test_georgia_identify_object():
        "name": ""
    },
    "ingestDate": "2013-02-20T05:46:34.144484",
-   "isShownAt": {
-       "rights": "Permission to publish original material from the Louise Jones Dubose Papers must be obtained from the Columbus State University Archives. Use of the following credit line for publication or exhibit is required: [Title of Collection], Columbus State University Archives, Columbus, Georgia.",
-       "@id": "http://archives.columbusstate.edu/LGunbyJonesDubose/frenchletter.php",
-       "format": null
-   },
+   "isShownAt": "http://archives.columbusstate.edu/LGunbyJonesDubose/frenchletter.php",
    "provider": {
        "@id": "http://dp.la/api/contributor/georgia",
        "name": "Digital Library of Georgia"
@@ -106,7 +102,7 @@ def test_georgia_identify_object():
        "hasView": "edm:hasView",
        "name": "xsd:string",
        "object": "edm:object",
-       "aggregatedCHO": "edm:aggregatedCHO",
+       "sourceResource": "edm:sourceResource",
        "dpla": "http://dp.la/terms/",
        "collection": "dpla:aggregation",
        "edm": "http://www.europeana.eu/schemas/edm/",
@@ -141,8 +137,8 @@ def test_georgia_identify_object():
     assert str(resp.status).startswith("2"), str(resp)
 
     doc = json.loads(content)
-    assert u"object" in doc and u"@id" in doc[u"object"], "object/@id path not found in document"
-    FETCHED_PREVIEW = doc[u"object"][u'@id']
+    assert u"object" in doc, "object path not found in document"
+    FETCHED_PREVIEW = doc[u"object"]
     assert FETCHED_PREVIEW == EXPECTED_PREVIEW, "%s != %s" % (FETCHED_PREVIEW, EXPECTED_PREVIEW)
 
 if __name__ == "__main__":

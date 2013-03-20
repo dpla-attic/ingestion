@@ -25,7 +25,7 @@ CONTEXT = {
    "state": "dpla:state",                             
    "coordinates": "dpla:coordinates",
    "stateLocatedIn" : "dpla:stateLocatedIn",
-   "aggregatedCHO" : "edm:aggregatedCHO",
+   "sourceResource" : "edm:sourceResource",
    "dataProvider" : "edm:dataProvider",
    "hasView" : "edm:hasView",
    "isShownAt" : "edm:isShownAt",
@@ -80,8 +80,8 @@ def collection_transform(d):
     collection = getprop(d, "collection")
     items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
     for item in (items if isinstance(items, list) else [items]):
-        if item["hierarchy-item-id"] == collection["name"]:
-            setprop(collection, "name", item["hierarchy-item-title"])
+        if item["hierarchy-item-id"] == collection["title"]:
+            setprop(collection, "title", item["hierarchy-item-title"])
     return {"collection": collection} if collection else {}
 
 def creator_transform(d):
@@ -97,7 +97,8 @@ def extent_transform(d):
     extent = []
     extents = arc_group_extraction(d, "physical-occurrences",
                                    "physical-occurrence", "extent")
-    [extent.append(e) for e in extents if e]
+    if extents:
+        [extent.append(e) for e in extents if e]
 
     return {"extent": extent} if extent else {}
 
@@ -238,14 +239,14 @@ CHO_TRANSFORMER = {
     "physical-occurrences"  : extent_transform,
     "creators"              : creator_transform,
     "hierarchy"             : is_part_of_transform,
-    "release-dates"         : lambda d: date_transform(d,"release-dates","release-date"),
-    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates","broadcast-date"),
-    "production-dates"      : lambda d: date_transform(d,"production-dates","production-date"),
-    "coverage-dates"        : lambda d: date_transform(d,"coverage-dates",["cov-start-date","cov-end-date"]),
-    "copyright-dates"       : lambda d: date_transform(d,"copyright-dates","copyright-date"),
+    "release-dates"         : lambda d: date_transform(d,"release-dates", "release-date"),
+    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates", "broadcast-date"),
+    "production-dates"      : lambda d: date_transform(d,"production-dates", "production-date"),
+    "coverage-dates"        : lambda d: date_transform(d,"coverage-dates", ["cov-start-date", "cov-end-date"]),
+    "copyright-dates"       : lambda d: date_transform(d,"copyright-dates", "copyright-date"),
     "title"                 : lambda d: {"title": d.get("title-only")},
     "scope-content-note"    : lambda d: {"description": d.get("scope-content-note")}, 
-    "languages"             : lambda d: {"language": arc_group_extraction(d,"languages","language")}
+    "languages"             : lambda d: {"language": arc_group_extraction(d, "languages", "language")}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -278,26 +279,26 @@ def arctodpla(body,ctype,geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "aggregatedCHO": {}
+        "sourceResource": {}
     }
 
     # Apply all transformation rules from original document
     for p in data.keys():
         if p in CHO_TRANSFORMER:
-            out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data))
+            out["sourceResource"].update(CHO_TRANSFORMER[p](data))
         if p in AGGREGATION_TRANSFORMER:
             out.update(AGGREGATION_TRANSFORMER[p](data))
 
     # Apply transformations that are dependent on more than one
     # original document  field
-    out["aggregatedCHO"].update(type_transform(data))
-    out["aggregatedCHO"].update(rights_transform(data))
-    out["aggregatedCHO"].update(subject_and_spatial_transform(data))
+    out["sourceResource"].update(type_transform(data))
+    out["sourceResource"].update(rights_transform(data))
+    out["sourceResource"].update(subject_and_spatial_transform(data))
     out.update(has_view_transform(data))
 
 
-    if exists(out, "aggregatedCHO/date"):
-        logger.debug("OUTTYPE: %s"%getprop(out, "aggregatedCHO/date"))
+    if exists(out, "sourceResource/date"):
+        logger.debug("OUTTYPE: %s"%getprop(out, "sourceResource/date"))
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:

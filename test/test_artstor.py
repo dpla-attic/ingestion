@@ -20,7 +20,7 @@ def test_artstor_identify_object():
        "hasView": "edm:hasView",
        "name": "xsd:string",
        "object": "edm:object",
-       "aggregatedCHO": "edm:aggregatedCHO",
+       "sourceResource": "edm:sourceResource",
        "dpla": "http://dp.la/terms/",
        "collection": "dpla:aggregation",
        "edm": "http://www.europeana.eu/schemas/edm/",
@@ -69,7 +69,7 @@ def test_artstor_identify_object():
        "id": "oai:oaicat.oclc.org:AKRESS_10310356237",
        "subject": "Annunciation: Mary, Usually Reading, Is Visited by the Angel"
    },
-   "aggregatedCHO": {
+   "sourceResource": {
        "rights": [
            "",
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
@@ -111,14 +111,7 @@ def test_artstor_identify_object():
        "@id": "http://dp.la/api/contributor/artstor",
        "name": "ARTstor OAICatMuseum"
    },
-   "isShownAt": {
-       "rights": [
-           "",
-           "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
-       ],
-       "@id": "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
-       "format": null
-   },
+   "isShownAt": "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
    "ingestType": "item",
    "@id": "http://dp.la/api/items/6ae54cee603f75c275fd913e04c49a3f",
    "id": "6ae54cee603f75c275fd913e04c49a3f"
@@ -132,8 +125,8 @@ def test_artstor_identify_object():
     assert str(resp.status).startswith("2")
 
     doc = json.loads(content)
-    assert u"object" in doc and u"@id" in doc[u"object"], "object/@id path not found in document"
-    FETCHED_PREVIEW = doc[u"object"][u'@id']
+    assert u"object" in doc, "objectpath not found in document"
+    FETCHED_PREVIEW = doc[u"object"]
     assert FETCHED_PREVIEW == EXPECTED_PREVIEW, "%s != %s" % (FETCHED_PREVIEW, EXPECTED_PREVIEW)
 
 def test_artstor_source_fetching():
@@ -154,7 +147,7 @@ def test_artstor_source_fetching():
        "hasView": "edm:hasView",
        "name": "xsd:string",
        "object": "edm:object",
-       "aggregatedCHO": "edm:aggregatedCHO",
+       "sourceResource": "edm:sourceResource",
        "dpla": "http://dp.la/terms/",
        "collection": "dpla:aggregation",
        "edm": "http://www.europeana.eu/schemas/edm/",
@@ -203,7 +196,7 @@ def test_artstor_source_fetching():
        "id": "oai:oaicat.oclc.org:AKRESS_10310356237",
        "subject": "Annunciation: Mary, Usually Reading, Is Visited by the Angel"
    },
-   "aggregatedCHO": {
+   "sourceResource": {
        "rights": [
            "",
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
@@ -245,14 +238,7 @@ def test_artstor_source_fetching():
        "@id": "http://dp.la/api/contributor/artstor",
        "name": "ARTstor OAICatMuseum"
    },
-   "isShownAt": {
-       "rights": [
-           "",
-           "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
-       ],
-       "@id": "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
-       "format": null
-   },
+   "isShownAt": "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
    "ingestType": "item",
    "@id": "http://dp.la/api/items/6ae54cee603f75c275fd913e04c49a3f",
    "id": "6ae54cee603f75c275fd913e04c49a3f"
@@ -264,7 +250,7 @@ def test_artstor_source_fetching():
     url = server() + "artstor_select_isshownat"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
-    FETCHED_SOURCE = json.loads(content)[u"isShownAt"][u"@id"]
+    FETCHED_SOURCE = json.loads(content)[u"isShownAt"]
     assert FETCHED_SOURCE == EXPECTED_SOURCE
 
 

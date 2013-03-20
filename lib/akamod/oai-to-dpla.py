@@ -27,7 +27,7 @@ CONTEXT = {
    "state": "dpla:state",                             
    "coordinates": "dpla:coordinates",
    "stateLocatedIn" : "dpla:stateLocatedIn",
-   "aggregatedCHO" : "edm:aggregatedCHO",   
+   "sourceResource" : "edm:sourceResource",   
    "dataProvider" : "edm:dataProvider",
    "hasView" : "edm:hasView",
    "isShownAt" : "edm:isShownAt",
@@ -45,17 +45,13 @@ CONTEXT = {
 }
 
 def is_shown_at_transform(d):
-    source = ""
+    source = None
     for s in (d["handle"] if not isinstance(d["handle"],basestring) else [d["handle"]]):
         if is_absolute(s):
             source = s
             break
-    return {
-        "isShownAt" : { 
-            "@id" : source,
-            "format" : d.get("format",None)
-            }
-        }
+
+    return {"isShownAt" : source }
 
 def spatial_transform(d):
     spatial = d["coverage"]
@@ -78,7 +74,8 @@ CHO_TRANSFORMER = {
     "rights"           : lambda d: {"rights": d.get("rights",None)},
     "subject"          : lambda d: {"subject": d.get("subject",None)},
     "title"            : lambda d: {"title": d.get("title",None)},
-    "type"             : lambda d: {"type": d.get("type",None)}
+    "type"             : lambda d: {"type": d.get("type",None)},
+    "format"           : lambda d: {"format": d.get("format",None)}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -116,13 +113,13 @@ def oaitodpla(body,ctype,geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "aggregatedCHO" : {}
+        "sourceResource" : {}
     }
 
-    # Apply all transformation rules from original document to aggregatedCHO
+    # Apply all transformation rules from original document to sourceResource
     for p in data.keys():
         if p in CHO_TRANSFORMER:
-            out['aggregatedCHO'].update(CHO_TRANSFORMER[p](data))
+            out['sourceResource'].update(CHO_TRANSFORMER[p](data))
         if p in AGGREGATION_TRANSFORMER:
             out.update(AGGREGATION_TRANSFORMER[p](data))
 

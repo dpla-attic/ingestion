@@ -136,7 +136,7 @@ def test_changes_using_default_prop_value():
     """Should process all default values."""
     INPUT = {
             "aaa": "bbb...",
-            "aggregatedCHO": {
+            "sourceResource": {
                 "aaa": "bbb...",
                 "creator": "....a -- b....",
                 "language": ["...aaa...", "...bbb;;;.;."],
@@ -148,7 +148,7 @@ def test_changes_using_default_prop_value():
     }
     EXPECTED = {
             "aaa": "bbb...",
-            "aggregatedCHO": {
+            "sourceResource": {
                 "aaa": "bbb...",
                 "creator": "a--b",
                 "language": ["aaa", "bbb"],

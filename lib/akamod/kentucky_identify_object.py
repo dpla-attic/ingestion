@@ -11,7 +11,7 @@ PENDING = module_config().get('PENDING')
 
 @simple_service('POST', 'http://purl.org/la/dp/kentucky_identify_object',
     'kentucky_identify_object', 'application/json')
-def kentucky_identify_object(body, ctype, rights_field="aggregatedCHO/rights", download="True"):
+def kentucky_identify_object(body, ctype, download="True"):
     """
     Responsible for: adding a field to a document with the URL where we
     should expect to the find the thumbnail
@@ -33,22 +33,16 @@ def kentucky_identify_object(body, ctype, rights_field="aggregatedCHO/rights", d
         response.add_header('content-type', 'text/plain')
         return msg
 
-    relation_field = "aggregatedCHO/relation"
+    relation_field = "sourceResource/relation"
     if exists(data, relation_field):
         url = getprop(data, relation_field)
     else:
         msg = "Field %s does not exist" % relation_field
-        logger.error(msg)
+        logger.debug(msg)
         return body
 
-    base_url, ext = os.path.splitext(url)  
-    thumb_url = "%s_tb%s" % (base_url, ext)
-
-    rights = None
-    if exists(data, rights_field):
-        rights = getprop(data, rights_field)
-
-    data["object"] = {"@id": thumb_url, "format": "", "rights": rights}
+    base_url, ext = os.path.splitext(url)
+    data["object"] = "%s_tb%s" % (base_url, ext)
 
     status = IGNORE
     if download == "True":

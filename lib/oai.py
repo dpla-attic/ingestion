@@ -115,7 +115,22 @@ class oaiservice(object):
         return sets
 
     def get_record(self, id):
-        pass
+        params = {'verb': 'GetRecord', 'metadataPrefix': 'oai_dc', 'identifier': id}
+        qstr = urllib.urlencode(params)
+        url = self.root + '?' + qstr
+        self.logger.debug('OAI request URL: {0}'.format(url))
+        start_t = time.time()
+        resp, content = self.h.request(url)
+        retrieved_t = time.time()
+        self.logger.debug('Retrieved in {0}s',format(retrieved_t - start_t))
+        doc = bindery.parse(url, model=OAI_GETRECORD_MODEL)
+
+        record, rid = metadata_dict(generate_metadata(doc), nesteddict=False)
+        for id_, props in (record if isinstance(record, list) else [record]):
+            for k, v in props.iteritems():
+                props[k] = [ U(item) for item in v ]
+
+        return {'record' : record}
 
     def search(self, term):
         qstr = urllib.urlencode({'verb' : 'GetRecord', 'metadataPrefix': 'oai_dc', 'identifier': dspace_id})
@@ -252,6 +267,7 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
       </header>
       <metadata>
         <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:subject ak:rel="local-name()" ak:value=".">Nuclear disarmament</dc:subject>
           <dc:creator ak:rel="local-name()" ak:value=".">Cohen, Joshua</dc:creator>
           <dc:date ak:rel="local-name()" ak:value=".">2004-08-20T19:48:34Z</dc:date>
           <dc:date>2004-08-20T19:48:34Z</dc:date>
