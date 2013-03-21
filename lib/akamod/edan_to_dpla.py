@@ -117,11 +117,13 @@ def transform_is_shown_at(d):
 
 
 def transform_object(d):
-    propname = "descriptiveNonRepeating/online_media/media/@thumbnail"
+    propname = "descriptiveNonRepeating/online_media/media/"
     
     obj = getprop(d, propname, True)
     if isinstance(obj, list):
         return {}
+    
+    obj = getprop(d, propname + "@thumbnail", True)
     return {"object": obj} if obj else {}
 
 
