@@ -174,7 +174,6 @@ class oaiservice(object):
             resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken)
         else:
             resumption_token = ''
-        resumption_token = ''
         return {'records' : records, 'resumption_token' : resumption_token}
 
 #
