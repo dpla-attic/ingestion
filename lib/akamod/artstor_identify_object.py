@@ -39,7 +39,7 @@ def artstor_identify_object(body, ctype, download="True"):
 
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
-    artstor_preview_prefix = "Thumbnail"
+    artstor_preview_prefix = "/size2/"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
@@ -52,7 +52,7 @@ def artstor_identify_object(body, ctype, download="True"):
     preview_url = None
     http_re = re.compile("https?://.*$", re.I)
     for s in data[original_document_key][original_sources_key]:
-        if s.startswith(artstor_preview_prefix):
+        if artstor_preview_prefix in s:
             match = re.search(http_re, s)
             if match:
                 preview_url = match.group(0)
