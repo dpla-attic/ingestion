@@ -366,7 +366,6 @@ def process_edan_all(profile, blacklist=None):
             else:
                 item_f.close()
  
-    from collections import OrderedDict
     limit = 1000
     for cid in collections:
         # Open tmp collection file and append items
