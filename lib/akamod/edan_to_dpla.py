@@ -120,6 +120,8 @@ def transform_object(d):
     propname = "descriptiveNonRepeating/online_media/media/@thumbnail"
     
     obj = getprop(d, propname, True)
+    if isinstance(obj, list):
+        return {}
     return {"object": obj} if obj else {}
 
 
