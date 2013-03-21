@@ -108,10 +108,12 @@ def source_transform(d):
 
 
 def transform_is_shown_at(d):
-    propname = "descriptiveNonRepeating/online_media/media/#text"
+    #propname = "descriptiveNonRepeating/online_media/media/#text"
+    tmpl="http://collections.si.edu/search/results.htm?q=record_ID%%3A%s&repo=DPLA"
+    propname = "descriptiveNonRepeating/record_ID"
     
     obj = getprop(d, propname, True)
-    return {"isShownAt": obj} if obj else {}
+    return {"isShownAt": tmpl % obj} if obj else {}
 
 
 def transform_object(d):
