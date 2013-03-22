@@ -66,7 +66,7 @@ def process_profile(uri_base, profile_f):
             sys.exit(1)
 
         for subr in subResources:
-            process(profile,subr)
+            process(profile, subr)
             time.sleep(sleep)
 
     return True
@@ -175,7 +175,7 @@ def process_arc_all(profile,blacklist=None):
 
         del collections[cid]['items']
 
-def enrich_coll(profile,subr,content):
+def enrich_coll(profile, subr, content):
     # Enrich retrieved data
     global ENRICH
     
@@ -189,7 +189,7 @@ def enrich_coll(profile,subr,content):
     if subr:
         headers["Collection"] = subr
 
-    resp, content = H.request(ENRICH,'POST',body=content,headers=headers)
+    resp, content = H.request(ENRICH, 'POST' ,body=content, headers=headers)
     if not str(resp.status).startswith('2'):
         print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
 
@@ -268,6 +268,52 @@ def process_oai_all(profile,blacklist=[]):
         process_oai_coll(profile,subr)
         time.sleep(sleep)
 
+def process_mets_coll(profile, subr):
+
+    def document_links(document_list_uri):
+        print >> sys.stderr, "Enriching collection %s" % subr
+        print >> sys.stderr, document_list_uri
+        resp, content = H.request(document_list_uri)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+        endpoint_content = ARC_PARSE(content)
+        for d in endpoint_content["mets:mets"]:
+            if "mets:dmdSec" in d:
+                records = endpoint_content["mets:mets"][d]
+                for record in records:
+                    if not record["ID"].startswith("collection-description-mods"):
+                        yield record["mets:mdRef"]["xlink:href"]
+
+    global URI_BASE
+    endpoint = profile[u'endpoint_URL'].format(subr)
+
+    items = []
+    count = 0
+    total_count = 0
+    for doc_url in document_links(endpoint):
+        resp, content = H.request(doc_url)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+        doc_content = ARC_PARSE(content)
+        if "mods" in doc_content:
+            item = doc_content["mods"]
+            for _id_dict in item["identifier"]:
+                if _id_dict["type"] == "uri":
+                    item["_id"] = _id_dict["#text"]
+                    items.append(item)
+                    count += 1
+                    total_count += 1
+        if count >= 100:
+            enrich_coll(profile, subr, json.dumps({"items": items}))
+            print >> sys.stderr, "%d documents processed" % total_count
+            count = 0
+            items = []
+    if items:
+        enrich_coll(profile, subr, json.dumps({"items": items}))
+        print >> sys.stderr, "%d documents processed" % total_count
+
+
+
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
     ('arc','all'): process_arc_all,
@@ -275,7 +321,9 @@ TYPE_PROCESSORS = {
     ('oai','all'): process_oai_all,
     ('oai','rec'): process_oai_rec,
     ('primo','coll'): None,
-    ('primo','all'): process_primo_all
+    ('primo','all'): process_primo_all,
+    ('mets', 'coll'): process_mets_coll,
+    ('mets', 'all'): None,
 }
 
 def define_arguments():
