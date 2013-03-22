@@ -204,7 +204,9 @@ def test_enrichment_for_creator_field():
             "aaa --bbb",
             "aaa-- bbb",
             "aaa --  bbb",
-            "aaa  --  bbb    -- ccc - - ddd -- "
+            "aaa  --  bbb    -- ccc - - ddd -- ",
+            "aaa  ---  bbb    --- ccc--- ddd---",
+            "aaa  ----  bbb    ----ccc---- ddd----"
         ]
     }
     EXPECTED = {
@@ -227,6 +229,8 @@ def test_enrichment_for_creator_field():
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb--ccc--ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"}
         ]
     }
     resp, content = _get_server_response(json.dumps(INPUT), "creator")
