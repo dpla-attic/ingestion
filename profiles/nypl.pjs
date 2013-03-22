@@ -1,0 +1,17 @@
+{
+    "list_sets": "http://j2k.repo.nypl.org/api/v1/items/listCollections",
+    "enrichments_coll": [],
+    "name": "nypl",
+    "enrichments_rec": [
+        "/select-id?prop=_id",
+        "/mods-to-dpla"
+    ], 
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/nypl",
+        "name": "New York Public Library"
+    }, 
+    "type": "mods",
+    "endpoint_URL": "http://j2k.repo.nypl.org/api/v1/items/{0}",
+    "get_record": "http://j2k.repo.nypl.org/api/v1/items/mods/{0}"
+}
