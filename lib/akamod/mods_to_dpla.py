@@ -136,6 +136,7 @@ AGGREGATION_TRANSFORMER = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
+    "collection"                 : lambda d, p: {"collection": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
     "location": location_handler,
