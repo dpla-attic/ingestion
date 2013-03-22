@@ -119,6 +119,7 @@ MODULES = [
     "dplaingestion.akamod.sets_prop",
     "dplaingestion.akamod.enrich_language",
     "dplaingestion.akamod.dpla-get-record",
+    "dplaingestion.akamod.artstor_cleanup",
     "dplaingestion.akamod.uiuc_publisher_to_dataprovider"
     ]
 
