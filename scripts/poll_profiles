@@ -28,22 +28,17 @@ H.force_exception_as_status_code = True
 def process_profile(uri_base, profile_f):
     global URI_BASE, ENRICH
 
-    fprof = open(profile_f,'r')
-    try:
-        profile = json.load(fprof)
-    except Exception as e:
-        profile = None
-
-    fprof.close()
-
-    if not profile:
-        print >> sys.stderr, 'Error reading source profile.'
-        print >> sys.stderr, "Detailed error information:"
-        print >> sys.stderr, e
-        return False
+    with open(profile_f, 'r') as fprof:
+        try:
+            profile = json.load(fprof)
+        except Exception as e:
+            print >> sys.stderr, 'Error reading source profile.'
+            print >> sys.stderr, "Detailed error information:"
+            print >> sys.stderr, e
+            return False
 
     # Pause in secs between collection ingests
-    sleep = profile.get(u'sleep',0)
+    sleep = profile.get(u'sleep', 0)
 
     URI_BASE = uri_base
     if not is_absolute(ENRICH):
