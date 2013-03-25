@@ -271,6 +271,7 @@ def process_mets_coll(profile, subr):
         resp, content = H.request(document_list_uri)
         if not resp[u'status'].startswith('2'):
             print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return
         endpoint_content = ARC_PARSE(content)
         for d in endpoint_content["mets:mets"]:
             if "mets:dmdSec" in d:
@@ -289,6 +290,7 @@ def process_mets_coll(profile, subr):
         resp, content = H.request(doc_url)
         if not resp[u'status'].startswith('2'):
             print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return False
         doc_content = ARC_PARSE(content)
         if "mods" in doc_content:
             item = doc_content["mods"]
@@ -309,8 +311,42 @@ def process_mets_coll(profile, subr):
 
 def process_nypl_coll(profile, subr):
     endpoint = profile[u'endpoint_URL'].format(subr)
+    doc_endpoint = profile["get_record_URL"]
+    args = {"per_page": 100, "page": 1}
     print >> sys.stderr, "Enriching collection %s" % subr
-
+    done = False
+    page = 1
+    while not done:
+        args["page"] = page
+        request_url = endpoint + "?" + urlencode(args)
+        print >> sys.stderr, request_url
+        resp, content = H.request(request_url)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return False
+        response_dict = ARC_PARSE(content)["nyplAPI"]
+        success = response_dict["response"]["headers"]["code"] == "200"
+        if success:
+            total_pages =  response_dict["request"]["totalPages"]
+            current_page = response_dict["request"]["page"]
+            done = total_pages == current_page
+            page += 1
+            items = []
+            for item_dict in response_dict["response"]["capture"]:
+                doc_url = doc_endpoint.format(item_dict["uuid"])
+                resp, content = H.request(doc_url)
+                if not resp[u'status'].startswith('2'):
+                    print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+                    return False
+                doc_response = ARC_PARSE(content)["nyplAPI"]
+                assert doc_response["response"]["headers"]["code"] == "200", doc_response["response"]["headers"]["message"]
+                item = doc_response["response"]["mods"]
+                item["_id"] = item_dict["uuid"]
+                items.append(item)
+            if items:
+                enrich_coll(profile, subr, json.dumps({"items": items}))
+        else:
+            raise Exception(response_dict["response"]["headers"]["message"])
 
 def process_nypl_all(profile, blacklist=tuple()):
     # Get all sets
