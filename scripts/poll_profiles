@@ -307,6 +307,38 @@ def process_mets_coll(profile, subr):
         enrich_coll(profile, subr, json.dumps({"items": items}))
         print >> sys.stderr, "%d documents processed" % total_count
 
+def process_nypl_coll(profile, subr):
+    endpoint = profile[u'endpoint_URL'].format(subr)
+    print >> sys.stderr, "Enriching collection %s" % subr
+
+
+def process_nypl_all(profile, blacklist=tuple()):
+    # Get all sets
+    global URI_BASE
+    url = profile[u'list_sets']
+    if not is_absolute(url):
+        url = URI_BASE + url
+    resp, content = H.request(url)
+    if not resp[u'status'].startswith('2'):
+        print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
+        return False
+
+    sleep = profile.get(u'sleep', 0)
+
+    subResources = []
+    response = ARC_PARSE(content)["nyplAPI"]["response"]
+    for r in response:
+        if "collection" == r:
+            for coll_dict in response[r]:
+                if "uuid" in coll_dict:
+                    subResources.append(coll_dict["uuid"])
+
+    # Process the sets
+    subr_to_process = (subr for subr in subResources if subr not in blacklist)
+    for subr in subr_to_process:
+        process_nypl_coll(profile, subr)
+        time.sleep(sleep)
+
 
 
 TYPE_PROCESSORS = {
@@ -319,6 +351,8 @@ TYPE_PROCESSORS = {
     ('primo','all'): process_primo_all,
     ('mets', 'coll'): process_mets_coll,
     ('mets', 'all'): None,
+    ('nypl', 'coll'): process_nypl_coll,
+    ('nypl', 'all'): process_nypl_all,
 }
 
 def define_arguments():

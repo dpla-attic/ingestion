@@ -136,8 +136,8 @@ def enrich(body, ctype):
         response.add_header('content-type','text/plain')
         return "Source and Collection request headers are required"
 
-    coll_enrichments = request_headers.get(u'Pipeline-Coll','').split(',')
-    rec_enrichments = request_headers.get(u'Pipeline-Rec','').split(',')
+    coll_enrichments = request_headers.get(u'Pipeline-Coll', '').split(',')
+    rec_enrichments = request_headers.get(u'Pipeline-Rec', '').split(',')
 
     data = json.loads(body)
 
@@ -148,10 +148,10 @@ def enrich(body, ctype):
         "_id": cid,
         "@id": at_id,
         "ingestType": "collection",
-        "title": data.get("title",None)
+        "title": data.get("title", None)
     }
     # Set collection title field from collection_name if no sets
-    if not coll_enrichments[0]:
+    if not coll_enrichments[0] and not COLL['title']:
         COLL['title'] = collection_name 
     set_ingested_date(COLL)
 
@@ -176,10 +176,10 @@ def enrich(body, ctype):
         # Add collection information
         record[u'collection'] = {
             '@id' : at_id,
-            'title' : enriched_collection.get('title',"")
+            'title' : enriched_collection.get('title', "")
         }
         if 'description' in enriched_collection:
-            record[u'collection']['description'] = enriched_collection.get('description',"")
+            record[u'collection']['description'] = enriched_collection.get('description', "")
 
         record[u'ingestType'] = 'item'
         set_ingested_date(record)

@@ -11,7 +11,7 @@
         "@id": "http://dp.la/api/contributor/nypl",
         "name": "New York Public Library"
     }, 
-    "type": "mods",
+    "type": "nypl",
     "endpoint_URL": "http://j2k.repo.nypl.org/api/v1/items/{0}",
-    "get_record": "http://j2k.repo.nypl.org/api/v1/items/mods/{0}"
+    "get_record_URL": "http://j2k.repo.nypl.org/api/v1/items/mods/{0}"
 }
