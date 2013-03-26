@@ -342,6 +342,7 @@ def process_nypl_coll(profile, subr):
                 assert doc_response["response"]["headers"]["code"] == "200", doc_response["response"]["headers"]["message"]
                 item = doc_response["response"]["mods"]
                 item["_id"] = item_dict["uuid"]
+                item["_image_id"] = item_dict["imageID"]
                 items.append(item)
             if items:
                 enrich_coll(profile, subr, json.dumps({"items": items}))
