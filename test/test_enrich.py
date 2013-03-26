@@ -280,8 +280,8 @@ def test_enrich_format_cleanup_multiple():
             ]
         }
     EXPECTED = {
-        u'format' : [ "image/jpeg", "audio/mpeg" ],
-        u'type': "image"
+        u'format' : ["Still Images","audio","Images",'application'],
+        u'type': ["image", "sound"]
         }
 
     url = server() + "enrich-format?prop=format&type_field=type"
@@ -297,7 +297,6 @@ def test_enrich_format_cleanup():
         "format" : "image/JPEG"
         }
     EXPECTED = {
-        u'format' : "image/jpeg",
         u"type": "image"
         }
 
@@ -306,8 +305,7 @@ def test_enrich_format_cleanup():
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     result = json.loads(content)
-    assert result['format'] == EXPECTED['format']
-    assert not 'physicalmedium' in result.keys()
+    assert_same_jsons(content, EXPECTED)
 
 
 def test_physical_format_from_format_and_type():
@@ -318,17 +316,16 @@ Test physical format appending from format and type fields
         "format": ["76.8 x 104 cm", "Oil on canvas"],
         "type": ["Paintings", "Painting"]
     }
-    EXPECTED1 = {
+    EXPECTED = {
         "format": ["76.8 x 104 cm", "Oil on canvas", "Paintings", "Painting"]
     }
-    EXPECTED2 = {}
 
     resp, content = H.request(server() + "enrich-type?prop=type&format_field=format", "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-    assert json.loads(content) == EXPECTED1
+    assert json.loads(content) == EXPECTED
     resp, content = H.request(server() + "enrich-format?prop=format&type_field=type", "POST", body=content)
     assert str(resp.status).startswith("2")
-    assert json.loads(content) == EXPECTED2
+    assert json.loads(content) == EXPECTED
 
 
 def test_setting_missing_type_for_missing_format():
@@ -356,7 +353,6 @@ def test_setting_missing_type_from_format():
     }
     EXPECTED = {
             "sourceResource": {
-                "format": "image/jpeg",
                 "type": "image"
         }
     }
@@ -375,12 +371,12 @@ def test_setting_empty_type_from_format():
     "Should set empty type according to format field according to type mapping."
 
     DATA = [
-      {"in": {"format": "audio/mp3"},         "out": {"format": "audio/mpeg",    "type": "sound"}},
-      {"in": {"format": "image/jpg"},         "out": {"format": "image/jpeg",    "type": "image"}},
-      {"in": {"format": "video/mpeg"},        "out": {"format": "video/mpeg",    "type": "moving image"}},
-      {"in": {"format": "text/calendar"},     "out": {"format": "text/calendar", "type": "text"}},
-      {"in": {"format": "audio"},             "out": {}},
-      {"in": {"format": "something strange"}, "out": {}}
+      {"in": {"format": "audio/mp3"},         "out": {"type": "sound"}},
+      {"in": {"format": "image/jpg"},         "out": {"type": "image"}},
+      {"in": {"format": "video/mpeg"},        "out": {"type": "moving image"}},
+      {"in": {"format": "text/calendar"},     "out": {"type": "text"}},
+      {"in": {"format": "audio"},             "out": {"format": "audio"}},
+      {"in": {"format": "something strange"}, "out": {"format": "something strange"}}
     ]
 
     FORMATS = ["audio"]
@@ -412,6 +408,56 @@ def test_setting_empty_type_from_format():
         EXPECTED["sourceResource"] = d["out"]
         assert_same_jsons(EXPECTED, content)
 
+def test_setting_has_view_format_and_type():
+    """
+    Should set hasView/format when hasView exists and format not set
+    and type if not set.
+    """
+
+    INPUT = [
+        {
+            "hasView": { "@id": "id" },
+            "sourceResource": { "format": ["audio/mp3", "image/jpg"] }
+        },
+        {
+            "hasView": { "@id": "id", "format": "image/jpeg" },
+            "sourceResource": { "format": "audio/mp3" }
+        },
+        {
+            "hasView": { "@id": "id", "format": "image/jpeg" },
+            "sourceResource": { "format": "audio/mp3", "type": "image" }
+        },
+        {
+            "hasView": { "@id": "id" },
+            "sourceResource": { "format": "non-imt" }
+        }
+    ]
+    EXPECTED = [
+        {
+            "hasView": { "@id": "id", "format": ["audio/mpeg", "image/jpeg"] },
+            "sourceResource": { "type": ["sound", "image"] }
+        },
+        {
+            "hasView": { "@id": "id", "format": "image/jpeg" },
+            "sourceResource": { "type": "sound" }
+        },
+        {
+            "hasView": { "@id": "id", "format": "image/jpeg" },
+            "sourceResource": { "type": "image" }
+        },
+        {
+            "hasView": { "@id": "id" },
+            "sourceResource": { "format": "non-imt" }
+        }
+    ]
+
+    url = server() + "enrich-format"
+    for i in range(len(INPUT)):
+        resp, content = H.request(url, "POST", json.dumps(INPUT[i]))
+
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(content, EXPECTED[i])
+        
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

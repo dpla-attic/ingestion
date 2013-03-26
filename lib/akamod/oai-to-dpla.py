@@ -1,15 +1,14 @@
+import base64
+
 from akara import logger
 from akara import request, response
 from akara.services import simple_service
 from amara.lib.iri import is_absolute
 from amara.thirdparty import json
-from functools import partial
-import base64
-import sys
-import re
-from zen import dateparser
 from dateutil.parser import parse as dateutil_parse
-import timelib
+
+from dplaingestion.selector import getprop
+
 
 # default date used by dateutil-python to populate absent date elements during parse,
 # e.g. "1999" would become "1999-01-01" instead of using the current month/day
@@ -40,8 +39,7 @@ CONTEXT = {
    "end" : {
      "@id" : "dpla:dateRangeEnd",
      "@type": "xsd:date"
-   },        
-   "name": "xsd:string"
+   },
 }
 
 def is_shown_at_transform(d):
@@ -55,6 +53,13 @@ def is_shown_at_transform(d):
 
 def spatial_transform(d):
     spatial = d["coverage"]
+    if spatial and not isinstance(spatial, list):
+        spatial = [spatial]
+
+    return {"spatial": spatial} if spatial else {}
+
+def spatial_transform(d):
+    spatial = getprop(d, "coverage")
     if spatial and not isinstance(spatial, list):
         spatial = [spatial]
 

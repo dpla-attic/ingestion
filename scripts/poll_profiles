@@ -28,22 +28,17 @@ H.force_exception_as_status_code = True
 def process_profile(uri_base, profile_f):
     global URI_BASE, ENRICH
 
-    fprof = open(profile_f,'r')
-    try:
-        profile = json.load(fprof)
-    except Exception as e:
-        profile = None
-
-    fprof.close()
-
-    if not profile:
-        print >> sys.stderr, 'Error reading source profile.'
-        print >> sys.stderr, "Detailed error information:"
-        print >> sys.stderr, e
-        return False
+    with open(profile_f, 'r') as fprof:
+        try:
+            profile = json.load(fprof)
+        except Exception as e:
+            print >> sys.stderr, 'Error reading source profile.'
+            print >> sys.stderr, "Detailed error information:"
+            print >> sys.stderr, e
+            return False
 
     # Pause in secs between collection ingests
-    sleep = profile.get(u'sleep',0)
+    sleep = profile.get(u'sleep', 0)
 
     URI_BASE = uri_base
     if not is_absolute(ENRICH):
@@ -66,7 +61,7 @@ def process_profile(uri_base, profile_f):
             sys.exit(1)
 
         for subr in subResources:
-            process(profile,subr)
+            process(profile, subr)
             time.sleep(sleep)
 
     return True
@@ -88,14 +83,14 @@ def process_primo_all(profile, blacklist=None):
             request_more = False
 
         endpoint_content = ARC_PARSE(content)
-	total_hits = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['TOTALHITS']
-	print >> sys.stderr, "%s of %s total documents" % (index, total_hits)
+        total_hits = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['TOTALHITS']
+        print >> sys.stderr, "%s of %s total documents" % (index, total_hits)
         items = endpoint_content['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['DOC']
 
         for item in (items if isinstance(items, list) else [items]):
             item['_id'] = item['PrimoNMBib']['record']['control']['recordid']
             collection['items'].append(item)
-	    index += 1
+        index += 1
         enrich_coll(profile, collection['name'], json.dumps({'items':collection['items']}))
 
         if int(index) == int(total_hits):
@@ -175,7 +170,7 @@ def process_arc_all(profile,blacklist=None):
 
         del collections[cid]['items']
 
-def enrich_coll(profile,subr,content):
+def enrich_coll(profile, subr, content):
     # Enrich retrieved data
     global ENRICH
     
@@ -189,7 +184,7 @@ def enrich_coll(profile,subr,content):
     if subr:
         headers["Collection"] = subr
 
-    resp, content = H.request(ENRICH,'POST',body=content,headers=headers)
+    resp, content = H.request(ENRICH, 'POST' ,body=content, headers=headers)
     if not str(resp.status).startswith('2'):
         print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
 
@@ -395,6 +390,120 @@ def process_edan_all(profile, blacklist=None):
     print >> sys.stderr, "Removing cache dir [%s]" % cache_dir
     os.system("rm -rf " + cache_dir)
 
+def process_mets_coll(profile, subr):
+
+    def document_links(document_list_uri):
+        print >> sys.stderr, "Enriching collection %s" % subr
+        print >> sys.stderr, document_list_uri
+        resp, content = H.request(document_list_uri)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return
+        endpoint_content = ARC_PARSE(content)
+        for d in endpoint_content["mets:mets"]:
+            if "mets:dmdSec" in d:
+                records = endpoint_content["mets:mets"][d]
+                for record in records:
+                    if not record["ID"].startswith("collection-description-mods"):
+                        yield record["mets:mdRef"]["xlink:href"]
+
+    global URI_BASE
+    endpoint = profile[u'endpoint_URL'].format(subr)
+
+    items = []
+    count = 0
+    total_count = 0
+    for doc_url in document_links(endpoint):
+        resp, content = H.request(doc_url)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return False
+        doc_content = ARC_PARSE(content)
+        if "mods" in doc_content:
+            item = doc_content["mods"]
+            for _id_dict in item["identifier"]:
+                if _id_dict["type"] == "uri":
+                    item["_id"] = _id_dict["#text"]
+                    items.append(item)
+                    count += 1
+                    total_count += 1
+        if count >= 100:
+            enrich_coll(profile, subr, json.dumps({"items": items}))
+            print >> sys.stderr, "%d documents processed" % total_count
+            count = 0
+            items = []
+    if items:
+        enrich_coll(profile, subr, json.dumps({"items": items}))
+        print >> sys.stderr, "%d documents processed" % total_count
+
+def process_nypl_coll(profile, subr):
+    endpoint = profile[u'endpoint_URL'].format(subr)
+    doc_endpoint = profile["get_record_URL"]
+    args = {"per_page": 100, "page": 1}
+    print >> sys.stderr, "Enriching collection %s" % subr
+    done = False
+    page = 1
+    while not done:
+        args["page"] = page
+        request_url = endpoint + "?" + urlencode(args)
+        print >> sys.stderr, request_url
+        resp, content = H.request(request_url)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return False
+        response_dict = ARC_PARSE(content)["nyplAPI"]
+        success = response_dict["response"]["headers"]["code"] == "200"
+        if success:
+            total_pages =  response_dict["request"]["totalPages"]
+            current_page = response_dict["request"]["page"]
+            done = total_pages == current_page
+            page += 1
+            items = []
+            for item_dict in response_dict["response"]["capture"]:
+                doc_url = doc_endpoint.format(item_dict["uuid"])
+                resp, content = H.request(doc_url)
+                if not resp[u'status'].startswith('2'):
+                    print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+                    return False
+                doc_response = ARC_PARSE(content)["nyplAPI"]
+                assert doc_response["response"]["headers"]["code"] == "200", doc_response["response"]["headers"]["message"]
+                item = doc_response["response"]["mods"]
+                item["_id"] = item_dict["uuid"]
+                item["_image_id"] = item_dict["imageID"]
+                items.append(item)
+            if items:
+                enrich_coll(profile, subr, json.dumps({"items": items}))
+        else:
+            raise Exception(response_dict["response"]["headers"]["message"])
+
+def process_nypl_all(profile, blacklist=tuple()):
+    # Get all sets
+    global URI_BASE
+    url = profile[u'list_sets']
+    if not is_absolute(url):
+        url = URI_BASE + url
+    resp, content = H.request(url)
+    if not resp[u'status'].startswith('2'):
+        print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
+        return False
+
+    sleep = profile.get(u'sleep', 0)
+
+    subResources = []
+    response = ARC_PARSE(content)["nyplAPI"]["response"]
+    for r in response:
+        if "collection" == r:
+            for coll_dict in response[r]:
+                if "uuid" in coll_dict:
+                    subResources.append(coll_dict["uuid"])
+
+    # Process the sets
+    subr_to_process = (subr for subr in subResources if subr not in blacklist)
+    for subr in subr_to_process:
+        process_nypl_coll(profile, subr)
+        time.sleep(sleep)
+
+
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
     ('arc','all'): process_arc_all,
@@ -404,7 +513,11 @@ TYPE_PROCESSORS = {
     ('edan','all'): process_edan_all,
     ('oai','rec'): process_oai_rec,
     ('primo','coll'): None,
-    ('primo','all'): process_primo_all
+    ('primo','all'): process_primo_all,
+    ('mets', 'coll'): process_mets_coll,
+    ('mets', 'all'): None,
+    ('nypl', 'coll'): process_nypl_coll,
+    ('nypl', 'all'): process_nypl_all,
 }
 
 def define_arguments():

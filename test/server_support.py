@@ -118,7 +118,12 @@ MODULES = [
     "dplaingestion.akamod.cleanup_value",
     "dplaingestion.akamod.sets_prop",
     "dplaingestion.akamod.enrich_language",
-    "dplaingestion.akamod.dpla-get-record"
+    "dplaingestion.akamod.dpla-get-record",
+    "dplaingestion.akamod.mods_to_dpla",
+    "dplaingestion.akamod.artstor_cleanup",
+    "dplaingestion.akamod.uiuc_publisher_to_dataprovider",
+    "dplaingestion.akamod.nypl_identify_object",
+    "dplaingestion.akamod.nypl_coll_title"
     ]
 
 class download_preview:

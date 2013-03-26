@@ -57,7 +57,8 @@ DSPACE_ID_BASE = u"oai:dspace.mit.edu:"
 PREFIXES = {
     u'o': u'http://www.openarchives.org/OAI/2.0/',
     u'dc': u'http://purl.org/dc/elements/1.1/',
-    u'oai_dc': u'http://www.openarchives.org/OAI/2.0/oai_dc/'
+    u'oai_dc': u'http://www.openarchives.org/OAI/2.0/oai_dc/',
+    u'qdc': u'http://epubs.cclrc.ac.uk/xmlns/qdc/'
 }
 
 class oaiservice(object):
@@ -145,14 +146,14 @@ class oaiservice(object):
 
         resource = resources[first_id]
 
-    def list_records(self, set="", resumption_token = ""):
+    def list_records(self, set="", resumption_token="", metadataPrefix=""):
         '''
         List records. Use either the resumption token or set id.
         '''
         if resumption_token:
             params = {'verb' : 'ListRecords', 'resumptionToken': resumption_token}
         else:
-            params = {'verb' : 'ListRecords', 'metadataPrefix': 'oai_dc', 'set': set}
+            params = {'verb' : 'ListRecords', 'metadataPrefix': metadataPrefix, 'set': set}
         qstr = urllib.urlencode(params)
         url = self.root + '?' + qstr
         self.logger.debug('OAI request URL: {0}'.format(url))
@@ -160,10 +161,12 @@ class oaiservice(object):
         resp, content = self.h.request(url)
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
-        doc = bindery.parse(url, model=OAI_LISTRECORDS_MODEL)
+        doc = bindery.parse(url, model=LISTRECORDS_MODELS[metadataPrefix])
 
         records, first_id = metadata_dict(generate_metadata(doc),
                                           nesteddict=False)
+        self.logger.debug("RECORDS: %s" % records)
+        
         for id_, props in records:
             for k, v in props.iteritems():
                 props[k] = [ U(item) for item in v ]
@@ -195,7 +198,7 @@ OAI_LISTSETS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </OAI-PMH>
 """
 
-OAI_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
+OAI_DC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd" xmlns:o="http://www.openarchives.org/OAI/2.0/"
   xmlns:eg="http://examplotron.org/0/" xmlns:ak="http://purl.org/xml3k/akara/xmlmodel">
   <responseDate>2011-03-14T21:29:34Z</responseDate>
@@ -251,6 +254,49 @@ OAI_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </OAI-PMH>
 """
 
+QDC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
+         http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+  <responseDate>2013-03-12T20:06:26Z</responseDate>
+  <request verb="ListRecords" metadataPrefix="qdc" set="maps">http://imagesearch.library.illinois.edu/cgi-bin/oai.exe</request>
+  <ListRecords>
+    <record>
+      <header>
+        <identifier>oai:imagesearch.library.illinois.edu:maps/2243</identifier>
+        <datestamp>2013-02-26</datestamp>
+        <setSpec>maps</setSpec>
+      </header>
+      <metadata>
+        <qdc:qualifieddc xmlns:qdc="http://epubs.cclrc.ac.uk/xmlns/qdc/"
+           xmlns:dc="http://purl.org/dc/elements/1.1/"
+           xmlns:dcterms="http://purl.org/dc/terms/"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://epubs.cclrc.ac.uk/xmlns/qdc/
+           http://epubs.cclrc.ac.uk/xsd/qdc.xsd">
+          <dc:title>Illinois (Cook County), Chicago quadrangle : topographic sheet</dc:title>
+          <dcterms:alternative>Chicago quadrangle, Illinois (Cook County)</dcterms:alternative>
+          <dc:creator>Geological Survey (U.S.)</dc:creator>
+          <dcterms:spatial>Illinois</dcterms:spatial>
+          <dc:subject>Illinois; Maps; Topographic maps; Topography; Chicago (Ill.); Cook County (Ill.)</dc:subject>
+          <dc:type>Maps</dc:type>
+          <dc:description>1 map : col. ; 45 x 34 cm. -- Relief indicated by contours. -- &quot;Surveyed in 1889, 1897 and 1899.&quot; -- &quot;Contour interval 5 feet.&quot;</dc:description>
+          <dc:date>1901</dc:date>
+          <dc:contributor>Gannett, Henry, 1846-1914; Harrison, D.C.; Renshawe, John H.; United States. Lake Survey</dc:contributor>
+          <dc:description>Scale 1:62,500</dc:description>
+          <dcterms:isPartOf>Historical Maps Online</dcterms:isPartOf>
+          <dc:publisher>[Washington, D.C.] : U.S. Geological Survey, 1901.</dc:publisher>
+          <dc:rights>http://images.library.uiuc.edu/projects/maps/terms.html</dc:rights>
+          <dc:relation>http://histmapimages.grainger.illinois.edu/jp2files/Chicago1901.jp2</dc:relation>
+          <dc:identifier>http://imagesearch.library.illinois.edu/u?/maps,2243</dc:identifier>
+        </qdc:qualifieddc>
+      </metadata>
+    </record>
+    <resumptionToken>maps:::qdc:1000</resumptionToken>
+  </ListRecords>
+</OAI-PMH>
+"""
 
 OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:o="http://www.openarchives.org/OAI/2.0/"
@@ -267,20 +313,40 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
       </header>
       <metadata>
         <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title ak:rel="local-name()" ak:value=".">A methodology for the assessment of the proliferation resistance of nuclear power systems: topical report</dc:title>
+          <dc:creator ak:rel="local-name()" ak:value=".">Papazoglou, Ioannis Agamennon</dc:creator>
           <dc:subject ak:rel="local-name()" ak:value=".">Nuclear disarmament</dc:subject>
-          <dc:creator ak:rel="local-name()" ak:value=".">Cohen, Joshua</dc:creator>
-          <dc:date ak:rel="local-name()" ak:value=".">2004-08-20T19:48:34Z</dc:date>
-          <dc:date>2004-08-20T19:48:34Z</dc:date>
-          <dc:date>1991</dc:date>
-          <dc:identifier ak:rel="'handle'" ak:value=".">http://hdl.handle.net/1721.1/5451</dc:identifier>
-          <dc:description ak:rel="local-name()" ak:value=".">Cohen's Comments on Adam Przeworski's article "Could We Feed Everyone?"</dc:description>
-          <dc:format>2146519 bytes</dc:format>
+          <dc:description ak:rel="local-name()" ak:value=".">A methodology for the assessment of the differential resistance of various nuclear power systems to ...</dc:description>
+          <dc:date>2005-09-15T14:12:55Z</dc:date>
+          <dc:date ak:rel="local-name()" ak:value=".">2005-09-15T14:12:55Z</dc:date>
+          <dc:date>1978</dc:date>
+          <dc:type ak:rel="local-name()" ak:value=".">Technical Report</dc:type>
+          <dc:audience ak:rel="local-name()" ak:value=".">elementary school students</dc:audience>
+          <dc:audience>ESL teachers</dc:audience>
+          <dc:format ak:rel="local-name()" ak:value=".">6835289 bytes</dc:format>
+          <dc:format>7067243 bytes</dc:format>
           <dc:format>application/pdf</dc:format>
-          <dc:language>en_US</dc:language>
-          <dc:publisher ak:rel="local-name()" ak:value=".">Politics and Society</dc:publisher>
-          <dc:title ak:rel="local-name()" ak:value=".">"Maximizing Social Welfare or Institutionalizing Democratic Ideals?"</dc:title>
-          <dc:type>Article</dc:type>
-          <dc:identifier>Joshua Cohen, "Maximizing Social Welfare or Institutionalizing Democratic Ideals?"; Politics and Society, Vol. 19, No. 1</dc:identifier>
+          <dc:format>application/pdf</dc:format>
+          <dc:coverage ak:rel="local-name()" ak:value=".">Providence</dc:coverage>
+          <dc:coverage>Dresden</dc:coverage>
+          <dc:source ak:rel="local-name()" ak:value=".">Image from page 54 of the 1922 edition of Romeo and Juliet</dc:source>
+          <dc:publisher ak:rel="local-name()" ak:value=".">MIT Press</dc:publisher>
+          <dc:contributor ak:rel="local-name()" ak:value=".">Betty</dc:contributor>
+          <dc:contributor>John</dc:contributor>
+          <dc:provenance ak:rel="local-name()" ak:value=".">Estate of Hunter Thompson</dc:provenance>
+          <dc:provenance>This copy once owned by Benjamin Spock</dc:provenance>
+          <dc:accrualmethod ak:rel="local-name()" ak:value=".">Purchase</dc:accrualmethod>
+          <dc:instructionalmethod ak:rel="local-name()" ak:value=".">Experiential learning</dc:instructionalmethod>
+          <dc:rightsholder ak:rel="local-name()" ak:value=".">MIT</dc:rightsholder>
+          <dc:rights ak:rel="local-name()" ak:value=".">Collection may be protected under Title 17 of the U.S. Copyright Law.</dc:rights>
+          <dc:rights>Access limited to members</dc:rights>
+          <dc:identifier ak:rel="'handle'" ak:value=".">04980676</dc:identifier>
+          <dc:identifier>http://hdl.handle.net/1721.1/27225</dc:identifier>
+          <dc:language ak:rel="local-name()" ak:value=".">en_US</dc:language>
+          <dc:relation ak:rel="local-name()" ak:value=".">MIT-EL</dc:relation>
+          <dc:relation>78-021</dc:relation>
+          <dc:relation>MIT-EL</dc:relation>
+          <dc:relation>78-022</dc:relation>
         </oai_dc:dc>
       </metadata>
     </record>
@@ -289,5 +355,10 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 OAI_GETRECORD_MODEL = examplotron_model(OAI_GETRECORD_XML)
-OAI_LISTRECORDS_MODEL = examplotron_model(OAI_LISTRECORDS_XML)
+QDC_LISTRECORDS_MODEL = examplotron_model(QDC_LISTRECORDS_XML)
+OAI_DC_LISTRECORDS_MODEL = examplotron_model(OAI_DC_LISTRECORDS_XML)
 
+LISTRECORDS_MODELS = {
+    "qdc": QDC_LISTRECORDS_MODEL,
+    "oai_dc": OAI_DC_LISTRECORDS_MODEL
+}

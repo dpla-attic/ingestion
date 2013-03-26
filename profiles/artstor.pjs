@@ -22,16 +22,23 @@
         "/enrich-type",
         "/enrich-format",
         "/artstor_identify_object",
-        "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Frights",
+        "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Frights%2CsourceResource%2Fformat%2CsourceResource%2Fdescription",
+        "/copy_prop?prop=sourceResource%2Fspatial&to_prop=dataProvider&create=True&remove=True",
+        "/artstor_cleanup",
         "/enrich_location",
         "/enrich_language"
     ], 
     "subresources": [
-        "SetDPLA"
+        "DPLAIndiana",
+        "DPLAKress",
+        "DPLAYCBA",
+        "DPLADallas",
+        "DPLAWalters",
+        "DPLAYaleArt"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
-        "name": "ARTstor OAICatMuseum"
+        "name": "ArtStor"
     }, 
     "type": "oai", 
     "endpoint_URL": "/dpla-list-records?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler&oaiset="
