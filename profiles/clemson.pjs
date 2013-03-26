@@ -23,9 +23,15 @@
         "/enrich-format", 
         "/contentdm_identify_object", 
         "/enrich_location", 
+        "/scdl_enrich_location", 
+        "/geocode", 
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
         "/enrich_language"
     ], 
+    "geocode": [
+        "/scdl_enrich_location", 
+        "/geocode"
+    ],
     "subresources": [ ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-clemson", 
