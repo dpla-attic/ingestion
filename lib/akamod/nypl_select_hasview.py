@@ -30,7 +30,7 @@ def nypl_select_hasview(body, ctype):
         return error_text
 
     original_document_key = u"originalRecord"
-    original_preview_key = u"_high_res_link"
+    original_preview_key = u"tmp_high_res_link"
     source_key = u"hasView"
 
     if original_document_key not in data:

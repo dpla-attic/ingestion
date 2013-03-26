@@ -131,7 +131,7 @@ def test_filtering():
     assert expected == filtered, "Expected dictionary does not equal to filtered"
 
 @simple_service('POST', 'http://purl.org/la/dp/filter_empty_values', 'filter_empty_values', HTTP_TYPE_JSON)
-def filter_empty_values_endpoint(body, ctype, ignore_key="dplaSourceRecord"):
+def filter_empty_values_endpoint(body, ctype, ignore_key="originalRecord"):
     """
     Cleans empty leaves of given json tree;
     Argument:

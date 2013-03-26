@@ -34,7 +34,7 @@ def nypl_identify_object(body, ctype, download="True"):
         return error_text
 
     original_document_key = u"originalRecord"
-    original_preview_key = u"_image_id"
+    original_preview_key = u"tmp_image_id"
     preview_format = "http://images.nypl.org/index.php?id={0}&t=t"
 
     if original_document_key not in data:

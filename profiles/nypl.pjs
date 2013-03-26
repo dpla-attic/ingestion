@@ -10,6 +10,7 @@
         "/nypl_identify_object",
         "/nypl_select_hasview",
         "/cleanup_value",
+        "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Fdescription",
         "/enrich-subject",
         "/enrich_earliest_date",
         "/enrich-type",

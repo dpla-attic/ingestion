@@ -55,7 +55,7 @@ def physical_description_handler(d, p):
             out["format"] = getprop(_dict, "form/#text")
     return out
 
-def subject_handler(d, p):
+def subject_handler_uva(d, p):
     orig_subject = getprop(d, p)
     subjects = {"subject": []}
     for _dict in orig_subject:
@@ -149,7 +149,10 @@ def creator_handler_nypl(d, p):
 def date_created_nypl(d, p):
     date_created_list = getprop(d, p)
     keyDate, startDate, endDate = None, None, None
+    date_created_list = date_created_list if isinstance(date_created_list, list) else [date_created_list]
     for _dict in date_created_list:
+        if not isinstance(_dict, dict):
+            continue
         if _dict.get("keyDate") == "yes":
             keyDate = _dict.get("#text")
         if _dict.get("point") == "start":
@@ -160,6 +163,14 @@ def date_created_nypl(d, p):
         return {"date": "{0} - {1}".format(startDate, endDate)}
     else:
         return {"date": keyDate}
+
+def date_finder(d, p):
+    originInfo = getprop(d, p)
+    date_field_check_order = ("dateCreated", "dateIssued")
+    for field in date_field_check_order:
+        if field in originInfo:
+            return date_created_nypl(d, p + "/" + field)
+    return {}
 
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -173,7 +184,7 @@ CHO_TRANSFORMER["3.3"] = {
     "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
     "accessCondition": lambda d, p: {"rights": [s["#text"] for s in getprop(d, p) if "#text" in s]},
-    "subject": subject_handler,
+    "subject": subject_handler_uva,
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
     "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
@@ -187,9 +198,9 @@ CHO_TRANSFORMER["3.4"] = {
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
     "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no")},
-    "originInfo/dateIssued": date_created_nypl,
-    "originInfo/dateCreated": date_created_nypl,
-    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if s.get("type") == "content"]}
+    "originInfo": date_finder,
+    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if s.get("type") == "content"]},
+    "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in getprop(d, p) if exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
 }
 
 
