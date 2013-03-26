@@ -1,0 +1,30 @@
+{
+    "enrichments_coll": [],
+    "name": "smithsonian",
+    "list_sets": "",
+    "enrichments_rec": [
+        "/edan_select_id",
+	"/edan_to_dpla", 
+        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
+        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
+        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
+        "/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
+        "/shred?prop=sourceResource%2Fformat",
+        "/copy_prop?prop=sourceResource%2Ftemporal&to_prop=sourceResource%2Fdate&create=True",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject", 
+        "/cleanup_value",
+        "/enrich-type", 
+        "/enrich-format", 
+        "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
+        "/enrich_language"
+   ],
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/smithsonian",
+        "name": "Smithsonian Institutions"
+    },
+    "type": "edan",
+    "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
+}
