@@ -5,7 +5,14 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/mods-to-dpla?version=3.4",
-        "/nypl_identify_object"
+        "/nypl_identify_object",
+        "/cleanup_value",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language"
     ], 
     "subresources": [],
     "contributor": {
