@@ -4,7 +4,8 @@
     "name": "nypl",
     "enrichments_rec": [
         "/select-id?prop=_id",
-        "/mods-to-dpla?version=3.4"
+        "/mods-to-dpla?version=3.4",
+        "/nypl_identify_object"
     ], 
     "subresources": [],
     "contributor": {
