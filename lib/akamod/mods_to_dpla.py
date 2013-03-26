@@ -131,16 +131,24 @@ def creator_handler_nypl(d, p):
                 out["contributor"] = name
             else:
                 out["publisher"] = name
-            if roles.issubset(creator_roles):
+            if roles & creator_roles:
                 out["creator"] = name
     return out
 
 def date_created_nypl(d, p):
     date_created_list = getprop(d, p)
+    keyDate, startDate, endDate = None, None, None
     for _dict in date_created_list:
         if _dict.get("keyDate") == "yes":
-            return {"date": _dict.get("#text")}
-    return {}
+            keyDate = _dict.get("#text")
+        if _dict.get("point") == "start":
+            startDate = _dict.get("#text")
+        if _dict.get("point") == "end":
+            endDate = _dict.get("#text")
+    if startDate and endDate:
+        return {"date": "{0} - {1}".format(startDate, endDate)}
+    else:
+        return {"date": keyDate}
 
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}

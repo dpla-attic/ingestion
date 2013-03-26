@@ -148,7 +148,7 @@ def enrich(body, ctype):
         "_id": cid,
         "@id": at_id,
         "ingestType": "collection",
-        "title": data.get("title", None)
+        "title": data.get("title", collection_name)
     }
     # Set collection title field from collection_name if no sets
     if not coll_enrichments[0] and not COLL['title']:
