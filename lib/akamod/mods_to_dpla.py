@@ -96,7 +96,7 @@ def location_handler(d, p):
     finally:
         return out
 
-def creator_handler(d, p):
+def creator_handler_uva(d, p):
     creator_dict = getprop(d, p)
     if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
         if creator_dict["type"] == "personal":
@@ -113,6 +113,26 @@ def creator_handler(d, p):
         if creator_dict["type"] == "corporate":
             return {"creator": creator_dict["namePart"]}
 
+def creator_handler_nypl(d, p):
+    creator_roles = frozenset(("architect", "artist", "author", "cartographer",
+                     "composer", "creator", "designer", "director",
+                     "engraver", "interviewer", "landscape architect",
+                     "lithographer", "lyricist", "musical director",
+                     "performer", "project director", "singer", "storyteller",
+                     "surveyor", "technical director", "woodcutter"))
+    creator_dict = getprop(d, p)
+    out = {}
+    if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
+        if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
+            roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
+            name = creator_dict["namePart"]
+            if "publisher" not in roles:
+                out["contributor"] = name
+            else:
+                out["publisher"] = name
+            if roles.issubset(creator_roles):
+                out["creator"] = name
+    return out
 
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -122,7 +142,7 @@ AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 # item dict representing the new property and its value
 CHO_TRANSFORMER["3.3"] = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
-    "name": creator_handler,
+    "name": creator_handler_uva,
     "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
     "accessCondition": lambda d, p: {"rights": [s["#text"] for s in getprop(d, p) if "#text" in s]},
@@ -131,6 +151,15 @@ CHO_TRANSFORMER["3.3"] = {
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
     "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
     "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if s["type"] == "uri")}
+}
+
+CHO_TRANSFORMER["3.4"] = {
+    "name": creator_handler_nypl,
+    "physicalDescription": physical_description_handler,
+    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if s["type"] in ("local_bnumber", "uuid")]},
+    "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
+    "typeOfResource": lambda d, p: {"type": getprop(d, p)},
+    "titleInfo": lambda d, p: {"title": [s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no"]},
 }
 
 
