@@ -188,18 +188,18 @@ CHO_TRANSFORMER["3.3"] = {
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
     "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
-    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if s["type"] == "uri")}
+    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and s.get("type") == "uri")}
 }
 
 CHO_TRANSFORMER["3.4"] = {
     "name": creator_handler_nypl,
     "physicalDescription": physical_description_handler,
-    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if s["type"] in ("local_bnumber", "uuid")]},
+    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and s.get("type") in ("local_bnumber", "uuid")]},
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
-    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no")},
+    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in getprop(d, p) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no")},
     "originInfo": date_finder,
-    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if s.get("type") == "content"]},
+    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and "type" in s and s.get("type") == "content"]},
     "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in getprop(d, p) if exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
 }
 
