@@ -149,11 +149,14 @@ AGGREGATION_TRANSFORMER["3.3"] = {
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/mods-to-dpla', 'mods-to-dpla', 'application/ld+json')
-def mods_to_dpla(body, ctype, geoprop=None, version="3.3"):
+def mods_to_dpla(body, ctype, geoprop=None, version=None):
     """
     Convert output of JSON-ified MODS/METS format into the DPLA JSON-LD format.
 
     Parameter "geoprop" specifies the property name containing lat/long coords
+
+    Parameter "version" specifies the mapping dictionary, None means autodetect try,
+    corresponds to MODS format version
     """
 
     try :
@@ -170,6 +173,9 @@ def mods_to_dpla(body, ctype, geoprop=None, version="3.3"):
         "@context": CONTEXT,
         "sourceResource" : {}
     }
+
+    if not version:
+        version = getprop(data, "version")
 
     # Apply all transformation rules from original document
     transformer_pipeline = {}
