@@ -496,12 +496,17 @@ def test_dates_with_question_marks():
 
 
 def test_decade_date():
-    """Should convert 195- to 1950-1559."""
-    INPUT = ["195-", "198-", "201-"]
+    """Should convert decades strings."""
+    INPUT = ["195-", "198-", "201-",
+            "1920s", "1950s", "1900s",
+            ]
     EXPECTED = [
         {"begin": "1950", "end": "1959", "displayDate": "195-"},
         {"begin": "1980", "end": "1989", "displayDate": "198-"},
         {"begin": "2010", "end": "2019", "displayDate": "201-"},
+        {"begin": "1920", "end": "1929", "displayDate": "1920s"},
+        {"begin": "1950", "end": "1959", "displayDate": "1950s"},
+        {"begin": "1900", "end": "1909", "displayDate": "1900s"},
     ]
     for i in xrange(len(INPUT)):
         url = server() + "enrich_earliest_date?prop=date"
@@ -512,6 +517,7 @@ def test_decade_date():
         print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
