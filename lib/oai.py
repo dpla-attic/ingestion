@@ -313,20 +313,40 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
       </header>
       <metadata>
         <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title ak:rel="local-name()" ak:value=".">A methodology for the assessment of the proliferation resistance of nuclear power systems: topical report</dc:title>
+          <dc:creator ak:rel="local-name()" ak:value=".">Papazoglou, Ioannis Agamennon</dc:creator>
           <dc:subject ak:rel="local-name()" ak:value=".">Nuclear disarmament</dc:subject>
-          <dc:creator ak:rel="local-name()" ak:value=".">Cohen, Joshua</dc:creator>
-          <dc:date ak:rel="local-name()" ak:value=".">2004-08-20T19:48:34Z</dc:date>
-          <dc:date>2004-08-20T19:48:34Z</dc:date>
-          <dc:date>1991</dc:date>
-          <dc:identifier ak:rel="'handle'" ak:value=".">http://hdl.handle.net/1721.1/5451</dc:identifier>
-          <dc:description ak:rel="local-name()" ak:value=".">Cohen's Comments on Adam Przeworski's article "Could We Feed Everyone?"</dc:description>
-          <dc:format>2146519 bytes</dc:format>
+          <dc:description ak:rel="local-name()" ak:value=".">A methodology for the assessment of the differential resistance of various nuclear power systems to ...</dc:description>
+          <dc:date>2005-09-15T14:12:55Z</dc:date>
+          <dc:date ak:rel="local-name()" ak:value=".">2005-09-15T14:12:55Z</dc:date>
+          <dc:date>1978</dc:date>
+          <dc:type ak:rel="local-name()" ak:value=".">Technical Report</dc:type>
+          <dc:audience ak:rel="local-name()" ak:value=".">elementary school students</dc:audience>
+          <dc:audience>ESL teachers</dc:audience>
+          <dc:format ak:rel="local-name()" ak:value=".">6835289 bytes</dc:format>
+          <dc:format>7067243 bytes</dc:format>
           <dc:format>application/pdf</dc:format>
-          <dc:language>en_US</dc:language>
-          <dc:publisher ak:rel="local-name()" ak:value=".">Politics and Society</dc:publisher>
-          <dc:title ak:rel="local-name()" ak:value=".">"Maximizing Social Welfare or Institutionalizing Democratic Ideals?"</dc:title>
-          <dc:type>Article</dc:type>
-          <dc:identifier>Joshua Cohen, "Maximizing Social Welfare or Institutionalizing Democratic Ideals?"; Politics and Society, Vol. 19, No. 1</dc:identifier>
+          <dc:format>application/pdf</dc:format>
+          <dc:coverage ak:rel="local-name()" ak:value=".">Providence</dc:coverage>
+          <dc:coverage>Dresden</dc:coverage>
+          <dc:source ak:rel="local-name()" ak:value=".">Image from page 54 of the 1922 edition of Romeo and Juliet</dc:source>
+          <dc:publisher ak:rel="local-name()" ak:value=".">MIT Press</dc:publisher>
+          <dc:contributor ak:rel="local-name()" ak:value=".">Betty</dc:contributor>
+          <dc:contributor>John</dc:contributor>
+          <dc:provenance ak:rel="local-name()" ak:value=".">Estate of Hunter Thompson</dc:provenance>
+          <dc:provenance>This copy once owned by Benjamin Spock</dc:provenance>
+          <dc:accrualmethod ak:rel="local-name()" ak:value=".">Purchase</dc:accrualmethod>
+          <dc:instructionalmethod ak:rel="local-name()" ak:value=".">Experiential learning</dc:instructionalmethod>
+          <dc:rightsholder ak:rel="local-name()" ak:value=".">MIT</dc:rightsholder>
+          <dc:rights ak:rel="local-name()" ak:value=".">Collection may be protected under Title 17 of the U.S. Copyright Law.</dc:rights>
+          <dc:rights>Access limited to members</dc:rights>
+          <dc:identifier ak:rel="'handle'" ak:value=".">04980676</dc:identifier>
+          <dc:identifier>http://hdl.handle.net/1721.1/27225</dc:identifier>
+          <dc:language ak:rel="local-name()" ak:value=".">en_US</dc:language>
+          <dc:relation ak:rel="local-name()" ak:value=".">MIT-EL</dc:relation>
+          <dc:relation>78-021</dc:relation>
+          <dc:relation>MIT-EL</dc:relation>
+          <dc:relation>78-022</dc:relation>
         </oai_dc:dc>
       </metadata>
     </record>

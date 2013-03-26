@@ -92,12 +92,13 @@ def test_get_isostate_mass():
     INPUT = "Cambridge, Mass."
     EXPECTED = ("US-MA", "Massachusetts") 
 
-    OUTPUT = get_isostate(INPUT,frm_abbrev="Yes")
+    OUTPUT = get_isostate(INPUT,abbrev="Yes")
     assert OUTPUT == EXPECTED
 
 def test_get_isostate_string_without_state_names_returns_none():
     """
-    Should return (None,None) if string parameter does not contain state names/abbreviations.
+    Should return (None,None) if string parameter does not contain
+    state names/abbreviations.
     """
     INPUT = "Canada, Mexico, U.S.; Antarctica."
     OUTPUT = get_isostate(INPUT)
@@ -106,12 +107,13 @@ def test_get_isostate_string_without_state_names_returns_none():
 
 def test_get_isostate_string_with_state_names_returns_iso_and_state():
     """
-    Should return (iso_string, state_string) where iso_string and state_string are semicolon-
-    separated iso3166-2 values and state names, respectively. Should not include South Carolina
-    because the optional frb_abbrev parameter was not passed.
+    Should return (iso_string, state_string) where iso_string and state_strin
+    are semicolon-separated iso3166-2 values and state names, respectively.
+    Should not include South Carolina, but instead empty string, because the
+    optional frb_abbrev parameter was not passed.
     """
-    INPUT = "California;New Mexico;Arizona;New York;(S.C.);"
-    EXPECTED = ("US-CA;US-NM;US-AZ;US-NY", "California;New Mexico;Arizona;New York")
+    INPUT = "California;New Mexico;Arizona;New York;(S.C.)"
+    EXPECTED = ("US-CA;US-NM;US-AZ;US-NY;", "California;New Mexico;Arizona;New York;")
 
     OUTPUT = get_isostate(INPUT)
     assert OUTPUT == EXPECTED
@@ -511,6 +513,54 @@ def test_enrich_location_no_provider_specific_enrich_location3():
             },
             {
                 "name": "Athens"
+            }
+        ]},
+        "creator": "Miguel"
+    }
+
+    url = server() + "enrich_location"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_enrich_location_no_provider_specific_enrich_location3():
+    """
+    No previous provider-specific location enrichment and contains states
+    and state abbreviations; with semicolons.
+    """
+    INPUT = {
+        "id": "12345",
+        "sourceResource": {"spatial": [
+            "Charleston (S.C.); Germany; Poland; Israel; New York (N.Y.); Georgia (U.S.)"
+        ]},
+        "creator": "Miguel"
+    }
+    EXPECTED = {
+        "id": "12345",
+        "sourceResource": {"spatial": [
+            {
+                "state": "South Carolina",
+                "iso3166-2": "US-SC",
+                "name" : "Charleston (S.C.)"
+            },
+            {
+                "name": "Germany"
+            },
+            {
+                "name": "Poland"
+            },
+            {
+                "name": "Israel"
+            },
+            {
+                "state": "New York",
+                "iso3166-2": "US-NY",
+                "name": "New York (N.Y.)"
+            },
+            {
+                "state": "Georgia",
+                "iso3166-2": "US-GA",
+                "name": "Georgia (U.S.)"
             }
         ]},
         "creator": "Miguel"
