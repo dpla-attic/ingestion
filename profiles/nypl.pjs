@@ -1,6 +1,8 @@
 {
     "list_sets": "http://j2k.repo.nypl.org/api/v1/items/listCollections",
-    "enrichments_coll": [],
+    "enrichments_coll": [
+        "/nypl-coll-title?list_sets=http://j2k.repo.nypl.org/api/v1/items/listCollections"
+    ],
     "name": "nypl",
     "enrichments_rec": [
         "/select-id?prop=_id",

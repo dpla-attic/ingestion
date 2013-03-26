@@ -122,7 +122,8 @@ MODULES = [
     "dplaingestion.akamod.mods_to_dpla",
     "dplaingestion.akamod.artstor_cleanup",
     "dplaingestion.akamod.uiuc_publisher_to_dataprovider",
-    "dplaingestion.akamod.nypl_identify_object"
+    "dplaingestion.akamod.nypl_identify_object",
+    "dplaingestion.akamod.nypl_coll_title"
     ]
 
 class download_preview:

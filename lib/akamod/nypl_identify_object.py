@@ -4,8 +4,6 @@ NYPL specific module for getting preview url for the document;
 
 __author__ = 'aleksey'
 
-import re
-
 from akara import logger
 from akara import response
 from akara.services import simple_service
