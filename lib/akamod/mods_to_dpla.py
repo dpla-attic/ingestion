@@ -115,11 +115,12 @@ def creator_handler(d, p):
 
 
 
-
+CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
+AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
-CHO_TRANSFORMER = {
+CHO_TRANSFORMER["3.3"] = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
     "name": creator_handler,
     "physicalDescription": physical_description_handler,
@@ -132,19 +133,23 @@ CHO_TRANSFORMER = {
     "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if s["type"] == "uri")}
 }
 
-AGGREGATION_TRANSFORMER = {
+
+AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
     "collection"                 : lambda d, p: {"collection": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
-    "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
+    "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)}
+}
+
+AGGREGATION_TRANSFORMER["3.3"] = {
     "location": location_handler,
     "recordInfo/recordContentSource": lambda d, p: {"provider": getprop(d, p)}
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/mods-to-dpla', 'mods-to-dpla', 'application/ld+json')
-def mods_to_dpla(body, ctype, geoprop=None):
+def mods_to_dpla(body, ctype, geoprop=None, version="3.3"):
     """
     Convert output of JSON-ified MODS/METS format into the DPLA JSON-LD format.
 
@@ -167,14 +172,14 @@ def mods_to_dpla(body, ctype, geoprop=None):
     }
 
     # Apply all transformation rules from original document
-    for p in CHO_TRANSFORMER:
+    transformer_pipeline = {}.update(CHO_TRANSFORMER.get(version, {}), **CHO_TRANSFORMER["common"])
+    for p in transformer_pipeline:
         if exists(data, p):
-            out["sourceResource"].update(CHO_TRANSFORMER[p](data, p))
-    for p in AGGREGATION_TRANSFORMER:
+            out["sourceResource"].update(transformer_pipeline[p](data, p))
+    transformer_pipeline = {}.update(AGGREGATION_TRANSFORMER.get(version, {}), **AGGREGATION_TRANSFORMER["common"])
+    for p in transformer_pipeline:
         if exists(data, p):
-            out.update(AGGREGATION_TRANSFORMER[p](data, p))
-    if "spatial" in out["sourceResource"]:
-        out["sourceResource"]["spatial"]["currentLocation"] = "Virginia"
+            out.update(transformer_pipeline[p](data, p))
 
     # Additional content not from original document
 
