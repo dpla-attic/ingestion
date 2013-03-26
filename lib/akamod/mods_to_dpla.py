@@ -173,12 +173,12 @@ def mods_to_dpla(body, ctype, geoprop=None, version="3.3"):
 
     # Apply all transformation rules from original document
     transformer_pipeline = {}
-    transformer_pipeline = transformer_pipeline.update(CHO_TRANSFORMER.get(version, {}), **CHO_TRANSFORMER["common"])
+    transformer_pipeline.update(CHO_TRANSFORMER.get(version, {}), **CHO_TRANSFORMER["common"])
     for p in transformer_pipeline:
         if exists(data, p):
             out["sourceResource"].update(transformer_pipeline[p](data, p))
     transformer_pipeline = {}
-    transformer_pipeline = transformer_pipeline.update(AGGREGATION_TRANSFORMER.get(version, {}), **AGGREGATION_TRANSFORMER["common"])
+    transformer_pipeline.update(AGGREGATION_TRANSFORMER.get(version, {}), **AGGREGATION_TRANSFORMER["common"])
     for p in transformer_pipeline:
         if exists(data, p):
             out.update(transformer_pipeline[p](data, p))
