@@ -187,7 +187,9 @@ CHO_TRANSFORMER["3.4"] = {
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
     "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no")},
+    "originInfo/dateIssued": date_created_nypl,
     "originInfo/dateCreated": date_created_nypl,
+    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if s.get("type") == "content"]}
 }
 
 
