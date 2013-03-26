@@ -495,5 +495,23 @@ def test_dates_with_question_marks():
         assert_same_jsons(content, expected)
 
 
+def test_decade_date():
+    """Should convert 195- to 1950-1559."""
+    INPUT = ["195-", "198-", "201-"]
+    EXPECTED = [
+        {"begin": "1950", "end": "1959", "displayDate": "195-"},
+        {"begin": "1980", "end": "1989", "displayDate": "198-"},
+        {"begin": "2010", "end": "2019", "displayDate": "201-"},
+    ]
+    for i in xrange(len(INPUT)):
+        url = server() + "enrich_earliest_date?prop=date"
+        input = {"date": INPUT[i]}
+        expected = {"date": EXPECTED[i]}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
