@@ -112,6 +112,7 @@ def creator_handler_uva(d, p):
             return {"creator": ", ".join(parsed)}
         if creator_dict["type"] == "corporate":
             return {"creator": creator_dict["namePart"]}
+    return {}
 
 def creator_handler_nypl(d, p):
     creator_roles = frozenset(("architect", "artist", "author", "cartographer",
@@ -133,6 +134,13 @@ def creator_handler_nypl(d, p):
             if roles.issubset(creator_roles):
                 out["creator"] = name
     return out
+
+def date_created_nypl(d, p):
+    date_created_list = getprop(d, p)
+    for _dict in date_created_list:
+        if _dict.get("keyDate") == "yes":
+            return {"date": _dict.get("#text")}
+    return {}
 
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -160,6 +168,7 @@ CHO_TRANSFORMER["3.4"] = {
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
     "titleInfo": lambda d, p: {"title": [s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no"]},
+    "originInfo/dateCreated": date_created_nypl,
 }
 
 
