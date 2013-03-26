@@ -16,11 +16,14 @@
         "http://localhost:8881/shred?prop=sourceResource%2Fspatial&delim=--",
         "http://localhost:8881/enrich-subject",
         "http://localhost:8881/enrich-date",
+        "http://localhost:8881/cleanup_value",
         "http://localhost:8881/enrich-temporal-date",
         "http://localhost:8881/enrich-type",
         "http://localhost:8881/enrich-format",
         "http://localhost:8881/enrich_location",
-        "http://localhost:8881/contentdm_identify_object"
+        "http://localhost:8881/contentdm_identify_object",
+        "http://localhost:8881/copy_prop?prop=collection%2Ftitle&to_prop=dataProvider&create=True",
+        "http://localhost:8881/lookup?prop=dataProvider&target=dataProvider&substitution=dc_data_provider"
     ], 
     "blacklist": ["3","5","6","8","13","18","19","20","27","41","177"],
     "contributor": {
