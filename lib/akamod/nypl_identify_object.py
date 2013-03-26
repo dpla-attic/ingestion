@@ -12,8 +12,6 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from akara import module_config
 
-from dplaingestion import selector
-
 
 IGNORE = module_config().get('IGNORE')
 PENDING = module_config().get('PENDING')
