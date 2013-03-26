@@ -6,7 +6,7 @@ from dplaingestion.selector import setprop, delprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/sets_prop', 'sets_prop',
     'application/json')
-def setsprop(body,ctype,prop=None,value=None):
+def setsprop(body, ctype, prop=None, value=None, condition_prop=None):
     """Sets/unsets the value of prop.
 
     Keyword arguments:
@@ -24,7 +24,9 @@ def setsprop(body,ctype,prop=None,value=None):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    if exists(data, prop):
+    if not condition_prop:
+        condition_prop = prop
+    if exists(data, condition_prop):
         setprop(data, prop, value) if value else delprop(data, prop)
 
     return json.dumps(data)

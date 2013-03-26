@@ -96,7 +96,7 @@ def location_handler(d, p):
     finally:
         return out
 
-def creator_handler(d, p):
+def creator_handler_uva(d, p):
     creator_dict = getprop(d, p)
     if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
         if creator_dict["type"] == "personal":
@@ -112,16 +112,53 @@ def creator_handler(d, p):
             return {"creator": ", ".join(parsed)}
         if creator_dict["type"] == "corporate":
             return {"creator": creator_dict["namePart"]}
+    return {}
+
+def creator_handler_nypl(d, p):
+    creator_roles = frozenset(("architect", "artist", "author", "cartographer",
+                     "composer", "creator", "designer", "director",
+                     "engraver", "interviewer", "landscape architect",
+                     "lithographer", "lyricist", "musical director",
+                     "performer", "project director", "singer", "storyteller",
+                     "surveyor", "technical director", "woodcutter"))
+    creator_dict = getprop(d, p)
+    out = {}
+    if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
+        if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
+            roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
+            name = creator_dict["namePart"]
+            if "publisher" not in roles:
+                out["contributor"] = name
+            else:
+                out["publisher"] = name
+            if roles & creator_roles:
+                out["creator"] = name
+    return out
+
+def date_created_nypl(d, p):
+    date_created_list = getprop(d, p)
+    keyDate, startDate, endDate = None, None, None
+    for _dict in date_created_list:
+        if _dict.get("keyDate") == "yes":
+            keyDate = _dict.get("#text")
+        if _dict.get("point") == "start":
+            startDate = _dict.get("#text")
+        if _dict.get("point") == "end":
+            endDate = _dict.get("#text")
+    if startDate and endDate:
+        return {"date": "{0} - {1}".format(startDate, endDate)}
+    else:
+        return {"date": keyDate}
 
 
-
-
+CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
+AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
-CHO_TRANSFORMER = {
+CHO_TRANSFORMER["3.3"] = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
-    "name": creator_handler,
+    "name": creator_handler_uva,
     "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
     "accessCondition": lambda d, p: {"rights": [s["#text"] for s in getprop(d, p) if "#text" in s]},
@@ -132,23 +169,40 @@ CHO_TRANSFORMER = {
     "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if s["type"] == "uri")}
 }
 
-AGGREGATION_TRANSFORMER = {
+CHO_TRANSFORMER["3.4"] = {
+    "name": creator_handler_nypl,
+    "physicalDescription": physical_description_handler,
+    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if s["type"] in ("local_bnumber", "uuid")]},
+    "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
+    "typeOfResource": lambda d, p: {"type": getprop(d, p)},
+    "titleInfo": lambda d, p: {"title": [s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no"]},
+    "originInfo/dateCreated": date_created_nypl,
+}
+
+
+AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
     "collection"                 : lambda d, p: {"collection": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
-    "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
+    "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)}
+}
+
+AGGREGATION_TRANSFORMER["3.3"] = {
     "location": location_handler,
     "recordInfo/recordContentSource": lambda d, p: {"provider": getprop(d, p)}
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/mods-to-dpla', 'mods-to-dpla', 'application/ld+json')
-def mods_to_dpla(body, ctype, geoprop=None):
+def mods_to_dpla(body, ctype, geoprop=None, version=None):
     """
     Convert output of JSON-ified MODS/METS format into the DPLA JSON-LD format.
 
     Parameter "geoprop" specifies the property name containing lat/long coords
+
+    Parameter "version" specifies the mapping dictionary, None means autodetect try,
+    corresponds to MODS format version
     """
 
     try :
@@ -166,18 +220,22 @@ def mods_to_dpla(body, ctype, geoprop=None):
         "sourceResource" : {}
     }
 
+    if not version:
+        version = getprop(data, "version")
+
     # Apply all transformation rules from original document
-    for p in CHO_TRANSFORMER:
+    transformer_pipeline = {}
+    transformer_pipeline.update(CHO_TRANSFORMER.get(version, {}), **CHO_TRANSFORMER["common"])
+    for p in transformer_pipeline:
         if exists(data, p):
-            out["sourceResource"].update(CHO_TRANSFORMER[p](data, p))
-    for p in AGGREGATION_TRANSFORMER:
+            out["sourceResource"].update(transformer_pipeline[p](data, p))
+    transformer_pipeline = {}
+    transformer_pipeline.update(AGGREGATION_TRANSFORMER.get(version, {}), **AGGREGATION_TRANSFORMER["common"])
+    for p in transformer_pipeline:
         if exists(data, p):
-            out.update(AGGREGATION_TRANSFORMER[p](data, p))
-    if "spatial" in out["sourceResource"]:
-        out["sourceResource"]["spatial"]["currentLocation"] = "Virginia"
+            out.update(transformer_pipeline[p](data, p))
 
     # Additional content not from original document
-
     if 'HTTP_CONTRIBUTOR' in request.environ:
         try:
             out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
