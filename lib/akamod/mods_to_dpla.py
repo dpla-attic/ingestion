@@ -38,10 +38,12 @@ CONTEXT = {
     }
 }
 
+def _as_list(v):
+    return v if isinstance(v, (list, tuple)) else [v]
+
 def physical_description_handler(d, p):
-    pd = getprop(d, p)
+    pd = _as_list(getprop(d, p))
     out = {}
-    pd = pd if isinstance(pd, list) else [pd]
     for _dict in pd:
         if "note" in _dict:
             note = getprop(_dict, "note")
@@ -56,7 +58,7 @@ def physical_description_handler(d, p):
     return out
 
 def subject_handler_uva(d, p):
-    orig_subject = getprop(d, p)
+    orig_subject = _as_list(getprop(d, p))
     subjects = {"subject": []}
     for _dict in orig_subject:
         if "topic" in _dict:
@@ -66,8 +68,7 @@ def subject_handler_uva(d, p):
     return subjects
 
 def get_media_type(d):
-    pd = getprop(d, "physicalDescription")
-    pd = pd if isinstance(pd, list) else [pd]
+    pd = _as_list(getprop(d, "physicalDescription"))
     for _dict in pd:
         try:
             return selector_getprop(_dict, "internetMediaType")
@@ -75,7 +76,7 @@ def get_media_type(d):
             pass
 
 def location_handler(d, p):
-    location = getprop(d, p)
+    location = _as_list(getprop(d, p))
     format = get_media_type(d)
     out = {}
     try:
@@ -130,9 +131,8 @@ def creator_handler_nypl(d, p):
                      "lithographer", "lyricist", "musical director",
                      "performer", "project director", "singer", "storyteller",
                      "surveyor", "technical director", "woodcutter"))
-    names = getprop(d, p)
+    names = _as_list(getprop(d, p))
     out = {}
-    names = names if isinstance(names, list) else [names]
     for creator_dict in names:
         if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
             if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
@@ -147,9 +147,8 @@ def creator_handler_nypl(d, p):
     return out
 
 def date_created_nypl(d, p):
-    date_created_list = getprop(d, p)
+    date_created_list = _as_list(getprop(d, p))
     keyDate, startDate, endDate = None, None, None
-    date_created_list = date_created_list if isinstance(date_created_list, list) else [date_created_list]
     for _dict in date_created_list:
         if not isinstance(_dict, dict):
             continue
@@ -188,19 +187,19 @@ CHO_TRANSFORMER["3.3"] = {
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
     "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
-    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and s.get("type") == "uri")}
+    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("type") == "uri")}
 }
 
 CHO_TRANSFORMER["3.4"] = {
     "name": creator_handler_nypl,
     "physicalDescription": physical_description_handler,
-    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and s.get("type") in ("local_bnumber", "uuid")]},
+    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("type") in ("local_bnumber", "uuid")]},
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
-    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in getprop(d, p) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no")},
+    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no")},
     "originInfo": date_finder,
-    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and "type" in s and s.get("type") == "content"]},
-    "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in getprop(d, p) if exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
+    "note": lambda d, p: {"description": [s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and "type" in s and s.get("type") == "content"]},
+    "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
 }
 
 
