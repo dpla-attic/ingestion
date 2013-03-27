@@ -19,7 +19,8 @@
         "/enrich-format",
         "/enrich_location",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/enrich_language"
+        "/enrich_language",
+	"/mwdl_cleanup_field"
     ], 
     "last_checked": "2013-03-05T17:30:21.689809", 
     "contributor": {
