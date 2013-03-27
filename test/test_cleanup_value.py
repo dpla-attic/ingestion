@@ -86,6 +86,7 @@ def test_changing_values():
         r, c = _get_server_response(json.dumps(data), 'aaa%2Fbbb')
         exp = {}
         exp["aaa"] = {"bbb": EXPECTED[i]}
+        print_error_log()
         assert_same_jsons(exp, c)
 
 
@@ -135,6 +136,7 @@ def test_list_of_properties():
 def test_changes_using_default_prop_value():
     """Should process all default values."""
     INPUT = {
+            "hasView": {"format": "... format. "},
             "aaa": "bbb...",
             "sourceResource": {
                 "aaa": "bbb...",
@@ -142,11 +144,17 @@ def test_changes_using_default_prop_value():
                 "language": ["...aaa...", "...bbb;;;.;."],
                 "title": "sss...",
                 "publisher": ["that's me.."],
-                "relation": [".first;", """   second   relation..... \n. """, "\r\t\n\t\raaaa\r\n\t  ..."]
+                "relation": [".first;", """   second   relation..... \n. """, "\r\t\n\t\raaaa\r\n\t  ..."],
+                "format": "... format.   '''",
+                "extent": "...''',,, extent. ''',,,",
+                "description": ["... desc 1.  ", "... desc 2.  ''"],
+                "rights": "... rights.  ",
+                "place": "... place.  ",
             },
             "bbb": "ccc..."
     }
     EXPECTED = {
+            "hasView": {"format": "format."},
             "aaa": "bbb...",
             "sourceResource": {
                 "aaa": "bbb...",
@@ -154,7 +162,12 @@ def test_changes_using_default_prop_value():
                 "language": ["aaa", "bbb"],
                 "title": "sss",
                 "publisher": ["that's me"],
-                "relation": ["first", "second relation", "aaaa"]
+                "relation": ["first", "second relation", "aaaa"],
+                "format": "format.",
+                "extent": "extent.",
+                "description": ["desc 1.", "desc 2."],
+                "rights": "rights.",
+                "place": "place.",
             },
             "bbb": "ccc..."
     }

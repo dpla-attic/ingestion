@@ -263,6 +263,133 @@ def process_oai_all(profile,blacklist=[]):
         process_oai_coll(profile,subr)
         time.sleep(sleep)
 
+
+def get_current_username():
+    """Returns the name of the current user."""
+    import os
+    import pwd
+    return pwd.getpwuid( os.getuid() )[ 0 ]
+
+
+def create_temp_dir(operation=""):
+    """Returns a new temp dir.
+    
+    The temp dir is created using current user name and provided operation.
+    """
+    import tempfile
+    prefix = "%s_%s" % (get_current_username(), operation)
+    return tempfile.mkdtemp(prefix=prefix)
+
+
+def normalize_collection_name(collection_name):
+    """Removes bad characters from collection names, to have safe filenames."""
+    import re
+    x = re.sub(r'[/() \t]', r'_', collection_name)
+    x = re.sub(r'_+', r'_', x)
+    x = re.sub(r':', r'_', x)
+    return x.lower()
+
+
+# Used for Smithsonian data
+collections = {} 
+
+def process_edan_all(profile, blacklist=None):
+    src_URL = profile.get('endpoint_URL')
+    assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
+    src_dir = src_URL[5:]
+    
+    global collections
+    collections = {}
+    cache_dir = create_temp_dir("ingest_edan")
+    print "Using cache dir: " + cache_dir
+    print "Walking directory: " + src_dir
+
+    def cache_file_name(cache_dir, collection):
+        f = os.path.join(cache_dir, "coll_" + normalize_collection_name(collection))
+        return f
+
+    def handle_document(_, item):
+        global collections
+
+        desc_non = item["descriptiveNonRepeating"]
+        item["_id"] = desc_non["record_ID"]
+
+        freetext = item["freetext"]
+
+        if not "setName" in freetext: # So there is no collection
+            return True #XML parser need to get True here to continue parsing
+
+        colls = freetext["setName"]
+        it = colls
+        if not isinstance(colls, list):
+            it = [colls]
+
+        for c in it: 
+            if not "#text" in c:
+                continue
+            
+            hid = normalize_collection_name(c["#text"])
+            htitle = c["#text"]
+            
+            if hid not in collections:
+                # Grab series information from item
+                coll = {}
+                coll['id'] = hid
+                coll['title'] = htitle
+                coll['items'] = []
+                collections[hid] = coll
+            else:
+                coll = collections[hid]
+
+            # Create tmp file to hold collections items
+            coll_fn = cache_file_name(cache_dir, coll['id'])
+            coll_f = open(coll_fn,'a')
+            coll_f.write(str(item)+"\n")
+            coll_f.close()
+
+        return True
+
+    for (root, dirs, files) in os.walk(src_dir):
+        for filename in fnmatch.filter(files, '*_DPLA.xml'):
+            item_fn = os.path.join(root,filename)
+            print "Processing file: " + item_fn
+            try:
+                item_f = open(item_fn,'r')
+                xmltodict.parse(item_f, item_depth=3, item_callback=handle_document)
+            except Exception as e:
+                print >> sys.stderr, '[ERROR]', e.message 
+            else:
+                item_f.close()
+ 
+    limit = 1000
+    for cid in collections:
+        # Open tmp collection file and append items
+        coll_fn = cache_file_name(cache_dir, cid)
+        coll_f = open(coll_fn, 'r')
+
+        i = 0
+        step = 0
+        for line in coll_f:
+            collections[cid]['items'].append(eval(line))
+            i += 1
+
+            if i == limit:
+                print >> sys.stderr, "Enriching collection [%s]" % cid
+                enrich_coll(profile,cid,json.dumps(collections[cid]))
+                del collections[cid]['items'][:]
+                i = 0
+
+        if collections[cid]['items']:
+            print >> sys.stderr, "Enriching collection [%s]" % cid
+            enrich_coll(profile,cid,json.dumps(collections[cid]))
+            del collections[cid]['items'][:]
+
+        del collections[cid]['items']
+        coll_f.close()
+
+    print >> sys.stderr, "Removing cache dir [%s]" % cache_dir
+    os.system("rm -rf " + cache_dir)
+
 def process_mets_coll(profile, subr):
 
     def document_links(document_list_uri):
@@ -378,12 +505,13 @@ def process_nypl_all(profile, blacklist=tuple()):
         time.sleep(sleep)
 
 
-
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
     ('arc','all'): process_arc_all,
     ('oai','coll'): process_oai_coll,
     ('oai','all'): process_oai_all,
+    ('edan','coll'): None,
+    ('edan','all'): process_edan_all,
     ('oai','rec'): process_oai_rec,
     ('primo','coll'): None,
     ('primo','all'): process_primo_all,

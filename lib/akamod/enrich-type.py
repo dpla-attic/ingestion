@@ -27,8 +27,8 @@ def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
 
     REGEXPS = ('images','image'), ('still image','image')
     DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image',
-                'interactive resource', 'model', 'moving image', 'party',
-                'physical object', 'place', 'service', 'software', 'sound',
+                'interactive resource', 'moving image',
+                'physical object', 'service', 'software', 'sound',
                 'text']
 
     def cleanup(s):

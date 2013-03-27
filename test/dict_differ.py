@@ -9,17 +9,17 @@ def pinfo(*data):
         print d
 
 
-def assert_same_jsons(this, that):
+def assert_same_jsons(expected, current):
     """
     Checks if the dictionaries are the same.
     It compares the keys and values.
     Prints diff if they are not exact and throws exception.
     """
-    d = DictDiffer(this, that)
+    d = DictDiffer(expected, current)
 
     if not d.same():
         d.print_diff()
-        assert this == that
+        assert expected == current
 
 
 class DictDiffer:
@@ -52,8 +52,8 @@ class DictDiffer:
                 diff[k] = ('KEY NOT FOUND IN SECOND DICT', self.first[k])
             elif self.first[k] != self.second[k]:
                 diff[k] = {"DIFFERENT VALUES":
-                            {'FIRST DICT': self.first[k],
-                              'SECOND DICT': self.second[k]}
+                           {'EXPECTED DICT:': self.first[k],
+                            'CURRENT DICT: ': self.second[k]}
                             }
 
         for k in self.second.keys():

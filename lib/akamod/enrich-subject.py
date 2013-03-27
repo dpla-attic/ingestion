@@ -19,7 +19,8 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="sourceResource/subjec
     '''   
     
     TAGS_FOR_STRIPPING = '[\.\' ";]*' # Tags for stripping at beginning and at the end.
-    REGEXPS = (' *-- *', '--'), \
+    REGEXPS = ('\s*-{2,4}\s*', '--'), \
+              ('\s*-\s*-\s*', '--'), \
               ('^' + TAGS_FOR_STRIPPING, ''), \
               (TAGS_FOR_STRIPPING + '$','')
 

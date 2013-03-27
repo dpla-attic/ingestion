@@ -38,13 +38,22 @@ def cleanup(value, prop):
     """
     # Do not remove double quotes from title
     dquote = '' if prop == "sourceResource/title" else '"'
+
+    # Remove dot at the end if field name is not in the
+    # DONT_STRIP_DOT_END table.
+    with_dot = '' if prop in DONT_STRIP_DOT_END else "\."
     # Tags for stripping at beginning and at the end.
-    TAGS_FOR_STRIPPING = '[\.\' \r\t\n;,%s]*' % dquote
+
+    TAGS_FOR_STRIPPING = '[%s\' \r\t\n;,%s]*'
+
+    TAGS_FOR_STRIPPING_AT_BEGIN = TAGS_FOR_STRIPPING % ("\.", dquote)
+    TAGS_FOR_STRIPPING_AT_END = TAGS_FOR_STRIPPING % (with_dot, dquote)
+
     REGEXPS = (' *-- *', '--'), \
               ('[\t ]{2,}', ' '), \
-              ('^' + TAGS_FOR_STRIPPING, ''), \
-              (TAGS_FOR_STRIPPING + '$', '')
-    
+              ('^' + TAGS_FOR_STRIPPING_AT_BEGIN, ''), \
+              (TAGS_FOR_STRIPPING_AT_END + '$', '')
+
     if isinstance(value, basestring):
         value = value.strip()
         for pattern, replace in REGEXPS:
@@ -61,6 +70,16 @@ Fields which should not be changed:
 -- place (may end in an abbreviated state name)
 
 """
+DONT_STRIP_DOT_END = [
+    "hasView/format",
+    "sourceResource/format",
+    "sourceResource/extent",
+    "sourceResource/description",
+    "sourceResource/rights",
+    "sourceResource/place",
+]
+
+# Below fields should have removed do at the end.
 DEFAULT_PROP = [
     "sourceResource/language",
     "sourceResource/title",
@@ -68,13 +87,12 @@ DEFAULT_PROP = [
     "sourceResource/relation",
     "sourceResource/publisher",
     "sourceResource/subject",
-    "sourceResource/format",
     "sourceResource/date"
 ]
 
 
 @simple_service('POST', 'http://purl.org/la/dp/cleanup_value', 'cleanup_value', 'application/json')
-def cleanup_value(body, ctype, action="cleanup_value", prop=",".join(DEFAULT_PROP)):
+def cleanup_value(body, ctype, action="cleanup_value", prop=",".join(DEFAULT_PROP + DONT_STRIP_DOT_END)):
     '''
     Service that accepts a JSON document and enriches the prop field of that document by:
 

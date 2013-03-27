@@ -20,6 +20,7 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
+        "/geocode",
         "/enrich_language",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=sourceResource%2FstateLocatedIn&create=True&remove=True",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
