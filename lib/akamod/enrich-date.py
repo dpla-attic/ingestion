@@ -32,8 +32,10 @@ def split_date(d):
     reg = DATE_RANGE_EXT_RE
     if len(d.split("/")) == 3: #so th date is like "2001 / 01 / 01"
         reg = DATE_RANGE_RE
-    range = [robust_date_parser(x) for x in re.search(reg,d).groups()]
-    return filter(None, range)
+    m = re.search(reg, d)
+    range = [robust_date_parser(x) for x in m.groups()] if m else []
+    range = filter(None, range)
+    return range if range else (None, None)
 
 DATE_8601 = '%Y-%m-%d'
 def robust_date_parser(d):
