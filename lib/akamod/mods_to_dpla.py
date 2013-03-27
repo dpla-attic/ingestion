@@ -55,7 +55,7 @@ def physical_description_handler(d, p):
             out["format"] = getprop(_dict, "form/#text")
     return out
 
-def subject_handler(d, p):
+def subject_handler_uva(d, p):
     orig_subject = getprop(d, p)
     subjects = {"subject": []}
     for _dict in orig_subject:
@@ -115,30 +115,44 @@ def creator_handler_uva(d, p):
     return {}
 
 def creator_handler_nypl(d, p):
+    def update_value(d, k, v):
+        if k in d:
+            if isinstance(d[k], list):
+                d[k].append(v)
+            else:
+                d[k] = [d[k], v]
+        else:
+            d[k] = v
+
     creator_roles = frozenset(("architect", "artist", "author", "cartographer",
                      "composer", "creator", "designer", "director",
                      "engraver", "interviewer", "landscape architect",
                      "lithographer", "lyricist", "musical director",
                      "performer", "project director", "singer", "storyteller",
                      "surveyor", "technical director", "woodcutter"))
-    creator_dict = getprop(d, p)
+    names = getprop(d, p)
     out = {}
-    if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
-        if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
-            roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
-            name = creator_dict["namePart"]
-            if "publisher" not in roles:
-                out["contributor"] = name
-            else:
-                out["publisher"] = name
-            if roles & creator_roles:
-                out["creator"] = name
+    names = names if isinstance(names, list) else [names]
+    for creator_dict in names:
+        if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
+            if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
+                roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
+                name = creator_dict["namePart"]
+                if "publisher" not in roles:
+                    update_value(out, "contributor", name)
+                else:
+                    update_value(out, "publisher", name)
+                if roles & creator_roles:
+                    update_value(out, "creator", name)
     return out
 
 def date_created_nypl(d, p):
     date_created_list = getprop(d, p)
     keyDate, startDate, endDate = None, None, None
+    date_created_list = date_created_list if isinstance(date_created_list, list) else [date_created_list]
     for _dict in date_created_list:
+        if not isinstance(_dict, dict):
+            continue
         if _dict.get("keyDate") == "yes":
             keyDate = _dict.get("#text")
         if _dict.get("point") == "start":
@@ -149,6 +163,14 @@ def date_created_nypl(d, p):
         return {"date": "{0} - {1}".format(startDate, endDate)}
     else:
         return {"date": keyDate}
+
+def date_finder(d, p):
+    originInfo = getprop(d, p)
+    date_field_check_order = ("dateCreated", "dateIssued")
+    for field in date_field_check_order:
+        if field in originInfo:
+            return date_created_nypl(d, p + "/" + field)
+    return {}
 
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -162,21 +184,23 @@ CHO_TRANSFORMER["3.3"] = {
     "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
     "accessCondition": lambda d, p: {"rights": [s["#text"] for s in getprop(d, p) if "#text" in s]},
-    "subject": subject_handler,
+    "subject": subject_handler_uva,
     "titleInfo/title": lambda d, p: {"title": getprop(d, p)},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
     "originInfo/dateCreated/#text": lambda d, p: {"date": getprop(d, p)},
-    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if s["type"] == "uri")}
+    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and s.get("type") == "uri")}
 }
 
 CHO_TRANSFORMER["3.4"] = {
     "name": creator_handler_nypl,
     "physicalDescription": physical_description_handler,
-    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if s["type"] in ("local_bnumber", "uuid")]},
+    "identifier": lambda d, p: {"identifier": [s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and s.get("type") in ("local_bnumber", "uuid")]},
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
-    "titleInfo": lambda d, p: {"title": [s.get("title") for s in getprop(d, p) if s.get("usage") == "primary" and s.get("supplied") == "no"]},
-    "originInfo/dateCreated": date_created_nypl,
+    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in getprop(d, p) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no")},
+    "originInfo": date_finder,
+    "note": lambda d, p: {"description": [s.get("#text") for s in getprop(d, p) if isinstance(s, dict) and "type" in s and s.get("type") == "content"]},
+    "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in getprop(d, p) if exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
 }
 
 
