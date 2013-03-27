@@ -44,7 +44,13 @@ CONTEXT = {
    }
 }
 
-def multi_transform(d, key, props):
+def multi_transform(d, key, props, return_format="str"):
+    """
+
+    Possible values for 'return_format' are:
+        - 'str' - returns string
+        - 'list' - returns list
+    """
     values = []
 
     for p in props:
@@ -56,6 +62,9 @@ def multi_transform(d, key, props):
                 v = [v]
             [values.append(s) for s in v if s not in values]
 
+    if return_format == "list":
+        return {key: values} if values else {}
+    
     return {key: "; ".join(values)} if values else {}
 
 # Structure mapping the original top level property to a function returning a single
@@ -125,7 +134,7 @@ def primotodpla(body,ctype,geoprop=None):
     ipo_props = ["display/lds04", "search/lsr13"]
     title_props = ["display/title", "display/lds10"]
     out["sourceResource"].update(multi_transform(data, "identifier", id_props))
-    out["sourceResource"].update(multi_transform(data, "spatial", sp_props))
+    out["sourceResource"].update(multi_transform(data, "spatial", sp_props, "list"))
     out["sourceResource"].update(multi_transform(data, "isPartOf", ipo_props))
     out["sourceResource"].update(multi_transform(data, "title", title_props))
 
