@@ -428,12 +428,12 @@ def process_mets_coll(profile, subr):
                     count += 1
                     total_count += 1
         if count >= 100:
-            enrich_coll(profile, subr, json.dumps({"items": items}))
+            enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
             print >> sys.stderr, "%d documents processed" % total_count
             count = 0
             items = []
     if items:
-        enrich_coll(profile, subr, json.dumps({"items": items}))
+        enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
         print >> sys.stderr, "%d documents processed" % total_count
 
 def process_nypl_coll(profile, subr):
