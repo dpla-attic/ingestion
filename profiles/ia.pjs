@@ -5,7 +5,14 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/ia-to-dpla",
-        "/ia_identify_object"
+        "/ia_identify_object",
+        "/cleanup_value",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language"
     ], 
     "subresources": [
         "blc"
