@@ -40,16 +40,28 @@ CONTEXT = {
 
 
 CHO_TRANSFORMER = {
-
+    "metadata/contributor": lambda d, p: {"contributor": getprop(d, p)},
+    "metadata/creator": lambda d, p: {"creator": getprop(d, p)},
+    "metadata/date": lambda d, p: {"date": getprop(d, p)},
+    "metadata/description": lambda d, p: {"description": getprop(d, p)},
+    ("metadata/identifier", "metadata/call_number"): lambda d, p: {"identifier": getprop(d, p)},
+    "metadata/language": lambda d, p: {"language": getprop(d, p)},
+    "metadata/publisher": lambda d, p: {"publisher": getprop(d, p)},
+    "metadata/possible-copyright-status": lambda d, p: {"rights": getprop(d, p)},
+    "metadata/subject": lambda d, p: {"subject": getprop(d, p)},
+    ("metadata/title", "metadata/volume"): lambda d, p: {"title": getprop(d, p)},
+    "metadata/mediatype": lambda d, p: {"type": getprop(d, p)},
 }
 
 AGGREGATION_TRANSFORMER = {
-    "collection"       : lambda d, p: {"collection": getprop(d, p)},
+    "collection": lambda d, p: {"collection": getprop(d, p)},
     "id"               : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"              : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"   : lambda d, p: {"originalRecord": getprop(d, p)},
     "ingestType"       : lambda d, p: {"ingestType": getprop(d, p)},
-    "ingestDate"       : lambda d, p: {"ingestDate": getprop(d, p)}
+    "ingestDate"       : lambda d, p: {"ingestDate": getprop(d, p)},
+    "metadata/contributor": lambda d, p: {"dataProvider": getprop(d, p)},
+    "metadata/identifier-access": lambda d, p: {"isShownAt": getprop(d, p)},
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/ia-to-dpla', 'ia-to-dpla', 'application/ld+json')
@@ -72,19 +84,40 @@ def ia_to_dpla(body, ctype, geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "sourceResource" : {}
+        "sourceResource" : {"format": "application/pdf"}
     }
+
+    def multi_path_processor(data, paths, transformation):
+        value = {}
+        for sub_p in paths:
+            if exists(data, sub_p):
+                fetched = transformation[paths](data, sub_p)
+                for k in fetched:
+                    if k in value:
+                        if isinstance(value[k], list):
+                            value[k].append(fetched[k])
+                        elif isinstance(value[k], basestring) and value[k] != fetched[k]:
+                            value[k] = [value[k], fetched[k]]
+                        elif isinstance(value[k], dict):
+                            value[k].update(fetched[k])
+                    else:
+                        value[k] = fetched[k]
+        return value
+
 
     # Apply all transformation rules from original document
     for p in CHO_TRANSFORMER:
-        if exists(data, p):
+        if isinstance(p, tuple):
+            out["sourceResource"].update(multi_path_processor(data, p, CHO_TRANSFORMER))
+        elif exists(data, p):
             out["sourceResource"].update(CHO_TRANSFORMER[p](data, p))
     for p in AGGREGATION_TRANSFORMER:
-        if exists(data, p):
+        if isinstance(p, tuple):
+            out.update(multi_path_processor(data, p, AGGREGATION_TRANSFORMER))
+        elif exists(data, p):
             out.update(AGGREGATION_TRANSFORMER[p](data, p))
 
     # Additional content not from original document
-
     if 'HTTP_CONTRIBUTOR' in request.environ:
         try:
             out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
