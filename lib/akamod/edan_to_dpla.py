@@ -94,7 +94,7 @@ def is_part_of_transform(d):
     res = is_part_of
     if len(res) == 1:
         res = res[0]
-    
+
     return {"isPartOf": res} if res else {}
 
 
@@ -266,14 +266,15 @@ def transform_spatial(d):
 
     geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
 
-    for g in geo:
-        
-        if not g:
-            continue
+    if geo:
+        for g in geo:
+            
+            if not g:
+                continue
 
-        loc = convert_location(g, place)
-        if loc:
-            result.append(loc)
+            loc = convert_location(g, place)
+            if loc:
+                result.append(loc)
 
 
     
@@ -495,6 +496,23 @@ def has_view_transform(d):
     return {"hasView": has_view} if has_view else {}
 
 
+def transform_collection(d):
+    name = arc_group_extraction(d, "freetext", "SetName")
+
+    if not name:
+        return
+
+    if "#text" not in name:
+        return
+
+    value = name["#text"]
+
+    collection = arc_group_extraction(d, "collection")
+    collection["title"] = value
+
+    return collection
+
+
 def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
     """
     Generalization of what proved to be an idiom in ARC information extraction,
@@ -606,6 +624,7 @@ def edantodpla(body,ctype,geoprop=None):
     out.update(transform_object(data))
 
     slugify_field(out, "collection/@id")
+    out["collection"]["title"] = out["sourceResource"]["isPartOf"]["title"]
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:
