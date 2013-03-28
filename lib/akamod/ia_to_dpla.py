@@ -39,6 +39,21 @@ CONTEXT = {
 }
 
 
+def set_has_view(d, p):
+    _id = getprop(d, "originalRecord/_id")
+    rights = getprop(d, "metadata/possible-copyright-status")
+    format = "application/pdf"
+    file_name = getprop(d, p)
+    if _id and file_name:
+        return {"hasView": {
+            "@id": "http://www.archive.org/download/{0}/{1}".format(_id, file_name),
+            "rights": rights,
+            "format": format
+            }
+        }
+    else:
+        return {}
+
 CHO_TRANSFORMER = {
     "metadata/contributor": lambda d, p: {"contributor": getprop(d, p)},
     "metadata/creator": lambda d, p: {"creator": getprop(d, p)},
@@ -62,6 +77,7 @@ AGGREGATION_TRANSFORMER = {
     "ingestDate"       : lambda d, p: {"ingestDate": getprop(d, p)},
     "metadata/contributor": lambda d, p: {"dataProvider": getprop(d, p)},
     "metadata/identifier-access": lambda d, p: {"isShownAt": getprop(d, p)},
+    "files/pdf": set_has_view
 }
 
 @simple_service('POST', 'http://purl.org/la/dp/ia-to-dpla', 'ia-to-dpla', 'application/ld+json')

@@ -127,7 +127,8 @@ MODULES = [
     "dplaingestion.akamod.nypl_select_hasview",
     "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_cleanup_field",
-    "dplaingestion.akamod.ia_to_dpla"
+    "dplaingestion.akamod.ia_to_dpla",
+    "dplaingestion.akamod.ia_identify_object"
     ]
 
 class download_preview:
@@ -160,6 +161,15 @@ class kentucky_identify_object(identify_object):
     pass
 
 class artstor_identify_object(identify_object):
+    pass
+
+class georgia_identify_object(identify_object):
+    pass
+
+class nypl_identify_object(identify_object):
+    pass
+
+class ia_identify_object(identify_object):
     pass
 """ % dict(config_root = config_root,
            port = port,

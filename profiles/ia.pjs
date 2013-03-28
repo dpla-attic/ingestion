@@ -4,7 +4,8 @@
     "name": "ia",
     "enrichments_rec": [
         "/select-id?prop=_id",
-        "/ia-to-dpla"
+        "/ia-to-dpla",
+        "/ia_identify_object"
     ], 
     "subresources": [
         "blc"
