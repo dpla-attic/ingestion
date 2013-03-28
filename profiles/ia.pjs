@@ -3,7 +3,8 @@
     "enrichments_coll": [],
     "name": "ia",
     "enrichments_rec": [
-        "/select-id?prop=_id"
+        "/select-id?prop=_id",
+        "ia-to-dpla"
     ], 
     "subresources": [
         "blc"

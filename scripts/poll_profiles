@@ -539,7 +539,8 @@ def process_ia_coll(profile, subr):
             files_url = file_url_pattern.format(identifier, profile["prefix_files"].format(identifier))
             files_response = get_parsed_xml(files_url)["files"]
             item_data = {"dc": None, "meta": None, "gif": None, "pdf": None,
-                         "shown_at": profile["shown_at_URL"].format(identifier)}
+                         "shown_at": profile["shown_at_URL"].format(identifier),
+                         "marc": None}
             for file_info in files_response["file"]:
                 format = file_info["format"]
                 name = file_info["name"]
@@ -553,6 +554,8 @@ def process_ia_coll(profile, subr):
                     item_data["meta"] = name
                 elif format == "Dublin Core":
                     item_data["dc"] = name
+                elif format == "MARC":
+                    item_data["marc"]= name
 
             assert item_data["meta"] is not None, "document \"" + identifier + "\" meta data is absent"
 

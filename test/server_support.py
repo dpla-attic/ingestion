@@ -126,7 +126,8 @@ MODULES = [
     "dplaingestion.akamod.nypl_coll_title",
     "dplaingestion.akamod.nypl_select_hasview",
     "dplaingestion.akamod.primo-to-dpla",
-    "dplaingestion.akamod.mwdl_cleanup_field"
+    "dplaingestion.akamod.mwdl_cleanup_field",
+    "dplaingestion.akamod.ia_to_dpla"
     ]
 
 class download_preview:
