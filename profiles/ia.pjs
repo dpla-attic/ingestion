@@ -10,7 +10,6 @@
         "/enrich-subject",
         "/enrich_earliest_date",
         "/enrich-type",
-        "/enrich-format",
         "/enrich_location",
         "/enrich_language"
     ], 

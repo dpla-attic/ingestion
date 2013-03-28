@@ -27,7 +27,8 @@ def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
 
     REGEXPS = ('images','image'), ('still image','image'),\
               ('textual records', 'text'),\
-              ('photographs and other graphic materials', 'image')
+              ('photographs and other graphic materials', 'image'),\
+              ('texts', 'text')
     DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image',
                 'interactive resource', 'moving image',
                 'physical object', 'service', 'software', 'sound',
@@ -69,7 +70,9 @@ def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
         else:
             delprop(data, prop)
 
-        if f:
+        if len(f) > 1:
             setprop(data, format_field, f)
+        elif len(f) == 1:
+            setprop(data, format_field, f[0])
 
     return json.dumps(data)

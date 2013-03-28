@@ -562,8 +562,10 @@ def process_ia_coll(profile, subr):
             item = {"files": item_data,
                     "_id": identifier}
             item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["meta"])))
-            if item_data["dc"]:
-                item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["dc"])))
+            #if item_data["dc"]:
+            #    item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["dc"])))
+            if item_data["marc"]:
+                item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["marc"])))
             items.append(item)
         if items:
             enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
