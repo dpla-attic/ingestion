@@ -3,6 +3,7 @@ from nose.tools import nottest
 
 from server_support import server, H, print_error_log
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
+import sys
 
 
 def test_enrich_dates_bogus_date():
@@ -518,6 +519,20 @@ def test_decade_date():
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
+def test_bogus_date():
+    """Should handle bogus dates"""
+    INPUT = ["abcdef", "a-bcdef", "a - bcdef", "a-bcde-f", "a - bcde - f",
+             "a/bcdef", "a / bcdef", "a/bcde/f", "a / bcde / f"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": {"begin": None, "end": None, "displayDate": INPUT[i]}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        assert str(resp.status).startswith("2")
+        print >> sys.stderr, str(content)
+        assert_same_jsons(expected, content)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

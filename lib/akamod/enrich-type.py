@@ -25,7 +25,9 @@ def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
     name of the field to use as a parameter
     """
 
-    REGEXPS = ('images','image'), ('still image','image')
+    REGEXPS = ('images','image'), ('still image','image'),\
+              ('textual records', 'text'),\
+              ('photographs and other graphic materials', 'image')
     DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image',
                 'interactive resource', 'moving image',
                 'physical object', 'service', 'software', 'sound',

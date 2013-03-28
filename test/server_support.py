@@ -124,7 +124,9 @@ MODULES = [
     "dplaingestion.akamod.uiuc_publisher_to_dataprovider",
     "dplaingestion.akamod.nypl_identify_object",
     "dplaingestion.akamod.nypl_coll_title",
-    "dplaingestion.akamod.nypl_select_hasview"
+    "dplaingestion.akamod.nypl_select_hasview",
+    "dplaingestion.akamod.primo-to-dpla",
+    "dplaingestion.akamod.mwdl_cleanup_field"
     ]
 
 class download_preview:

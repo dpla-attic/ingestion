@@ -122,12 +122,13 @@ def couch_rev_check_recs(docs):
 def set_ingested_date(doc):
     doc[u'ingestDate'] = datetime.datetime.now().isoformat()
 
-def enrich_coll(ctype, source_name, collection_name, coll_enrichments):
+def enrich_coll(ctype, source_name, collection_name, collection_title, coll_enrichments):
     cid = COUCH_ID_BUILDER(source_name, collection_name)
     at_id = "http://dp.la/api/collections/" + cid
     coll = {
         "_id": cid,
         "@id": at_id,
+        "title": collection_title,
         "ingestType": "collection"
     }
     set_ingested_date(coll)
@@ -167,6 +168,12 @@ def enrich(body, ctype):
 
     data = json.loads(body)
 
+    # For non-OAI, the collection title is included as part of the data,
+    # so we extract it here to pass it to def enrich_coll a few lines down.
+    # For OAI, the collection enrichment pipeline with set the title and so
+    # None will be overridden. 
+    collection_title = data.get("title", None)
+
     docs = {}
     for record in data[u'items']:
         # Preserve record prior to any enrichments
@@ -178,7 +185,7 @@ def enrich(body, ctype):
         for s in (sets if isinstance(sets, list) else [sets]):
             if s not in COLLECTIONS:
                 COLLECTIONS[s] = enrich_coll(ctype, source_name, s,
-                                             coll_enrichments)
+                                             collection_title, coll_enrichments)
             rec_collection = {
                 '@id': COLLECTIONS[s].get('@id', None),
                 'title': COLLECTIONS[s].get('title', None),
