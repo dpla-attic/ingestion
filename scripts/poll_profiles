@@ -504,6 +504,67 @@ def process_nypl_all(profile, blacklist=tuple()):
         process_nypl_coll(profile, subr)
         time.sleep(sleep)
 
+def process_ia_coll(profile, subr):
+
+    def get_parsed_xml(url):
+        resp, content = H.request(url)
+        if not resp[u'status'].startswith('2'):
+            error = ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            print >> sys.stderr, error
+            raise Exception(error)
+        return ARC_PARSE(content)
+
+    endpoint = profile[u'endpoint_URL'].format(subr)
+    args = {"rows": 100, "page": 1}
+    print >> sys.stderr, "Enriching collection %s" % subr
+    done = False
+    page = 1
+    while not done:
+        args["page"] = page
+        request_url = endpoint + "&" + urlencode(args)
+        print >> sys.stderr, request_url
+        resp, content = H.request(request_url)
+        if not resp[u'status'].startswith('2'):
+            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            return False
+        response_dict = json.loads(content)["response"]
+        total_docs = int(response_dict["numFound"])
+        read_docs = int(response_dict["start"])
+        done = (total_docs - read_docs) < args["rows"]
+        page += 1
+        items = []
+        for item_dict in response_dict["docs"]:
+            identifier = item_dict["identifier"]
+            file_url_pattern = profile["get_file_URL"]
+            files_url = file_url_pattern.format(identifier, profile["prefix_files"].format(identifier))
+            files_response = get_parsed_xml(files_url)["files"]
+            item_data = {"dc": None, "meta": None, "gif": None, "pdf": None,
+                         "shown_at": profile["shown_at_URL"].format(identifier)}
+            for file_info in files_response["file"]:
+                format = file_info["format"]
+                name = file_info["name"]
+                if format == "Text PDF":
+                    item_data["pdf"] = name
+                elif format == "Animated GIF":
+                    item_data["gif"] = name
+                elif format == "Grayscale LuraTech PDF" and not item_data["pdf"]:
+                    item_data["pdf"] = name
+                elif format == "Metadata" and name.endswith("_meta.xml"):
+                    item_data["meta"] = name
+                elif format == "Dublin Core":
+                    item_data["dc"] = name
+
+            assert item_data["meta"] is not None, "document \"" + identifier + "\" meta data is absent"
+
+            item = {"files": item_data,
+                    "_id": identifier}
+            item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["meta"])))
+            if item_data["dc"]:
+                item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["dc"])))
+            items.append(item)
+        if items:
+            enrich_coll(profile, subr, json.dumps({"items": items}))
+
 
 TYPE_PROCESSORS = {
     ('arc','coll'): None,
@@ -519,6 +580,8 @@ TYPE_PROCESSORS = {
     ('mets', 'all'): None,
     ('nypl', 'coll'): process_nypl_coll,
     ('nypl', 'all'): process_nypl_all,
+    ('ia', 'coll'): process_ia_coll,
+    ('ia', 'all'): None,
 }
 
 def define_arguments():

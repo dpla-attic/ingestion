@@ -1,0 +1,22 @@
+{
+    "list_sets": "",
+    "enrichments_coll": [],
+    "name": "ia",
+    "enrichments_rec": [
+        "/select-id?prop=_id"
+    ], 
+    "subresources": [
+        "blc"
+    ],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/internet_archive",
+        "name": "Internet Archive"
+    }, 
+    "type": "ia",
+    "endpoint_URL": "http://archive.org/advancedsearch.php?q=collection%3A%22{0}%22&fl%5B%5D=identifier&output=json",
+    "get_file_URL": "http://www.archive.org/download/{0}/{1}",
+    "prefix_files": "{0}_files.xml",
+    "prefix_meta": "{0}_meta.xml",
+    "prefix_dc": "{0}_dc.xml",
+    "shown_at_URL": "http://archive.org/details/{0}"
+}
