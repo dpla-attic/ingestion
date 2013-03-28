@@ -72,8 +72,8 @@ def process_primo_all(profile, blacklist=None):
     index = 0
     while request_more:
         collection = {}
-        collection['id'] = 1
-        collection['name'] = "mwdl"
+        collection['id'] = "1"
+        collection['title'] = "mwdl"
         collection['items'] = []
         endpoint = "%s&bulkSize=%s&indx=%s" % (profile[u'endpoint_URL'], profile[u'bulk_size'], index)
 
@@ -90,10 +90,10 @@ def process_primo_all(profile, blacklist=None):
         for item in (items if isinstance(items, list) else [items]):
             item['_id'] = item['PrimoNMBib']['record']['control']['recordid']
             collection['items'].append(item)
-        index += 1
-        enrich_coll(profile, collection['name'], json.dumps({'items':collection['items']}))
+            index += 1
+        enrich_coll(profile, collection['id'], json.dumps(collection))
 
-        if int(index) == int(total_hits):
+        if int(index) >= int(total_hits):
             request_more = False
 
     return True
@@ -112,7 +112,8 @@ def process_arc_all(profile,blacklist=None):
     src_dir = src_URL[5:]
 
     collections = {} 
-    os.system("rm /tmp/coll_*")
+    # Create temp dir
+    cache_dir = create_temp_dir("ingest_nara")
     print "Walking directory: "+src_dir
     for (root, dirs, files) in os.walk(src_dir):
         for filename in fnmatch.filter(files, 'Item_*.xml'):
@@ -142,16 +143,15 @@ def process_arc_all(profile,blacklist=None):
                 else:
                     coll = collections[hid]
 
-                # Create tmp file to hold collections items
-                coll_fn = "/tmp/coll_%s" % coll['id']
-                coll_f = open(coll_fn,'a')
-                coll_f.write(str(item)+"\n")
+                coll_fn = os.path.join(cache_dir, "coll_%s" % coll['id'])
+                coll_f = open(coll_fn, 'a')
+                coll_f.write(str(item) + "\n")
                 coll_f.close()
 
     limit = 1000
     for cid in collections:
         # Open tmp collection file and append items
-        coll_fn = "/tmp/coll_%s" % cid
+        coll_fn = os.path.join(cache_dir, "coll_%s" % cid)
         coll_f = open(coll_fn, 'r')
         lines = coll_f.readlines()
         coll_f.close()
