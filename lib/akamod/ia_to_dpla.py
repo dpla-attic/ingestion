@@ -62,10 +62,10 @@ def ia_to_dpla(body, ctype, geoprop=None):
 
     try :
         data = json.loads(body)
-    except:
+    except Exception as e:
         response.code = 500
         response.add_header('content-type','text/plain')
-        return "Unable to parse body as JSON"
+        return "Unable to parse body as JSON" + "\n" + str(e)
 
     global GEOPROP
     GEOPROP = geoprop

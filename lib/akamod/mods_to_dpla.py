@@ -230,7 +230,7 @@ def mods_to_dpla(body, ctype, geoprop=None, version=None):
 
     try :
         data = json.loads(body)
-    except:
+    except Exception:
         response.code = 500
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"

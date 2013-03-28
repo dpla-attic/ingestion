@@ -566,7 +566,7 @@ def process_ia_coll(profile, subr):
                 item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["dc"])))
             items.append(item)
         if items:
-            enrich_coll(profile, subr, json.dumps({"items": items}))
+            enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
 
 
 TYPE_PROCESSORS = {
