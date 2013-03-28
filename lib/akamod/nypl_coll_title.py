@@ -42,7 +42,7 @@ def nypl_identify_object(body, ctype, list_sets=None):
     for r in sets:
         if "collection" == r:
             for coll_dict in sets[r]:
-                if "uuid" in coll_dict and "title" in coll_dict and coll_dict["uuid"] == data["title"]:
+                if "uuid" in coll_dict and "title" in coll_dict and (coll_dict["uuid"] == data["title"] or coll_dict["uuid"] in data["@id"]):
                     data["title"] = coll_dict["title"]
 
     return json.dumps(data)
