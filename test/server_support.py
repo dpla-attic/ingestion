@@ -128,7 +128,8 @@ MODULES = [
     "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_cleanup_field",
     "dplaingestion.akamod.ia_to_dpla",
-    "dplaingestion.akamod.ia_identify_object"
+    "dplaingestion.akamod.ia_identify_object",
+    "dplaingestion.akamod.dc_clean_invalid_dates"
     ]
 
 class download_preview:
