@@ -54,8 +54,56 @@ def set_has_view(d, p):
     else:
         return {}
 
+def marc_data_processor(d, p):
+
+    def update_field(d, k, v):
+        if k in d:
+            if isinstance(d[k], list) and v not in d[k]:
+                d[k].append(v)
+            elif isinstance(d[k], dict):
+                d[k].update(v)
+            elif d[k] != v:
+                d[k] = [d[k], v]
+        else:
+            d[k] = v
+
+    def extract_sub_field(d, subfield_name="subfield", codes=tuple(), content_key="#text", concat_str=", "):
+        if subfield_name in d:
+            return concat_str.join(v[content_key] for v in d[subfield_name]
+                if isinstance(v, dict) and "code" in v and content_key in v and (not codes or v["code"] in codes))
+        else:
+            return None
+
+
+    data_field_dicts = getprop(d, p)
+    out = {"contributor": [], "extent": [], "format": [], "spatial": [], "isPartOf": []}
+    for _dict in data_field_dicts:
+        if isinstance(_dict, dict) and "tag" in _dict:
+            tag = _dict["tag"]
+            if tag in ("700", "710", "711"):
+                value = extract_sub_field(_dict, codes=("a", "q", "d"))
+                out["contributor"].append(value)
+            if tag in ("300",):
+                value = extract_sub_field(_dict, codes=("c",))
+                out["extent"].append(value)
+                out["format"].append(value)
+            if tag.startswith("6") and len(tag) == 3:
+                value = extract_sub_field(_dict, codes=("z",))
+                out["spatial"].append(value)
+            if tag in ("440", "490"):
+                value = extract_sub_field(_dict, codes=("a",))
+                out["isPartOf"].append(value)
+    for k, v in out.items():
+        if not v:
+            del out[k]
+        elif len(v) == 1:
+            out[k] = v[0]
+    return out
+
+
 CHO_TRANSFORMER = {
-    "metadata/contributor": lambda d, p: {"contributor": getprop(d, p)},
+    # META
+#    "metadata/contributor": lambda d, p: {"contributor": getprop(d, p)},
     "metadata/creator": lambda d, p: {"creator": getprop(d, p)},
     "metadata/date": lambda d, p: {"date": getprop(d, p)},
     "metadata/description": lambda d, p: {"description": getprop(d, p)},
@@ -66,6 +114,9 @@ CHO_TRANSFORMER = {
     "metadata/subject": lambda d, p: {"subject": getprop(d, p)},
     ("metadata/title", "metadata/volume"): lambda d, p: {"title": getprop(d, p)},
     "metadata/mediatype": lambda d, p: {"type": getprop(d, p)},
+
+    # MARC
+    "record/datafield": marc_data_processor
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -75,8 +126,12 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"   : lambda d, p: {"originalRecord": getprop(d, p)},
     "ingestType"       : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"       : lambda d, p: {"ingestDate": getprop(d, p)},
+
+    # META
     "metadata/contributor": lambda d, p: {"dataProvider": getprop(d, p)},
     "metadata/identifier-access": lambda d, p: {"isShownAt": getprop(d, p)},
+
+    # FILES
     "files/pdf": set_has_view
 }
 
@@ -100,7 +155,7 @@ def ia_to_dpla(body, ctype, geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "sourceResource" : {"format": "application/pdf"}
+        "sourceResource" : {}
     }
 
     def multi_path_processor(data, paths, transformation):
