@@ -62,8 +62,8 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
                     #  tolerance levels to account for differences between Bing and Geonames 
                     #  coordinates.
                     d = haversine((lat, lng), (place["lat"], place["lng"]))
-                    if (("PCLI" == place["fcode"] and d < 50) \
-                        or ("ADM1" == place["fcode"] and d < 10)): 
+                    if (("PCLI" == place["fcode"] and d < 50)       # Country tolerance (Bing/Geonames 49.9km off) \
+                        or ("ADM1" == place["fcode"] and d < 15)):  # State tolerance 
                         break
             else:
                 logger.debug("geocode: No result found for %s" % v)
