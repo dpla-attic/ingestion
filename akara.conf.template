@@ -3,6 +3,19 @@
 # This is the main Akara server configuration file. It contains
 # settings for the server and for its extension modules.
 
+# This file is preprocessed by setup.py to create akara.conf, which
+# replaces tokens in this file with values from akara.ini. akara.ini
+# takes the standard python ConfigParser format of: 
+#
+#     [Section]
+#     Key = value 
+# 
+# Tokens in this file should take the form of: 
+# 
+#     Section__Key
+# 
+# and prefixed with a dollar sign. 
+
 # The configuration file is written in Python. Configuration data goes
 # into class attributes. If the module is "A.B.C" then the
 # configuration information should be in the class named "C". If there
@@ -30,7 +43,7 @@
 
 class Akara:
     #  Listen: interface name (optional) and port to listen for HTTP requests
-    Listen = 8870
+    Listen = ${Akara__Port}
     #  To specify the interface name use this format:
     #  Listen = "localhost:8880"
 
@@ -114,6 +127,7 @@ MODULES = [
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.dpla-list-sets",
     "dplaingestion.akamod.mdl-enrich-location",
+    "dplaingestion.akamod.scdl_enrich_location",
     "dplaingestion.akamod.filter_empty_values",
     "dplaingestion.akamod.artstor_select_isshownat",
     "dplaingestion.akamod.artstor_identify_object",
@@ -151,10 +165,14 @@ class geocoding:
     geocoder = 'http://purl.org/com/zepheira/services/geocoders/local-geonames'
     geonames_dbfile = Akara.ConfigRoot+'/caches/geonames.sqlite3'
 
+class geocode: 
+    bing_api_key = "${Bing__ApiKey}"
+    geonames_username = "${Geonames__Username}"
+
 class enrich:
-    couch_database = 'http://camp.dpla.berkman.temphost.net:5970/dpla'
-    couch_database_username = 'couchadmin'
-    couch_database_password = 'couchM3'
+    couch_database = "${CouchDb__Url}"
+    couch_database_username = "${CouchDb__Username}"
+    couch_database_password = "${CouchDb__Password}"
 
 # Another module which needs to access the couchdb database.
 class dpla_thumbs(enrich):

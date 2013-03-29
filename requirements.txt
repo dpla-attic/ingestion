@@ -11,3 +11,4 @@ simplejson
 six
 CouchDB
 nose
+geopy
