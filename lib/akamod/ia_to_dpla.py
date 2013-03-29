@@ -57,7 +57,7 @@ def set_has_view(d, p):
 def marc_data_processor(d, p):
 
     def update_field(d, k, v):
-        if k in d:
+        if k in d and v:
             if isinstance(d[k], list) and v not in d[k]:
                 d[k].append(v)
             elif isinstance(d[k], dict):
@@ -82,17 +82,17 @@ def marc_data_processor(d, p):
             tag = _dict["tag"]
             if tag in ("700", "710", "711"):
                 value = extract_sub_field(_dict, codes=("a", "q", "d"))
-                out["contributor"].append(value)
+                update_field(out, "contributor", value)
             if tag in ("300",):
                 value = extract_sub_field(_dict, codes=("c",))
-                out["extent"].append(value)
-                out["format"].append(value)
+                update_field(out, "extent", value)
+                update_field(out, "format", value)
             if tag.startswith("6") and len(tag) == 3:
                 value = extract_sub_field(_dict, codes=("z",))
-                out["spatial"].append(value)
+                update_field(out, "spatial", value)
             if tag in ("440", "490"):
                 value = extract_sub_field(_dict, codes=("a",))
-                out["isPartOf"].append(value)
+                update_field(out, "isPartOf", value)
     for k, v in out.items():
         if not v:
             del out[k]
