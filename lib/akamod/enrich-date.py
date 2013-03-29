@@ -81,6 +81,7 @@ circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_begin>\d{2})
 century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)\s+c\.", re.I) # for dates with centuries "19th c."
 decade_date = re.compile("\s*(?P<year>\d{3})-\s*") # 195- should be parsed to: 1950-1959
 decade_date_s = re.compile("\s*(?P<year>\d{4})s\s*") # decade like "1920s"
+between_date = re.compile("\s*between\s*(?P<year1>\d{4})\s*and\s*(?P<year2>\d{4})\s*") # between 2000 and 2012
 def parse_date_or_range(d):
     # FIXME: could be more robust here,
     # e.g. use date range regex to handle:
@@ -109,6 +110,11 @@ def parse_date_or_range(d):
         year_begin = match.group("year")
         year_end = match.group("year")[:3] + "9"
         a, b = year_begin, year_end
+    elif between_date.match(d):
+        match = between_date.match(d)
+        year1 = int(match.group("year1"))
+        year2 = int(match.group("year2"))
+        a, b = str(min(year1, year2)), str(max(year1, year2))
     else:
         parsed = robust_date_parser(d)
         a, b = parsed, parsed

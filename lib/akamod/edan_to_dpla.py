@@ -626,7 +626,6 @@ def edantodpla(body,ctype,geoprop=None):
     out.update(transform_object(data))
 
     slugify_field(out, "collection/@id")
-    out["collection"]["title"] = out["sourceResource"]["isPartOf"]["title"]
 
     if exists(out, "sourceResource/isPartOf/title"):
         out["collection"]["title"] = out["sourceResource"]["isPartOf"]["title"]

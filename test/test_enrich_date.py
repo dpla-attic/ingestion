@@ -531,7 +531,21 @@ def test_bogus_date():
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
         assert str(resp.status).startswith("2")
-        print >> sys.stderr, str(content)
+        assert_same_jsons(expected, content)
+
+
+def test_dates_with_between():
+    INPUT = [
+            "between 1840 and 1860",
+            "between 1860 and 1840"
+            ]
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": {"begin": "1840", "end": "1860", "displayDate": INPUT[i]}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
 if __name__ == "__main__":

@@ -131,7 +131,8 @@ MODULES = [
     "dplaingestion.akamod.ia_identify_object",
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.edan_to_dpla",
-    "dplaingestion.akamod.cleanup_language"
+    "dplaingestion.akamod.cleanup_language",
+    "dplaingestion.akamod.dc_clean_invalid_dates"
     ]
 
 class download_preview:

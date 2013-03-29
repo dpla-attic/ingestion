@@ -130,6 +130,7 @@ def test_populating_data_provider_field():
             "dataProvider": "Smithsonian Institution Archives",
     }
     resp, content = _get_server_response(INPUT)
+    print_error_log()
     assert resp["status"].startswith("2")
     CONTENT = json.loads(content)
     assert_same_jsons(EXPECTED_DATA_PROVIDER, CONTENT["sourceResource"])
