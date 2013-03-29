@@ -178,7 +178,8 @@ def convert_dates(data, prop, earliest):
     if value_to_set:
         setprop(data, p, value_to_set)
     else:
-        delprop(data, p)
+        if exists(data, p):
+            delprop(data, p)
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_earliest_date', 'enrich_earliest_date', HTTP_TYPE_JSON)
 def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="sourceResource/date"):
