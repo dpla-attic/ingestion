@@ -23,7 +23,7 @@ tpl = string.Template(i.read())
 i.close()
 
 out = open("akara.conf", "w")
-out.write(tpl.substitute(ini_tokens))
+out.write(tpl.safe_substitute(ini_tokens))
 out.close()
 
 

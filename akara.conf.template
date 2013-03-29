@@ -12,9 +12,7 @@
 # 
 # Tokens in this file should take the form of: 
 # 
-#     Section__Key
-# 
-# and prefixed with a dollar sign. 
+#     ${Section__Key}
 
 # The configuration file is written in Python. Configuration data goes
 # into class attributes. If the module is "A.B.C" then the
