@@ -166,6 +166,7 @@ def remove_space_around_semicolons(strg):
     strg_arr = strg.split(';')
     for i in range(len(strg_arr)):
         strg_arr[i] = re.sub('^  *','',strg_arr[i])
+        strg_arr[i] = re.sub('^\[','',strg_arr[i])
         strg_arr[i] = re.sub(' *$','',strg_arr[i])
     strg = ';'.join(strg_arr)
     return strg

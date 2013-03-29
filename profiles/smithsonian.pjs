@@ -13,12 +13,14 @@
         "/copy_prop?prop=sourceResource%2Ftemporal&to_prop=sourceResource%2Fdate&create=True",
         "/enrich_earliest_date",
         "/enrich_date",
-        "/enrich-subject", 
+        "/enrich-subject",
         "/cleanup_value",
-        "/enrich-type", 
-        "/enrich-format", 
+        "/enrich-type",
+        "/enrich-format",
         "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
-        "/enrich_language"
+        "/enrich_language",
+        "/shred?prop=sourceResource%2Fsubject&delim=%5C",
+        "/shred?prop=sourceResource%2Fsubject&delim=%3A"
    ],
     "subresources": [],
     "contributor": {

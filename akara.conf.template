@@ -154,7 +154,10 @@ MODULES = [
     "dplaingestion.akamod.ia_to_dpla",
     "dplaingestion.akamod.ia_identify_object",
     "dplaingestion.akamod.dc_clean_invalid_dates",
-    "dplaingestion.akamod.cleanup_language"
+    "dplaingestion.akamod.edan_select_id",
+    "dplaingestion.akamod.edan_to_dpla",
+    "dplaingestion.akamod.cleanup_language",
+    "dplaingestion.akamod.dc_clean_invalid_dates"
     ]
 
 ### Section 3: Other module configuration goes here
