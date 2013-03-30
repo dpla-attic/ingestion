@@ -202,7 +202,9 @@ def enrich(body, ctype):
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
-        docs[doc["_id"]] = doc # after pipe doc must have _id
+        # After pipe doc must have _id
+        if doc.get("_id", None):
+            docs[doc["_id"]] = doc
 
     couch_rev_check_recs(docs)
     couch_docs_text = json.dumps({"docs": docs.values()})

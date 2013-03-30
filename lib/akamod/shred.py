@@ -28,7 +28,10 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
             v = getprop(data, p)
             if action == "shred":
                 if isinstance(v, list):
-                    v = delim.join(v)
+                    try:
+                        v = delim.join(v)
+                    except:
+                        logger.error("Can't join on delim. ID: %s" % data["_id"])
                 if delim in v:
                     setprop(data, p, v)
                 else:

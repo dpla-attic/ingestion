@@ -18,8 +18,11 @@ from amara.lib import U
 from amara.pushtree import pushtree
 from amara.thirdparty import httplib2
 from akara import logger
+import xmltodict
 
 OAI_NAMESPACE = u"http://www.openarchives.org/OAI/2.0/"
+
+XML_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
 
 #OAI-PMH verbs:
 # * Identify
@@ -161,19 +164,31 @@ class oaiservice(object):
         resp, content = self.h.request(url)
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
-        doc = bindery.parse(url, model=LISTRECORDS_MODELS[metadataPrefix])
 
-        records, first_id = metadata_dict(generate_metadata(doc),
-                                          nesteddict=False)
-        self.logger.debug("RECORDS: %s" % records)
-        
-        for id_, props in records:
-            for k, v in props.iteritems():
-                props[k] = [ U(item) for item in v ]
-        if (doc.OAI_PMH.ListRecords is not None) and (doc.OAI_PMH.ListRecords.resumptionToken is not None):
-            resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken)
+        if metadataPrefix == "mods":
+            mods = XML_PARSE(content)
+            records = []
+            for record in mods["OAI-PMH"]["ListRecords"]["record"]:
+                id = record["header"]["identifier"]
+                if "null" not in id:
+                    records.append((id,record))
+            if "resumptionToken" in mods["OAI-PMH"]["ListRecords"]:
+                resumption_token = mods["OAI-PMH"]["ListRecords"]["resumptionToken"]
+            else:
+                resumption_token = ''
         else:
-            resumption_token = ''
+            doc = bindery.parse(url, model=LISTRECORDS_MODELS[metadataPrefix])
+            records, first_id = metadata_dict(generate_metadata(doc),
+                                            nesteddict=False)
+          
+            for id_, props in records:
+                for k, v in props.iteritems():
+                    props[k] = [ U(item) for item in v ]
+            if (doc.OAI_PMH.ListRecords is not None) and (doc.OAI_PMH.ListRecords.resumptionToken is not None):
+                resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken)
+            else:
+                resumption_token = ''
+
         return {'records' : records, 'resumption_token' : resumption_token}
 
 #
@@ -298,6 +313,117 @@ QDC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </OAI-PMH>
 """
 
+MODS_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8" ?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
+                http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"
+                xmlns:ak="http://purl.org/xml3k/akara/xmlmodel"
+                xmlns:o="http://www.openarchives.org/OAI/2.0/">
+  <responseDate>2013-03-21T20:02:50Z</responseDate>
+  <request metadataPrefix="mods" verb="ListRecords" set="dag">http://vcoai.lib.harvard.edu/vcoai/vc</request>
+  <ListRecords>
+    <record ak:resource="o:header/o:identifier">
+      <header>
+      <identifier>oai:vc.harvard.edu:dag.HUAM286037</identifier>
+      <datestamp ak:rel="local-name()" ak:value=".">2012-08-04</datestamp>
+      <setSpec ak:rel="local-name()" ak:value=".">dag</setSpec>
+      </header>
+      <metadata>
+        <mods xmlns="http://www.loc.gov/mods/v3"
+              xmlns:cdwalite="http://www.getty.edu/research/conducting_research/standards/cdwa/cdwalite"
+              xmlns:xlink="http://www.w3.org/TR/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://www.loc.gov/mods/v3
+              http://www.loc.gov/standards/mods/v3/mods-3-4.xsd"
+              version="3.4">
+          <typeOfResource ak:rel="local-name()" ak:value=".">still image</typeOfResource>
+          <genre ak:rel="local-name()" ak:value=".">photograph</genre>
+          <abstract ak:rel="local-name()" ak:value=".">An 1895 newspaper taped to the verso of the plate may indicate the date of a previous rehousing or rebinding.</abstract>
+          <note ak:rel="local-name()" ak:value=".">Credit Line: Harvard Art Museums/Fogg Museum, Transfer from Countway Library, Harvard Medical School</note>
+          <identifier type="Object Number" ak:rel="local-name()" ak:value=".">P1973.54</identifier>
+          <accessCondition displayLabel="copyright" type="useAndReproduction" ak:rel="local-name()" ak:value=".">President and Fellows of Harvard College</accessCondition>
+          <tableOfContents ak:rel="local-name()" ak:value=".">1. Les Croniques / Nicholas Trivet, in French (433-459).</tableOfContents>
+          <titleInfo ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <nonSort ak:rel="local-name()">The </nonSort>
+            <title ak:rel="local-name()">Oliver Wendell Holmes (1809-1894)</title>
+            <subTitle ak:rel="local-name()">From the Caledonian Mercury</subTitle>
+          </titleInfo>
+          <name ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <namePart ak:rel="local-name()">Hawes, Josiah Johnson</namePart>
+            <namePart type="date">1808-1901</namePart>
+            <namePart>American</namePart>
+            <role>
+              <roleTerm ak:rel="local-name()">creator</roleTerm>
+            </role>
+          </name>
+          <originInfo ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <place>
+              <placeTerm ak:rel="local-name()">United States</placeTerm>
+            </place>
+            <issuance ak:rel="local-name()">monographic</issuance>
+            <publisher ak:rel="local-name()">s.n.</publisher>
+            <dateIssued ak:rel="local-name()">1788</dateIssued>
+            <dateOther keyDate="yes" ak:rel="local-name()">c. 1850 - c. 1856</dateOther>
+            <dateCreated ak:rel="local-name()">c. 1850 - c. 1856</dateCreated>
+          </originInfo>
+          <physicalDescription ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <form authority="marcform" ak:rel="local-name()">print</form>
+            <extent ak:rel="local-name()">actual: 24.1 x 19.1 cm (9 1/2 x 7 1/2 in.)</extent>
+          </physicalDescription>
+          <subject ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <topic ak:rel="local-name()">Photographs</topic>
+            <temporal ak:rel="local-name()">1822-1832</temporal>
+            <geographic ak:rel="local-name()">Scotland</geographic>
+            <hierarchicalGeographic ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+              <country ak:rel="local-name()">England</country>
+              <city ak:rel="local-name()">Newcastle</city>
+            </hierarchicalGeographic>
+          </subject>
+          <relatedItem ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <partName ak:rel="local-name()">Women and work</partName>
+            <note ak:rel="local-name()">Villasana, A.R.  Ensayo repertorio bib. venezolano, v. 6, p. 523</note>
+            <location>
+              <url ak:rel="local-name()">http://nrs.harvard.edu/urn-3:RAD.SCHL:sch00140</url>
+            </location>
+          </relatedItem>
+          <extension ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <cdwalite:cultureWrap>
+              <cdwalite:culture ak:rel="local-name()">American</cdwalite:culture>
+            </cdwalite:cultureWrap>
+          </extension>
+          <extension ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <cdwalite:indexingMaterialsTechSet>
+              <cdwalite:termMaterialsTech ak:rel="local-name()">Whole plate daguerreotype</cdwalite:termMaterialsTech>
+            </cdwalite:indexingMaterialsTechSet>
+          </extension>
+          <location ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <url displayLabel="Full Image" note="unrestricted" ak:rel="local-name()">http://nrs.harvard.edu/urn-3:HUAM:88783_dynmc</url>
+            <url displayLabel="Thumbnail">http://nrs.harvard.edu/urn-3:HUAM:88783_dynmc</url>
+          </location>
+          <location ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <physicalLocation displayLabel="repository" type="current" ak:rel="local-name()">Harvard Art Museums</physicalLocation>
+          </location>
+          <location ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <url usage="primary display" access="object in context">http://preserve.harvard.edu/daguerreotypes/view.html?uniqueId=HUAM286037</url>
+          </location>
+          <recordInfo ak:resource="concat(ancestor::o:record/o:header/o:identifier, '--', local-name())">
+            <recordContentSource authority="marcorg" ak:rel="local-name()">MH</recordContentSource>
+            <recordCreationDate encoding="marc" ak:rel="local-name()">940610</recordCreationDate>
+            <recordChangeDate encoding="iso8601" ak:rel="local-name()">20080115115022.0</recordChangeDate>
+            <recordIdentifier source="VIA" ak:rel="local-name()">HUAM286037</recordIdentifier>
+            <languageOfCataloging>
+              <languageTerm ak:rel="local-name()">eng</languageTerm>
+            </languageOfCataloging>
+          </recordInfo>
+        </mods>
+      </metadata>
+    </record>
+    <resumptionToken>RC|101|0001-01-01|9999-12-31|dag|mods|7731602|dag</resumptionToken>
+  </ListRecords>
+</OAI-PMH>
+"""
+
 OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:o="http://www.openarchives.org/OAI/2.0/"
          xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"
@@ -356,9 +482,11 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
 
 OAI_GETRECORD_MODEL = examplotron_model(OAI_GETRECORD_XML)
 QDC_LISTRECORDS_MODEL = examplotron_model(QDC_LISTRECORDS_XML)
+MODS_LISTRECORDS_MODEL = examplotron_model(MODS_LISTRECORDS_XML)
 OAI_DC_LISTRECORDS_MODEL = examplotron_model(OAI_DC_LISTRECORDS_XML)
 
 LISTRECORDS_MODELS = {
     "qdc": QDC_LISTRECORDS_MODEL,
+    "mods": MODS_LISTRECORDS_MODEL,
     "oai_dc": OAI_DC_LISTRECORDS_MODEL
 }

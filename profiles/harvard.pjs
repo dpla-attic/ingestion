@@ -1,0 +1,39 @@
+{
+    "list_sets": "/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc",
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc"
+    ],
+    "name": "harvard",
+    "enrichments_rec": [
+        "/select-id?prop=header%2Fidentifier",
+        "/oai_mods_to_dpla",
+        "/sets_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
+        "/cleanup_value",
+        "/move_date_values?prop=sourceResource%2Fsubject",
+        "/move_date_values?prop=sourceResource%2Fspatial",
+        "/shred?prop=sourceResource%2Fspatial&delim=--",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language"
+    ],
+    "subresources": [
+        "dag",
+        "lap",
+        "crimes",
+        "scarlet",
+        "manuscripts"
+    ], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/harvard",
+        "name": "Harvard Library"
+    },
+    "type": "oai",
+    "endpoint_URL": "/dpla-list-records?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc&metadataPrefix=mods&oaiset="
+}
