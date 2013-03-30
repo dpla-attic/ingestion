@@ -151,7 +151,8 @@ class lookup:
     lookup_mapping = {
         'test': 'test_subst',
         'test2': 'test_2_subst',
-        'dc_data_provider': 'DC_DATA_PROVIDER'
+        'dc_data_provider': 'DC_DATA_PROVIDER',
+        'iso639_3': 'iso639_3_subst'
     }
 
 class identify_object:

@@ -197,7 +197,8 @@ class lookup:
     # Value is name of the dictionary from lookup module.
     lookup_mapping = {
         'test': 'test_subst',
-        'test2': 'test_2_subst'
+        'test2': 'test_2_subst',
+        'iso639_3': 'iso639_3_subst'
     }
 
 class identify_object:

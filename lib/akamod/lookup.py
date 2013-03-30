@@ -3,6 +3,7 @@ from akara import module_config
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from iso639_3 import ISO639_3_SUBST
 
 
 def convert_last(data, path, name, conv):
@@ -359,6 +360,7 @@ def lookup(body, ctype, prop, target, substitution):
         return msg
 
     convert(data, prop, target.split("/")[-1:][0], convdict)
+
     return json.dumps(data)
 
 TEST_2_SUBST = {

@@ -12,8 +12,8 @@ BASIC_URL = server() + "enrich_language"
 
 def _get_server_response(body, prop=None):
     """
-    Returns response from server using provided url.
-    """
+Returns response from server using provided url.
+"""
     url = BASIC_URL + "?"
 
     if prop is not None:
@@ -24,8 +24,8 @@ def _get_server_response(body, prop=None):
 
 def test_bad_INPUT_json():
     """
-    Should return 500 when getting bad JSON.
-    """
+Should return 500 when getting bad JSON.
+"""
     INPUT = '{"aaabbb: eeee}'
     resp, content = _get_server_response(INPUT, "a")
     assert resp.status == 500
@@ -33,8 +33,8 @@ def test_bad_INPUT_json():
 
 def test_no_params():
     """
-    Should return the same JSON for no param and no default key.
-    """
+Should return the same JSON for no param and no default key.
+"""
     INPUT = '{"aaa":"bbb"}'
     resp, content = _get_server_response(INPUT)
     assert resp.status == 200
@@ -43,8 +43,8 @@ def test_no_params():
 
 def test_no_params_with_languages():
     """
-    Should return converted JSON for no param.
-    """
+Should return converted JSON for no param.
+"""
     INPUT = {
         "sourceResource": {
             "language": "aaa"
@@ -59,8 +59,8 @@ def test_no_params_with_languages():
 
 def test_no_params_with_many_languages():
     """
-    Should return converted JSON for no param.
-    """
+Should return converted JSON for no param.
+"""
     INPUT = {
         "sourceResource": {
             "language": ["aaa", "bbb"]
