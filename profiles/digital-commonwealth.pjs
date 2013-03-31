@@ -23,7 +23,11 @@
         "/contentdm_identify_object",
         "/copy_prop?prop=collection%2Ftitle&to_prop=dataProvider&create=True",
         "/lookup?prop=dataProvider&target=dataProvider&substitution=dc_data_provider",
-	"/dc_clean_invalid_dates"
+        "/dc_clean_invalid_dates",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True"
     ], 
     "blacklist": ["3","5","6","8","13","18","19","20","27","41","177"],
     "contributor": {
