@@ -25,17 +25,14 @@ DEFAULT_DATETIME = dateutil_parse(DEFAULT_DATETIME_STR)
 # as simple solution, hardcoded UTC seconds is given
 DEFAULT_DATETIME_SECS = 32503680000.0 # UTC seconds for "3000-01-01"
 
+def out_of_range(d):
+    ret = None
+    try:
+        dateutil_parse(d, fuzzy=True, default=DEFAULT_DATETIME)
+    except ValueError:
+        ret = True
 
-DATE_RANGE_RE = r'([0-9-]+)\s*-\s*([0-9-]+)'
-DATE_RANGE_EXT_RE = r'([0-9-]+)\s*[-/]\s*([0-9-]+)'
-def split_date(d):
-    reg = DATE_RANGE_EXT_RE
-    if len(d.split("/")) == 3: #so th date is like "2001 / 01 / 01"
-        reg = DATE_RANGE_RE
-    m = re.search(reg, d)
-    range = [robust_date_parser(x) for x in m.groups()] if m else []
-    range = filter(None, range)
-    return range if range else (None, None)
+    return ret
 
 DATE_8601 = '%Y-%m-%d'
 def robust_date_parser(d):
@@ -53,10 +50,8 @@ def robust_date_parser(d):
 
     Returns None if it fails
     """
-    q = re.split("(\?$)", d)
-    circa_re = re.compile("(ca\.|c\.)", re.I)
-    dd = dateparser.to_iso8601(re.sub(circa_re, "", q[0], count=0).strip()) # simple cleanup prior to parse
-    if dd is None:
+    dd = dateparser.to_iso8601(d)
+    if dd is None or out_of_range(d):
         try:
             dd = dateutil_parse(d, fuzzy=True, default=DEFAULT_DATETIME)
             if dd.year == DEFAULT_DATETIME.year:
@@ -72,39 +67,97 @@ def robust_date_parser(d):
         if dd:
             ddiso = dd.isoformat()
             return ddiso[:ddiso.index('T')]
-    if len(q) != 1 and dd:
-        dd += q[1]
+
     return dd
 
-year_range = re.compile("(\d{4})\s*[-/]\s*(\d{4})") # simple for digits year range
-circa_range = re.compile("(?:ca\.|c\.)\s*(?P<century>\d{2})(?P<year_begin>\d{2})\s*-\s*(?P<year_end>\d{2})", re.I) # tricky "c. 1970-90" year range
-century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)\s+c\.", re.I) # for dates with centuries "19th c."
-decade_date = re.compile("\s*(?P<year>\d{3})-\s*") # 195- should be parsed to: 1950-1959
-decade_date_s = re.compile("\s*(?P<year>\d{4})s\s*") # decade like "1920s"
-between_date = re.compile("\s*between\s*(?P<year1>\d{4})\s*and\s*(?P<year2>\d{4})\s*") # between 2000 and 2012
+# ie 1970-08-01/02
+day_range = re.compile("(?P<year>^\d{4})[-/](?P<month>\d{1,2})[-/](?P<day_begin>\d{1,2})[-/](?P<day_end>\d{1,2}$)")
+# ie 1970-90
+circa_range = re.compile("(?P<century>\d{2})(?P<year_begin>\d{2})[-/](?P<year_end>\d{1,2})")
+# ie 19th
+century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)", re.I)
+# ie 195- 
+decade_date = re.compile("(?P<year>\d{3})-")
+# ie 1920s
+decade_date_s = re.compile("(?P<year>\d{4})s")
+# ie between 2000 and 2002
+between_date = re.compile("between(?P<year1>\d{4})and(?P<year2>\d{4})")
+
 def parse_date_or_range(d):
     # FIXME: could be more robust here,
     # e.g. use date range regex to handle:
     # June 1941 - May 1945
     # 1941-06-1945-05
     # and do not confuse with just YYYY-MM-DD regex
-    if ' - ' in d or (len(d.split("/")) == 2) or year_range.match(d):
-        a, b = split_date(d)
-    elif circa_range.match(d):
-        match = circa_range.match(d)
-        year_begin = match.group("century") + match.group("year_begin")
-        year_end = match.group("century") + match.group("year_end")
-        a, b = robust_date_parser(year_begin), robust_date_parser(year_end)
+
+    a, b = None, None
+
+    if len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
+        # Handle ranges
+        delim = "-" if len(d.split("-"))%2 == 0 else "/"
+        if day_range.match(d):
+            # ie 1970-08-01/02
+            match = day_range.match(d)
+            a = "%s-%s-%s" % (match.group("year"), match.group("month"),
+                              match.group("day_begin"))
+            b = "%s-%s-%s" % (match.group("year"),match.group("month"),
+                              match.group("day_end"))
+        elif decade_date.match(d):
+            match = decade_date.match(d)
+            a = match.group("year") + "0"
+            b = match.group("year") + "9"
+        elif any([len(s) < 4 for s in d.split(delim) if
+                  len(d.split(delim)) == 2]):
+            # ie 1970-90, 1970/90, 1970-9, 1970/9
+            match = circa_range.match(d)
+            if match:
+                year_begin = match.group("century") + match.group("year_begin")
+                year_end = match.group("century") + match.group("year_end")
+                if int(year_begin) < int(year_end):
+                    # ie 1970-90
+                    a = robust_date_parser(year_begin)
+                    b = robust_date_parser(year_end)
+                else:
+                    # ie 1970-9
+                    (y, m) = d.split(delim)
+                    # If the second number is a month, format it to two digits
+                    # and use "-" as the delim for consistency in the
+                    # dateparser.to_iso8601 result
+                    if int(m) in range(1,13):
+                        d = "%s%s%02d" % (y, "-", int(m))
+                    else:
+                        # ie 1970-13
+                        # Just use the year
+                        d = y
+
+                    a = robust_date_parser(d)
+                    b = robust_date_parser(d)
+        else:
+            # ie 1970-01-01-1971-01-01, 1970Fall/August, 1970April/May
+            d = d.split(delim)
+            begin = delim.join(d[:len(d)/2])
+            end = delim.join(d[len(d)/2:])
+
+            # Check if month in begin or end
+            m1 = re.sub("[-\d/]", "", begin)
+            m2 = re.sub("[-\d/]", "", end)
+            if m1 or m2:
+                # ie 2004July/August, 2004Fall/Winter
+                # Extract year
+                y = re.sub(r"(?i)[a-z]", "", "".join(d))
+                begin = y + m1.capitalize()
+                end = y + m2.capitalize()
+
+                if not dateparser.to_iso8601(begin) or not\
+                       dateparser.to_iso8601(end):
+                    begin, end = y, y
+            
+            a, b = robust_date_parser(begin), robust_date_parser(end)
     elif century_date.match(d):
         match = century_date.match(d)
         year_begin = (int(match.group("century"))-1) * 100
         year_end = year_begin + 99
         a, b = str(year_begin), str(year_end)
-    elif decade_date.match(d):
-        match = decade_date.match(d)
-        year_begin = match.group("year") + "0"
-        year_end = match.group("year") + "9"
-        a, b = year_begin, year_end
     elif decade_date_s.match(d):
         match = decade_date_s.match(d)
         year_begin = match.group("year")
@@ -118,8 +171,8 @@ def parse_date_or_range(d):
     else:
         parsed = robust_date_parser(d)
         a, b = parsed, parsed
-    return a, b
 
+    return a, b
 
 def remove_brackets_and_strip(d):
     """Removed brackets from the date (range)."""
@@ -137,24 +190,29 @@ def test_parse_date_or_range():
         "5/7/2012": ("2012-05-07", "2012-05-07"), # slash delim MDY
         "1999 - 2004": ("1999", "2004"), # year range
         "1999-2004": ("1999", "2004"), # year range without spaces
-        " 1999   -   2004  ": ("1999", "2004"), # range whitespace
+        " 1999 - 2004 ": ("1999", "2004"), # range whitespace
     }
     for i in DATE_TESTS:
+        i = clean_date(i)
         res = parse_date_or_range(i)
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
+def clean_date(d):
+    d = re.sub("[\?\(\)]|\s|ca\.?|c\.?", "", d)
+    d = re.sub("to", "-", d)
+    return d.strip()
 
 def convert_dates(data, prop, earliest):
     """Converts dates.
 
     Arguments:
-        data     Dict - Data for conversion.
-        prop     Str  - Properties dividided with comma.
-        earliest Bool - True  - the function will set only the earliest date.
-                        False - the function will set all dates.
+    data Dict - Data for conversion.
+    prop Str - Properties dividided with comma.
+    earliest Bool - True - the function will set only the earliest date.
+    False - the function will set all dates.
 
     Returns:
-        Nothing, the replacement is done in place.
+    Nothing, the replacement is done in place.
     """
     dates = []
     for p in prop.split(','):
@@ -164,7 +222,7 @@ def convert_dates(data, prop, earliest):
             for s in (v if not isinstance(v, basestring) else [v]):
                 for part in s.split(";"):
                     display_date = remove_brackets_and_strip(part)
-                    stripped  = re.sub("\?", "", display_date)
+                    stripped = clean_date(display_date)
                     if len(stripped) < 4:
                         continue
                     a, b = parse_date_or_range(stripped)
@@ -194,13 +252,13 @@ def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="sourc
     following rules:
 
     a) Looks in the list of fields specified by the 'prop' parameter
-    b) Extracts all dates, and sets the created date to the earliest date 
+    b) Extracts all dates, and sets the created date to the earliest date
     """
     try :
         data = json.loads(body)
     except:
         response.code = HTTP_INTERNAL_SERVER_ERROR
-        response.add_header(HTTP_HEADER_TYPE,  HTTP_TYPE_TEXT)
+        response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
         return "Unable to parse body as JSON"
 
     convert_dates(data, prop, True)

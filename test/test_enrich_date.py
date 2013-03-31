@@ -533,7 +533,6 @@ def test_bogus_date():
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
-
 def test_dates_with_between():
     INPUT = [
             "between 1840 and 1860",
@@ -547,6 +546,135 @@ def test_dates_with_between():
         resp, content = H.request(url, "POST", body=json.dumps(input))
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
+
+def test_tricky_dates1():
+    """Should handle tricky dates"""
+    INPUT = ["ca. 1850 - c 1856", "c 1850 - 1856", " 1850 c. - c.1856 ",
+             "ca.1850 - ca.1856", "1850ca - 1856ca", "1850 to 1856",
+             "c 1850 to c 1856"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for date in INPUT:
+        input = {"date": date}
+        expected = {
+            "date": {
+                "begin": "1850",
+                "end": "1856",
+                "displayDate": date.strip()
+            }
+        }
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
+def test_tricky_dates2():
+    """Should handle day range"""
+    INPUT = ["1938-08-23/24", "1938-08-23-24",
+             "1938/08/23-24", "1938/08/23/24"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for date in INPUT:
+        input = {"date": date}
+        expected = {"date": {"begin": "1938-08-23", "end": "1938-08-24", "displayDate": date}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
+def test_year_month():
+    """Should recognize YYYY-MM and not YYYY-YY"""
+    INPUT = ["1940/2", "1940/02", "1940 / 2", "1940 / 02",
+             "1940-2", "1940-02", "1940 - 2", "1940 - 02"]
+             #"1938-08-23/24", "1938/08/23-24"]
+
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for date in INPUT:
+        d = "1940-02"
+        input = {"date": date}
+        expected = {"date": {"begin": d, "end": d, "displayDate": date}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
+def test_day_out_of_range():
+    """Should handle day out of range dates"""
+    INPUT = ["1940-06-31", "1950/02/29"]
+    EXPECTED = ["1940-07-01", "1950-03-01"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": {"begin": EXPECTED[i], "end": EXPECTED[i], "displayDate": INPUT[i]}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
+def test_full_date_range():
+    """Should handle full date range"""
+    INPUT = ["1901-01-01-1902-01-01", "1901-01-01/1902-01-01",
+             "1901/01/01-1902/01/01", "1901/01/01/1902/01/01",
+             "01/01/1901-01/01/1902", "1/1/1901/1/1/1902",
+             "01-01-1901/01-01-1902", "1-1-1901-1-1-1902"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": {"begin": "1901-01-01", "end": "1902-01-01", "displayDate": INPUT[i]}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
+def test_delim_with_months():
+    """Should handle date with delim and seasons"""
+    INPUT = ["2004 July/August", "July/August 2004",
+             "2004 July-August", "July-August 2004"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": {"begin": "2004-07", "end": "2004-08", "displayDate": INPUT[i]}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+   
+def test_delim_with_seasons():
+    """Should handle date with delim seasons"""
+    INPUT = ["2004 Fall/Winter", "Fall/Winter 2004",
+             "2004 Fall-Winter", "Fall-Winter 2004"]
+
+    url = server() + "enrich_earliest_date?prop=date"
+    for i in range(len(INPUT)):
+        input = {"date": INPUT[i]}
+        expected = {"date": {"begin": "2004", "end": "2004", "displayDate": INPUT[i]}}
+
+        resp, content = H.request(url, "POST", body=json.dumps(input))
+        print_error_log()
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(expected, content)
+
+def test_date_with_parentheses_and_question_mark():
+    """Should handle date like 1928 (?)"""
+    INPUT = {"date": "1928 (?)"}
+    EXPECTED = {"date": {"begin": "1928", "end": "1928", "displayDate": "1928 (?)"}}
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    print_error_log()
+    assert str(resp.status).startswith("2")
+    assert_same_jsons(EXPECTED, content)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
