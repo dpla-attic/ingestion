@@ -167,7 +167,7 @@ def the_same_beginning(prop, target):
 
 
 @simple_service('POST', 'http://purl.org/la/dp/lookup', 'lookup', 'application/json')
-def lookup(body, ctype, prop, target, substitution):
+def lookup(body, ctype, prop, target, substitution, inverse=None):
     """ Performs simple lookup.
 
     This module makes a simple conversion of the values from the `prop` path,
@@ -352,6 +352,8 @@ def lookup(body, ctype, prop, target, substitution):
     convdict = None
     try:
         convdict = find_conversion_dictionary(substitution)
+        if inverse:
+            convdict = dict((v, k) for k, v in convdict.items())
     except KeyError as e:
         msg = "Missing substitution dictionary [%s]" % substitution
         logger.error(msg)

@@ -71,6 +71,73 @@ Should return converted JSON for no param.
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
 
+def test_cleanup_enrich_then_lookup1():
+    """Should produce both name and iso639_3 language fields"""
+    INPUT = [
+        "en", "English", ["eng"], ["English"], ["en", "English"]
+    ]
+    EXPECTED = {
+        "sourceResource": {
+            "language": [{"name": "English", "iso639_3": "eng"}]
+        }
+    }
+
+    for i in range(len(INPUT)):
+        input = {"sourceResource": {"language": INPUT[i]}}
+        url = server() + "cleanup_language"
+        resp, content = H.request(url, "POST", json.dumps(input))
+        assert resp.status == 200
+        url = server() + "enrich_language"
+        resp, content = H.request(url, "POST", content)
+        assert resp.status == 200
+        url = server() + "lookup?prop=sourceResource%2Flanguage%2Fname" + \
+              "&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3"
+        resp, content = H.request(url, "POST", content)
+        assert resp.status == 200
+        url = server() + "lookup?prop=sourceResource%2Flanguage%2Fname" + \
+                         "&target=sourceResource%2Flanguage%2Fiso639_3" + \
+                         "&substitution=iso639_3&inverse=True"
+        resp, content = H.request(url, "POST", content)
+        assert resp.status == 200
+        assert_same_jsons(content, EXPECTED)
+
+def test_cleanup_enrich_then_lookup2():
+    """Should produce both name and iso639_3 language fields"""
+    INPUT = {
+        "sourceResource": {
+            "language": [
+                "en", "French and arabic", "spanish Spanish", "Ze Germans"
+            ]
+        }
+    }
+
+    EXPECTED = {
+        "sourceResource": {
+            "language": [
+                {"name": "English", "iso639_3": "eng"},
+                {"name": "Arabic", "iso639_3": "ara"},
+                {"name": "French", "iso639_3": "fre"},
+                {"name": "Spanish", "iso639_3": "spa"}
+            ]
+        }
+    }
+
+    url = server() + "cleanup_language"
+    resp, content = H.request(url, "POST", json.dumps(INPUT))
+    assert resp.status == 200
+    url = server() + "enrich_language"
+    resp, content = H.request(url, "POST", content)
+    assert resp.status == 200
+    url = server() + "lookup?prop=sourceResource%2Flanguage%2Fname" + \
+          "&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3"
+    resp, content = H.request(url, "POST", content)
+    assert resp.status == 200
+    url = server() + "lookup?prop=sourceResource%2Flanguage%2Fname" + \
+                     "&target=sourceResource%2Flanguage%2Fiso639_3" + \
+                     "&substitution=iso639_3&inverse=True"
+    resp, content = H.request(url, "POST", content)
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

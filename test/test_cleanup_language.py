@@ -31,7 +31,7 @@ def test_name_match():
                      "English again and Japanese"] 
     }
     EXPECTED = {
-        "language": ["english", "spanish", "german", "japanese"]
+        "language": ["English", "Spanish", "German", "Japanese"]
     }
 
     resp, content = _get_server_response(json.dumps(INPUT), prop="language")

@@ -38,23 +38,28 @@ def cleanup_language(body, ctype, action="cleanup_language",
 
         languages = []
         r = r"^{0}$|^{0}\s|\s{0}$|\s{0}\s"
+        #TODO: regex compilations occur with each record, not good
         name_regexes = [re.compile(r.format(val.lower())) for
                         val in ISO639_3_SUBST.values()]
 
         for s in v:
             s = re.sub("[\.\[\]\(\)]", "", s).lower().strip()
-            # First find name_regexes matches
-            match = [r.search(s).group() for r in name_regexes if r.search(s)]
-            if match:
-                languages += list(set([m.strip() for m in match]) -
-                                  set(languages))
+            # First convert iso1 to iso3
+            s = iso1_to_iso3(s)
+            if s in ISO639_3_SUBST and s not in languages:
+                languages.append(s)
             else:
-                # If s is an iso639-3 code, append to languages
-                s = iso1_to_iso3(s)
-                if s in ISO639_3_SUBST and s not in languages:
-                    languages.append(s)
+                # Find name_regexes matches
+                match = [r.search(s).group() for r in name_regexes if
+                         r.search(s)]
+                if match:
+                    languages += list(set([m.strip().title() for m in match]) -
+                                      set(languages))
 
         if languages:
-            setprop(data, prop, languages)
+            # Remove duplicates
+            lang = []
+            [lang.append(l) for l in languages if ISO639_3_SUBST.get(l, None) not in languages]
+            setprop(data, prop, filter(None, lang))
 
     return json.dumps(data)
