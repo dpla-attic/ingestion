@@ -89,7 +89,7 @@ def is_part_of_transform(d):
     items = arc_group_extraction(d, "freetext", "setName")
     for item in (items if isinstance(items, list) else [items]):
         if "#text" in item:
-            is_part_of.append({"title": item["#text"]})
+            is_part_of.append({"name": item["#text"]})
 
     res = is_part_of
     if len(res) == 1:
