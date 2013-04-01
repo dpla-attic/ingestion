@@ -108,17 +108,17 @@
            "reduce": "_count"
        },
        "collection_title": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v) {emit(doc['id'], v[i]['title']);}}}}"
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(doc['id'], v[i]['title']);}}}}"
        },
        "collection_title_count": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v) {emit(v[i]['title'],1);}}}}",
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(v[i]['title'],1);}}}}",
            "reduce": "_count"
        },
        "collection_description": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v) {emit(doc['id'], v[i]['description']);}}}}"
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(doc['id'], v[i]['description']);}}}}"
        },
        "collection_description_count": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v) {emit(v[i]['description'],1);}}}}",
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(v[i]['description'],1);}}}}",
            "reduce": "_count"
        },
        "contributor": {
@@ -129,17 +129,17 @@
            "reduce": "_count"
        },
        "language_name": {
-           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v) {emit(doc['id'], v[i].name);}}}}"
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit(doc['id'], v[i].name);}}}}"
        },
        "language_name_count": {
-           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v) {emit(v[i].name,1);}}}}",
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit(v[i].name,1);}}}}",
            "reduce": "_count"
        },
        "language_iso": {
-           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('iso639_3' in v) {emit(doc['id'], v[i]['iso639_3']);}}}}"
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('iso639_3' in v[i]) {emit(doc['id'], v[i]['iso639_3']);}}}}"
        },
        "language_iso_count": {
-           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('iso639_3' in v) {emit(v[i]['iso639_3'],1);}}}}",
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('iso639_3' in v[i]) {emit(v[i]['iso639_3'],1);}}}}",
            "reduce": "_count"
        },
        "temporal": {
@@ -147,6 +147,13 @@
        },
        "temporal_count": {
            "map": "function(doc) { v = doc.sourceResource.temporal; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i].displayDate+' ('+v[i].begin+' to '+v[i].end+')',1);}}}",
+           "reduce": "_count"
+       },
+       "is_part_of": {
+           "map": "function(doc) { v = doc.sourceResource.isPartOf; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
+       },
+       "is_part_of_count": {
+           "map": "function(doc) { v = doc.sourceResource.isPartOf; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        }
    },
