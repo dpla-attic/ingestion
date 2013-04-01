@@ -5,7 +5,7 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/mods-to-dpla?version=3.3",
-        "/sets_prop?prop=sourceResource%2Fspatial%2FcurrentLocation&value=Virginia&condition_prop=sourceResource%2Fspatial",
+        "/set_prop?prop=sourceResource%2Fspatial%2FcurrentLocation&value=Virginia&condition_prop=sourceResource%2Fspatial",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",
         "/cleanup_value",
         "/enrich-subject",

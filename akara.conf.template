@@ -138,7 +138,7 @@ MODULES = [
     "dplaingestion.akamod.bhl_contributor_to_collection",
     "dplaingestion.akamod.copy_prop",
     "dplaingestion.akamod.cleanup_value",
-    "dplaingestion.akamod.sets_prop",
+    "dplaingestion.akamod.set_prop",
     "dplaingestion.akamod.enrich_language",
     "dplaingestion.akamod.arc-to-dpla",
     "dplaingestion.akamod.mods_to_dpla",

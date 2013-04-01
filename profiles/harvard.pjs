@@ -7,7 +7,7 @@
     "enrichments_rec": [
         "/select-id?prop=header%2Fidentifier",
         "/oai_mods_to_dpla",
-        "/sets_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",
+        "/set_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
