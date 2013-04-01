@@ -4,6 +4,7 @@
 
 import sys, os, glob, fnmatch
 import argparse
+import time
 import base64
 import datetime, time
 from itertools import groupby
@@ -24,6 +25,23 @@ URI_BASE = None
 ENRICH = "/enrich" # enrichment service URI
 H = httplib2.Http('/tmp/.pollcache')
 H.force_exception_as_status_code = True
+
+def apply_with_retries(attempts_num, delay_sec, func, *args, **kwargs):
+    """
+    Calls func(*args, **kwargs); In case of exception does 'attempts_num'
+    number of attempts with "delay_sec * attempt number" seconds delay
+    between attempts.
+    """
+    assert attempts_num >= 1
+    assert delay_sec >= 0
+    attempt = 1
+    while attempt <= attempts_num:
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            attempt += 1
+            print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Performing %d attempt" % (e.__class__.__name__, str(e), func.__name__, attempt)
+            time.sleep(delay_sec * (attempt - 1))
 
 def process_profile(uri_base, profile_f):
     global URI_BASE, ENRICH
