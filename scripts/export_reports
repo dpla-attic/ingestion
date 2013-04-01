@@ -39,6 +39,7 @@ report[19]="collection_description"
 report[20]="language_iso"
 report[21]="language_name"
 report[22]="is_part_of"
+report[23]="relation"
 
 dir="${provider}_exports"
 rm -r $dir "${dir}.zip"

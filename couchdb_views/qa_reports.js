@@ -155,6 +155,13 @@
        "is_part_of_count": {
            "map": "function(doc) { v = doc.sourceResource.isPartOf; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
+       },
+       "relation": {
+           "map": "function(doc) { v = doc.sourceResource.relation; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
+       },
+       "relation_count": {
+           "map": "function(doc) { v = doc.sourceResource.relation; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
+           "reduce": "_count"
        }
    },
    "lists": {
