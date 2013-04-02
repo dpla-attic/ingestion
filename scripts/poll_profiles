@@ -5,6 +5,7 @@
 import sys, os, glob, fnmatch
 import argparse
 import time
+from functools import wraps
 import base64
 import datetime, time
 from itertools import groupby
@@ -26,22 +27,27 @@ ENRICH = "/enrich" # enrichment service URI
 H = httplib2.Http('/tmp/.pollcache')
 H.force_exception_as_status_code = True
 
-def apply_with_retries(attempts_num, delay_sec, func, *args, **kwargs):
+def with_retries(attempts_num=3, delay_sec=1):
     """
     Calls func(*args, **kwargs); In case of exception does 'attempts_num'
     number of attempts with "delay_sec * attempt number" seconds delay
     between attempts.
     """
-    assert attempts_num >= 1
-    assert delay_sec >= 0
-    attempt = 1
-    while attempt <= attempts_num:
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            attempt += 1
-            print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Performing %d attempt" % (e.__class__.__name__, str(e), func.__name__, attempt)
-            time.sleep(delay_sec * (attempt - 1))
+    def apply_with_retries(func):
+        assert attempts_num >= 1
+        assert delay_sec >= 0
+        @wraps(func)
+        def func_with_retries(*args, **kwargs):
+            attempt = 1
+            while attempt <= attempts_num:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    attempt += 1
+                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Performing %d attempt" % (e.__class__.__name__, str(e), func.__name__, attempt)
+                    time.sleep(delay_sec * (attempt - 1))
+        return func_with_retries
+    return apply_with_retries
 
 def process_profile(uri_base, profile_f):
     global URI_BASE, ENRICH
@@ -524,6 +530,7 @@ def process_nypl_all(profile, blacklist=tuple()):
 
 def process_ia_coll(profile, subr):
 
+    @with_retries(3, 1)
     def get_parsed_xml(url):
         resp, content = H.request(url)
         if not resp[u'status'].startswith('2'):
@@ -531,6 +538,21 @@ def process_ia_coll(profile, subr):
             print >> sys.stderr, error
             raise Exception(error)
         return ARC_PARSE(content)
+
+    @with_retries(5, 2)
+    def get_docs_list(request_url):
+        print >> sys.stderr, request_url
+        resp, content = H.request(request_url)
+        if not resp[u'status'].startswith('2'):
+            err_text = ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            print >> sys.stderr, err_text
+            raise Exception(err_text)
+        parsed = json.loads(content)
+        response_key = "response"
+        if response_key in parsed:
+            return parsed[response_key]
+        else:
+            raise Exception("No \"%s\" key in returned json" % response_key)
 
     endpoint = profile[u'endpoint_URL'].format(subr)
     args = {"rows": 100, "page": 1}
@@ -540,12 +562,7 @@ def process_ia_coll(profile, subr):
     while not done:
         args["page"] = page
         request_url = endpoint + "&" + urlencode(args)
-        print >> sys.stderr, request_url
-        resp, content = H.request(request_url)
-        if not resp[u'status'].startswith('2'):
-            print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
-            return False
-        response_dict = json.loads(content)["response"]
+        response_dict = get_docs_list(request_url)
         total_docs = int(response_dict["numFound"])
         read_docs = int(response_dict["start"])
         done = (total_docs - read_docs) < args["rows"]
