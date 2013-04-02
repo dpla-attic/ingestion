@@ -16,9 +16,8 @@ def cleanup_language(body, ctype, action="cleanup_language",
     field of that document by:
 
     a) stripping periods, brackets and parentheses
-    b) looking for matches in the value using ISO639_3_SUBST values
-    c) if not matches are found, attempts to convert from ISO 639-1 to
-       ISO 639-3
+    b) convert from ISO 639-1 to ISO 639-3
+    c) looking for matches in the value using LANGUAGE_NAME_REGEXES
     """
 
     def iso1_to_iso3(s):
@@ -37,11 +36,6 @@ def cleanup_language(body, ctype, action="cleanup_language",
         v = [v] if not isinstance(v, list) else v
 
         languages = []
-        r = r"^{0}$|^{0}\s|\s{0}$|\s{0}\s"
-        #TODO: regex compilations occur with each record, not good
-        name_regexes = [re.compile(r.format(val.lower())) for
-                        val in ISO639_3_SUBST.values()]
-
         for s in v:
             s = re.sub("[\.\[\]\(\)]", "", s).lower().strip()
             # First convert iso1 to iso3
@@ -50,7 +44,7 @@ def cleanup_language(body, ctype, action="cleanup_language",
                 languages.append(s)
             else:
                 # Find name_regexes matches
-                match = [r.search(s).group() for r in name_regexes if
+                match = [r.search(s).group() for r in LANGUAGE_NAME_REGEXES if
                          r.search(s)]
                 if match:
                     languages += list(set([m.strip().title() for m in match]) -

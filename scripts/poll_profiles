@@ -15,6 +15,7 @@ from amara.lib.iri import is_absolute, join
 from amara import bindery
 import xmltodict
 from math import floor
+from dplaingestion.iso639_3 import LANGUAGE_NAME_REGEXES
 
 # FIXME Turns out this isn't always correct. Sometimes Series files are located in
 # different directories than its Item files. No clear deterministic path between

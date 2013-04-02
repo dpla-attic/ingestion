@@ -99,6 +99,17 @@ def date_transform(d, p):
 
     return {"date": date} if date else {} 
 
+def language_transform(d, p):
+    lang = []
+    v = getprop(d, p)
+    for s in (v if isinstance(v, list) else [v]):
+        if isinstance(s, dict) and exists(s, "#text"):
+            s = getprop(s, "#text")
+        if s not in lang:
+            lang.append(s)
+
+    return {"language": lang} if lang else {}
+
 def relation_transform(d, p):
     relation = []
     v = getprop(d, p)
@@ -187,7 +198,7 @@ CHO_TRANSFORMER = {
     MODS + "originInfo/publisher"                        : lambda d, p: {"publisher": getprop(d, p)},
     MODS + "originInfo/dateCreated"                      : date_transform,
     MODS + "physicalDescription/extent"                  : lambda d, p: {"extent": getprop(d, p)},
-    MODS + "recordInfo/languageOfCataloging/languageTerm": lambda d, p: {"language": getprop(d, p)}
+    MODS + "recordInfo/languageOfCataloging/languageTerm": language_transform
 }
 
 AGGREGATION_TRANSFORMER = {
