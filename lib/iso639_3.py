@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
+import re
 
 ISO639_3_SUBST = {
     "aaa":    "Ghotuo",
@@ -8649,3 +8650,6 @@ ISO639_3_SUBST = {
     "zza":    "Zaza",
     "zzj":    "Zuojiang Zhuang"
 }
+
+LANGUAGE_NAME_REGEXES = [re.compile(r"\b{0}\b".format(val.lower())) for
+                         val in ISO639_3_SUBST.values()]

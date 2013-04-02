@@ -133,3 +133,27 @@ def test_populating_data_provider_field():
     assert resp["status"].startswith("2")
     CONTENT = json.loads(content)
     assert_same_jsons(EXPECTED_DATA_PROVIDER, CONTENT["sourceResource"])
+
+
+def test_populating_title():
+    LABELS = (True, "Title"), (True, "title"), (False, "aaa"), (False, "bbb")
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "title": {
+                    "@label": "",
+                    "#text": "tt",
+                }
+            }
+    }
+
+    for d in LABELS:
+        INPUT["descriptiveNonRepeating"]["title"]["@label"] = d[1]
+        resp, content = _get_server_response(INPUT)
+        #print_error_log()
+        pinfo(resp, content)
+        assert resp["status"].startswith("2")
+        CONTENT = json.loads(content)
+        if d[0]:
+            assert_same_jsons({"title": "tt"}, CONTENT["sourceResource"])
+        else:
+            assert "sourceResource" not in CONTENT
