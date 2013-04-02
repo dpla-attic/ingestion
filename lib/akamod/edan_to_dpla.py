@@ -337,7 +337,7 @@ def transform_online_media(d):
 
 def transform_title(d):
     p = None
-    labels = ["Title", "Object Name"]
+    labels = ["title", "Title", "Object Name"]
     ps = arc_group_extraction(d, "descriptiveNonRepeating", "title")
     if ps != [None]:
         for e in ps:
