@@ -94,7 +94,6 @@ def is_part_of_transform(d):
     res = is_part_of
     if len(res) == 1:
         res = res[0]
-
     return {"isPartOf": res} if res else {}
 
 
@@ -627,8 +626,8 @@ def edantodpla(body,ctype,geoprop=None):
 
     slugify_field(out, "collection/@id")
 
-    if exists(out, "sourceResource/isPartOf/title"):
-        out["collection"]["title"] = out["sourceResource"]["isPartOf"]["title"]
+    if exists(out, "sourceResource/isPartOf/name"):
+        out["collection"]["title"] = out["sourceResource"]["isPartOf"]["name"]
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:
