@@ -3,136 +3,164 @@
    "language": "javascript",
    "views": {
        "title": {
-           "map": "function(doc) { if (doc.ingestType == 'item') { title = doc.sourceResource.title; if (title.constructor.toString().indexOf('Array') == -1) { title = new Array(title); } for (i=0; i<title.length; i++) { emit(doc['id'], title[i]); }}}"
+           "map": "function(doc) { v = doc.sourceResource.title; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(doc['id'], v[i]); }}}"
        },
        "title_count": {
-           "map": "function(doc) { if (doc.ingestType == 'item') { title = doc.sourceResource.title; if (title.constructor.toString().indexOf('Array') == -1) { title = new Array(title); } for (i=0; i<title.length; i++) { emit(title[i],1); }}}",
+           "map": "function(doc) { v = doc.sourceResource.title; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(v[i],1); }}}",
            "reduce": "_count"
        },
        "creator": {
-           "map": "function(doc) { if (doc.ingestType == 'item') { creator = doc.sourceResource.creator; if (creator.constructor.toString().indexOf('Array') == -1) { creator = new Array(creator); } for (i=0; i<creator.length; i++) { emit(doc['id'], creator[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.creator; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(doc['id'], v[i]);}}}"
        },
        "creator_count": {
-           "map": "function(doc) { if (doc.ingestType == 'item') { creator = doc.sourceResource.creator; if (creator.constructor.toString().indexOf('Array') == -1) { creator = new Array(creator); } for (i=0; i<creator.length; i++) { emit(creator[i],1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.creator; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(v[i],1);}}}",
            "reduce": "_count"
        },
        "publisher": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {pub = doc.sourceResource.publisher;if (pub.constructor.toString().indexOf('Array') == -1) { pub = new Array(pub); }for (i=0; i<pub.length; i++) {emit(doc['id'], pub[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.publisher; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "publisher_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {pub = doc.sourceResource.publisher;if (pub.constructor.toString().indexOf('Array') == -1) { pub = new Array(pub); }for (i=0; i<pub.length; i++) {emit(pub[i],i);}}}",
+           "map": "function(doc) { v = doc.sourceResource.publisher; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],i);}}}",
            "reduce": "_count"
        },
        "dates": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {d = doc.sourceResource.date;if (d.constructor.toString().indexOf('Array') == -1) { d = new Array(d); }for (i=0; i<d.length; i++) {emit(doc['id'], d[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')');}}}"
+           "map": "function(doc) { v = doc.sourceResource.date; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i].displayDate+' ('+v[i].begin+' to '+v[i].end+')');}}}"
        },
        "dates_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {d = doc.sourceResource.date;if (d.constructor.toString().indexOf('Array') == -1) { d = new Array(d); }for (i=0; i<d.length; i++) {emit(d[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')',1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.date; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i].displayDate+' ('+v[i].begin+' to '+v[i].end+')',1);}}}",
            "reduce": "_count"
        },
        "description": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {desc = doc.sourceResource.description;if (desc.constructor.toString().indexOf('Array') == -1) { desc = new Array(desc); }for (i=0; i<desc.length; i++) {emit(doc['id'], desc[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.description; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "description_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {desc = doc.sourceResource.description;if (desc.constructor.toString().indexOf('Array') == -1) { desc = new Array(desc); }for (i=0; i<desc.length; i++) {emit(desc[i],1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.description; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        },
        "format": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {format = doc.sourceResource.format;if (format.constructor.toString().indexOf('Array') == -1) { format = new Array(format); }for (i=0; i<format.length; i++) {emit(doc['id'], format[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.format; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "format_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {format = doc.sourceResource.format;if (format.constructor.toString().indexOf('Array') == -1) { format = new Array(format); }for (i=0; i<format.length; i++) {emit(format[i],1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.format; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        },
        "type": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {t = doc.sourceResource.type;if (t.constructor.toString().indexOf('Array') == -1) { t = new Array(t); }for (i=0; i<t.length; i++) {emit(doc['id'], t[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.type; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "type_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {t = doc.sourceResource.type;if (t.constructor.toString().indexOf('Array') == -1) { t = new Array(t); }for (i=0; i<t.length; i++) {emit(t[i],1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.type; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        },
        "subject": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {sub = doc.sourceResource.subject;if (sub.constructor.toString().indexOf('Array') == -1) { sub = new Array(sub); }for (i=0; i<sub.length; i++) {emit(doc['id'], sub[i].name);}}}"
+           "map": "function(doc) { v = doc.sourceResource.subject; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i].name);}}}"
        },
        "subject_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {sub = doc.sourceResource.subject;if (sub.constructor.toString().indexOf('Array') == -1) { sub = new Array(sub); }for (i=0; i<sub.length; i++) {emit(sub[i].name,1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.subject; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i].name,1);}}}",
            "reduce": "_count"
        },
        "spatial_state": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(doc['id'], spatial[i]['state'])};}}}"
+           "map": "function(doc) { v = doc.sourceResource.spatial; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('state' in v[i]) {emit(doc['id'], v[i].state)};}}}"
        },
        "spatial_state_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('state' in spatial[i]) {emit(spatial[i]['state'],1)};}}}",
+           "map": "function(doc) { v = doc.sourceResource.spatial; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('state' in v[i]) {emit(v[i].state,1)};}}}",
            "reduce": "_count"
        },
        "spatial_name": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('name' in spatial[i]) {emit(doc['id'], spatial[i]['name'])};}}}"
+           "map": "function(doc) { v = doc.sourceResource.spatial; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('name' in v[i]) {emit(doc['id'], v[i].name)};}}}"
        },
        "spatial_name_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {spatial = doc.sourceResource.spatial;if (spatial.constructor.toString().indexOf('Array') == -1) { spatial = new Array(spatial); }for (i=0; i<spatial.length; i++) {if ('name' in spatial[i]) {emit(spatial[i]['name'],1)};}}}",
+           "map": "function(doc) { v = doc.sourceResource.spatial; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('name' in v[i]) {emit(v[i].name,1)};}}}",
            "reduce": "_count"
        },
        "state_located_in_state": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('state' in sli[i]) {emit(doc['id'], sli[i]['state'])};}}}"
+           "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('state' in v[i]) {emit(doc['id'], v[i].state)};}}}"
        },
        "state_located_in_state_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('state' in sli[i]) {emit(sli[i]['state'],1)};}}}",
+           "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('state' in v[i]) {emit(v[i].state,1)};}}}",
            "reduce": "_count"
        },
        "state_located_in_name": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('name' in sli[i]) {emit(doc['id'], sli[i]['name'])};}}}"
+           "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (vt) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('name' in v[i]) {emit(doc['id'], v[i].name)};}}}"
        },
        "state_located_in_name_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {sli = doc.sourceResource.stateLocatedIn;if (sli.constructor.toString().indexOf('Array') == -1) { sli = new Array(sli); }for (i=0; i<sli.length; i++) {if ('name' in sli[i]) {emit(sli[i]['name'],1)};}}}",
+           "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (vt) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('name' in v[i]) {emit(v[i].name,1)};}}}",
            "reduce": "_count"
        },
        "rights": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {rights = doc.sourceResource.rights;if (rights.constructor.toString().indexOf('Array') == -1) { rights = new Array(rights); }for (i=0; i<rights.length; i++) {emit(doc['id'], rights[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.rights; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "rights_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {rights = doc.sourceResource.rights;if (rights.constructor.toString().indexOf('Array') == -1) { rights = new Array(rights); }for (i=0; i<rights.length; i++) {emit(rights[i],1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.rights; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        },
        "provider": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {provider = doc.provider;if (provider.constructor.toString().indexOf('Array') == -1) { provider = new Array(provider); }for (i=0; i<provider.length; i++) {emit(doc['id'], provider[i]['name']);}}}"
+           "map": "function(doc) { v = doc.provider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit(doc['id'], v[i].name);}}}}"
        },
        "provider_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {provider = doc.provider;if (provider.constructor.toString().indexOf('Array') == -1) { provider = new Array(provider); }for (i=0; i<provider.length; i++) {emit(provider[i]['name'],1);}}}",
+           "map": "function(doc) { v = doc.provider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit(v[i].name,1);}}}}",
            "reduce": "_count"
        },
        "data_provider": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {dataProvider = doc.dataProvider;if (dataProvider.constructor.toString().indexOf('Array') == -1) { dataProvider = new Array(dataProvider); }for (i=0; i<dataProvider.length; i++) {emit(doc['id'], dataProvider[i]);}}}"
+           "map": "function(doc) { v = doc.dataProvider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "data_provider_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {dataProvider = doc.dataProvider;if (dataProvider.constructor.toString().indexOf('Array') == -1) { dataProvider = new Array(dataProvider); }for (i=0; i<dataProvider.length; i++) {emit(dataProvider[i],1);}}}",
+           "map": "function(doc) { v = doc.dataProvider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        },
-       "collection": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {ctitle = doc.collection.title;emit(doc['id'], ctitle);}}"
+       "collection_title": {
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(doc['id'], v[i]['title']);}}}}"
        },
-       "collection_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {ctitle = doc.collection.title;emit(ctitle,1);}}",
+       "collection_title_count": {
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(v[i]['title'],1);}}}}",
+           "reduce": "_count"
+       },
+       "collection_description": {
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(doc['id'], v[i]['description']);}}}}"
+       },
+       "collection_description_count": {
+           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(v[i]['description'],1);}}}}",
            "reduce": "_count"
        },
        "contributor": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {contributor = doc.sourceResource.contributor;if (contributor.constructor.toString().indexOf('Array') == -1) { contributor = new Array(contributor); }for (i=0; i<contributor.length; i++) {emit(doc['id'], contributor[i]);}}}"
+           "map": "function(doc) { v = doc.sourceResource.contributor; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
        },
        "contributor_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {contributor = doc.sourceResource.contributor;if (contributor.constructor.toString().indexOf('Array') == -1) { contributor = new Array(contributor); }for (i=0; i<contributor.length; i++) {emit(contributor[i],1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.contributor; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        },
-       "language": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {language = doc.sourceResource.language;if (language.constructor.toString().indexOf('Array') == -1) { language = new Array(language); }for (i=0; i<language.length; i++) {emit(doc['id'], language[i]['name']);}}}"
+       "language_name": {
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit(doc['id'], v[i].name);}}}}"
        },
-       "language_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {language = doc.sourceResource.language;if (language.constructor.toString().indexOf('Array') == -1) { language = new Array(language); }for (i=0; i<language.length; i++) {emit(language[i]['name'],1);}}}",
+       "language_name_count": {
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit(v[i].name,1);}}}}",
+           "reduce": "_count"
+       },
+       "language_iso": {
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('iso639_3' in v[i]) {emit(doc['id'], v[i]['iso639_3']);}}}}"
+       },
+       "language_iso_count": {
+           "map": "function(doc) { v = doc.sourceResource.language; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('iso639_3' in v[i]) {emit(v[i]['iso639_3'],1);}}}}",
            "reduce": "_count"
        },
        "temporal": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {temporal = doc.sourceResource.temporal;if (temporal.constructor.toString().indexOf('Array') == -1) { temporal = new Array(temporal); }for (i=0; i<temporal.length; i++) {emit(doc['id'], temporal[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')');}}}"
+           "map": "function(doc) { v = doc.sourceResource.temporal; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i].displayDate+' ('+v[i].begin+' to '+v[i].end+')');}}}"
        },
        "temporal_count": {
-           "map": "function(doc) {if (doc.ingestType == 'item') {temporal = doc.sourceResource.temporal;if (temporal.constructor.toString().indexOf('Array') == -1) { temporal = new Array(temporal); }for (i=0; i<temporal.length; i++) {emit(temporal[i]['displayDate']+' ('+d[i]['begin']+' to '+d[i]['end']+')',1);}}}",
+           "map": "function(doc) { v = doc.sourceResource.temporal; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i].displayDate+' ('+v[i].begin+' to '+v[i].end+')',1);}}}",
+           "reduce": "_count"
+       },
+       "is_part_of": {
+           "map": "function(doc) { v = doc.sourceResource.isPartOf; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
+       },
+       "is_part_of_count": {
+           "map": "function(doc) { v = doc.sourceResource.isPartOf; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
+           "reduce": "_count"
+       },
+       "relation": {
+           "map": "function(doc) { v = doc.sourceResource.relation; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
+       },
+       "relation_count": {
+           "map": "function(doc) { v = doc.sourceResource.relation; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
        }
    },

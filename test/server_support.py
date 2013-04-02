@@ -116,7 +116,7 @@ MODULES = [
     "dplaingestion.akamod.bhl_contributor_to_collection",
     "dplaingestion.akamod.copy_prop",
     "dplaingestion.akamod.cleanup_value",
-    "dplaingestion.akamod.sets_prop",
+    "dplaingestion.akamod.set_prop",
     "dplaingestion.akamod.enrich_language",
     "dplaingestion.akamod.dpla-get-record",
     "dplaingestion.akamod.mods_to_dpla",
@@ -130,7 +130,9 @@ MODULES = [
     "dplaingestion.akamod.ia_to_dpla",
     "dplaingestion.akamod.ia_identify_object",
     "dplaingestion.akamod.dc_clean_invalid_dates",
-    "dplaingestion.akamod.edan_to_dpla"
+    "dplaingestion.akamod.edan_to_dpla",
+    "dplaingestion.akamod.cleanup_language",
+    "dplaingestion.akamod.dc_clean_invalid_dates"
     ]
 
 class download_preview:
@@ -149,7 +151,8 @@ class lookup:
     lookup_mapping = {
         'test': 'test_subst',
         'test2': 'test_2_subst',
-        'dc_data_provider': 'DC_DATA_PROVIDER'
+        'dc_data_provider': 'DC_DATA_PROVIDER',
+        'iso639_3': 'iso639_3_subst'
     }
 
 class identify_object:

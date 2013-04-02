@@ -48,7 +48,7 @@ def oaisetname(body,ctype,sets_service=None):
         if data[u'_id'].endswith(s['setSpec']):
             data[u'title'] = s['setName']
             if s['setDescription']:
-                data[u'description'] = s['setDescription']
-                break
+                data[u'description'] = s['setDescription'].strip()
+            break
 
     return json.dumps(data)

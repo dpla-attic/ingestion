@@ -384,7 +384,12 @@ def process_edan_all(profile, blacklist=None):
                 print >> sys.stderr, '[ERROR]', e.message 
             else:
                 item_f.close()
- 
+
+    try:
+        from collections import OrderedDict
+    except:
+        pass
+
     limit = 1000
     for cid in collections:
         # Open tmp collection file and append items

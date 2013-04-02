@@ -89,7 +89,8 @@ DEFAULT_PROP = [
     "sourceResource/subject",
     "sourceResource/date",
     "sourceResource/description",
-    "sourceResource/collection/title"
+    "sourceResource/collection/title",
+    "sourceResource/collection/description"
 ]
 
 

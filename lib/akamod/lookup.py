@@ -3,6 +3,7 @@ from akara import module_config
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
+from iso639_3 import ISO639_3_SUBST
 
 
 def convert_last(data, path, name, conv):
@@ -166,7 +167,7 @@ def the_same_beginning(prop, target):
 
 
 @simple_service('POST', 'http://purl.org/la/dp/lookup', 'lookup', 'application/json')
-def lookup(body, ctype, prop, target, substitution):
+def lookup(body, ctype, prop, target, substitution, inverse=None):
     """ Performs simple lookup.
 
     This module makes a simple conversion of the values from the `prop` path,
@@ -351,6 +352,8 @@ def lookup(body, ctype, prop, target, substitution):
     convdict = None
     try:
         convdict = find_conversion_dictionary(substitution)
+        if inverse:
+            convdict = dict((v, k) for k, v in convdict.items())
     except KeyError as e:
         msg = "Missing substitution dictionary [%s]" % substitution
         logger.error(msg)
@@ -359,6 +362,7 @@ def lookup(body, ctype, prop, target, substitution):
         return msg
 
     convert(data, prop, target.split("/")[-1:][0], convdict)
+
     return json.dumps(data)
 
 TEST_2_SUBST = {

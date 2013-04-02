@@ -88,3 +88,49 @@ def test_populating_collection_name():
     pinfo(CONTENT["collection"])
 
     assert_same_jsons(EXPECTED_COLLECTION, CONTENT["collection"])
+
+
+def test_populating_publisher_field():
+    INPUT = {
+            "freetext": {
+                "publisher": [
+                    {
+                        "#text": "Glossary of Coins and Currency Terms",
+                        "@label": "Publication title"
+                        },
+                    {
+                        "#text": "http://americanhistory.si.edu/coins/glossary.cfm",
+                        "@label": "Publication URL"
+                        },
+                    {
+                        "#text": "xx",
+                        "@label": "publisher"
+                        }
+                    ],
+                }
+            }
+    EXPECTED_PUBLISHER = {
+            "publisher": ["xx"]
+    }
+    resp, content = _get_server_response(INPUT)
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    pinfo(content)
+
+    assert_same_jsons(EXPECTED_PUBLISHER, CONTENT["sourceResource"])
+
+
+def test_populating_data_provider_field():
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "data_source": "Smithsonian Institution Archives",
+                }
+            }
+    EXPECTED_DATA_PROVIDER = {
+            "dataProvider": "Smithsonian Institution Archives",
+    }
+    resp, content = _get_server_response(INPUT)
+    print_error_log()
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    assert_same_jsons(EXPECTED_DATA_PROVIDER, CONTENT["sourceResource"])

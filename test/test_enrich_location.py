@@ -589,5 +589,52 @@ def test_enrich_location_spatial_string():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
+
+def test_removing_bracket():
+    """Should remove bracket from the beginning of the name"""
+    INPUT = {
+        "id": "12345",
+        "sourceResource": {"spatial": [
+            "Charleston (S.C.); [Germany; Poland; Israel; New York (N.Y.); Georgia (U.S.)"
+        ]},
+        "creator": "Miguel"
+    }
+    EXPECTED = {
+        "id": "12345",
+        "sourceResource": {"spatial": [
+            {
+                "state": "South Carolina",
+                "iso3166-2": "US-SC",
+                "name" : "Charleston (S.C.)"
+            },
+            {
+                "name": "Germany"
+            },
+            {
+                "name": "Poland"
+            },
+            {
+                "name": "Israel"
+            },
+            {
+                "state": "New York",
+                "iso3166-2": "US-NY",
+                "name": "New York (N.Y.)"
+            },
+            {
+                "state": "Georgia",
+                "iso3166-2": "US-GA",
+                "name": "Georgia (U.S.)"
+            }
+        ]},
+        "creator": "Miguel"
+    }
+
+    url = server() + "enrich_location"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

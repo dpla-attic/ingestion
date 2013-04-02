@@ -89,7 +89,7 @@ def is_part_of_transform(d):
     items = arc_group_extraction(d, "freetext", "setName")
     for item in (items if isinstance(items, list) else [items]):
         if "#text" in item:
-            is_part_of.append({"title": item["#text"]})
+            is_part_of.append({"name": item["#text"]})
 
     res = is_part_of
     if len(res) == 1:
@@ -117,13 +117,14 @@ def transform_is_shown_at(d):
 
 
 def transform_object(d):
-    propname = "descriptiveNonRepeating/online_media/media/"
-    
+    propname = "descriptiveNonRepeating/online_media/media"
+
     obj = getprop(d, propname, True)
-    if isinstance(obj, list):
+
+    if not obj or isinstance(obj, list):
         return {}
-    
-    obj = getprop(d, propname + "@thumbnail", True)
+
+    obj = getprop(d, propname + "media/@thumbnail", True)
     return {"object": obj} if obj else {}
 
 
@@ -170,12 +171,12 @@ def transform_format(d):
 def transform_rights(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "creditLine")
-    if ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Credit Line"]
+    if ps and ps != [None]:
+        [p.append(e["#text"]) for e in ps if "@label" in e and "Credit Line" in e and e["@label"] == "Credit Line"]
 
     ps = arc_group_extraction(d, "freetext", "objectRights")
-    if ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Rights"]
+    if ps and ps != [None]:
+        [p.append(e["#text"]) for e in ps if "@label" in e and "Rights" in e and e["@label"] == "Rights"]
 
     res = p
     if len(p) == 1:
@@ -188,7 +189,7 @@ def transform_publisher(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "publisher")
     if ps:
-        [p.append(e["#text"]) for e in ps]
+        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "publisher"]
 
     return {"publisher": p} if p else {}
 
@@ -197,13 +198,14 @@ def transform_spatial(d):
     result = []
     place = []
     location_states = []
-    
+
     places = arc_group_extraction(d, "freetext", "place")
-    for p in places:
-        if isinstance(p, dict):
-            if "#text" in p:
-                place.append(p["#text"])
-    
+    if places:
+        for p in places:
+            if isinstance(p, dict):
+                if "#text" in p:
+                    place.append(p["#text"])
+
     if len(place) == 1:
         place = place[0]
 
@@ -350,11 +352,11 @@ def transform_subject(d):
     p = []
     topic_labels = ["Topic", "subject", "event"]
     ps = arc_group_extraction(d, "freetext", "topic")
-    if ps != [None]:
+    if ps and ps != [None]:
         [p.append(e["#text"]) for e in ps if e["@label"] in topic_labels]
-    
+
     ps = arc_group_extraction(d, "freetext", "culture")
-    if ps != [None]:
+    if ps and ps != [None]:
         [p.append(e["#text"]) for e in ps if e["@label"] == "Nationality"]
 
     fields = ["topic","name","culture","tax_kingdom","tax_phylum",
@@ -388,11 +390,11 @@ def transform_identifier(d):
 
 def transform_data_provider(d):
     ds = None
-    dss = arc_group_extraction(d, "descriptiveNonRepeating", "dataProvider")
+    dss = arc_group_extraction(d, "descriptiveNonRepeating", "data_source")
     if dss != [None]:
         ds = dss[0]
 
-    return {"data_source": ds} if ds else {}
+    return {"dataProvider": ds} if ds else {}
 
 
 def extent_transform(d):
@@ -624,7 +626,9 @@ def edantodpla(body,ctype,geoprop=None):
     out.update(transform_object(data))
 
     slugify_field(out, "collection/@id")
-    out["collection"]["title"] = out["sourceResource"]["isPartOf"]["title"]
+
+    if exists(out, "sourceResource/isPartOf/title"):
+        out["collection"]["title"] = out["sourceResource"]["isPartOf"]["title"]
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:

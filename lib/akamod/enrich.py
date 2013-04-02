@@ -4,7 +4,7 @@ from akara import module_config, logger
 from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join, is_absolute
-from urllib import quote, urlencode
+from urllib import quote, urlencode, quote_plus
 import datetime
 import uuid
 import base64
@@ -108,7 +108,7 @@ def couch_rev_check_recs(docs):
     start = docs_ids[0]
     end = docs_ids[-1:][0]
 #    uri += "?" + urlencode({"startkey": start, "endkey": end})
-    uri += '?startkey="%s"&endkey="%s"'%(start,end)
+    uri += '?startkey="%s"&endkey="%s"' % (quote_plus(start), quote_plus(end))
     response, content = H.request(uri, 'GET', headers=COUCH_AUTH_HEADER)
     if str(response.status).startswith('2'):
         rows = json.loads(content)["rows"]
@@ -202,7 +202,9 @@ def enrich(body, ctype):
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
-        docs[doc["_id"]] = doc # after pipe doc must have _id
+        # After pipe doc must have _id
+        if doc.get("_id", None):
+            docs[doc["_id"]] = doc
 
     couch_rev_check_recs(docs)
     couch_docs_text = json.dumps({"docs": docs.values()})
