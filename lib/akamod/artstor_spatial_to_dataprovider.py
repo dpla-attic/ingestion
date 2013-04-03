@@ -21,8 +21,9 @@ def artstor_spatial_to_dataprovider(body, ctype,
 
     if exists(data, prop):
         v = getprop(data, prop)
-        if isinstance(v, basestring):
-            setprop(data, "dataProvider", v.split(";")[0])
-            delprop(data, prop)
+        if isinstance(v, list):
+            v = v[0]
+        setprop(data, "dataProvider", v)
+        delprop(data, prop)
 
     return json.dumps(data)

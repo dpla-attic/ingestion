@@ -84,9 +84,14 @@ decade_date_s = re.compile("(?P<year>\d{4})s")
 between_date = re.compile("between(?P<year1>\d{4})and(?P<year2>\d{4})")
 
 def parse_date_or_range(d):
+    #TODO: Handle dates with BC, AD, AH
+    #      Handle ranges like 1920s - 1930s
+    #      Handle ranges like 11th - 12th century
     a, b = None, None
 
-    if len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
+    if re.search("B.?C.?|A.?D.?|A.?H.?", d.upper()):
+        pass
+    elif len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
         # Handle ranges
         delim = "-" if len(d.split("-"))%2 == 0 else "/"
         if day_range.match(d):
