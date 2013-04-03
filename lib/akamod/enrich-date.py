@@ -89,7 +89,7 @@ def parse_date_or_range(d):
     #      Handle ranges like 11th - 12th century
     a, b = None, None
 
-    if re.search("B.?C.?|A.?D.?|A.?H.?", d.upper()):
+    if re.search("B\.?C\.?|A\.?D\.?|A\.?H\.?", d.upper()):
         pass
     elif len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
         # Handle ranges
