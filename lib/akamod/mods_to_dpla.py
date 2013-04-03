@@ -101,15 +101,16 @@ def creator_handler_uva(d, p):
     creator_dict = getprop(d, p)
     if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
         if creator_dict["type"] == "personal":
-            parsed = []
+            parsed = ["", "", ""]
             for name_part in creator_dict["namePart"]:
                 # preserve parsing order
                 if name_part["type"] == "family":
-                    parsed.append(name_part.get("#text"))
+                    parsed[0] = name_part.get("#text")
                 if name_part["type"] == "given":
-                    parsed.append(name_part.get("#text"))
+                    parsed[1] = name_part.get("#text")
                 if name_part["type"] == "date":
-                    parsed.append(name_part.get("#text"))
+                    parsed[2] = name_part.get("#text")
+            parsed = [p for p in parsed if p]
             return {"creator": ", ".join(parsed)}
         if creator_dict["type"] == "corporate":
             return {"creator": creator_dict["namePart"]}
