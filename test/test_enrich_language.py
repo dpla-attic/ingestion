@@ -115,8 +115,8 @@ def test_cleanup_enrich_then_lookup2():
         "sourceResource": {
             "language": [
                 {"name": "English", "iso639_3": "eng"},
-                {"name": "Arabic", "iso639_3": "ara"},
                 {"name": "French", "iso639_3": "fre"},
+                {"name": "Arabic", "iso639_3": "ara"},
                 {"name": "Spanish", "iso639_3": "spa"}
             ]
         }
