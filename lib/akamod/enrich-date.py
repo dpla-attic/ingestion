@@ -84,12 +84,6 @@ decade_date_s = re.compile("(?P<year>\d{4})s")
 between_date = re.compile("between(?P<year1>\d{4})and(?P<year2>\d{4})")
 
 def parse_date_or_range(d):
-    # FIXME: could be more robust here,
-    # e.g. use date range regex to handle:
-    # June 1941 - May 1945
-    # 1941-06-1945-05
-    # and do not confuse with just YYYY-MM-DD regex
-
     a, b = None, None
 
     if len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
@@ -133,7 +127,8 @@ def parse_date_or_range(d):
                     a = robust_date_parser(d)
                     b = robust_date_parser(d)
         else:
-            # ie 1970-01-01-1971-01-01, 1970Fall/August, 1970April/May
+            # ie 1970-01-01-1971-01-01, 1970Fall/August, 1970April/May, or
+            # wordy date like "mid 11th century AH/AD 17th century (Mughal)"
             d = d.split(delim)
             begin = delim.join(d[:len(d)/2])
             end = delim.join(d[len(d)/2:])
@@ -142,17 +137,22 @@ def parse_date_or_range(d):
             m1 = re.sub("[-\d/]", "", begin)
             m2 = re.sub("[-\d/]", "", end)
             if m1 or m2:
-                # ie 2004July/August, 2004Fall/Winter
-                # Extract year
-                y = re.sub(r"(?i)[a-z]", "", "".join(d))
-                begin = y + m1.capitalize()
-                end = y + m2.capitalize()
+                # ie 2004July/August, 2004Fall/Winter, or wordy date
+                begin, end = None, None
 
-                if not dateparser.to_iso8601(begin) or not\
-                       dateparser.to_iso8601(end):
-                    begin, end = y, y
-            
-            a, b = robust_date_parser(begin), robust_date_parser(end)
+                # Extract year
+                for v in d:
+                    y = re.sub(r"(?i)[a-z]", "", v)
+                    if len(y) == 4:
+                        begin = y + m1.capitalize()
+                        end = y + m2.capitalize()
+                        if not dateparser.to_iso8601(begin) or not\
+                               dateparser.to_iso8601(end):
+                            begin, end = y, y
+                        break
+
+            if begin:
+                a, b = robust_date_parser(begin), robust_date_parser(end)
     elif century_date.match(d):
         match = century_date.match(d)
         year_begin = (int(match.group("century"))-1) * 100
@@ -198,8 +198,11 @@ def test_parse_date_or_range():
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
 def clean_date(d):
-    d = re.sub("[\?\(\)]|\s|ca\.?|c\.?", "", d)
-    d = re.sub("to", "-", d)
+    regex = [("to", "-"), ("[\?\(\)]|\s|ca\.?", "")]
+    if not "circa" in d and not "century" in d:
+        regex.append(("c\.?", ""))
+    for p, r in regex:
+        d = re.sub(p, r, d)
     return d.strip()
 
 def convert_dates(data, prop, earliest):
