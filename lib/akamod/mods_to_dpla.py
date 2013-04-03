@@ -104,9 +104,9 @@ def creator_handler_uva(d, p):
             parsed = []
             for name_part in creator_dict["namePart"]:
                 # preserve parsing order
-                if name_part["type"] == "given":
-                    parsed.append(name_part.get("#text"))
                 if name_part["type"] == "family":
+                    parsed.append(name_part.get("#text"))
+                if name_part["type"] == "given":
                     parsed.append(name_part.get("#text"))
                 if name_part["type"] == "date":
                     parsed.append(name_part.get("#text"))
