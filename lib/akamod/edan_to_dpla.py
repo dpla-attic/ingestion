@@ -127,13 +127,7 @@ def transform_object(d):
     if isinstance(obj, list):
         item = obj[0]
 
-    res = {
-        "rights": item["@rights"],
-        "@id": item["@thumbnail"],
-        "format": "",
-    }
-
-    return {"object": res}
+    return {"object": item["@thumbnail"]} if "@thumbnail" in item else {}
 
 
 def collection_transform(d):
