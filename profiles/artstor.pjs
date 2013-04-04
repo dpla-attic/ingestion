@@ -7,6 +7,7 @@
     "enrichments_rec": [
         "/select-id?prop=id", 
         "/oai-to-dpla", 
+        "/decode_html?prop=sourceResource%2Fsubject",
         "/artstor_select_isshownat", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
@@ -23,7 +24,7 @@
         "/enrich-format",
         "/artstor_identify_object",
         "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Frights%2CsourceResource%2Fformat%2CsourceResource%2Fdescription",
-        "/copy_prop?prop=sourceResource%2Fspatial&to_prop=dataProvider&create=True&remove=True",
+        "/artstor_spatial_to_dataprovider",
         "/artstor_cleanup",
         "/enrich_location",
         "/cleanup_language",
@@ -41,7 +42,7 @@
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
-        "name": "ArtStor"
+        "name": "ARTstor"
     }, 
     "type": "oai", 
     "endpoint_URL": "/dpla-list-records?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler&oaiset="

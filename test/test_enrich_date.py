@@ -676,5 +676,17 @@ def test_date_with_parentheses_and_question_mark():
     assert str(resp.status).startswith("2")
     assert_same_jsons(EXPECTED, content)
 
+def test_wordy_date():
+    """Should handle very wordy dates"""
+    INPUT = {"date": "mid 11th century AH/AD 17th century (Mughal)"}
+    EXPECTED = {"date": {"begin": None, "end": None, "displayDate": INPUT["date"]}}
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    print_error_log()
+    assert str(resp.status).startswith("2")
+    assert_same_jsons(EXPECTED, content)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

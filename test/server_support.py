@@ -132,7 +132,9 @@ MODULES = [
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.edan_to_dpla",
     "dplaingestion.akamod.cleanup_language",
-    "dplaingestion.akamod.dc_clean_invalid_dates"
+    "dplaingestion.akamod.dc_clean_invalid_dates",
+    "dplaingestion.akamod.decode_html",
+    "dplaingestion.akamod.artstor_spatial_to_dataprovider"
     ]
 
 class download_preview:

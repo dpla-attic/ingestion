@@ -9,7 +9,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 
-from dplaingestion import selector
+from dplaingestion.selector import getprop, setprop, exists
 
 
 HTTP_INTERNAL_SERVER_ERROR = 500
@@ -33,12 +33,11 @@ def artstor_cleanup(body, ctype):
 
 
     data_provider_key = u"dataProvider"
-    if selector.exists(data, data_provider_key):
-        cleaned_data_provider = []
-        for item in selector.getprop(data, data_provider_key):
+    if exists(data, data_provider_key):
+            item = getprop(data, data_provider_key)
             if isinstance(item, basestring):
-                cleaned_data_provider.append(item.replace("Repository:", "").lstrip())
-        selector.setprop(data, data_provider_key, "; ".join(cleaned_data_provider))
+                cleaned_data_provider = item.replace("Repository:", "").lstrip()
+                setprop(data, data_provider_key, cleaned_data_provider)
 
     return json.dumps(data)
 
