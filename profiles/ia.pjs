@@ -6,7 +6,6 @@
         "/select-id?prop=_id",
         "/ia-to-dpla",
         "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=collection%2Ftitle&no_replace=True",
-        "/ia_identify_object",
         "/cleanup_value",
         "/enrich-subject",
         "/enrich_earliest_date",
