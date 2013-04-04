@@ -47,6 +47,7 @@ def with_retries(attempts_num=3, delay_sec=1):
     """
     def apply_with_retries(func):
         assert attempts_num >= 1
+        assert isinstance(attempts_num, int)
         assert delay_sec >= 0
         @wraps(func)
         def func_with_retries(*args, **kwargs):
@@ -58,14 +59,15 @@ def with_retries(attempts_num=3, delay_sec=1):
                     print >> sys.stderr, "Sleeping for %d seconds..." % sleep_sec
                     time.sleep(sleep_sec)
 
-            attempt = 1
-            while attempt <= attempts_num:
+            for attempt in xrange(1, attempts_num + 1):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
                     print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Attempt #%d failed" % (e.__class__.__name__, str(e), func.__name__, attempt)
-                    pause(attempt)
-                    attempt += 1
+                    if attempt == attempts_num:
+                        raise
+                    else:
+                        pause(attempt)
         return func_with_retries
     return apply_with_retries
 
@@ -555,7 +557,7 @@ def process_nypl_all(profile, blacklist=tuple()):
 
 def process_ia_coll(profile, subr):
 
-    @with_retries(3, 1)
+    @with_retries(5, 3)
     def get_parsed_xml(url):
         resp, content = H.request(url)
         if not resp[u'status'].startswith('2'):
