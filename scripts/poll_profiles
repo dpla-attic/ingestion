@@ -585,6 +585,14 @@ def process_ia_coll(profile, subr):
         else:
             raise Exception("No \"%s\" key in returned json" % response_key)
 
+    def skip_doc_message(collection, identifier, url, error=None, error_level="ERROR"):
+        error = "%s: %s" % (error.__class__.__name__,
+                            str(error)) if isinstance(error, Exception) else error
+        return "%s: Document with id=\"%s\" from \"%s\" collection is skipped " \
+               "or malformed while working with url=\"%s\", caused by error: %s" % (
+            error_level, identifier, collection, url, str(error)
+        )
+
     endpoint = profile[u'endpoint_URL'].format(subr)
     args = {"rows": 100, "page": 1}
     print >> sys.stderr, "Enriching collection %s" % subr
@@ -603,7 +611,11 @@ def process_ia_coll(profile, subr):
             identifier = item_dict["identifier"]
             file_url_pattern = profile["get_file_URL"]
             files_url = file_url_pattern.format(identifier, profile["prefix_files"].format(identifier))
-            files_response = get_parsed_xml(files_url)["files"]
+            try:
+                files_response = get_parsed_xml(files_url)["files"]
+            except Exception as e:
+                print >> sys.stderr, skip_doc_message(subr, identifier, files_url, e)
+                continue
             item_data = {"dc": None, "meta": None, "gif": None, "pdf": None,
                          "shown_at": profile["shown_at_URL"].format(identifier),
                          "marc": None}
@@ -627,11 +639,21 @@ def process_ia_coll(profile, subr):
 
             item = {"files": item_data,
                     "_id": identifier}
-            item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["meta"])))
+            meta_url = file_url_pattern.format(identifier, item_data["meta"])
+            try:
+                item.update(get_parsed_xml(meta_url))
+            except Exception as e:
+                print >> sys.stderr, skip_doc_message(subr, identifier, meta_url, e)
+                continue
             #if item_data["dc"]:
             #    item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["dc"])))
             if item_data["marc"]:
-                item.update(get_parsed_xml(file_url_pattern.format(identifier, item_data["marc"])))
+                marc_url = file_url_pattern.format(identifier, item_data["marc"])
+                try:
+                    item.update(get_parsed_xml(marc_url))
+                except Exception as e:
+                    print >> sys.stderr, skip_doc_message(subr, identifier, marc_url, e, "WARN")
+                    #continue
             items.append(item)
         if items:
             enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
