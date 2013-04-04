@@ -157,3 +157,101 @@ def test_populating_title():
             assert_same_jsons({"title": "tt"}, CONTENT["sourceResource"])
         else:
             assert "sourceResource" not in CONTENT
+
+
+def test_transforming_one_thumbnail():
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "online_media": {
+                    "media": {
+                        "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                        "@idsId": "NMAH-AHB2012q06315",
+                        "@caption": "Orthoclone OKT 3, Muromonab-CD3 .",
+                        "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06315",
+                        "@type": "Images",
+                        "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06315&max=150"
+                        },
+                    "@mediaCount": "1"
+                    },
+                }
+            }
+    EXPECTED_OBJECT = {
+            "object": {
+                "rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                "@id": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06315&max=150",
+                "format": ""
+                },
+            }
+    resp, content = _get_server_response(INPUT)
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    assert_same_jsons(EXPECTED_OBJECT["object"], CONTENT["object"])
+
+def test_transforming_multiple_thumbnails():
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "online_media": {
+                    "media": [
+                        {
+                            "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                            "@idsId": "NMAH-AHB2012q06320",
+                            "@caption": "Recombivax HB, Hepatitus B Vaccine (Recombinant) Adult Formula, 3 mL.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06320",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06320&max=150"
+                            },
+                        {
+                            "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                            "@idsId": "NMAH-AHB2012q06380",
+                            "@caption": "Recombivax HB, Hepatitis B Vaccine (Recombinant) product insert, part 1 of 4.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06380",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06380&max=150"
+                            },
+                        {
+                            "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                            "@idsId": "NMAH-AHB2012q06382",
+                            "@caption": "Recombivax HB, Hepatitis B Vaccine (Recombinant) product insert, part 3 of 4.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06382",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06382&max=150"
+                            },
+                        {
+                            "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                            "@idsId": "NMAH-AHB2012q06383",
+                            "@caption": "Recombivax HB, Hepatitis B Vaccine (Recombinant) product insert, part 4 of 4.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06383",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06383&max=150"
+                            },
+                        {
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-NMAH2000-00495&max=150",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-NMAH2000-00495",
+                            "@idsId": "NMAH-NMAH2000-00495",
+                            "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                            "@type": "Images"
+                            },
+                        {
+                            "@rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                            "@idsId": "NMAH-AHB2012q06381",
+                            "@caption": "Recombivax HB, Hepatitis B Vaccine (Recombinant) product insert, part 2 of 4.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06381",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06381&max=150"
+                            }
+                        ],
+                    "@mediaCount": "6"
+                },
+        }
+    }
+    EXPECTED_OBJECT = {
+            "object": {
+                "rights": "This image was obtained from the Smithsonian Institution. The image or its contents may be protected by international copyright laws. Contact NMAHDigitalAssets@si.edu for more information.",
+                "@id": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06320&max=150",
+                "format": ""
+                },
+            }
+    resp, content = _get_server_response(INPUT)
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    assert_same_jsons(EXPECTED_OBJECT["object"], CONTENT["object"])

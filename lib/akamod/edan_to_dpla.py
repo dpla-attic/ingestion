@@ -120,11 +120,20 @@ def transform_object(d):
 
     obj = getprop(d, propname, True)
 
-    if not obj or isinstance(obj, list):
+    if not obj:
         return {}
 
-    obj = getprop(d, propname + "media/@thumbnail", True)
-    return {"object": obj} if obj else {}
+    item = obj
+    if isinstance(obj, list):
+        item = obj[0]
+
+    res = {
+        "rights": item["@rights"],
+        "@id": item["@thumbnail"],
+        "format": "",
+    }
+
+    return {"object": res}
 
 
 def collection_transform(d):
