@@ -86,7 +86,7 @@ def marc_data_processor(d, p):
             if tag in ("300",):
                 value = extract_sub_field(_dict, codes=("c",))
                 update_field(out, "extent", value)
-                update_field(out, "format", value)
+                #update_field(out, "format", value)
             if tag.startswith("6") and len(tag) == 3:
                 value = extract_sub_field(_dict, codes=("z",))
                 update_field(out, "spatial", value)
