@@ -14,6 +14,7 @@ from amara.thirdparty import json, httplib2
 from amara.lib.iri import is_absolute, join
 from amara import bindery
 import xmltodict
+from xml.parsers import expat
 from math import floor
 from dplaingestion.iso639_3 import LANGUAGE_NAME_REGEXES
 
@@ -561,17 +562,20 @@ def process_ia_coll(profile, subr):
     def get_parsed_xml(url):
         resp, content = H.request(url)
         if not resp[u'status'].startswith('2'):
-            error = ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            error = ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], url)
             print >> sys.stderr, error
             raise Exception(error)
-        return ARC_PARSE(content)
+        try:
+            return ARC_PARSE(content)
+        except expat.ExpatError as e:
+            raise Exception("Error (%s) parsing data from URL: %s" % (str(e), url))
 
     @with_retries(5, 2)
     def get_docs_list(request_url):
         print >> sys.stderr, request_url
         resp, content = H.request(request_url)
         if not resp[u'status'].startswith('2'):
-            err_text = ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
+            err_text = ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], request_url)
             print >> sys.stderr, err_text
             raise Exception(err_text)
         parsed = json.loads(content)
