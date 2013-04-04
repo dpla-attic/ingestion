@@ -30,23 +30,42 @@ H.force_exception_as_status_code = True
 
 def with_retries(attempts_num=3, delay_sec=1):
     """
-    Calls func(*args, **kwargs); In case of exception does 'attempts_num'
+    Wrapper (decorator) that calls given func(*args, **kwargs);
+    In case of exception does 'attempts_num'
     number of attempts with "delay_sec * attempt number" seconds delay
     between attempts.
+
+    Usage:
+    @with_retries(5, 2)
+    def get_document(doc_id, uri): ...
+    d = get_document(4444, "...") # now it will do the same logic but with retries
+
+    Or:
+    def get_document(...): ...
+    get_document = with_retries(5, 2)(get_document)
+    d = get_document(...) # now it will do the same logic but with retries
     """
     def apply_with_retries(func):
         assert attempts_num >= 1
         assert delay_sec >= 0
         @wraps(func)
         def func_with_retries(*args, **kwargs):
+
+            def pause(attempt):
+                """Do pause if current attempt is not the last"""
+                if attempt < attempts_num:
+                    sleep_sec = delay_sec * attempt
+                    print >> sys.stderr, "Sleeping for %d seconds..." % sleep_sec
+                    time.sleep(sleep_sec)
+
             attempt = 1
             while attempt <= attempts_num:
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
+                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Attempt #%d failed" % (e.__class__.__name__, str(e), func.__name__, attempt)
+                    pause(attempt)
                     attempt += 1
-                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Performing %d attempt" % (e.__class__.__name__, str(e), func.__name__, attempt)
-                    time.sleep(delay_sec * (attempt - 1))
         return func_with_retries
     return apply_with_retries
 
