@@ -50,6 +50,7 @@ def dc_clean_invalid_dates(body, ctype, action="cleanup_value", prop="sourceReso
         return "Unable to parse body as JSON"
 
     for p in prop.split(","):
-        convert(data, p)
+        if exists(data, p):
+            convert(data, p)
 
     return json.dumps(data)
