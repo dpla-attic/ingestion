@@ -157,3 +157,72 @@ def test_populating_title():
             assert_same_jsons({"title": "tt"}, CONTENT["sourceResource"])
         else:
             assert "sourceResource" not in CONTENT
+
+
+def test_transforming_one_thumbnail():
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "online_media": {
+                    "media": {
+                        "@rights": "This image was obtained from the Smithsonian...",
+                        "@idsId": "NMAH-AHB2012q06315",
+                        "@caption": "Orthoclone OKT 3, Muromonab-CD3 .",
+                        "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06315",
+                        "@type": "Images",
+                        "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06315&max=150"
+                        },
+                    "@mediaCount": "1"
+                    },
+                }
+            }
+    EXPECTED_THUMBNAIL = "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06315&max=150"
+    resp, content = _get_server_response(INPUT)
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    assert EXPECTED_THUMBNAIL == CONTENT["object"]
+
+def test_transforming_multiple_thumbnails():
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "online_media": {
+                    "media": [
+                        {
+                            "@rights": "This image was obtained from the Smithsonian...",
+                            "@idsId": "NMAH-AHB2012q06320",
+                            "@caption": "Recombivax HB, Hepatitus B Vaccine (Recombinant) Adult Formula, 3 mL.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06320",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06320&max=150"
+                            },
+                        {
+                            "@rights": "This image was obtained from the Smithsonian...",
+                            "@idsId": "NMAH-AHB2012q06380",
+                            "@caption": "Recombivax HB, Hepatitis B Vaccine (Recombinant) product insert, part 1 of 4.",
+                            "#text": "http://ids.si.edu/ids/dynamic?id=NMAH-AHB2012q06380",
+                            "@type": "Images",
+                            "@thumbnail": "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06380&max=150"
+                            },
+                        ],
+                    "@mediaCount": "6"
+                },
+        }
+    }
+    EXPECTED_THUMBNAIL = "http://ids.si.edu/ids/deliveryService?id=NMAH-AHB2012q06320&max=150"
+    resp, content = _get_server_response(INPUT)
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    assert EXPECTED_THUMBNAIL == CONTENT["object"]
+
+def test_thumbnail_for_no_media():
+    INPUT = {
+            "descriptiveNonRepeating": {
+                "online_media": {
+                    "media": {
+                        },
+                    },
+                }
+            }
+    resp, content = _get_server_response(INPUT)
+    assert resp["status"].startswith("2")
+    CONTENT = json.loads(content)
+    assert not "object" in CONTENT
