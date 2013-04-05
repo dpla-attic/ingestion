@@ -116,9 +116,6 @@ def primotodpla(body,ctype,geoprop=None):
         "sourceResource": {}
     }
 
-    # For ARC, "data" is the source record so set it here
-    data["originalRecord"] = deepcopy(data)
-
     # Apply all transformation rules from original document
     for p in CHO_TRANSFORMER:
         if exists(data, p):
