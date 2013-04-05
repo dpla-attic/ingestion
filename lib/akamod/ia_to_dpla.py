@@ -80,13 +80,9 @@ def marc_data_processor(d, p):
     for _dict in data_field_dicts:
         if isinstance(_dict, dict) and "tag" in _dict:
             tag = _dict["tag"]
-            if tag in ("700", "710", "711"):
-                value = extract_sub_field(_dict, codes=("a", "q", "d"))
-                update_field(out, "contributor", value)
             if tag in ("300",):
                 value = extract_sub_field(_dict, codes=("c",))
                 update_field(out, "extent", value)
-                #update_field(out, "format", value)
             if tag.startswith("6") and len(tag) == 3:
                 value = extract_sub_field(_dict, codes=("z",))
                 update_field(out, "spatial", value)
