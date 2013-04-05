@@ -5,8 +5,8 @@
     "enrichments_rec": [
         "/select-id", 
         "/oai-to-dpla", 
-        "/set_prop?prop=collection",
-        "/set_prop?prop=sourceResource%2Fcontributor",
+        "/unset_prop?prop=collection",
+        "/unset_prop?prop=sourceResource%2Fcontributor",
         "/shred?prop=sourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftitle%2CsourceResource%2Ftype",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResouce%2Fformat",
@@ -25,10 +25,10 @@
         "/copy_prop?prop=sourceResource%2Frelation&to_prop=hasView&key=format&create=True",
         "/enrich-format?prop=hasView%2Fformat",
         "/kentucky_identify_object",
-        "/set_prop?prop=sourceResource%2Frelation",
+        "/unset_prop?prop=sourceResource%2Frelation",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=sourceResource%2FstateLocatedIn&create=True",
-        "/set_prop?prop=sourceResource%2Fpublisher",
+        "/unset_prop?prop=sourceResource%2Fpublisher",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn"
     ], 
     "subresources": [], 

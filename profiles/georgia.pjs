@@ -8,7 +8,7 @@
     "enrichments_rec": [
         "/select-id",
         "/oai-to-dpla",
-        "/set_prop?prop=sourceResource%2Fdate",
+        "/unset_prop?prop=sourceResource%2Fdate",
         "/copy_prop?prop=originalRecord%2Fsource&to_prop=sourceResource%2Fdescription&create=True&no_replace=True",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation%2CsourceResource%2Fformat",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftitle%2CsourceResource%2Ftype%2CsourceResource%2Fcreator",
@@ -27,7 +27,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=sourceResource%2FstateLocatedIn&create=True&remove=True",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/set_prop?prop=dataProvider",
+        "/unset_prop?prop=dataProvider",
         "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
         "/georgia_identify_object"
     ], 
