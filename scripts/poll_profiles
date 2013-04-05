@@ -17,6 +17,10 @@ import xmltodict
 from xml.parsers import expat
 from math import floor
 from dplaingestion.iso639_3 import LANGUAGE_NAME_REGEXES
+try:
+    from collections import OrderedDict
+except:
+    pass
 
 # FIXME Turns out this isn't always correct. Sometimes Series files are located in
 # different directories than its Item files. No clear deterministic path between
@@ -408,10 +412,6 @@ def process_edan_all(profile, blacklist=None):
             else:
                 item_f.close()
 
-    try:
-        from collections import OrderedDict
-    except:
-        pass
 
     limit = 1000
     for cid in collections:
