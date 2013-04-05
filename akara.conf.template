@@ -202,6 +202,7 @@ class lookup:
         'test': 'test_subst',
         'test2': 'test_2_subst',
         'dc_data_provider': 'DC_DATA_PROVIDER',
+        'country_alias': 'COUNTRY_ALIAS',
         'iso639_3': 'iso639_3_subst'
     }
 
