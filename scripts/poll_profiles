@@ -522,6 +522,7 @@ def process_nypl_coll(profile, subr):
                 item = doc_response["response"]["mods"]
                 item["_id"] = item_dict["uuid"]
                 item["tmp_image_id"] = item_dict["imageID"]
+                item["tmp_item_link"] = item_dict["itemLink"] if "itemLink" in item_dict else None
                 item["tmp_high_res_link"] = item_dict["highResLink"] if "highResLink" in item_dict else None
                 items.append(item)
             if items:

@@ -49,7 +49,9 @@ def cleanup(value, prop):
     TAGS_FOR_STRIPPING_AT_BEGIN = TAGS_FOR_STRIPPING % ("\.", dquote)
     TAGS_FOR_STRIPPING_AT_END = TAGS_FOR_STRIPPING % (with_dot, dquote)
 
-    REGEXPS = (' *-- *', '--'), \
+    REGEXPS = ('\( ', '('), \
+              (' \)', ')'), \
+              (' *-- *', '--'), \
               ('[\t ]{2,}', ' '), \
               ('^' + TAGS_FOR_STRIPPING_AT_BEGIN, ''), \
               (TAGS_FOR_STRIPPING_AT_END + '$', '')
@@ -90,7 +92,8 @@ DEFAULT_PROP = [
     "sourceResource/date",
     "sourceResource/description",
     "sourceResource/collection/title",
-    "sourceResource/collection/description"
+    "sourceResource/collection/description",
+    "sourceResource/contributor"
 ]
 
 
