@@ -139,12 +139,12 @@ def creator_handler_nypl(d, p):
             if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
                 roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
                 name = creator_dict["namePart"]
-                if "publisher" not in roles:
-                    update_value(out, "contributor", name)
-                else:
+                if "publisher" in roles:
                     update_value(out, "publisher", name)
-                if roles & creator_roles:
+                elif roles & creator_roles:
                     update_value(out, "creator", name)
+                else:
+                    update_value(out, "contributor", name)
     return out
 
 def date_created_nypl(d, p):
@@ -172,6 +172,26 @@ def date_finder(d, p):
             return date_created_nypl(d, p + "/" + field)
     return {}
 
+def collection_and_is_shown_at_transform(d, p):
+    out = {}
+    out["collection"] = getprop(d, p)
+
+    # Handle NYPL isShownAt for collection with uuid
+    # 6a373d50-c5d3-012f-a6fb-58d385a7bc34
+    # For collection 02d1c8f0-c52d-012f-a615-58d385a7bc34,
+    # use placeholder item link: http://archives.nypl.org/mss/927
+    lawrence_id = "6a373d50-c5d3-012f-a6fb-58d385a7bc34"
+    emmet_id = "02d1c8f0-c52d-012f-a615-58d385a7bc34"
+    placeholder_item_link = "http://archives.nypl.org/mss/927"
+    collection_id = out["collection"]["@id"].split("--")[1]
+    if exists(d, "tmp_item_link"):
+        if collection_id == lawrence_id:
+            out["isShownAt"] = getprop(d, "tmp_item_link")
+        if collection_id == emmet_id:
+            out["isShownAt"] = placeholder_item_link
+
+    return out
+    
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -197,7 +217,7 @@ CHO_TRANSFORMER["3.4"] = {
     "identifier": lambda d, p: {"identifier": [s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("type") in ("local_bnumber", "uuid")]},
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
-    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no")},
+    "titleInfo": lambda d, p: {"title": [s.get("title") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no"][-1]},
     "originInfo": date_finder,
     "note": lambda d, p: {"description": [s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and "type" in s and s.get("type") == "content"]},
     "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
@@ -208,7 +228,7 @@ AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
-    "collection"                 : lambda d, p: {"collection": getprop(d, p)},
+    "collection"                 : collection_and_is_shown_at_transform, 
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)}
 }

@@ -22,6 +22,7 @@
         "/mdl-enrich-location",
 	"/geocode",
         "/contentdm_identify_object",
+        "/unset_prop?prop=dataProvider",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
         "/cleanup_language",
         "/enrich_language",
