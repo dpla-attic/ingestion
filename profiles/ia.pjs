@@ -7,6 +7,7 @@
         "/ia-to-dpla",
         "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=collection%2Ftitle&no_replace=True",
         "/cleanup_value",
+        "/cleanup_value?prop=sourceResource%2Fspatial",
         "/enrich-subject",
         "/enrich_earliest_date",
         "/enrich-type",
