@@ -8,6 +8,7 @@ from urllib import quote, urlencode, quote_plus
 import datetime
 import uuid
 import base64
+import hashlib
 
 COUCH_DATABASE = module_config().get('couch_database')
 COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
@@ -124,8 +125,10 @@ def set_ingested_date(doc):
 
 def enrich_coll(ctype, source_name, collection_name, collection_title, coll_enrichments):
     cid = COUCH_ID_BUILDER(source_name, collection_name)
-    at_id = "http://dp.la/api/collections/" + cid
+    id = hashlib.md5(cid).hexdigest()
+    at_id = "http://dp.la/api/collections/" + id
     coll = {
+        "id": id,
         "_id": cid,
         "@id": at_id,
         "title": collection_title,
@@ -187,6 +190,7 @@ def enrich(body, ctype):
                 COLLECTIONS[s] = enrich_coll(ctype, source_name, s,
                                              collection_title, coll_enrichments)
             rec_collection = {
+                'id': COLLECTIONS[s].get('id', None),
                 '@id': COLLECTIONS[s].get('@id', None),
                 'title': COLLECTIONS[s].get('title', None),
                 'description': COLLECTIONS[s].get('description', None)

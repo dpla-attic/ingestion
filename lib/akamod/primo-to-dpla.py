@@ -70,6 +70,7 @@ def multi_transform(d, key, props, return_format="str"):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
+    "collection"                    : lambda d, p: {"collection": getprop(d, p)},
     RECORD + "display/creator"      : lambda d, p: {"creator": getprop(d, p)},
     RECORD + "search/creationdate"  : lambda d, p: {"date": getprop(d, p)},
     RECORD + "search/description"   : lambda d, p: {"description": getprop(d, p)},

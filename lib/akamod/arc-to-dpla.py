@@ -76,14 +76,6 @@ def is_shown_at_transform(d):
 
     return {"isShownAt": object}
 
-def collection_transform(d):
-    collection = getprop(d, "collection")
-    items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
-    for item in (items if isinstance(items, list) else [items]):
-        if item["hierarchy-item-id"] == collection["title"]:
-            setprop(collection, "title", item["hierarchy-item-title"])
-    return {"collection": collection} if collection else {}
-
 def creator_transform(d):
     creator = None
     creators = arc_group_extraction(d, "creators", "creator")
@@ -251,7 +243,8 @@ CHO_TRANSFORMER = {
     "copyright-dates"       : lambda d: date_transform(d,"copyright-dates", "copyright-date"),
     "title"                 : lambda d: {"title": d.get("title-only")},
     "scope-content-note"    : lambda d: {"description": d.get("scope-content-note")}, 
-    "languages"             : lambda d: {"language": arc_group_extraction(d, "languages", "language")}
+    "languages"             : lambda d: {"language": arc_group_extraction(d, "languages", "language")},
+    "collection"            : lambda d: {"collection": d.get("collection")}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -260,7 +253,6 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"        : lambda d: {"originalRecord": d.get("originalRecord",None)},
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
-    "collection"            : collection_transform,
     "arc-id-desc"           : is_shown_at_transform
 }
 
