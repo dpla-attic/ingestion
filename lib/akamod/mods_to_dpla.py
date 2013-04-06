@@ -172,25 +172,29 @@ def date_finder(d, p):
             return date_created_nypl(d, p + "/" + field)
     return {}
 
-def collection_and_is_shown_at_transform(d, p):
-    out = {}
-    out["collection"] = getprop(d, p)
+def is_shown_at_transform(d, p):
+    is_shown_at = None
+    collection_title = getprop(d, p + "/title")
 
-    # Handle NYPL isShownAt for collection with uuid
-    # 6a373d50-c5d3-012f-a6fb-58d385a7bc34
-    # For collection 02d1c8f0-c52d-012f-a615-58d385a7bc34,
-    # use placeholder item link: http://archives.nypl.org/mss/927
-    lawrence_id = "6a373d50-c5d3-012f-a6fb-58d385a7bc34"
-    emmet_id = "02d1c8f0-c52d-012f-a615-58d385a7bc34"
-    placeholder_item_link = "http://archives.nypl.org/mss/927"
-    collection_id = out["collection"]["@id"].split("--")[1]
-    if exists(d, "tmp_item_link"):
-        if collection_id == lawrence_id:
-            out["isShownAt"] = getprop(d, "tmp_item_link")
-        if collection_id == emmet_id:
-            out["isShownAt"] = placeholder_item_link
+    if collection_title:
+        # Handle NYPL isShownAt for collection with title
+        # "Lawrence H. Slaughter Collection of English maps, charts, 
+        #  globes, books and atlases"
+        # For collection with title
+        # "Thomas Addis Emmet collection, 1483-1876, bulk (1700-1800)",
+        # use placeholder item link: http://archives.nypl.org/mss/927
+        lawrence_title = ("Lawrence H. Slaughter Collection of English maps," +
+                          " charts, globes, books and atlases")
+        emmet_title = ("Thomas Addis Emmet collection, 1483-1876, bulk" +
+                       " (1700-1800)")
+        placeholder_item_link = "http://archives.nypl.org/mss/927"
+        if exists(d, "tmp_item_link"):
+            if collection_title == lawrence_title:
+                is_shown_at = getprop(d, "tmp_item_link")
+            if collection_title == emmet_title:
+                is_shown_at = placeholder_item_link
 
-    return out
+    return {"isShownAt": is_shown_at} if is_shown_at else {}
     
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -198,6 +202,10 @@ AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
+CHO_TRANSFORMER["common"] = {
+    "collection": lambda d, p: {"collection": getprop(d, p)},
+}
+
 CHO_TRANSFORMER["3.3"] = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
     "name": creator_handler_uva,
@@ -228,7 +236,7 @@ AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
-    "collection"                 : collection_and_is_shown_at_transform, 
+    "collection"                 : is_shown_at_transform, 
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)}
 }

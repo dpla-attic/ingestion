@@ -14,11 +14,11 @@ def test_bhl_contributor_to_collection1():
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
-            "key2": "value2"
-        },
-        "collection": {
-            "@id": "http://dp.la/api/collections/bhl--item",
-            "name": "Item Collection"
+            "key2": "value2",
+            "collection": {
+                "@id": "http://dp.la/api/collections/bhl--item",
+                "name": "Item Collection"
+            }
         }
     }
 
@@ -35,22 +35,22 @@ def test_bhl_contributor_to_collection2():
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
-            "contributor": "Missouri Botanical Garden, Peter H. Raven Library"
-        },
-        "collection": {
-            "@id": "http://dp.la/api/collections/bhl--item",
-            "name": "Item Collection"
+            "contributor": "Missouri Botanical Garden, Peter H. Raven Library",
+            "collection": {
+                "@id": "http://dp.la/api/collections/bhl--item",
+                "name": "Item Collection"
+            }
         }
     }
     EXPECTED = {
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
-            "contributor": "Missouri Botanical Garden, Peter H. Raven Library"
-        },
-        "collection": {
-            "@id": "http://dp.la/api/collections/bhl--MBGPHRL",
-            "name": "Missouri Botanical Garden, Peter H. Raven Library"
+            "contributor": "Missouri Botanical Garden, Peter H. Raven Library",
+            "collection": {
+                "@id": "http://dp.la/api/collections/bhl--MBGPHRL",
+                "name": "Missouri Botanical Garden, Peter H. Raven Library"
+            }
         }
     }
 
