@@ -159,7 +159,9 @@ def create_dictionaries(data):
                 for item in all:
                     if i < len(item) and item[i]:
                         dict[item[0]] = item[i]
-                dicts.append(dict)
+                # Don't add duplicates 
+                if dict not in dicts: 
+                    dicts.append(dict)
     return filter(None, dicts)
 
 def remove_space_around_semicolons(strg):
