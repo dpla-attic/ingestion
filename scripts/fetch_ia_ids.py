@@ -18,7 +18,6 @@ from urllib import urlencode
 
 
 class IdsDb(object):
-
     def __init__(self, db_path):
         self.db_path = db_path
         self._conn = sqlite3.connect(db_path)
@@ -36,7 +35,8 @@ class IdsDb(object):
     def save_ids(self, ids, collection):
         c = self._conn.cursor()
         try:
-            c.executemany("INSERT OR IGNORE INTO ia_ids (id, collection) VALUES (?, ?)", izip_longest(ids, tuple(), fillvalue=collection))
+            c.executemany("INSERT OR IGNORE INTO ia_ids (id, collection) VALUES (?, ?)",
+                          izip_longest(ids, tuple(), fillvalue=collection))
         finally:
             c.close()
         self._conn.commit()
@@ -46,6 +46,7 @@ class IdsDb(object):
             self._conn.close()
         except Exception:
             pass
+
 
 def with_retries(attempts_num=3, delay_sec=1):
     """
@@ -64,10 +65,12 @@ def with_retries(attempts_num=3, delay_sec=1):
     get_document = with_retries(5, 2)(get_document)
     d = get_document(...) # now it will do the same logic but with retries
     """
+
     def apply_with_retries(func):
         assert attempts_num >= 1
         assert isinstance(attempts_num, int)
         assert delay_sec >= 0
+
         @wraps(func)
         def func_with_retries(*args, **kwargs):
 
@@ -82,13 +85,17 @@ def with_retries(attempts_num=3, delay_sec=1):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
-                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Attempt #%d failed" % (e.__class__.__name__, str(e), func.__name__, attempt)
+                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Attempt #%d failed" % (
+                        e.__class__.__name__, str(e), func.__name__, attempt)
                     if attempt == attempts_num:
                         raise
                     else:
                         pause(attempt)
+
         return func_with_retries
+
     return apply_with_retries
+
 
 @with_retries(10, 3)
 def fetch_url(url):
@@ -104,6 +111,7 @@ def fetch_url(url):
     finally:
         if d:
             d.close()
+
 
 def process_ia_coll(db, profile, subr, page_size):
     """
@@ -123,7 +131,6 @@ def process_ia_coll(db, profile, subr, page_size):
             return parsed[response_key]
         else:
             raise Exception("No \"%s\" key in returned json" % response_key)
-
 
     endpoint = profile[u'endpoint_URL'].format(subr)
     args = {"rows": page_size, "page": 1}
@@ -149,6 +156,7 @@ def read_profile(profile_path):
     with open(profile_path) as f:
         return json.load(f)
 
+
 def define_arguments():
     """
     Defines command line arguments for the current script
@@ -156,8 +164,10 @@ def define_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("db_path", help="The path to the sqlite file for saving ids")
     parser.add_argument("profile", help="The path to profile to be processed")
-    parser.add_argument("-n", "--page-size", help="The limit number of ids to be fetched at once, default 500", default=500, type=int)
+    parser.add_argument("-n", "--page-size", help="The limit number of ids to be fetched at once, default 500",
+                        default=500, type=int)
     return parser
+
 
 def main(argv):
     parser = define_arguments()
