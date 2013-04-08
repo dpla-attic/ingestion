@@ -11,7 +11,7 @@ from nose.tools import nottest
 BASIC_URL = server() + "lookup"
 
 
-def _get_server_response(body, prop=None, target=None, subst=None):
+def _get_server_response(body, prop=None, target=None, subst=None, inverse=None, delnonexisting=None):
     """
     Returns response from server using provided url.
     """
@@ -25,6 +25,12 @@ def _get_server_response(body, prop=None, target=None, subst=None):
 
     if subst is not None:
         url += "substitution=%s&" % subst
+
+    if inverse is not None:
+        url += "inverse=%s&" % inverse
+
+    if delnonexisting is not None:
+        url += "delnonexisting=%s&" % delnonexisting
 
     print "Calling URL = [%s]" % url
     return H.request(url, "POST", body=body)
@@ -301,6 +307,60 @@ def test_iso639_3_substitution():
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(content, EXPECTED)
+
+
+def test_substitution_with_missing_value_and_the_same_field():
+    """Should remove the field if value is missing from dict."""
+    data = {
+                "xxx": "yyy",
+                "aaa": {
+                    "bbb": "ccc",
+                    "xxx": "doesnt exist",
+                },
+    }
+    INPUT = json.dumps(data)
+    data = {
+                "xxx": "yyy",
+                "aaa": {
+                    "bbb": "ccc",
+                },
+    }
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa/xxx", "aaa/xxx", "test2", None, True)
+    print_error_log()
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
+
+def test_substitution_with_deleting_missing_values():
+    data = {
+                "xxx": "yyy",
+                "aaa": {
+                    "bbb": "ccc",
+                    "xxx": [
+                        {"eee": "aaa"},
+                        {"xxx": "eee"},
+                        {"eee": "bbb"},
+                        {"eee": "doesnt exist"},
+                        {"eee": "doesnt exist"}
+                    ]
+                },
+    }
+
+    INPUT = json.dumps(data)
+    data["aaa"]["xxx"] = [
+                        {"eee": "AAA222"},
+                        {"xxx": "eee"},
+                        {"eee": "BBB222"},
+                        { },
+                        { }
+    ]
+
+    EXPECTED_OUTPUT = json.dumps(data)
+    resp, content = _get_server_response(INPUT, "aaa/xxx/eee", "aaa/xxx/eee", "test2", None, True)
+    assert resp.status == 200
+    assert_same_jsons(content, EXPECTED_OUTPUT)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
