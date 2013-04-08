@@ -42,13 +42,13 @@ CONTEXT = {
 def set_has_view(d, p):
     _id = getprop(d, "originalRecord/_id")
     rights = getprop(d, "metadata/possible-copyright-status")
-    format = "application/pdf"
+    _format = "application/pdf"
     file_name = getprop(d, p)
     if _id and file_name:
         return {"hasView": {
             "@id": "http://www.archive.org/download/{0}/{1}".format(_id, file_name),
             "rights": rights,
-            "format": format
+            "format": _format
             }
         }
     else:
@@ -62,7 +62,7 @@ def marc_data_processor(d, p):
                 d[k].append(v)
             elif isinstance(d[k], dict):
                 d[k].update(v)
-            elif d[k] != v:
+            elif isinstance(d[k], basestring) and d[k] != v:
                 d[k] = [d[k], v]
         else:
             d[k] = v
@@ -117,11 +117,11 @@ CHO_TRANSFORMER = {
 
 AGGREGATION_TRANSFORMER = {
     "collection": lambda d, p: {"collection": getprop(d, p)},
-    "id"               : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
-    "_id"              : lambda d, p: {"_id": getprop(d, p)},
-    "originalRecord"   : lambda d, p: {"originalRecord": getprop(d, p)},
-    "ingestType"       : lambda d, p: {"ingestType": getprop(d, p)},
-    "ingestDate"       : lambda d, p: {"ingestDate": getprop(d, p)},
+    "id": lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
+    "_id": lambda d, p: {"_id": getprop(d, p)},
+    "originalRecord": lambda d, p: {"originalRecord": getprop(d, p)},
+    "ingestType": lambda d, p: {"ingestType": getprop(d, p)},
+    "ingestDate": lambda d, p: {"ingestDate": getprop(d, p)},
 
     # META
     "metadata/contributor": lambda d, p: {"dataProvider": getprop(d, p)},
