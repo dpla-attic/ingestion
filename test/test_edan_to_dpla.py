@@ -103,7 +103,7 @@ def test_populating_publisher_field():
                         },
                     {
                         "#text": "xx",
-                        "@label": "publisher"
+                        "@label": "Publisher"
                         }
                     ],
                 }

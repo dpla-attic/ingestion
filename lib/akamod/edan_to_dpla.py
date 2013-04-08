@@ -191,7 +191,7 @@ def transform_publisher(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "publisher")
     if ps:
-        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "publisher"]
+        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Publisher"]
 
     return {"publisher": p} if p else {}
 
