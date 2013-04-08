@@ -108,17 +108,17 @@
            "reduce": "_count"
        },
        "collection_title": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(doc['id'], v[i]['title']);}}}}"
+           "map": "function(doc) { v = doc.sourceResource.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(doc['id'], v[i]['title']);}}}}"
        },
        "collection_title_count": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(v[i]['title'],1);}}}}",
+           "map": "function(doc) { v = doc.sourceResource.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('title' in v[i]) {emit(v[i]['title'],1);}}}}",
            "reduce": "_count"
        },
        "collection_description": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(doc['id'], v[i]['description']);}}}}"
+           "map": "function(doc) { v = doc.sourceResource.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(doc['id'], v[i]['description']);}}}}"
        },
        "collection_description_count": {
-           "map": "function(doc) { v = doc.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(v[i]['description'],1);}}}}",
+           "map": "function(doc) { v = doc.sourceResource.collection; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('description' in v[i]) {emit(v[i]['description'],1);}}}}",
            "reduce": "_count"
        },
        "contributor": {

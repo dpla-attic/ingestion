@@ -21,7 +21,8 @@ def bhlcontributortocollection(body,ctype,contributor_field="sourceResource/cont
         contributor = getprop(data, contributor_field)
         acronym = "".join(c[0] for c in contributor.split())
 
-        setprop(data, "collection/@id", "http://dp.la/api/collections/bhl--"+acronym)
-        setprop(data, "collection/name", contributor)
+        setprop(data, "sourceResource/collection/@id",
+                "http://dp.la/api/collections/bhl--" + acronym)
+        setprop(data, "sourceResource/collection/name", contributor)
 
     return json.dumps(data)

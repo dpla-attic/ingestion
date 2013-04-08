@@ -139,12 +139,12 @@ def creator_handler_nypl(d, p):
             if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
                 roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
                 name = creator_dict["namePart"]
-                if "publisher" not in roles:
-                    update_value(out, "contributor", name)
-                else:
+                if "publisher" in roles:
                     update_value(out, "publisher", name)
-                if roles & creator_roles:
+                elif roles & creator_roles:
                     update_value(out, "creator", name)
+                else:
+                    update_value(out, "contributor", name)
     return out
 
 def date_created_nypl(d, p):
@@ -172,12 +172,40 @@ def date_finder(d, p):
             return date_created_nypl(d, p + "/" + field)
     return {}
 
+def is_shown_at_transform(d, p):
+    is_shown_at = None
+    collection_title = getprop(d, p + "/title")
+
+    if collection_title:
+        # Handle NYPL isShownAt for collection with title
+        # "Lawrence H. Slaughter Collection of English maps, charts, 
+        #  globes, books and atlases"
+        # For collection with title
+        # "Thomas Addis Emmet collection, 1483-1876, bulk (1700-1800)",
+        # use placeholder item link: http://archives.nypl.org/mss/927
+        lawrence_title = ("Lawrence H. Slaughter Collection of English maps," +
+                          " charts, globes, books and atlases")
+        emmet_title = ("Thomas Addis Emmet collection, 1483-1876, bulk" +
+                       " (1700-1800)")
+        placeholder_item_link = "http://archives.nypl.org/mss/927"
+        if exists(d, "tmp_item_link"):
+            if collection_title == lawrence_title:
+                is_shown_at = getprop(d, "tmp_item_link")
+            if collection_title == emmet_title:
+                is_shown_at = placeholder_item_link
+
+    return {"isShownAt": is_shown_at} if is_shown_at else {}
+    
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
+CHO_TRANSFORMER["common"] = {
+    "collection": lambda d, p: {"collection": getprop(d, p)},
+}
+
 CHO_TRANSFORMER["3.3"] = {
     "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
     "name": creator_handler_uva,
@@ -197,7 +225,7 @@ CHO_TRANSFORMER["3.4"] = {
     "identifier": lambda d, p: {"identifier": [s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("type") in ("local_bnumber", "uuid")]},
     "relatedItem/titleInfo/title": lambda d, p: {"isPartOf": getprop(d, p)},
     "typeOfResource": lambda d, p: {"type": getprop(d, p)},
-    "titleInfo": lambda d, p: {"title": ". ".join(s.get("title") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no")},
+    "titleInfo": lambda d, p: {"title": [s.get("title") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("usage") == "primary" and s.get("supplied") == "no"][-1]},
     "originInfo": date_finder,
     "note": lambda d, p: {"description": [s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and "type" in s and s.get("type") == "content"]},
     "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
@@ -208,7 +236,7 @@ AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
-    "collection"                 : lambda d, p: {"collection": getprop(d, p)},
+    "collection"                 : is_shown_at_transform, 
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)}
 }

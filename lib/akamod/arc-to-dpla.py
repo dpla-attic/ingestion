@@ -76,14 +76,6 @@ def is_shown_at_transform(d):
 
     return {"isShownAt": object}
 
-def collection_transform(d):
-    collection = getprop(d, "collection")
-    items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
-    for item in (items if isinstance(items, list) else [items]):
-        if item["hierarchy-item-id"] == collection["title"]:
-            setprop(collection, "title", item["hierarchy-item-title"])
-    return {"collection": collection} if collection else {}
-
 def creator_transform(d):
     creator = None
     creators = arc_group_extraction(d, "creators", "creator")
@@ -102,6 +94,20 @@ def extent_transform(d):
 
     return {"extent": extent} if extent else {}
 
+
+def transform_state_located_in(d):
+    phys = arc_group_extraction(d, "physical-occurrences", "physical-occurrence")
+    state_located_in = None
+    if phys:
+        for p in phys:
+            s = arc_group_extraction(p, "reference-units", "reference-unit", "state")[0]
+            if s:
+                state_located_in = s
+
+    res = {"stateLocatedIn": {"name": state_located_in}}
+    return res if state_located_in else {}
+
+
 def subject_and_spatial_transform(d):
     v = {}
     subject = []
@@ -114,15 +120,6 @@ def subject_and_spatial_transform(d):
                 subject.append(s["display-name"])
             if s["subject-type"] == "TGN":
                 spatial.append(s["display-name"])
-
-    phys = arc_group_extraction(d, "physical-occurrences",
-                                "physical-occurrence")
-    for p in phys:
-        s = arc_group_extraction(p, "reference-units", "reference-unit",
-                                 "state")[0]
-        if s:
-            logger.debug("SP: %s"%s)
-            spatial.append(s)
    
     if subject:
         v["subject"] = subject
@@ -136,11 +133,11 @@ def subject_and_spatial_transform(d):
 def rights_transform(d):
     rights = []
 
-    r = arc_group_extraction(d, "access-restriction", "restriction-status")[0]
-    if r:
+    r = arc_group_extraction(d, "access-restriction", "restriction-status")
+    if r and r[0] != None:
         rights.append("Restrictions: %s" % r)
-    r = arc_group_extraction(d, "use-restriction", "use-status")[0]
-    if r:
+    r = arc_group_extraction(d, "use-restriction", "use-status")
+    if r and r[0] != None:
         rights.append("Use status: %s" % r)
 
     return {"rights": "; ".join(filter(None,rights))} if rights else {}
@@ -246,7 +243,8 @@ CHO_TRANSFORMER = {
     "copyright-dates"       : lambda d: date_transform(d,"copyright-dates", "copyright-date"),
     "title"                 : lambda d: {"title": d.get("title-only")},
     "scope-content-note"    : lambda d: {"description": d.get("scope-content-note")}, 
-    "languages"             : lambda d: {"language": arc_group_extraction(d, "languages", "language")}
+    "languages"             : lambda d: {"language": arc_group_extraction(d, "languages", "language")},
+    "collection"            : lambda d: {"collection": d.get("collection")}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -255,7 +253,6 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"        : lambda d: {"originalRecord": d.get("originalRecord",None)},
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
-    "collection"            : collection_transform,
     "arc-id-desc"           : is_shown_at_transform
 }
 
@@ -295,7 +292,7 @@ def arctodpla(body,ctype,geoprop=None):
     out["sourceResource"].update(rights_transform(data))
     out["sourceResource"].update(subject_and_spatial_transform(data))
     out.update(has_view_transform(data))
-
+    out["sourceResource"].update(transform_state_located_in(data))
 
     if exists(out, "sourceResource/date"):
         logger.debug("OUTTYPE: %s"%getprop(out, "sourceResource/date"))

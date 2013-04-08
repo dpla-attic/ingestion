@@ -575,6 +575,7 @@ CHO_TRANSFORMER = {
     "descriptiveNonRepeating/title" : transform_title,
     "descriptiveNonRepeating/data_source" : transform_data_provider,
     #"descriptiveNonRepeating/online_media" : transform_online_media,
+    "collection"            : lambda d: {"collection": d.get("collection")}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -583,7 +584,6 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"        : lambda d: {"originalRecord": d.get("originalRecord",None)},
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
-    "collection"            : lambda d: {"collection": d.get("collection")},
 }
 
 @simple_service("POST", "http://purl.org/la/dp/edan_to_dpla", "edan_to_dpla", "application/ld+json")
@@ -627,10 +627,10 @@ def edantodpla(body,ctype,geoprop=None):
     out.update(transform_is_shown_at(data))
     out.update(transform_object(data))
 
-    slugify_field(out, "collection/@id")
+    slugify_field(out, "sourceResource/collection/@id")
 
     if exists(out, "sourceResource/isPartOf/name"):
-        out["collection"]["title"] = out["sourceResource"]["isPartOf"]["name"]
+        out["sourceResource"]["collection"]["title"] = out["sourceResource"]["isPartOf"]["name"]
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:

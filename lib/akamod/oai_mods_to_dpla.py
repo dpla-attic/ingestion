@@ -187,6 +187,7 @@ def data_provider_transform(d):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
+    "collection"                                         : lambda d, p: {"collection": getprop(d, p)},
     MODS + "note"                                        : lambda d, p: {"description": getprop(d, p)},
     MODS + "name"                                        : creator_transform,
     MODS + "genre"                                       : format_transform,
@@ -204,7 +205,6 @@ CHO_TRANSFORMER = {
 AGGREGATION_TRANSFORMER = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/"+getprop(d, p)},
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
-    "collection"                 : lambda d, p: {"collection": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
     "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)}

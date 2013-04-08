@@ -68,6 +68,7 @@ def spatial_transform(d):
 # Structure mapping the original property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
+    "collection"       : lambda d: {"collection": d.get("collection",None)},
     "contributor"      : lambda d: {"contributor": d.get("contributor",None)},
     "coverage"         : spatial_transform,
     "creator"          : lambda d: {"creator": d.get("creator",None)},
@@ -84,7 +85,6 @@ CHO_TRANSFORMER = {
 }
 
 AGGREGATION_TRANSFORMER = {
-    "collection"       : lambda d: {"collection": d.get("collection",None)},
     "id"               : lambda d: {"id": d.get("id",None), "@id" : "http://dp.la/api/items/"+d.get("id","")},
     "_id"              : lambda d: {"_id": d.get("_id",None)},
     "handle"           : is_shown_at_transform,

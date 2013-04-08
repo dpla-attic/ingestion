@@ -379,6 +379,10 @@ TEST_SUBST = {
     "ddd": "DDD",
 }
 
+COUNTRY_ALIAS = { 
+    "United States of America": "United States"
+}
+
 DC_DATA_PROVIDER = {
 "Beverly High School Digital Collection": "Beverly High School",
 

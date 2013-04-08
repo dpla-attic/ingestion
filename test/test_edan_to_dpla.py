@@ -85,8 +85,8 @@ def test_populating_collection_name():
     resp, content = _get_server_response(INPUT)
     assert resp["status"].startswith("2")
     CONTENT = json.loads(content)
-    pinfo(content,CONTENT["collection"])
-    assert_same_jsons(EXPECTED_COLLECTION, CONTENT["collection"])
+    pinfo(content,CONTENT["sourceResource"]["collection"])
+    assert_same_jsons(EXPECTED_COLLECTION, CONTENT["sourceResource"]["collection"])
 
 
 def test_populating_publisher_field():
