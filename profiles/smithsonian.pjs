@@ -34,7 +34,7 @@
     "subresources": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/smithsonian",
-        "name": "Smithsonian Institutions"
+        "name": "Smithsonian Institution"
     },
     "type": "edan",
     "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
