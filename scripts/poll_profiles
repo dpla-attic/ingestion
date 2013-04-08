@@ -118,7 +118,6 @@ def process_profile(uri_base, profile_f):
     return True
 
 def process_primo_all(profile, blacklist=None):
-    # TODO flag to stop requesting
     request_more = True
     index = 0
     while request_more:

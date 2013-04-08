@@ -1,5 +1,5 @@
 {
-    "bulk_size": "10", 
+    "bulk_size": "1000", 
     "enrichments_coll": [], 
     "name": "mwdl", 
     "enrichments_rec": [
