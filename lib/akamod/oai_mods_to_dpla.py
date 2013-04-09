@@ -13,10 +13,10 @@ from dplaingestion.selector import getprop, exists
 GEOPROP = None
 MODS = "metadata/mods/"
 HARVARD_DATA_PROVIDER = {
-    "lap": "Widener Library",
-    "crimes": "Harvard Law School Library",
-    "scarlet": "Harvard Law School Library",
-    "manuscripts": "Houghton Library"
+    "lap": "Widener Library, Harvard University",
+    "crimes": "Harvard Law School Library, Harvard University",
+    "scarlet": "Harvard Law School Library, Harvard University",
+    "manuscripts": "Houghton Library, Harvard University"
 }
 
 #FIXME not format specific, move to generic module
@@ -48,90 +48,197 @@ CONTEXT = {
    }
 }
 
-# TODO Fix this
-# Sometimes:
-#   name = [ {"role": {"roleTerm" { ... } }}, {"namePart": "string"}]
-#   name = {"role": [{"roleTerm": { ... }, {"namePar": { ... }}}]}
-def creator_transform(d, p):
-    creator = None
-    role = getprop(d, p + "role/roleTerm", True)
-    name = getprop(d, p + "role/namePart", True)
+def name_from_name_part(name_part):
+    type_exceptions = ("affiliation", "displayForm", "description", "role")
 
-    if role and name:
-        for r in (role if isinstance(role, list) else [role]):
-            if r["#text"] == "creator":
-                creator = name[role.index(r)]
+    name = []
+    for n in (name_part if isinstance(name_part, list) else [name_part]):
+        if isinstance(n, basestring):
+            name.append(n)
+        if (isinstance(n, dict) and "#text" in n and not
+            (set(n["type"]) & set(type_exceptions))):
+            name.append(n["#text"])
 
-    return {"creator": creator} if creator else {}
+    return ", ".join(name)
 
-def subject_transform(d, p):
-    subject = []
+
+def creator_and_contributor_transform(d, p):
+    val = {}
+
+    v = getprop(d, p)
+    names = []
+    for s in (v if isinstance(v, list) else [v]):
+        name = {}
+        name["name"] = name_from_name_part(getprop(s, "namePart", True))
+        if name["name"]:
+            name["type"] = getprop(s, "type", True)
+            name["roles"] = []
+            if "role" in s:
+                roles = getprop(s, "role")
+                for r in (roles if isinstance(roles, list) else [roles]):
+                    role = r["roleTerm"]
+                    if isinstance(role, dict):
+                        role = role["#text"]
+                    name["roles"].append(role)
+
+            names.append(name)
+
+    # Set creator
+    creator = [name for name in names if "creator" in name["roles"]]
+    creator = creator[0] if creator else names[0]
+    names.remove(creator)
+    val["creator"] = creator["name"]
+
+    # Set contributor
+    contributor = [name["name"] for name in names]
+    if contributor:
+        val["contributor"] = contributor
+
+    return val
+
+def subject_and_spatial_transform(d, p):
+    val = {}
+    val["subject"] = []
+    val["spatial"] = []
+
     v = getprop(d, p)
     for s in (v if isinstance(v, list) else [v]):
-        topic = getprop(s, "topic", True)
-        if topic:
-            for t in (topic if isinstance(topic, list) else [topic]):
-                subject.append(t)
+        subject = []
+        if "name" in s:
+            subject.append(name_from_name_part(getprop(s, "name/namePart")))
 
-    return {"subject": subject} if subject else {}
+        if "topic" in s:
+            for t in (s["topic"] if isinstance(s["topic"], list) else
+                      [s["topic"]]):
+                if t not in subject:
+                    subject.append(t)
 
-def spatial_transform(d, p):
-    spatial = []
+        if "geographic" in s:
+            for g in (s["geographic"] if isinstance(s["geographic"], list) else
+                      [s["geographic"]]):
+                if g not in subject:
+                    subject.append(g)
+                if g not in val["spatial"]:
+                    val["spatial"].append(g)
+
+        if "hierarchicalGeographic" in s:
+            c = getprop(s, "hierarchicalGeographic/country", True)
+            if c and c not in subject:
+                subject.append(c)
+            if c and c not in val["spatial"]:
+                val["spatial"].append(c)
+
+        val["subject"].append("--".join(subject))
+
+    if not val["subject"]:
+        del val["subject"]
+    if not val["spatial"]:
+        del val["spatial"]
+
+    return val
+
+def origin_info_transform(d, p):
+    val = {}
     v = getprop(d, p)
-    for s in (v if isinstance(v, list) else [v]):
-        place = getprop(s, "placeTerm", True)
-        if place:
-            if isinstance(place, basestring):
-                spatial.append(place)
+
+    # date
+    date = None 
+    if "dateCreated" in v:
+        date = v["dateCreated"]
+    if not date and getprop(v, "dateOther/keyDate", True) == "yes":
+        date = getprop(v, "dateOther/#text", True)
+
+    if isinstance(date, list):
+        dd = {}
+        for i in date:
+            if isinstance(i, basestring):
+                dd["displayDate"] = i
+            elif "point" in i:
+                if i["point"] == "start":
+                    dd["begin"] = i["point"]
+                else:
+                    dd["end"] = i["point"]
             else:
-                spatial.append(getprop(place, "#text", True))
+                # Odd date? Log error and investigate
+                logger.error("Invalid date in record %s" % d["_id"])
+        date = dd if dd else None
 
-    spatial = filter(None, spatial)
+    if date and date != "unknown":
+        val["date"] = date
+    
+    # publisher
+    if "publisher" in v:
+        val["publisher"] = []
+        pub = v["publisher"]
 
-    return {"spatial": spatial} if spatial else {}
+        di = v.get("dateIssued", None)
+        di = di[0] if isinstance(di, list) else di
 
-def date_transform(d, p):
-    date = None
-    v = getprop(d, p)
-    for s in (v if isinstance(v, list) else [v]):
-        if isinstance(s, basestring):
-            date = s
+        # Get all placeTerms of type "text"
+        terms = []
+        if "place" in v:
+            place = v["place"]
+            for p in (place if isinstance(place, list) else [place]):
+                if getprop(p, "placeTerm/type", True) == "text":
+                    terms.append(getprop(p, "placeTerm/#text", True))
 
-    return {"date": date} if date else {} 
+        for t in filter(None, terms):
+            if di: 
+                val["publisher"].append("%s: %s, %s" % (t, pub, di))
+            else:
+                val["publisher"].append("%s: %s" % (t, pub))
+        if len(val["publisher"]) == 1:
+            val["publisher"] = val["publisher"][0]
+
+    return val
 
 def language_transform(d, p):
-    lang = []
+    language = []
     v = getprop(d, p)
     for s in (v if isinstance(v, list) else [v]):
-        if isinstance(s, dict) and exists(s, "#text"):
-            s = getprop(s, "#text")
-        if s not in lang:
-            lang.append(s)
+        if "#text" in s and s["#text"] not in language:
+            language.append(s["#text"])
 
-    return {"language": lang} if lang else {}
+    return {"language": language} if language else {}
 
-def relation_transform(d, p):
-    relation = []
-    v = getprop(d, p)
-    for s in (v if isinstace(v, list) else[v]):
-        relation.append(getprop(s, "titleInfo/title", True))
-
-    relation = filter(None, relation)
-
-    return {"relation": relation} if relation else {}
-
-def title_transform(d, p):
+def is_part_of_transform(d, p):
+    ipo = []
     v = getprop(d, p)
     for s in (v if isinstance(v, list) else[v]):
-        # Sometimes there are "alternative" titles which have
-        # "type" == alternative. Skip these.
-        if not exists(s, "type"):
-            title = getprop(s, "title")
-            non_sort = getprop(s, "nonSort", True)
-        if non_sort:
-            title = non_sort + title
+        if "type" in v and v["type"] == "series":
+            ipo.append(getprop(s, "titleInfo/title", True))
 
-    return {"title": title}
+    ipo = filter(None, ipo)
+    ipo = ipo[0] if len(ipo) == 1 else ipo
+
+    return {"isPartOf": ipo} if ipo else {}
+
+def title_transform(d, p):
+    title = None
+
+    v = getprop(d, p)
+    for t in (v if isinstance(v, list) else [v]):
+        if "type" in t and t["type"] == "alternative":
+            continue
+
+        title = t["title"]
+        if "nonSort" in t:
+            title = t["nonSort"] + title
+        if "subTitle" in t:
+            title = title + ": " + t["subTitle"]
+        if "partNumber" in t:
+            part = t["partNumber"]
+            if not isinstance(part, list):
+                part = [part]
+            part = ", ".join(part)
+            title = title + ". " + part + "."
+        if "partName" in t:
+            title = title + ". " + t["partName"]
+
+    title = re.sub("\.\.", "\.", title)
+    title = re.sub(",,", ",", title)
+
+    return {"title": title} if title else {}
 
 def format_transform(d, p):
     format = []
@@ -140,7 +247,9 @@ def format_transform(d, p):
         if isinstance(s, basestring):
             format.append(s)
         else:
-            format.append(getprop(s, "#text", True))
+            if "authority" in s and (s["authority"] == "marc" or
+                                     s["authority"] == ""):
+                format.append(s["#text"])
     format = filter(None, format)
 
     return {"format": format} if format else {}
@@ -156,15 +265,14 @@ def url_transform(d):
                 for url in (urls if isinstance(urls, list) else [urls]):
                     if isinstance(url, dict):
                         usage = getprop(url, "usage", True)
-                        if usage:
+                        if usage == "primary display":
                             iho["isShownAt"] = getprop(url, "#text")
 
                         label = getprop(url, "displayLabel", True)
-                        if label:
-                            if label == "Full Image":
-                                iho["hasView"] = {"@id": getprop(url, "#text")}
-                            if label == "Thumbnail":
-                                iho["object"] = getprop(url, "#text")
+                        if label == "Full Image":
+                            iho["hasView"] = {"@id": getprop(url, "#text")}
+                        if label == "Thumbnail":
+                            iho["object"] = getprop(url, "#text")
 
     return iho
 
@@ -178,28 +286,41 @@ def data_provider_transform(d):
             phys = getprop(loc, "physicalLocation", True)
             if phys and getprop(phys, "displayLabel", True) == "repository":
                 dp = getprop(phys, "#text").split(";")[0]
+                dp += ", Harvard University"
 
     if set in HARVARD_DATA_PROVIDER:
         dp = HARVARD_DATA_PROVIDER[set]
 
     return {"dataProvider": dp} if dp else {}
 
+def identifier_transform(d):
+    id = []
+    obj = getprop(d, MODS + "identifier", True)
+    if obj and "type" in obj and obj["type"] == "Object Number":
+        id.append(obj["#text"])
+
+    record_id = getprop(d, MODS + "recordInfo/recordIdentifier", True)
+    if record_id and "source" in record_id and record_id["source"] == "VIA":
+        id.append(record_id["#text"])
+
+    id = filter(None, id)
+    
+    return {"identifier" : "; ".join(id)} if id else {}
+
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "collection"                                         : lambda d, p: {"collection": getprop(d, p)},
     MODS + "note"                                        : lambda d, p: {"description": getprop(d, p)},
-    MODS + "name"                                        : creator_transform,
+    MODS + "name"                                        : creator_and_contributor_transform,
     MODS + "genre"                                       : format_transform,
-    MODS + "related"                                     : relation_transform,
-    MODS + "subject"                                     : subject_transform,
+    MODS + "relatedItem"                                 : is_part_of_transform,
+    MODS + "subject"                                     : subject_and_spatial_transform,
     MODS + "titleInfo"                                   : title_transform,
     MODS + "typeOfResource"                              : lambda d, p: {"type": getprop(d, p)},
-    MODS + "originInfo/place"                            : spatial_transform,
-    MODS + "originInfo/publisher"                        : lambda d, p: {"publisher": getprop(d, p)},
-    MODS + "originInfo/dateCreated"                      : date_transform,
-    MODS + "physicalDescription/extent"                  : lambda d, p: {"extent": getprop(d, p)},
-    MODS + "recordInfo/languageOfCataloging/languageTerm": language_transform
+    MODS + "originInfo"                                  : origin_info_transform,
+    MODS + "language/languageTerm"                       : language_transform,
+    MODS + "physicalDescription/extent"                  : lambda d, p: {"extent": getprop(d, p)}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -243,6 +364,7 @@ def oaimodstodpla(body, ctype, geoprop=None):
 
     # Apply transformations that are dependent on more than one
     # original document field
+    out["sourceResource"].update(identifier_transform(data))
     out.update(url_transform(data))
     out.update(data_provider_transform(data))
 
