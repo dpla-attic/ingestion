@@ -73,8 +73,8 @@ def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spa
                 if isostate[0]:
                     d['iso3166-2'] = isostate[0]
                     d['state'] = isostate[1]
-                sp.append(d)
                 """
+                sp.append(d)
             v = sp
 
         # If any of the spatial fields contain semi-colons, we need to create
