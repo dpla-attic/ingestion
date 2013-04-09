@@ -18,7 +18,8 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True"
     ], 
     "subresources": [
-        "blc"
+        "blc",
+        "clemson"
     ],
     "contributor": {
         "@id": "http://dp.la/api/contributor/internet_archive",
