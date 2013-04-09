@@ -11,10 +11,9 @@ import sqlite3
 import argparse
 from itertools import izip_longest
 import json
-import time
-from functools import wraps
-import urllib2
 from urllib import urlencode
+
+from dplaingestion.internet_archive import fetch_url
 
 
 class IdsDb(object):
@@ -46,71 +45,6 @@ class IdsDb(object):
             self._conn.close()
         except Exception:
             pass
-
-
-def with_retries(attempts_num=3, delay_sec=1):
-    """
-    Wrapper (decorator) that calls given func(*args, **kwargs);
-    In case of exception does 'attempts_num'
-    number of attempts with "delay_sec * attempt number" seconds delay
-    between attempts.
-
-    Usage:
-    @with_retries(5, 2)
-    def get_document(doc_id, uri): ...
-    d = get_document(4444, "...") # now it will do the same logic but with retries
-
-    Or:
-    def get_document(...): ...
-    get_document = with_retries(5, 2)(get_document)
-    d = get_document(...) # now it will do the same logic but with retries
-    """
-
-    def apply_with_retries(func):
-        assert attempts_num >= 1
-        assert isinstance(attempts_num, int)
-        assert delay_sec >= 0
-
-        @wraps(func)
-        def func_with_retries(*args, **kwargs):
-
-            def pause(attempt):
-                """Do pause if current attempt is not the last"""
-                if attempt < attempts_num:
-                    sleep_sec = delay_sec * attempt
-                    print >> sys.stderr, "Sleeping for %d seconds..." % sleep_sec
-                    time.sleep(sleep_sec)
-
-            for attempt in xrange(1, attempts_num + 1):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Attempt #%d failed" % (
-                        e.__class__.__name__, str(e), func.__name__, attempt)
-                    if attempt == attempts_num:
-                        raise
-                    else:
-                        pause(attempt)
-
-        return func_with_retries
-
-    return apply_with_retries
-
-
-@with_retries(10, 3)
-def fetch_url(url):
-    """Downloads data related to given url,
-    checks that http response code is 200"""
-    print "fetching url", url, "..."
-    d = None
-    try:
-        d = urllib2.urlopen(url, timeout=10)
-        code = d.getcode()
-        assert code == 200, "Bad response code = " + str(code)
-        return d.read()
-    finally:
-        if d:
-            d.close()
 
 
 def process_ia_coll(db, profile, subr, page_size):
