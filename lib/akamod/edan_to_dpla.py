@@ -393,7 +393,7 @@ def transform_identifier(d):
 def transform_data_provider(d):
     ds = None
     dss = arc_group_extraction(d, "descriptiveNonRepeating", "data_source")
-    if dss != [None]:
+    if dss and dss != [None]:
         ds = dss[0]
 
     return {"dataProvider": ds} if ds else {}
