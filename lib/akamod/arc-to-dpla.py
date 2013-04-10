@@ -90,10 +90,9 @@ def extent_transform(d):
     extents = arc_group_extraction(d, "physical-occurrences",
                                    "physical-occurrence", "extent")
     if extents:
-        [extent.append(e) for e in extents if e]
+        [extent.append(e) for e in extents if e and e not in extent]
 
     return {"extent": extent} if extent else {}
-
 
 def transform_state_located_in(d):
     phys = arc_group_extraction(d, "physical-occurrences", "physical-occurrence")
@@ -107,6 +106,21 @@ def transform_state_located_in(d):
     res = {"stateLocatedIn": {"name": state_located_in}}
     return res if state_located_in else {}
 
+def data_provider_transform(d):
+    data_provider = []
+    phys = arc_group_extraction(d, "physical-occurrences",
+                                "physical-occurrence")
+
+    for p in phys:
+        dp = arc_group_extraction(p, "reference-units", "reference-unit",
+                                  "name")[0]
+        if dp and dp not in data_provider:
+            data_provider.append(dp)
+
+    if len(data_provider) == 1:
+        data_provider = data_provider[0]
+
+    return {"dataProvider": data_provider} if data_provider else {}
 
 def subject_and_spatial_transform(d):
     v = {}
@@ -135,10 +149,10 @@ def rights_transform(d):
 
     r = arc_group_extraction(d, "access-restriction", "restriction-status")
     if r and r[0] != None:
-        rights.append("Restrictions: %s" % r)
+        rights.append("Restrictions: %s" % r[0])
     r = arc_group_extraction(d, "use-restriction", "use-status")
     if r and r[0] != None:
-        rights.append("Use status: %s" % r)
+        rights.append("Use status: %s" % r[0])
 
     return {"rights": "; ".join(filter(None,rights))} if rights else {}
 
@@ -253,7 +267,8 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"        : lambda d: {"originalRecord": d.get("originalRecord",None)},
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
-    "arc-id-desc"           : is_shown_at_transform
+    "arc-id-desc"           : is_shown_at_transform,
+    "physical-occurrences"  : data_provider_transform
 }
 
 @simple_service("POST", "http://purl.org/la/dp/arc-to-dpla", "arc-to-dpla", "application/ld+json")

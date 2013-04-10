@@ -212,127 +212,6 @@ def test_create_dictionaries_many2():
     OUTPUT = create_dictionaries(INPUT)
     assert OUTPUT == EXPECTED
 
-def test_enrich_location_after_provider_specific_enrich_location1():
-    """
-    Previous specific-provider location enrichment set city, county, state,
-    and country. No semicolons. EXPECTED should be the same as INPUT with the
-    additional iso3166-2 field in spatial.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Asheville",
-                "county": "Buncombe",
-                "state": "North Carolina",
-                "country": "United States"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Asheville",
-                "county": "Buncombe",
-                "state": "North Carolina",
-                "country": "United States",
-                "iso3166-2": "US-NC"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_enrich_location_after_provider_specific_enrich_location2():
-    """
-    Previous specific-provider location enrichment set city, county, state,
-    and country. With semicolons but no multiple values. EXPECTED should be
-    the same as INPUT with semicolons in the state field removed and the
-    additional iso3166-2 field in spatial.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Asheville;",
-                "county": "Buncombe;",
-                "state": "North Carolina;",
-                "country": "United States;"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Asheville",
-                "county": "Buncombe",
-                "state": "North Carolina",
-                "country": "United States",
-                "iso3166-2": "US-NC"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_enrich_location_after_provider_specific_enrich_location3():
-    """
-    Previous specific-provider location enrichment set city, county, state,
-    and country. Multiple values separated by semicolons.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Asheville; La Jolla",
-                "county": "Buncombe;San Diego",
-                "state": "North Carolina; California ; Texas;",
-                "country": "United States"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Asheville",
-                "county": "Buncombe",
-                "state": "North Carolina",
-                "country": "United States",
-                "iso3166-2": "US-NC"
-            },
-            {
-                "city": "La Jolla",
-                "county": "San Diego",
-                "state": "California",
-                "iso3166-2": "US-CA"
-            },
-            {
-                "state": "Texas",
-                "iso3166-2": "US-TX"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
 def test_enrich_location_after_provider_specific_enrich_location4():
     """
     Previous specific-provider location did not set state.
@@ -369,42 +248,6 @@ def test_enrich_location_after_provider_specific_enrich_location4():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_enrich_location_after_provider_specific_enrich_location5():
-    """
-    Should remove incorrect state field but place value in name field.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Anoka; Champlin",
-                "county": "Minnesota",
-                "state": "United States",
-                "country": "Mississippi River"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "city": "Anoka",
-                "county": "Minnesota",
-                "country": "Mississippi River",
-                "name": "United States"
-            },
-            {
-                "city": "Champlin"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
 
 def test_enrich_location_no_provider_specific_enrich_location1():
     """
@@ -434,142 +277,6 @@ def test_enrich_location_no_provider_specific_enrich_location1():
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert json.loads(content) == OUTPUT
-
-def test_enrich_location_no_provider_specific_enrich_location2():
-    """
-    No previous provider-specific location enrichment and contains states
-    and state abbreviations.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            "Asheville, North Carolina",
-            "Greenville, SC",
-            "San Diego, (C.A.)",
-            "Athens"
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "state": "North Carolina",
-                "iso3166-2": "US-NC",
-                "name" : "Asheville, North Carolina"
-            },
-            {
-                "state": "South Carolina",
-                "iso3166-2": "US-SC",
-                "name": "Greenville, SC"
-            },
-            {
-                "state": "California",
-                "iso3166-2": "US-CA",
-                "name": "San Diego, (C.A.)"
-            },
-            {
-                "name": "Athens"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_enrich_location_no_provider_specific_enrich_location3():
-    """
-    No previous provider-specific location enrichment and contains states
-    and state abbreviations; with semicolons.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            "Asheville, North Carolina; Greenville, SC",
-            "San Diego, (C.A.); Athens"
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "state": "North Carolina",
-                "iso3166-2": "US-NC",
-                "name" : "Asheville, North Carolina"
-            },
-            {
-                "state": "South Carolina",
-                "iso3166-2": "US-SC",
-                "name": "Greenville, SC"
-            },
-            {
-                "state": "California",
-                "iso3166-2": "US-CA",
-                "name": "San Diego, (C.A.)"
-            },
-            {
-                "name": "Athens"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_enrich_location_no_provider_specific_enrich_location3():
-    """
-    No previous provider-specific location enrichment and contains states
-    and state abbreviations; with semicolons.
-    """
-    INPUT = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            "Charleston (S.C.); Germany; Poland; Israel; New York (N.Y.); Georgia (U.S.)"
-        ]},
-        "creator": "Miguel"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "sourceResource": {"spatial": [
-            {
-                "state": "South Carolina",
-                "iso3166-2": "US-SC",
-                "name" : "Charleston (S.C.)"
-            },
-            {
-                "name": "Germany"
-            },
-            {
-                "name": "Poland"
-            },
-            {
-                "name": "Israel"
-            },
-            {
-                "state": "New York",
-                "iso3166-2": "US-NY",
-                "name": "New York (N.Y.)"
-            },
-            {
-                "state": "Georgia",
-                "iso3166-2": "US-GA",
-                "name": "Georgia (U.S.)"
-            }
-        ]},
-        "creator": "Miguel"
-    }
-
-    url = server() + "enrich_location"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
 
 def test_enrich_location_spatial_string():
     """Should handle spatial as string"""
@@ -603,8 +310,6 @@ def test_removing_bracket():
         "id": "12345",
         "sourceResource": {"spatial": [
             {
-                "state": "South Carolina",
-                "iso3166-2": "US-SC",
                 "name" : "Charleston (S.C.)"
             },
             {
@@ -617,13 +322,9 @@ def test_removing_bracket():
                 "name": "Israel"
             },
             {
-                "state": "New York",
-                "iso3166-2": "US-NY",
                 "name": "New York (N.Y.)"
             },
             {
-                "state": "Georgia",
-                "iso3166-2": "US-GA",
                 "name": "Georgia (U.S.)"
             }
         ]},
