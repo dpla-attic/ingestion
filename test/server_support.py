@@ -110,6 +110,7 @@ MODULES = [
     "dplaingestion.akamod.artstor_select_isshownat",
     "dplaingestion.akamod.artstor_identify_object",
     "dplaingestion.akamod.digital_commonwealth_enrich_location",
+    "dplaingestion.akamod.uiuc_enrich_location",
     "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
     "dplaingestion.akamod.lookup",
