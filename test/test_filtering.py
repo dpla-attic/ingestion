@@ -1,5 +1,6 @@
 from server_support import server, H
 from amara.thirdparty import json
+from nose.tools import nottest
 
 
 def test_full_filtering():
@@ -669,6 +670,7 @@ def test_filtering_by_path():
     assert json.loads(content) == EXPECTED
 
 
+@nottest
 def test_single_step_path_filtering():
     """
     Filtering single step path
