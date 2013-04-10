@@ -5,7 +5,7 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/ia-to-dpla",
-        "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=collection%2Ftitle",
+        "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=sourceResource%2Fcollection%2Ftitle",
         "/cleanup_value",
         "/shred?action=unshred&prop=sourceResource%2Ftitle&delim=%2C%20",
         "/cleanup_value?prop=sourceResource%2Fspatial",
