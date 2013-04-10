@@ -4,6 +4,7 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 from geopy import geocoders, util
 import math
+import re 
 from urllib import urlencode
 from urllib2 import urlopen
 
@@ -131,7 +132,11 @@ class Address:
             yield self._clean(self.country)
 
     def _clean(self, value): 
-        ''' Remove characters that confuse Bing '''
+        # Remove characters that confuse Bing 
+        if (re.match("[0-9]+\.?[0-9]*[NS].+[0-9]+\.?[0-9]*[EW]", value)):
+            # This looks like a lat/lng, keep the decimal point 
+            return value
+
         return value.translate(dict.fromkeys(map(ord, ".()")))
 
     def _get_candidate(self, value = ""): 
@@ -210,7 +215,7 @@ class DplaBingGeocoder(geocoders.Bing):
         return None
 
     def _fetch_results(self, q):
-        params = {'q': q,
+        params = {'q': q.encode("utf8"),
                   'key': self.api_key }
         url = self.url % urlencode(params)
         page = urlopen(url)
