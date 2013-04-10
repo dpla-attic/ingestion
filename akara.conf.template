@@ -128,6 +128,7 @@ MODULES = [
     "dplaingestion.akamod.harvard_enrich_location",
     "dplaingestion.akamod.mdl-enrich-location",
     "dplaingestion.akamod.scdl_enrich_location",
+    "dplaingestion.akamod.uiuc_enrich_location",
     "dplaingestion.akamod.filter_empty_values",
     "dplaingestion.akamod.artstor_select_isshownat",
     "dplaingestion.akamod.artstor_identify_object",
