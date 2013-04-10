@@ -162,6 +162,20 @@
        "relation_count": {
            "map": "function(doc) { v = doc.sourceResource.relation; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
            "reduce": "_count"
+       },
+       "extent": {
+           "map": "function(doc) { v = doc.sourceResource.extent; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
+       },
+       "extent_count": {
+           "map": "function(doc) { v = doc.sourceResource.extent; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
+           "reduce": "_count"
+       },
+       "identifier": {
+           "map": "function(doc) { v = doc.sourceResource.identifier; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(doc['id'], v[i]);}}}"
+       },
+       "identifier_count": {
+           "map": "function(doc) { v = doc.sourceResource.identifier; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit(v[i],1);}}}",
+           "reduce": "_count"
        }
    },
    "lists": {
