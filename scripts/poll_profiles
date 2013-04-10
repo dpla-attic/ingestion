@@ -75,7 +75,6 @@ def process_profile(uri_base, profile_f):
     return True
 
 def process_primo_all(profile, blacklist=None):
-    # TODO flag to stop requesting
     request_more = True
     index = 0
     while request_more:
@@ -292,9 +291,7 @@ def create_temp_dir(operation=""):
 def normalize_collection_name(collection_name):
     """Removes bad characters from collection names, to have safe filenames."""
     import re
-    x = re.sub(r'[/() \t]', r'_', collection_name)
-    x = re.sub(r'_+', r'_', x)
-    x = re.sub(r':', r'_', x)
+    x = re.sub(r'[^\w]+', r'_', collection_name)
     return x.lower()
 
 

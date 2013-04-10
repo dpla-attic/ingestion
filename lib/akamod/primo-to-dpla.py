@@ -75,13 +75,14 @@ CHO_TRANSFORMER = {
     RECORD + "search/creationdate"  : lambda d, p: {"date": getprop(d, p)},
     RECORD + "search/description"   : lambda d, p: {"description": getprop(d, p)},
     RECORD + "display/lds05"        : lambda d, p: {"extent": getprop(d, p)},
-    RECORD + "display/language"     : lambda d, p: {"language": getprop(d, p)},
+    RECORD + "facets/language"      : lambda d, p: {"language": getprop(d, p)},
     RECORD + "display/relation"     : lambda d, p: {"relation": getprop(d, p)},
     RECORD + "display/rights"       : lambda d, p: {"rights": getprop(d, p)},
     RECORD + "display/subject"      : lambda d, p: {"subject": getprop(d, p)},
     RECORD + "display/lds09"        : lambda d, p: {"temporal": getprop(d, p)},
-    RECORD + "display/lds18"        : lambda d, p: {"type": getprop(d, p)},
-    RECORD + "search/lsr03"         : lambda d, p: {"stateLocatedIn": getprop(d, p)}
+    RECORD + "display/lds17"        : lambda d, p: {"type": getprop(d, p)},
+    RECORD + "search/lsr03"         : lambda d, p: {"stateLocatedIn": getprop(d, p)},
+    LINKS + "linktorsrc"             : lambda d, p: {"identifier": getprop(d, p)}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -127,16 +128,14 @@ def primotodpla(body,ctype,geoprop=None):
 
     # Apply transformations that are dependent on more than one
     # original document field
-    id_props = ["control/recordid", "display/identifier"]
-    sp_props = ["display/lds08", "search/lsr14"]
-    ipo_props = ["display/lds04", "search/lsr13"]
+    sp_props = ["display/lds08"]
+    ipo_props = ["display/lds04"]
     title_props = ["display/title", "display/lds10"]
-    out["sourceResource"].update(multi_transform(data, "identifier", id_props))
     out["sourceResource"].update(multi_transform(data, "spatial", sp_props, "list"))
     out["sourceResource"].update(multi_transform(data, "isPartOf", ipo_props))
-    out["sourceResource"].update(multi_transform(data, "title", title_props))
+    out["sourceResource"].update(multi_transform(data, "title", title_props))    
 
-    dp_props = ["display/lds03", "search/lsr12"]
+    dp_props = ["display/lds03"]
     out.update(multi_transform(data, "dataProvider", dp_props))
 
     # Additional content not from original document

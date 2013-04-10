@@ -34,6 +34,7 @@ def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spa
             for k in v[0].keys():
                 v[0][k] = remove_space_around_semicolons(v[0][k])
 
+            """
             if 'state' in v[0]:
                 # Handle case where a previous provider-specific location
                 # enrichment set the state field
@@ -58,6 +59,7 @@ def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spa
                         v[0]['iso3166-2'] = isostate[0]
                         v[0]['state'] = isostate[1]
                         break
+            """
         else:
             # Handle the case where no previous provider-specific location
             # enrichment occured. Convert spatial from list of strings to
@@ -66,10 +68,12 @@ def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spa
             for s in (v if not isinstance(v, basestring) else [v]):
                 d= {}
                 d['name'] = remove_space_around_semicolons(s)
+                """
                 isostate = get_isostate(d['name'], abbrev="Yes")
                 if isostate[0]:
                     d['iso3166-2'] = isostate[0]
                     d['state'] = isostate[1]
+                """
                 sp.append(d)
             v = sp
 

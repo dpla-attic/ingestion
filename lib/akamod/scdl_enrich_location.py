@@ -5,7 +5,7 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 
 @simple_service('POST', 'http://purl.org/la/dp/scdl_enrich_location', 'scdl_enrich_location', 'application/json')
-def scdl_enrich_location(body, ctype, action="scdl_enrich_location", prop="aggregatedCHO/spatial"):
+def scdl_enrich_location(body, ctype, action="scdl_enrich_location", prop="sourceResource/spatial"):
     """
     Service that accepts a JSON document and enriches the "spatial" field of that document.
 
@@ -22,7 +22,8 @@ def scdl_enrich_location(body, ctype, action="scdl_enrich_location", prop="aggre
     if exists(data, prop):
         value = getprop(data,prop)
         for v in iterify(value): 
-            name = v["name"].rstrip()
+            name = replace_state_abbreviations(v["name"].rstrip())
+            v["name"] = name
 
             # Try to extract a County
             if " county " in name.lower(): 
@@ -46,3 +47,23 @@ def iterify(iterable):
     except TypeError:
         iterable = [iterable]
     return iterable
+
+
+def replace_state_abbreviations(name):
+    """
+    Replace abbreviations used in SCDL data with more common versions.
+    """
+    ABBREV = {
+        "(Ala.)": "AL",
+        "(Calif.)": "CA",
+        "(Conn.)": "CT",
+        "(Ill.)": "IL",
+        "(Mass.)": "MA",
+        "(Miss.)": "MS",
+        "(Tex.)": "TX",
+        "(Wash.)": "WA",
+    }
+    for abbrev in ABBREV: 
+        if (abbrev in name): 
+            return name.replace(abbrev, ABBREV[abbrev])
+    return name

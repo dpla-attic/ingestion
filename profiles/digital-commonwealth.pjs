@@ -22,7 +22,7 @@
         "/enrich_location",
         "/contentdm_identify_object",
         "/copy_prop?prop=collection%2Ftitle&to_prop=dataProvider&create=True",
-        "/lookup?prop=dataProvider&target=dataProvider&substitution=dc_data_provider",
+        "/lookup?prop=dataProvider&target=dataProvider&substitution=dc_data_provider&delnonexisting=True",
         "/dc_clean_invalid_dates",
         "/cleanup_language",
         "/enrich_language",

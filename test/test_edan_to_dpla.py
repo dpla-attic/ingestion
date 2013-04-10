@@ -103,7 +103,7 @@ def test_populating_publisher_field():
                         },
                     {
                         "#text": "xx",
-                        "@label": "publisher"
+                        "@label": "Publisher"
                         }
                     ],
                 }
@@ -112,6 +112,7 @@ def test_populating_publisher_field():
             "publisher": ["xx"]
     }
     resp, content = _get_server_response(INPUT)
+    print_error_log()
     assert resp["status"].startswith("2")
     CONTENT = json.loads(content)
     pinfo(content)
@@ -125,14 +126,12 @@ def test_populating_data_provider_field():
                 "data_source": "Smithsonian Institution Archives",
                 }
             }
-    EXPECTED_DATA_PROVIDER = {
-            "dataProvider": "Smithsonian Institution Archives",
-    }
     resp, content = _get_server_response(INPUT)
+    pinfo(content)
     print_error_log()
     assert resp["status"].startswith("2")
     CONTENT = json.loads(content)
-    assert_same_jsons(EXPECTED_DATA_PROVIDER, CONTENT["sourceResource"])
+    assert CONTENT["dataProvider"] == "Smithsonian Institution Archives"
 
 
 def test_populating_title():

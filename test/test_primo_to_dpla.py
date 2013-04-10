@@ -36,21 +36,3 @@ def test_converting_single_spatial_field():
     spatial_res = json.loads(content)["sourceResource"]["spatial"]
     expected_res = ["Salt Lake City, Salt Lake county, Utah, United States"]
     assert expected_res == spatial_res
-
-
-def test_converting_multiple_spatial_fields():
-    INPUT = json.loads(json.dumps(SPATIAL_INPUT))
-    INPUT["PrimoNMBib"]["record"]["search"]["lsr14"] = "aaa"
-    resp, content = _get_server_response(json.dumps(INPUT))
-    spatial_res = json.loads(content)["sourceResource"]["spatial"]
-    expected_res = ["Salt Lake City, Salt Lake county, Utah, United States", "aaa"]
-    assert expected_res == spatial_res
-
-
-def test_converting_multiple_spatial_fields_with_arrays():
-    INPUT = json.loads(json.dumps(SPATIAL_INPUT))
-    INPUT["PrimoNMBib"]["record"]["search"]["lsr14"] = ["aaa", "bbb"]
-    resp, content = _get_server_response(json.dumps(INPUT))
-    spatial_res = json.loads(content)["sourceResource"]["spatial"]
-    expected_res = ["Salt Lake City, Salt Lake county, Utah, United States", "aaa", "bbb"]
-    assert expected_res == spatial_res

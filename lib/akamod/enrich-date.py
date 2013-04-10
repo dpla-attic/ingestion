@@ -227,19 +227,20 @@ def convert_dates(data, prop, earliest):
         if exists(data, p):
             v = getprop(data, p)
 
-            for s in (v if not isinstance(v, basestring) else [v]):
-                for part in s.split(";"):
-                    display_date = remove_brackets_and_strip(part)
-                    stripped = clean_date(display_date)
-                    if len(stripped) < 4:
-                        continue
-                    a, b = parse_date_or_range(stripped)
-                    if b != '3000-01-01':
-                        dates.append( {
-                                "begin": a,
-                                "end": b,
-                                "displayDate" : display_date
-                            })
+            if not isinstance(v, dict):
+                for s in (v if not isinstance(v, basestring) else [v]):
+                    for part in s.split(";"):
+                        display_date = remove_brackets_and_strip(part)
+                        stripped = clean_date(display_date)
+                        if len(stripped) < 4:
+                            continue
+                        a, b = parse_date_or_range(stripped)
+                        if b != '3000-01-01':
+                            dates.append( {
+                                    "begin": a,
+                                    "end": b,
+                                    "displayDate" : display_date
+                                })
 
     dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
 

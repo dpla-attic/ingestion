@@ -174,11 +174,11 @@ def transform_rights(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "creditLine")
     if ps and ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and "Credit Line" in e and e["@label"] == "Credit Line"]
+        [p.append(e["#text"]) for e in ps if "@label" in e and "#text" in e and e["@label"] == "Credit Line"]
 
     ps = arc_group_extraction(d, "freetext", "objectRights")
     if ps and ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and "Rights" in e and e["@label"] == "Rights"]
+        [p.append(e["#text"]) for e in ps if "@label" in e and "#text" in e and e["@label"] == "Rights"]
 
     res = p
     if len(p) == 1:
@@ -191,7 +191,7 @@ def transform_publisher(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "publisher")
     if ps:
-        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "publisher"]
+        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Publisher"]
 
     return {"publisher": p} if p else {}
 
@@ -393,7 +393,7 @@ def transform_identifier(d):
 def transform_data_provider(d):
     ds = None
     dss = arc_group_extraction(d, "descriptiveNonRepeating", "data_source")
-    if dss != [None]:
+    if dss and dss != [None]:
         ds = dss[0]
 
     return {"dataProvider": ds} if ds else {}
@@ -573,7 +573,7 @@ CHO_TRANSFORMER = {
     "freetext/physicalDescription"  : transform_format,
     "freetext/publisher"            : transform_publisher,
     "descriptiveNonRepeating/title" : transform_title,
-    "descriptiveNonRepeating/data_source" : transform_data_provider,
+    #"descriptiveNonRepeating/data_source" : transform_data_provider,
     #"descriptiveNonRepeating/online_media" : transform_online_media,
     "collection"            : lambda d: {"collection": d.get("collection")}
 }
@@ -626,6 +626,7 @@ def edantodpla(body,ctype,geoprop=None):
 
     out.update(transform_is_shown_at(data))
     out.update(transform_object(data))
+    out.update(transform_data_provider(data))
 
     slugify_field(out, "sourceResource/collection/@id")
 
