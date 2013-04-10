@@ -98,6 +98,9 @@ def marc_data_processor(d, p):
 
 
 CHO_TRANSFORMER = {
+    # RECORD
+    "collection": lambda d, p: {"collection": getprop(d, p)},
+
     # META
 #    "metadata/contributor": lambda d, p: {"contributor": getprop(d, p)},
     "metadata/creator": lambda d, p: {"creator": getprop(d, p)},
@@ -116,7 +119,6 @@ CHO_TRANSFORMER = {
 }
 
 AGGREGATION_TRANSFORMER = {
-    "collection": lambda d, p: {"collection": getprop(d, p)},
     "id": lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
     "_id": lambda d, p: {"_id": getprop(d, p)},
     "originalRecord": lambda d, p: {"originalRecord": getprop(d, p)},
