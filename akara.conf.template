@@ -124,6 +124,7 @@ MODULES = [
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.dpla-list-sets",
+    "dplaingestion.akamod.harvard_enrich_location",
     "dplaingestion.akamod.mdl-enrich-location",
     "dplaingestion.akamod.scdl_enrich_location",
     "dplaingestion.akamod.filter_empty_values",
