@@ -587,9 +587,9 @@ def test_tricky_dates2():
 def test_year_month():
     """Should recognize YYYY-MM and not YYYY-YY"""
     INPUT = ["1940/2", "1940/02", "1940 / 2", "1940 / 02",
-             "1940-2", "1940-02", "1940 - 2", "1940 - 02"]
-             #"1938-08-23/24", "1938/08/23-24"]
-
+             "1940-2", "1940-02", "1940 - 2", "1940 - 02",
+             "2/1940", "02/1940", "2 / 1940", "02 / 1940",
+             "2-1940", "02-1940", "2 - 1940", "02 - 1940"]
 
     url = server() + "enrich_earliest_date?prop=date"
     for date in INPUT:

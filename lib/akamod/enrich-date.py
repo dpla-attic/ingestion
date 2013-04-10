@@ -74,6 +74,8 @@ def robust_date_parser(d):
 day_range = re.compile("(?P<year>^\d{4})[-/](?P<month>\d{1,2})[-/](?P<day_begin>\d{1,2})[-/](?P<day_end>\d{1,2}$)")
 # ie 1970-90
 circa_range = re.compile("(?P<century>\d{2})(?P<year_begin>\d{2})[-/](?P<year_end>\d{1,2})")
+# ie 9-1970
+month_year = re.compile("(?P<month>\d{1,2})[-/](?P<year>\d{4})")
 # ie 19th
 century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)", re.I)
 # ie 195- 
@@ -107,7 +109,7 @@ def parse_date_or_range(d):
             b = match.group("year") + "9"
         elif any([len(s) < 4 for s in d.split(delim) if
                   len(d.split(delim)) == 2]):
-            # ie 1970-90, 1970/90, 1970-9, 1970/9
+            # ie 1970-90, 1970/90, 1970-9, 1970/9, 9/1979
             match = circa_range.match(d)
             if match:
                 year_begin = match.group("century") + match.group("year_begin")
@@ -123,12 +125,18 @@ def parse_date_or_range(d):
                     # and use "-" as the delim for consistency in the
                     # dateparser.to_iso8601 result
                     if int(m) in range(1,13):
-                        d = "%s%s%02d" % (y, "-", int(m))
+                        d = "%s-%02d" % (y, int(m))
                     else:
                         # ie 1970-13
                         # Just use the year
                         d = y
 
+                    a = robust_date_parser(d)
+                    b = robust_date_parser(d)
+            else:
+                match = month_year.match(d)
+                if match:
+                    d = "%s-%02d" % (match.group("year"), int(match.group("month")))
                     a = robust_date_parser(d)
                     b = robust_date_parser(d)
         else:
