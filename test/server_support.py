@@ -136,7 +136,8 @@ MODULES = [
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.decode_html",
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",
-    "dplaingestion.akamod.oai_mods_to_dpla"
+    "dplaingestion.akamod.oai_mods_to_dpla",
+    "dplaingestion.akamod.arc-to-dpla"
     ]
 
 class download_preview:

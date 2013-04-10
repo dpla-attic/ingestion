@@ -41,6 +41,17 @@ CONTEXT = {
    }
 }
 
+def transform_thumbnail(d):
+    url = None
+    thumbs = arc_group_extraction(d, "objects", "object")
+    if thumbs and not thumbs == [None]:
+        if isinstance(thumbs, list):
+            url = thumbs[0]["thumbnail-url"]
+        elif isinstance(thumbs, dict):
+            url = thumbs["thumbnail-url"]
+    return {"object": url} if url else {}
+
+
 def date_transform(d, groupKey, itemKey):
     date = None
     if isinstance(itemKey, list):
@@ -311,6 +322,9 @@ def arctodpla(body,ctype,geoprop=None):
 
     if exists(out, "sourceResource/date"):
         logger.debug("OUTTYPE: %s"%getprop(out, "sourceResource/date"))
+
+    if exists(data, "objects/object"):
+        out.update(transform_thumbnail(data))
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:
