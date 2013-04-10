@@ -195,7 +195,15 @@ def is_shown_at_transform(d, p):
                 is_shown_at = placeholder_item_link
 
     return {"isShownAt": is_shown_at} if is_shown_at else {}
-    
+
+def language_transform(d, p):
+    language = []
+    v = getprop(d, p)
+    for s in (v if isinstance(v, list) else [v]):
+        if "#text" in s and s["#text"] not in language:
+            language.append(s["#text"])
+
+    return {"language": language} if language else {}
 
 CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
@@ -207,7 +215,7 @@ CHO_TRANSFORMER["common"] = {
 }
 
 CHO_TRANSFORMER["3.3"] = {
-    "recordInfo/languageOfCataloging/languageTerm/#text": lambda d, p: {"language": getprop(d, p)},
+    "language/languageTerm": language_transform,
     "name": creator_handler_uva,
     "physicalDescription": physical_description_handler,
     "originInfo/place/placeTerm": lambda d, p: {"spatial": getprop(d, p)},
