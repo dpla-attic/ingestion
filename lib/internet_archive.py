@@ -19,16 +19,20 @@ def run_task(task):
         return task.get_result()
     except Exception as e:
         return TaskResult(TaskResult.ERROR,
-                          "%s: %s" % (e.__class__.__name__, str(e)),
-                          task.__class__.__name__)
+                          None,
+                          task.__class__.__name__,
+                          "%s: %s" % (e.__class__.__name__, str(e)))
 
 
-def with_retries(attempts_num=3, delay_sec=1):
+def with_retries(attempts_num=3, delay_sec=1, print_args_if_error=False):
     """
     Wrapper (decorator) that calls given func(*args, **kwargs);
     In case of exception does 'attempts_num'
     number of attempts with "delay_sec * attempt number" seconds delay
     between attempts.
+
+    If 'print_args_if_error' is True, then wrapped function arguments
+    will be shown in error message besides function name.
 
     Usage:
     @with_retries(5, 2)
@@ -60,8 +64,9 @@ def with_retries(attempts_num=3, delay_sec=1):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
-                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\". Attempt #%d failed" % (
-                        e.__class__.__name__, str(e), func.__name__, attempt)
+                    args_string = "" if not print_args_if_error else ", with arguments: %s, %s" % (args, kwargs)
+                    print >> sys.stderr, "Error [%s: %s] occurred while trying to call \"%s\"%s. Attempt #%d failed" % (
+                        e.__class__.__name__, str(e), func.__name__, args_string, attempt)
                     if attempt == attempts_num:
                         raise
                     else:
@@ -72,7 +77,7 @@ def with_retries(attempts_num=3, delay_sec=1):
     return apply_with_retries
 
 
-@with_retries(10, 3)
+@with_retries(10, 3, print_args_if_error=True)
 def fetch_url(url, print_url=False):
     """Downloads data related to given url,
     checks that http response code is 200"""
@@ -90,20 +95,19 @@ def fetch_url(url, print_url=False):
 
 
 class TaskResult(object):
-    SUCCESS = 0
-    ERROR = 1
-    WARN = 2
-    RETRY = 3
+    SUCCESS = 0  # result is available, no error message
+    ERROR = 1  # result is unavailable, error message presents
+    WARN = 2  # result is available, but error (warning) message also exists
+    RETRY = 3  # result is unavailable, error message presents, error is not critical and task should be restarted
 
-    def __init__(self, status, result, _type):
+    def __init__(self, status, result, _type, error_message=None):
         self.status = status
         self.result = result
         self.task_type = _type
-
+        self.error_message = error_message
 
 
 class IngestTask(object):
-
     __metaclass__ = ABCMeta
 
     def run(self):
@@ -114,7 +118,6 @@ class IngestTask(object):
 
 
 class FetchIdsPageTask(IngestTask):
-
     def __init__(self, request_url):
         self.request_url = request_url
 
@@ -134,7 +137,6 @@ class FetchIdsPageTask(IngestTask):
 
 
 class FetchDocumentTask(IngestTask):
-
     def __init__(self, identifier, collection, profile):
         self.identifier = identifier
         self.collection = collection
@@ -169,8 +171,9 @@ class FetchDocumentTask(IngestTask):
             files_response = self._get_parsed_xml(files_url)["files"]
         except Exception as e:
             self._result = TaskResult(TaskResult.ERROR,
-                                      self._skip_doc_message(files_url, e),
-                                      self.__class__.__name__)
+                                      None,
+                                      self.__class__.__name__,
+                                      self._skip_doc_message(files_url, e))
             return
         item_data = {"dc": None, "meta": None, "gif": None, "pdf": None,
                      "shown_at": self.profile["shown_at_URL"].format(self.identifier),
@@ -189,7 +192,7 @@ class FetchDocumentTask(IngestTask):
             elif _format == "Dublin Core":
                 item_data["dc"] = name
             elif _format == "MARC":
-                item_data["marc"]= name
+                item_data["marc"] = name
 
         assert item_data["meta"] is not None, "document \"" + self.identifier + "\" meta data is absent"
 
@@ -200,8 +203,9 @@ class FetchDocumentTask(IngestTask):
             item.update(self._get_parsed_xml(meta_url))
         except Exception as e:
             self._result = TaskResult(TaskResult.ERROR,
-                                      self._skip_doc_message(meta_url, e),
-                                      self.__class__.__name__)
+                                      None,
+                                      self.__class__.__name__,
+                                      self._skip_doc_message(meta_url, e))
             return
 
         if item_data["marc"]:
@@ -210,8 +214,9 @@ class FetchDocumentTask(IngestTask):
                 item.update(self._get_parsed_xml(marc_url))
             except Exception as e:
                 self._result = TaskResult(TaskResult.WARN,
-                                          self._skip_doc_message(marc_url, e, "WARN"),
-                                          self.__class__.__name__)
+                                          item,
+                                          self.__class__.__name__,
+                                          self._skip_doc_message(marc_url, e, "WARN"))
                 return
         self._result = TaskResult(TaskResult.SUCCESS, item, self.__class__.__name__)
 
@@ -220,18 +225,24 @@ class FetchDocumentTask(IngestTask):
 
 
 class EnrichBulkTask(IngestTask):
-
     def __init__(self, docs_num, enrich_func, *args):
         self._enrich_func = enrich_func
         self._args_tuple = args
         self._docs_num = docs_num
 
     def run(self):
-        self._enrich_func(*self._args_tuple)
+        try:
+            self._enrich_func(*self._args_tuple)
+        except Exception as e:
+            self._result = TaskResult(TaskResult.ERROR,
+                                      {"enriched": self._docs_num, "enrich_fails": self._docs_num},
+                                      self.__class__.__name__,
+                                      "%s: %s" % (e.__class__.__name__, str(e)))
+        else:
+            self._result = TaskResult(TaskResult.SUCCESS, {"enriched": self._docs_num}, self.__class__.__name__)
 
     def get_result(self):
-        return TaskResult(TaskResult.SUCCESS, {"enriched": self._docs_num}, self.__class__.__name__)
-
+        return self._result
 
 
 # Taken from python 2.7 source, for python 2.6 compatibility:

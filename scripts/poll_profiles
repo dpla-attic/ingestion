@@ -551,13 +551,16 @@ def process_ia_coll(profile, subr):
             raise Exception("No \"%s\" key in returned json" % response_key)
 
     def task_done(result):
-        if result.status != TaskResult.SUCCESS:
-            print >> sys.stderr, result.result
-            if result.task_type == "FetchDocumentTask":
+        if result.status in (TaskResult.ERROR,
+                             TaskResult.WARN,
+                             TaskResult.RETRY) and result.error_message:
+            print >> sys.stderr, result.error_message
+
+        if result.task_type == "FetchDocumentTask":
+            if result.status == TaskResult.ERROR:
                 with mutex:
                     docs_counter["download_fails"] += 1
-        else:
-            if result.task_type == "FetchDocumentTask":
+            elif result.status in (TaskResult.WARN, TaskResult.SUCCESS):
                 with mutex:
                     docs_counter["downloaded"] += 1
                 try:
