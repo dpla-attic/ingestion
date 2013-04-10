@@ -162,7 +162,9 @@ MODULES = [
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.oai_mods_to_dpla",
     "dplaingestion.akamod.decode_html",
-    "dplaingestion.akamod.artstor_spatial_to_dataprovider"
+    "dplaingestion.akamod.artstor_spatial_to_dataprovider",
+    "dplaingestion.akamod.david_rumsey_identify_object",
+    "dplaingestion.akamod.dedup_value"
     ]
 
 ### Section 3: Other module configuration goes here
@@ -228,4 +230,7 @@ class nypl_identify_object(identify_object):
     pass
 
 class ia_identify_object(identify_object):
+    pass
+
+class david_rumsey_identify_object(identify_object):
     pass

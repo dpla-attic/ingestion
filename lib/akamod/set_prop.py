@@ -13,7 +13,7 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
     Keyword arguments:
     body -- the content to load
     ctype -- the type of content
-    prop -- the prop to set/unset
+    prop -- the prop to set
     value -- the value to set prop to
     condition_prop -- (optional) the field that must exist to set the prop
     
