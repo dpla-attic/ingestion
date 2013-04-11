@@ -323,6 +323,9 @@ def lookup(body, ctype, prop, target, substitution, inverse=None, delnonexisting
                                       "x": ["x", "A"]}
                                    ]}
     """
+    if delnonexisting:
+        delnonexisting = delnonexisting.lower() == "true"
+
     LOG_JSON_ON_ERROR = True
 
     # Check if the prop and target fields has got the same beginning.
@@ -614,4 +617,13 @@ DC_DATA_PROVIDER = {
     "WGBH OpenVault": "WGBH",
     "Home Contact FAQs Items Member Resources Collection Tree": "WGBH",
     "Proudly powered by Omeka. © Digital Commonwealth 2013": "WGBH"
+}
+
+SCDL_FORMAT_PLURALIZE = {
+    "Pamphlet": "Pamphlets",
+    "pamphlets": "Pamphlets",
+    "Manuscript": "Manuscripts",
+    "manuscripts": "Manuscripts",
+    "Photograph": "Photographs",
+    "Photograph": "Photographs"
 }

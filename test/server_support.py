@@ -178,7 +178,8 @@ class lookup:
         'test': 'test_subst',
         'test2': 'test_2_subst',
         'dc_data_provider': 'DC_DATA_PROVIDER',
-        'iso639_3': 'iso639_3_subst'
+        'iso639_3': 'iso639_3_subst',
+        'scdl_format_pluralize': 'SCDL_FORMAT_PLURALIZE'
     }
 
 class identify_object:

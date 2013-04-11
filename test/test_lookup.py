@@ -362,5 +362,35 @@ def test_substitution_with_deleting_missing_values():
     assert_same_jsons(content, EXPECTED_OUTPUT)
 
 
+
+def test_substitution_using_scdl_format_dict():
+    formats = \
+        ("Pamphlets", "Pamphlets"), \
+        ("Pamphlet", "Pamphlets"), \
+        ("pamphlets", "Pamphlets"), \
+        ("Manuscripts", "Manuscripts"), \
+        ("Manuscript", "Manuscripts"), \
+        ("manuscripts", "Manuscripts"), \
+        ("Photograph", "Photographs"), \
+        ("Photographs", "Photographs"), \
+        ("Photograph", "Photographs") \
+
+    data = {
+                "xxx": "yyy",
+                "aaa": ""
+    }
+
+    for f in formats:
+        data["aaa"] = f[0]
+        INPUT = json.dumps(data)
+        data["aaa"] = f[1]
+        EXPECTED_OUTPUT = json.dumps(data)
+        print "Checking: %s" + repr(f)
+        resp, content = _get_server_response(INPUT, "aaa", "aaa", "scdl_format_pluralize", None, False)
+        print_error_log()
+        assert resp.status == 200
+        assert_same_jsons(EXPECTED_OUTPUT, content)
+
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
