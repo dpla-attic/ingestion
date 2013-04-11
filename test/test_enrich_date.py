@@ -355,24 +355,18 @@ def test_enrich_date_parse_format_date_range4():
 
 def test_enrich_date_parse_century_date():
     """Correctly transform a date of format '19th c.'"""
-    INPUT = {
-        "date" : "19th c."
-    }
-    EXPECTED = {
-        u'date' : {
-            u'begin' : u'1800',
-            u'end' : u'1899',
-            "displayDate" : "19th c."
-        }
-    }
+    INPUT = ["19th c.", "19th century"]
 
     url = server() + "enrich_earliest_date?prop=date"
 
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert str(resp.status).startswith("2")
+    for i in INPUT:
+        input = {"date": i}
+        resp,content = H.request(url,"POST",body=json.dumps(input))
+        assert str(resp.status).startswith("2")
 
-    result = json.loads(content)
-    assert result['date'] == EXPECTED[u'date'], "%s != %s" % (result['date'], EXPECTED[u'date'])
+        result = json.loads(content)
+        expected = {"date": {"begin": None, "end": None, "displayDate": i}}
+        assert result['date'] == expected[u'date'], "%s != %s" % (result['date'], expected[u'date'])
 
 
 def test_enrich_date_parse_century_date_with_P():
@@ -382,8 +376,8 @@ def test_enrich_date_parse_century_date_with_P():
     }
     EXPECTED = {
         u'date' : {
-            u'begin' : u'1800',
-            u'end' : u'1899',
+            u'begin' : None,
+            u'end' : None,
             "displayDate" : "19th c."
         }
     }

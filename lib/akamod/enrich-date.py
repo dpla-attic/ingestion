@@ -76,8 +76,6 @@ day_range = re.compile("(?P<year>^\d{4})[-/](?P<month>\d{1,2})[-/](?P<day_begin>
 circa_range = re.compile("(?P<century>\d{2})(?P<year_begin>\d{2})[-/](?P<year_end>\d{1,2})")
 # ie 9-1970
 month_year = re.compile("(?P<month>\d{1,2})[-/](?P<year>\d{4})")
-# ie 19th
-century_date = re.compile("(?P<century>\d{1,2})(?:th|st|nd|rd)", re.I)
 # ie 195- 
 decade_date = re.compile("(?P<year>\d{3})-")
 # ie 1920s
@@ -166,11 +164,6 @@ def parse_date_or_range(d):
 
             if begin:
                 a, b = robust_date_parser(begin), robust_date_parser(end)
-    elif century_date.match(d):
-        match = century_date.match(d)
-        year_begin = (int(match.group("century"))-1) * 100
-        year_end = year_begin + 99
-        a, b = str(year_begin), str(year_end)
     elif decade_date_s.match(d):
         match = decade_date_s.match(d)
         year_begin = match.group("year")
