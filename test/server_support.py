@@ -12,6 +12,7 @@ import tempfile
 import urllib2
 import urlparse
 import httplib
+import ConfigParser
 
 # XXX I only use one function from here. Bring it into this file?
 import python_support
@@ -74,6 +75,18 @@ def create_server_dir(port):
     config_filename = os.path.join(config_root, "akara_test.config")
     thumbs_root=os.path.join(config_root, "thumbs_root")
 
+    ini = ConfigParser.ConfigParser()
+    ini.optionxform=str  # Maintain case for configuration keys 
+    ini.read(os.path.dirname(os.path.realpath(__file__)) + "/../akara.ini")
+    bing_apikey = "notset"
+    if (ini.has_section("Bing") \
+        and ini.has_option("Bing", "ApiKey")): 
+        bing_apikey = ini.get("Bing", "ApiKey")
+    geonames_username = "notset"
+    if (ini.has_section("Geonames") \
+        and ini.has_option("Geonames", "Username")): 
+        geonames_username = ini.get("Geonames", "Username")
+
     print thumbs_root
 
     f = open(config_filename, "w")
@@ -113,6 +126,7 @@ MODULES = [
     "dplaingestion.akamod.uiuc_enrich_location",
     "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
+    "dplaingestion.akamod.geocode",
     "dplaingestion.akamod.lookup",
     "dplaingestion.akamod.georgia_identify_object",
     "dplaingestion.akamod.bhl_contributor_to_collection",
@@ -154,6 +168,10 @@ class download_preview:
         'image/png'  : '.png',
     }
 
+class geocode: 
+    bing_api_key = '%(bing_apikey)s'
+    geonames_username = '%(geonames_username)s'
+
 class lookup:
     lookup_mapping = {
         'test': 'test_subst',
@@ -185,7 +203,9 @@ class ia_identify_object(identify_object):
     pass
 """ % dict(config_root = config_root,
            port = port,
-           thumbs_root=thumbs_root
+           thumbs_root = thumbs_root,
+           bing_apikey = bing_apikey,
+           geonames_username = geonames_username
            ))
     f.close()
 

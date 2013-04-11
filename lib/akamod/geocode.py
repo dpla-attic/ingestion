@@ -3,6 +3,7 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 from geopy import geocoders, util
+import itertools
 import math
 import re 
 from urllib import urlencode
@@ -186,8 +187,9 @@ class DplaBingGeocoder(geocoders.Bing):
                 # logger.info("geocode:   count: %s" % len(DplaBingGeocoder.resultCache[candidate]))
                 # logger.info("geocode:   result: %s" % DplaBingGeocoder.resultCache[candidate])
 
-            # Require that a single match be returned to avoid bad geocoding results 
-            if (1 == len(DplaBingGeocoder.resultCache[candidate])): 
+            # Require that a single match, or closely grouped matches be returned to avoid bad geocoding results 
+            if (1 == len(DplaBingGeocoder.resultCache[candidate]) \
+                or self._are_closely_grouped_results(DplaBingGeocoder.resultCache[candidate])): 
                 result = DplaBingGeocoder.resultCache[candidate][0] 
                 coordinate = (result["geocodePoints"][0]["coordinates"][0], result["geocodePoints"][0]["coordinates"][1])
                 valid_result = True
@@ -213,6 +215,18 @@ class DplaBingGeocoder(geocoders.Bing):
                     return coordinate
 
         return None
+
+    def _are_closely_grouped_results(self, results): 
+        """
+        Check to see if all results are within 10km of each other. 
+        """
+        TOLERANCE_KM = 10
+        coordinates = [(x["geocodePoints"][0]["coordinates"][0], x["geocodePoints"][0]["coordinates"][1]) for x in results]
+        for combination in itertools.combinations(coordinates, 2):
+            if (TOLERANCE_KM < haversine(combination[0], combination[1])): 
+                return False
+
+        return True
 
     def _fetch_results(self, q):
         params = {'q': q.encode("utf8"),
