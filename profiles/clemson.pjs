@@ -25,6 +25,7 @@
         "/enrich_location", 
         "/scdl_enrich_location", 
         "/geocode", 
+        "/scdl_geocode_regions",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
         "/cleanup_language",
         "/enrich_language",
