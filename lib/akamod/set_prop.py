@@ -39,19 +39,21 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
 
 @simple_service('POST', 'http://purl.org/la/dp/unset_prop', 'unset_prop',
     'application/json')
-def unset_prop(body, ctype, prop=None, condition=None):
+def unset_prop(body, ctype, prop=None, condition=None, condition_prop=None):
     """Unsets the value of prop.
 
     Keyword arguments:
     body -- the content to load
     ctype -- the type of content
     prop -- the prop to unset
-    condition -- (optional) 
+    condition -- the condition to be met (uses prop by default) 
+    condition_prop -- the prop to use in the condition
     
     """
 
     CONDITIONS = {
-        "is_digit":   lambda v: v.isdigit()
+        "is_digit": lambda v: v.isdigit(),
+        "mwdl_exclude": lambda v: v == "collections" or v == "findingAids"
     }
 
     def condition_met(v, condition):
@@ -69,8 +71,10 @@ def unset_prop(body, ctype, prop=None, condition=None):
         if not condition:
             delprop(data, prop)
         else:
+            if not condition_prop:
+                condition_prop = prop
             try:
-                if condition_met(getprop(data, prop), condition):
+                if condition_met(getprop(data, condition_prop, True), condition):
                     delprop(data, prop)
             except KeyError:
                 logger.error("CONDITIONS does not contain %s" % condition)

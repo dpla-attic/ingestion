@@ -160,7 +160,7 @@ def test_unset_prop1():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_set_prop2():
+def test_unset_prop2():
     """Should unset prop since condition is met"""
     action = "unset"
     prop = "sourceResource/rights"
@@ -185,9 +185,10 @@ def test_set_prop2():
     resp,content = _get_server_response(json.dumps(INPUT), action=action,
         prop=prop, condition=condition)
     assert resp.status == 200
+    print_error_log()
     assert json.loads(content) == EXPECTED
 
-def test_set_prop3():
+def test_unset_prop3():
     """Should not unset prop since condition is not met"""
     action = "unset"
     prop = "sourceResource/rights"
@@ -207,7 +208,7 @@ def test_set_prop3():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_set_prop4():
+def test_unset_prop4():
     """Should do nothing to INPUT but catch keyError since condition is not
        in CONDITIONS
     """
@@ -229,7 +230,7 @@ def test_set_prop4():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_set_prop5():
+def test_unset_prop5():
     """Should do nothing since prop does not exist"""
     action = "unset"
     prop = "sourceResource/rights"
