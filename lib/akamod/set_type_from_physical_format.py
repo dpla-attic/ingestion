@@ -9,6 +9,7 @@ import re
                 "set_type_from_physical_format", "application/json")
 def set_type_from_physical_format(body, ctype, prop="sourceResource/type"):
     """ 
+    Service that sets the type using the format value
     """
 
     try:
