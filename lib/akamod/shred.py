@@ -26,7 +26,10 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON\n" + str(e)
 
-    par_re = re.compile("(\(.*?\))")
+    if action == "shred":
+        par_re = re.compile("([^"+delim+"]*\(.*?\)[^"+delim+"]*)")
+    else:
+        par_re = None
     for p in prop.split(','):
         if exists(data, p):
             v = getprop(data, p)
@@ -48,7 +51,7 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
                         shredded += exp.split(delim)
                     else:
                         shredded.append(exp)
-                shredded = [i.strip() for i in shredded if i]
+                shredded = [i.strip() for i in shredded if i.strip()]
                 if not keepdup:
                     result = []
                     for s in shredded:

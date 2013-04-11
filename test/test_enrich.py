@@ -137,14 +137,19 @@ def test_shred8():
 def test_shred9():
     """Do not shred on values within parenthesis"""
     INPUT = {
-        "p": "a;(b;c);d;f;(g;h;k)",
+        "p": "String one; (String two; two and a part of two); String three; String four; (abc dbf; sss;k)",
         "q": "d;e;f",
+        "h": "String one; (String two; two and a part of two) String three; String four; (abc dbf; sss;k)",
+        "m": "String one; Begin of two (String two; two and a part of two) String three; String four; (abc dbf; sss;k)"
         }
     EXPECTED = {
-        "p": ["a", "(b;c)", "d", "f", "(g;h;k)"],
+        "p": ["String one", "(String two; two and a part of two)", "String three", "String four", "(abc dbf; sss;k)"],
         "q": ["d", "e", "f"],
+        "h": ['String one', '(String two; two and a part of two) String three', 'String four', '(abc dbf; sss;k)'],
+        "m": ['String one', 'Begin of two (String two; two and a part of two) String three', 'String four',
+              '(abc dbf; sss;k)']
         }
-    url = server() + "shred?prop=p,q"
+    url = server() + "shred?prop=p,q,h,m"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     FETCHED = json.loads(content)
