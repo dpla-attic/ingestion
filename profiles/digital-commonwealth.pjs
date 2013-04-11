@@ -33,7 +33,7 @@
         "/filter_empty_values",
         "/unset_prop?prop=sourceResource%2Fpublisher",
         "/unset_prop?prop=sourceResource%2Fcontributor",
-        "/unset_prop?prop=sourceResource%2Frelation&"
+        "/unset_prop?prop=sourceResource%2Frelation"
 
     ], 
     "blacklist": ["3","5","6","8","13","18","19","20","27","41","177"],
