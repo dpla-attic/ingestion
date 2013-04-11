@@ -14,6 +14,8 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
+        "/nara_enrich_location",
+        "/geocode",
         "/cleanup_language",
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
@@ -27,5 +29,5 @@
         "name": "National Archives and Records Administration"
     }, 
     "type": "arc", 
-    "endpoint_URL": "file:/home/miguel/naratest/"
+    "endpoint_URL": "file:/home/miguel/nara/ArchivalDescriptions-digital/"
 }
