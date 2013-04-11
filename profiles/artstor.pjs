@@ -14,6 +14,7 @@
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
         "/shred?prop=sourceResource%2Fformat&delim=%3b",
         "/cleanup_value",
+        "/capitalize_value",
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
