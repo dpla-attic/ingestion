@@ -13,6 +13,7 @@
         "/shred?prop=sourceResource%2Fsubject&delim=%5C",
         "/shred?prop=sourceResource%2Fsubject&delim=%3A",
         "/copy_prop?prop=sourceResource%2Ftemporal&to_prop=sourceResource%2Fdate&create=True",
+        "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject",

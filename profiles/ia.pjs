@@ -10,6 +10,7 @@
         "/shred?action=unshred&prop=sourceResource%2Ftitle&delim=%2C%20",
         "/cleanup_value?prop=sourceResource%2Fspatial",
         "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Fsubject",
+        "/capitalize_value",
         "/enrich-subject",
         "/enrich_earliest_date",
         "/enrich-type",

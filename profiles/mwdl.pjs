@@ -12,6 +12,7 @@
         "/mwdl_enrich_state_located_in",
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/move_date_values?prop=sourceResource%2Fspatial",
+        "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject",

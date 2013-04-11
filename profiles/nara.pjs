@@ -8,6 +8,7 @@
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation", 
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat", 
         "/cleanup_value",
+        "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich_date",
         "/enrich-subject",

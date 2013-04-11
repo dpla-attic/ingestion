@@ -15,6 +15,7 @@
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
+        "/capitalize_value",
         "/enrich_earliest_date", 
         "/enrich_date",
         "/enrich-subject", 
