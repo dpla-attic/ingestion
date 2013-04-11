@@ -8,7 +8,7 @@ CT_JSON = {"Content-Type": "application/json"}
 H = httplib2.Http()
 
 def _get_server_response(body, prop=None, to_prop=None, create=None, key=None,
-    remove=None, no_replace=None):
+    remove=None, no_replace=None, no_overwrite=None):
     url = server() + "copy_prop?prop=%s&to_prop=%s" % (prop, to_prop)
     if create:
         url = "%s&create=%s" % (url, create)
@@ -18,6 +18,8 @@ def _get_server_response(body, prop=None, to_prop=None, create=None, key=None,
         url = "%s&remove=%s" % (url, remove)
     if no_replace:
         url = "%s&no_replace=%s" % (url, no_replace)
+    if no_overwrite:
+        url = "%s&no_overwrite=%s" % (url, no_overwrite)
     return H.request(url, "POST", body=body, headers=CT_JSON)
 
 def test_copy_prop_rights1():
@@ -689,6 +691,55 @@ def test_copy_prop_to_prop_create_dict_key1():
         to_prop=to_prop, key=key2, create=create)
     assert resp.status == 200
     assert json.loads(content) ==  EXPECTED2
+
+def test_copy_prop_no_overwrite1():
+    """Should not overwrite to_prop since it exists"""
+    prop = "sourceResource/key2"
+    to_prop = "sourceResource/key3"
+    create = True
+    no_overwrite = True
+
+    INPUT = {
+        "key1": "value1",
+        "sourceResource": {
+            "key2": "value2",
+            "key3": "value3"
+        },
+        "key4": "value4"
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+        to_prop=to_prop, create=create, no_overwrite=no_overwrite)
+    assert resp.status == 200
+    assert json.loads(content) ==  INPUT
+
+def test_copy_prop_no_overwrite2():
+    """Should copy prop into to_prop since to_prop does not exist"""
+    prop = "sourceResource/key2"
+    to_prop = "sourceResource/key3"
+    create = True
+    no_overwrite = True
+
+    INPUT = {
+        "key1": "value1",
+        "sourceResource": {
+            "key2": "value2",
+        },
+        "key4": "value4"
+    }
+    EXPECTED = {
+        "key1": "value1",
+        "sourceResource": {
+            "key2": "value2",
+            "key3": "value2",
+        },
+        "key4": "value4"
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+        to_prop=to_prop, create=create, no_overwrite=no_overwrite)
+    print >> sys.stderr, str(content)
+    assert json.loads(content) ==  EXPECTED
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

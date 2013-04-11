@@ -31,7 +31,8 @@
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=sourceResource%2FstateLocatedIn&create=True",
         "/unset_prop?prop=sourceResource%2Fpublisher",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-	"/geocode"
+	    "/geocode",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
     ], 
     "subresources": [], 
     "contributor": {

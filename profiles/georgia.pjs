@@ -30,7 +30,8 @@
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/unset_prop?prop=dataProvider",
         "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
-        "/georgia_identify_object"
+        "/georgia_identify_object",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
     ], 
     "subresources": [
         "dpla"

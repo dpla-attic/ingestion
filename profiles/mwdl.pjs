@@ -26,6 +26,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/geocode",
         "/mwdl_cleanup_field",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/unset_prop?prop=%5Fid&condition=mwdl%5Fexclude&condition_prop=originalRecord%2FPrimoNMBib%2Frecord%2Fsearch%2Frsrctype"
     ], 
     "last_checked": "2013-03-05T17:30:21.689809", 

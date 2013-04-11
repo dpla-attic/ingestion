@@ -20,8 +20,8 @@
         "/enrich_date",
         "/enrich-type",
         "/enrich-format",
-	"/digital_commonwealth_enrich_location",
-	"/enrich_location",
+	    "/digital_commonwealth_enrich_location",
+	    "/enrich_location",
         "/geocode",
         "/contentdm_identify_object",
         "/copy_prop?prop=collection%2Ftitle&to_prop=dataProvider&create=True",
@@ -34,8 +34,8 @@
         "/filter_empty_values",
         "/unset_prop?prop=sourceResource%2Fpublisher",
         "/unset_prop?prop=sourceResource%2Fcontributor",
-        "/unset_prop?prop=sourceResource%2Frelation"
-
+        "/unset_prop?prop=sourceResource%2Frelation",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
     ], 
     "blacklist": ["3","5","6","8","13","18","19","20","27","41","177"],
     "contributor": {

@@ -26,7 +26,8 @@
         "/david_rumsey_identify_object",
         "/set_prop?prop=sourceResource%2Ftype&value=image",
         "/set_prop?prop=dataProvider&value=David%20Rumsey",
-        "/set_prop?prop=sourceResource%2Frights&value=Creative%20Commons%20Attribution-NonCommercial-ShareAlike%203.0%20Unported%3B%20http%3A%2F%2Fcreativecommons%2Eorg%2Flicenses%2Fby%2Dnc%2Dsa%2F3%2E0%2F"
+        "/set_prop?prop=sourceResource%2Frights&value=Creative%20Commons%20Attribution-NonCommercial-ShareAlike%203.0%20Unported%3B%20http%3A%2F%2Fcreativecommons%2Eorg%2Flicenses%2Fby%2Dnc%2Dsa%2F3%2E0%2F",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
     ], 
     "subresources": [], 
     "contributor": {
