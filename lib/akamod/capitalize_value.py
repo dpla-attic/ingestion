@@ -20,8 +20,8 @@ DEFAULT_PROP = [
     "sourceResource/contributor",
     "sourceResource/extent",
     "sourceResource/format",
-    # "sourceResource/spatial/currentLocation"
-    # place name?
+    # "sourceResource/spatial/currentLocation",  # State Located In
+    # "sourceResource/spatial",  # place name?
     "dataProvider",
     "provider/name"
 ]
