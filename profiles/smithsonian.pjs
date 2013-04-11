@@ -25,7 +25,8 @@
         "/lookup?prop=sourceResource%2Fspatial%2Fcountry&target=sourceResource%2Fspatial%2Fcountry&substitution=country_alias",
         "/geocode",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True"
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/set_type_from_physical_format"
    ],
     "geocode": [
         "/lookup?prop=sourceResource%2Fspatial%2Fcountry&target=sourceResource%2Fspatial%2Fcountry&substitution=country_alias",

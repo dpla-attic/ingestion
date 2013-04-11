@@ -139,7 +139,8 @@ MODULES = [
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",
     "dplaingestion.akamod.oai_mods_to_dpla",
     "dplaingestion.akamod.arc-to-dpla",
-    "dplaingestion.akamod.dedup_value"
+    "dplaingestion.akamod.dedup_value",
+    "dplaingestion.akamod.set_type_from_physical_format"
     ]
 
 class download_preview:

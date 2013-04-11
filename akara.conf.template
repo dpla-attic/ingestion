@@ -167,7 +167,8 @@ MODULES = [
     "dplaingestion.akamod.decode_html",
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",
     "dplaingestion.akamod.david_rumsey_identify_object",
-    "dplaingestion.akamod.dedup_value"
+    "dplaingestion.akamod.dedup_value",
+    "dplaingestion.akamod.set_type_from_physical_format"
     ]
 
 ### Section 3: Other module configuration goes here
