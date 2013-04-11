@@ -140,16 +140,18 @@ def test_shred9():
         "p": "String one; (String two; two and a part of two); String three; String four; (abc dbf; sss;k)",
         "q": "d;e;f",
         "h": "String one; (String two; two and a part of two) String three; String four; (abc dbf; sss;k)",
-        "m": "String one; Begin of two (String two; two and a part of two) String three; String four; (abc dbf; sss;k)"
+        "m": "String one; Begin of two (String two; two and a part of two) String three; String four; (abc dbf; sss;k)",
+        "g": "bananas"
         }
     EXPECTED = {
         "p": ["String one", "(String two; two and a part of two)", "String three", "String four", "(abc dbf; sss;k)"],
         "q": ["d", "e", "f"],
         "h": ['String one', '(String two; two and a part of two) String three', 'String four', '(abc dbf; sss;k)'],
         "m": ['String one', 'Begin of two (String two; two and a part of two) String three', 'String four',
-              '(abc dbf; sss;k)']
+              '(abc dbf; sss;k)'],
+        "g": "bananas"
         }
-    url = server() + "shred?prop=p,q,h,m"
+    url = server() + "shred?prop=p,q,h,m,g"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     FETCHED = json.loads(content)
