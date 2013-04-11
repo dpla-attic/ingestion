@@ -45,10 +45,13 @@ def transform_thumbnail(d):
     url = None
     thumbs = arc_group_extraction(d, "objects", "object")
     if thumbs and not thumbs == [None]:
-        if isinstance(thumbs, list):
-            url = thumbs[0]["thumbnail-url"]
-        elif isinstance(thumbs, dict):
-            url = thumbs["thumbnail-url"]
+        d = thumbs
+        if isinstance(thumbs, list) and thumbs:
+            d = thumbs[0]
+        
+        if isinstance(d, dict) and "thumbnail-url" in d:
+            url = d["thumbnail-url"]
+
     return {"object": url} if url else {}
 
 
