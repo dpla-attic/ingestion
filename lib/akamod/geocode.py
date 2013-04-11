@@ -220,6 +220,9 @@ class DplaBingGeocoder(geocoders.Bing):
         """
         Check to see if all results are within 10km of each other. 
         """
+        if (0 == len(results)): 
+            return False
+
         TOLERANCE_KM = 10
         coordinates = [(x["geocodePoints"][0]["coordinates"][0], x["geocodePoints"][0]["coordinates"][1]) for x in results]
         for combination in itertools.combinations(coordinates, 2):

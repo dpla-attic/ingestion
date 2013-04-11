@@ -127,6 +127,7 @@ MODULES = [
     "dplaingestion.akamod.digital_commonwealth_enrich_location",
     "dplaingestion.akamod.harvard_enrich_location",
     "dplaingestion.akamod.mdl-enrich-location",
+    "dplaingestion.akamod.mwdl_enrich_location",
     "dplaingestion.akamod.nara_enrich_location",
     "dplaingestion.akamod.scdl_enrich_location",
     "dplaingestion.akamod.uiuc_enrich_location",
