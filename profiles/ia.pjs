@@ -14,6 +14,7 @@
         "/enrich_earliest_date",
         "/enrich-type",
         "/enrich_location",
+        "/geocode",
         "/cleanup_language",
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
