@@ -18,21 +18,20 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
         logger.error("No prop supplied")
         return body
 
-    REGSUB = ("\(", ""), ("\)", ""), ("\.",""), ("\?","")
     REGSEARCH = [
         "\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}",
-        "\d{1,2} *[-/] *\d{4} *[-/] *\d{1,2} *[-/] *\d{4}",
-        "\d{4} *[-/] *\d{1,2} *[-/] *\d{4} *[-/] *\d{1,2}",
-        "\d{1,4} *[-/] *\d{1,4} *[-/] *\d{1,4}",
-        "\d{4} *[-/] *\d{4}",
-        "\d{1,2} *[-/] *\d{4}",
-        "\d{4} *[-/] *\d{1,2}",
-        "\d{4}s?"
+        "\d{1,2}\s*[-/]\s*\d{4}\s*[-/]\s*\d{1,2}\s*[-/]\s*\d{4}",
+        "\d{4}\s*[-/]\s*\d{1,2}\s*[-/]\s*\d{4}\s*[-/]\s*\d{1,2}",
+        "\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}",
+        "\d{4}\s*[-/]\s*\d{4}",
+        "\d{1,2}\s*[-/]\s*\d{4}",
+        "\d{4}\s*[-/]\s*\d{1,2}",
+        "\d{4}s?",
+        "\d{1,2}\s*(?:st|nd|rd|th)\s*century"
         ]
 
     def cleanup(s):
-        for p,r in REGSUB:
-            s = re.sub(p,r,s)
+        s = re.sub("[\(\)\.\?]", "",s)
         return s.strip()
 
     try:
@@ -50,7 +49,7 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
         for v in (values if isinstance(values, list) else [values]):
             c = cleanup(v)
             for pattern in REGSEARCH:
-                m = re.compile(pattern).findall(c)
+                m = re.compile(pattern, re.I).findall(c)
                 if len(m) == 1 and not re.sub(m[0],"",c).strip():
                     toprop.append(m[0])
                     # Append the non-cleaned value to remove

@@ -301,14 +301,14 @@ def test_artstor_cleanup_creator2():
     INPUT = {
         "sourceResource": {
             "creator": [
-                "And bananas",
-                "Artist: bananas",
+                " And bananas",
+                "   Artist: bananas",
                 "Author: bananas",
                 "Binder: bananas",
                 "Drawn by bananas",
                 "drawn by bananas",
                 "Illuminator: bananas",
-                "Or bananas",
+                "Or bananas  ",
                 "Scribe: bananas",
                 "Resolve bananas",
                 " Apples"
@@ -328,7 +328,7 @@ def test_artstor_cleanup_creator2():
                 "bananas",
                 "bananas",
                 "bananas",
-                " Apples"
+                "Apples"
             ]
         }
     }

@@ -738,7 +738,6 @@ def test_copy_prop_no_overwrite2():
 
     resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
         to_prop=to_prop, create=create, no_overwrite=no_overwrite)
-    print >> sys.stderr, str(content)
     assert json.loads(content) ==  EXPECTED
 
 if __name__ == "__main__":

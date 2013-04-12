@@ -133,6 +133,10 @@ def test_move_date_values_subject1():
                 "1903",
                 " (1904) ",
                 ".1905?",
+                "19th century",
+                "2nd Century",
+                "1stcentury",
+                "3rdCentury",
                 "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works.",
                 "subject1"
             ]
@@ -145,7 +149,11 @@ def test_move_date_values_subject1():
                 "1902-1999",
                 "1903",
                 "1904",
-                "1905"
+                "1905",
+                "19th century",
+                "2nd Century",
+                "1stcentury",
+                "3rdCentury",
             ],
             "subject" : [
                 "United States--History--Civil War, 1861-1865--Soldiers--Pictorial works.",

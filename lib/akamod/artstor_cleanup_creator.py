@@ -41,6 +41,7 @@ def artstor_cleanup_creator(body, ctype, prop="sourceResource/creator"):
         if not isinstance(item, list):
             item = [item]
         for i in range(len(item)):
+            item[i] = item[i].strip()
             for s in CLEANUP:
                 if item[i].startswith(s):
                     item[i] = item[i].replace(s, "").lstrip()

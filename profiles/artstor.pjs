@@ -24,6 +24,8 @@
         "/enrich_date",
         "/enrich-type",
         "/enrich-format",
+        "/move_date_values?prop=sourceResource%2Fformat",
+        "/enrich_date",
         "/artstor_identify_object",
         "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Frights%2CsourceResource%2Fformat%2CsourceResource%2Fdescription",
         "/artstor_spatial_to_dataprovider",
