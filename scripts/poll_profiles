@@ -14,6 +14,7 @@ from multiprocessing.dummy import Pool
 from Queue import Full, Empty, Queue
 from threading import Lock
 import signal
+
 try:
     from collections import OrderedDict, Counter
 except ImportError:
@@ -25,7 +26,8 @@ from dplaingestion.internet_archive import run_task, FetchDocumentTask, TaskResu
 # different directories than its Item files. No clear deterministic path between
 # them, so will have to find the file instead using globbing
 #ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.path.dirname(srcdir+os.sep),"%s_%s.xml"%(htype.replace(' ',''),hid))
-ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(os.sep.join(os.path.dirname(srcdir+os.sep).split(os.sep)[:-1]),"*","%s_%s.xml"%(htype.replace(' ',''),hid))
+ARC_RELATED_FILE = lambda srcdir, htype, hid: os.path.join(
+    os.sep.join(os.path.dirname(srcdir + os.sep).split(os.sep)[:-1]), "*", "%s_%s.xml" % (htype.replace(' ', ''), hid))
 
 URI_BASE = None
 ENRICH = "/enrich" # enrichment service URI
@@ -54,18 +56,19 @@ def process_profile(uri_base, profile_f):
 
     getRecord = profile.get(u'get_record', None)
     subResources = profile.get(u'subresources')
-    blacklist = profile.get(u'blacklist',[])
+    blacklist = profile.get(u'blacklist', [])
     ptype = profile.get(u'type').lower()
     if getRecord:
-        process = TYPE_PROCESSORS.get((ptype,'rec'))
+        process = TYPE_PROCESSORS.get((ptype, 'rec'))
         process(profile)
     elif not subResources: # i.e. all subresources
-        process = TYPE_PROCESSORS.get((ptype,'all'))
-        process(profile,blacklist)
+        process = TYPE_PROCESSORS.get((ptype, 'all'))
+        process(profile, blacklist)
     else:
-        process = TYPE_PROCESSORS.get((ptype,'coll'))
+        process = TYPE_PROCESSORS.get((ptype, 'coll'))
         if not process:
-            print >> sys.stderr, "The ingest of individual %s collections is not supported at this time"%(ptype.upper())
+            print >> sys.stderr, "The ingest of individual %s collections is not supported at this time" % (
+                ptype.upper())
             sys.exit(1)
 
         for subr in subResources:
@@ -73,6 +76,7 @@ def process_profile(uri_base, profile_f):
             time.sleep(sleep)
 
     return True
+
 
 def process_primo_all(profile, blacklist=None):
     request_more = True
@@ -105,7 +109,9 @@ def process_primo_all(profile, blacklist=None):
 
     return True
 
-ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
+
+ARC_PARSE = lambda doc: xmltodict.parse(doc, xml_attribs=True, attr_prefix='', force_cdata=False,
+                                        ignore_whitespace_cdata=True)
 
 #def skip_cdata(path,key,data):
 #    if '#text' in data:
@@ -113,19 +119,19 @@ ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',forc
 #    return key, data
 #
 #ARC_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',postprocessor=skip_cdata)
-def process_arc_all(profile,blacklist=None):
+def process_arc_all(profile, blacklist=None):
     src_URL = profile.get('endpoint_URL')
     assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
     src_dir = src_URL[5:]
 
-    collections = {} 
+    collections = {}
     # Create temp dir
     cache_dir = create_temp_dir("ingest_nara")
-    print "Walking directory: "+src_dir
+    print "Walking directory: " + src_dir
     for (root, dirs, files) in os.walk(src_dir):
         for filename in fnmatch.filter(files, 'Item_*.xml'):
-            item_fn = os.path.join(root,filename)
-            item_f = open(item_fn,'r')
+            item_fn = os.path.join(root, filename)
+            item_f = open(item_fn, 'r')
             item = ARC_PARSE(item_f)['archival-description']
             item_f.close()
 
@@ -133,7 +139,7 @@ def process_arc_all(profile,blacklist=None):
             item['_id'] = item['arc-id']
 
             hier_items = item['hierarchy']['hierarchy-item']
-            for hi in (hier_items if isinstance(hier_items,list) else [hier_items]):
+            for hi in (hier_items if isinstance(hier_items, list) else [hier_items]):
                 htype = hi['hierarchy-item-lod']
                 # Record Group mapped to collection
                 if not htype.lower() == 'record group': continue
@@ -171,29 +177,31 @@ def process_arc_all(profile,blacklist=None):
 
             if i == limit or line == lines[-1]:
                 print >> sys.stderr, "Enriching collection %s" % cid
-                enrich_coll(profile,cid,json.dumps(collections[cid]))
+                enrich_coll(profile, cid, json.dumps(collections[cid]))
                 del collections[cid]['items'][:]
-                i = 0   
+                i = 0
 
         del collections[cid]['items']
+
 
 def enrich_coll(profile, subr, content):
     # Enrich retrieved data
     global ENRICH
-    
+
     headers = {
         "Content-Type": "application/json",
         "Pipeline-Coll": ','.join(profile["enrichments_coll"]),
         "Pipeline-Rec": ','.join(profile["enrichments_rec"]),
         "Source": profile['name'],
-        "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor',{})))
+        "Contributor": base64.b64encode(json.dumps(profile.get(u'contributor', {})))
     }
     if subr:
         headers["Collection"] = subr
 
-    resp, content = H.request(ENRICH, 'POST' ,body=content, headers=headers)
+    resp, content = H.request(ENRICH, 'POST', body=content, headers=headers)
     if not str(resp.status).startswith('2'):
-        print >> sys.stderr, '  HTTP error with enrichment service: '+repr(resp)
+        print >> sys.stderr, '  HTTP error with enrichment service: ' + repr(resp)
+
 
 def process_oai_rec(profile):
     endpoint = profile[u'get_record']
@@ -203,13 +211,14 @@ def process_oai_rec(profile):
 
     resp, content = H.request(endpoint)
     if not str(resp.status).startswith('2'):
-        print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+        print >> sys.stderr, '  HTTP error (' + resp[u'status'] + ') resolving URL: ' + endpoint
         return False
 
     subr = profile[u'name']
-    enrich_coll(profile,subr,content)
+    enrich_coll(profile, subr, content)
 
-def process_oai_coll(profile,subr):
+
+def process_oai_coll(profile, subr):
     # For now, a simplifying assumption that string concatenation produces a
     # full URI from the combination of the endpoint URL and each subresource id.
     # Better might be a single field listing all URIs but unclear how that extends
@@ -231,17 +240,18 @@ def process_oai_coll(profile,subr):
 
         resp, content = H.request(endpoint)
         if not resp[u'status'].startswith('2'):
-            print >> sys.stderr, '  HTTP error ('+resp[u'status']+') resolving URL: ' + endpoint
+            print >> sys.stderr, '  HTTP error (' + resp[u'status'] + ') resolving URL: ' + endpoint
             continue
         endpoint_content = json.loads(content)
         resumption_token = endpoint_content['resumption_token']
 
         content = json.dumps(endpoint_content)
-        enrich_coll(profile,subr,content)
+        enrich_coll(profile, subr, content)
 
         request_more = resumption_token is not None and len(resumption_token) > 0
 
-def process_oai_all(profile,blacklist=tuple()):
+
+def process_oai_all(profile, blacklist=tuple()):
     # Get all sets
     global URI_BASE
     url = profile[u'list_sets']
@@ -249,11 +259,11 @@ def process_oai_all(profile,blacklist=tuple()):
         url = URI_BASE + url
     resp, content = H.request(url)
     if not resp[u'status'].startswith('2'):
-        print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
+        print >> sys.stderr, ' HTTP error (' + resp[u'status'] + ') resolving URL: ' + url
         return False
 
-    sleep = profile.get(u'sleep',0)
-    
+    sleep = profile.get(u'sleep', 0)
+
     subResources = []
     if len(content) > 2:
         set_content = json.loads(content)
@@ -265,9 +275,9 @@ def process_oai_all(profile,blacklist=tuple()):
         subResources.append(profile['name'])
 
     # Process the sets
-    subr_to_process =[subr for subr in subResources if subr not in blacklist]
+    subr_to_process = [subr for subr in subResources if subr not in blacklist]
     for subr in subr_to_process:
-        process_oai_coll(profile,subr)
+        process_oai_coll(profile, subr)
         time.sleep(sleep)
 
 
@@ -275,7 +285,8 @@ def get_current_username():
     """Returns the name of the current user."""
     import os
     import pwd
-    return pwd.getpwuid( os.getuid() )[ 0 ]
+
+    return pwd.getpwuid(os.getuid())[0]
 
 
 def create_temp_dir(operation=""):
@@ -284,6 +295,7 @@ def create_temp_dir(operation=""):
     The temp dir is created using current user name and provided operation.
     """
     import tempfile
+
     prefix = "%s_%s" % (get_current_username(), operation)
     return tempfile.mkdtemp(prefix=prefix)
 
@@ -291,18 +303,20 @@ def create_temp_dir(operation=""):
 def normalize_collection_name(collection_name):
     """Removes bad characters from collection names, to have safe filenames."""
     import re
+
     x = re.sub(r'[^\w]+', r'_', collection_name)
     return x.lower()
 
 
 # Used for Smithsonian data
-collections = {} 
+collections = {}
+
 
 def process_edan_all(profile, blacklist=None):
     src_URL = profile.get('endpoint_URL')
     assert src_URL.startswith('file:/') # assumes no authority and the non-broken use of //
     src_dir = src_URL[5:]
-    
+
     global collections
     collections = {}
     cache_dir = create_temp_dir("ingest_edan")
@@ -329,13 +343,13 @@ def process_edan_all(profile, blacklist=None):
         if not isinstance(colls, list):
             it = [colls]
 
-        for c in it: 
+        for c in it:
             if not "#text" in c:
                 continue
-            
+
             hid = normalize_collection_name(c["#text"])
             htitle = c["#text"]
-            
+
             if hid not in collections:
                 # Grab series information from item
                 coll = {}
@@ -348,24 +362,23 @@ def process_edan_all(profile, blacklist=None):
 
             # Create tmp file to hold collections items
             coll_fn = cache_file_name(cache_dir, coll['id'])
-            coll_f = open(coll_fn,'a')
-            coll_f.write(str(item)+"\n")
+            coll_f = open(coll_fn, 'a')
+            coll_f.write(str(item) + "\n")
             coll_f.close()
 
         return True
 
     for (root, dirs, files) in os.walk(src_dir):
         for filename in fnmatch.filter(files, '*_DPLA.xml'):
-            item_fn = os.path.join(root,filename)
+            item_fn = os.path.join(root, filename)
             print "Processing file: " + item_fn
             try:
-                item_f = open(item_fn,'r')
+                item_f = open(item_fn, 'r')
                 xmltodict.parse(item_f, item_depth=3, item_callback=handle_document)
             except Exception as e:
-                print >> sys.stderr, '[ERROR]', e.message 
+                print >> sys.stderr, '[ERROR]', e.message
             else:
                 item_f.close()
-
 
     limit = 1000
     for cid in collections:
@@ -381,13 +394,13 @@ def process_edan_all(profile, blacklist=None):
 
             if i == limit:
                 print >> sys.stderr, "Enriching collection [%s]" % cid
-                enrich_coll(profile,cid,json.dumps(collections[cid]))
+                enrich_coll(profile, cid, json.dumps(collections[cid]))
                 del collections[cid]['items'][:]
                 i = 0
 
         if collections[cid]['items']:
             print >> sys.stderr, "Enriching collection [%s]" % cid
-            enrich_coll(profile,cid,json.dumps(collections[cid]))
+            enrich_coll(profile, cid, json.dumps(collections[cid]))
             del collections[cid]['items'][:]
 
         del collections[cid]['items']
@@ -396,8 +409,8 @@ def process_edan_all(profile, blacklist=None):
     print >> sys.stderr, "Removing cache dir [%s]" % cache_dir
     os.system("rm -rf " + cache_dir)
 
-def process_mets_coll(profile, subr):
 
+def process_mets_coll(profile, subr):
     def document_links(document_list_uri):
         print >> sys.stderr, "Enriching collection %s" % subr
         print >> sys.stderr, document_list_uri
@@ -442,6 +455,7 @@ def process_mets_coll(profile, subr):
         enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
         print >> sys.stderr, "%d documents processed" % total_count
 
+
 def process_nypl_coll(profile, subr):
     endpoint = profile[u'endpoint_URL'].format(subr)
     doc_endpoint = profile["get_record_URL"]
@@ -460,7 +474,7 @@ def process_nypl_coll(profile, subr):
         response_dict = ARC_PARSE(content)["nyplAPI"]
         success = response_dict["response"]["headers"]["code"] == "200"
         if success:
-            total_pages =  response_dict["request"]["totalPages"]
+            total_pages = response_dict["request"]["totalPages"]
             current_page = response_dict["request"]["page"]
             done = total_pages == current_page
             page += 1
@@ -472,7 +486,8 @@ def process_nypl_coll(profile, subr):
                     print >> sys.stderr, ' HTTP error (%s) resolving URL: %s' % (resp[u'status'], endpoint)
                     return False
                 doc_response = ARC_PARSE(content)["nyplAPI"]
-                assert doc_response["response"]["headers"]["code"] == "200", doc_response["response"]["headers"]["message"]
+                assert doc_response["response"]["headers"]["code"] == "200", doc_response["response"]["headers"][
+                    "message"]
                 item = doc_response["response"]["mods"]
                 item["_id"] = item_dict["uuid"]
                 item["tmp_image_id"] = item_dict["imageID"]
@@ -484,6 +499,7 @@ def process_nypl_coll(profile, subr):
         else:
             raise Exception(response_dict["response"]["headers"]["message"])
 
+
 def process_nypl_all(profile, blacklist=tuple()):
     # Get all sets
     global URI_BASE
@@ -492,7 +508,7 @@ def process_nypl_all(profile, blacklist=tuple()):
         url = URI_BASE + url
     resp, content = H.request(url)
     if not resp[u'status'].startswith('2'):
-        print >> sys.stderr, ' HTTP error ('+resp[u'status']+') resolving URL: ' + url
+        print >> sys.stderr, ' HTTP error (' + resp[u'status'] + ') resolving URL: ' + url
         return False
 
     sleep = profile.get(u'sleep', 0)
@@ -513,7 +529,6 @@ def process_nypl_all(profile, blacklist=tuple()):
 
 
 def process_ia_coll(profile, subr):
-
     def _stophandler(signum, frame):
         print >> sys.stderr, "Got shutdown signal %d. Going to close pool." % signum
         print >> sys.stderr, "Sending notification to pool workers..."
@@ -576,7 +591,8 @@ def process_ia_coll(profile, subr):
                                                                      enrich_coll,
                                                                      profile,
                                                                      subr,
-                                                                     json.dumps({"items": items, "title": subr})),),
+                                                                     json.dumps({"items": items,
+                                                                                 "title": collection_title})),),
                                                 callback=task_done)
                     queue.put(result.result, block=False)
         if result.task_type == "EnrichBulkTask":
@@ -595,6 +611,7 @@ def process_ia_coll(profile, subr):
     pool = Pool(processes=10)  # document download processes
     enrich_pool = Pool(processes=1)  # enrichment processes
     mutex = Lock()
+    collection_title = profile["collection_titles"].get(subr, subr)
 
     while not done:
         args["page"] = page
@@ -622,7 +639,8 @@ def process_ia_coll(profile, subr):
                                                      enrich_coll,
                                                      profile,
                                                      subr,
-                                                     json.dumps({"items": items, "title": subr})),),
+                                                     json.dumps({"items": items,
+                                                                 "title": collection_title})),),
                                 callback=task_done)
     enrich_pool.close()
     enrich_pool.join()
@@ -635,15 +653,15 @@ def process_ia_coll(profile, subr):
 
 
 TYPE_PROCESSORS = {
-    ('arc','coll'): None,
-    ('arc','all'): process_arc_all,
-    ('oai','coll'): process_oai_coll,
-    ('oai','all'): process_oai_all,
-    ('edan','coll'): None,
-    ('edan','all'): process_edan_all,
-    ('oai','rec'): process_oai_rec,
-    ('primo','coll'): None,
-    ('primo','all'): process_primo_all,
+    ('arc', 'coll'): None,
+    ('arc', 'all'): process_arc_all,
+    ('oai', 'coll'): process_oai_coll,
+    ('oai', 'all'): process_oai_all,
+    ('edan', 'coll'): None,
+    ('edan', 'all'): process_edan_all,
+    ('oai', 'rec'): process_oai_rec,
+    ('primo', 'coll'): None,
+    ('primo', 'all'): process_primo_all,
     ('mets', 'coll'): process_mets_coll,
     ('mets', 'all'): None,
     ('nypl', 'coll'): process_nypl_coll,
@@ -651,6 +669,7 @@ TYPE_PROCESSORS = {
     ('ia', 'coll'): process_ia_coll,
     ('ia', 'all'): None,
 }
+
 
 def define_arguments():
     """
@@ -666,8 +685,9 @@ def main(argv):
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
     for profile in args.profile:
-        print >> sys.stderr, 'Processing profile: '+profile
+        print >> sys.stderr, 'Processing profile: ' + profile
         process_profile(args.uri_base, profile)
+
 
 if __name__ == '__main__':
     main(sys.argv)

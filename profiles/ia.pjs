@@ -5,7 +5,6 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/ia-to-dpla",
-        "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=sourceResource%2Fcollection%2Ftitle",
         "/cleanup_value",
         "/shred?action=unshred&prop=sourceResource%2Ftitle&delim=%2C%20",
         "/cleanup_value?prop=sourceResource%2Fspatial",
@@ -26,6 +25,10 @@
         "blc",
         "clemson"
     ],
+    "collection_titles": {
+        "blc": "Boston Library Consortium",
+        "clemson": "LYRASIS members and Sloan Foundation"
+    },
     "contributor": {
         "@id": "http://dp.la/api/contributor/internet_archive",
         "name": "Internet Archive"
@@ -36,5 +39,8 @@
     "prefix_files": "{0}_files.xml",
     "prefix_meta": "{0}_meta.xml",
     "prefix_dc": "{0}_dc.xml",
-    "shown_at_URL": "http://archive.org/details/{0}"
+    "shown_at_URL": "http://archive.org/details/{0}",
+    "removed_enrichments_rec": [
+        "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=sourceResource%2Fcollection%2Ftitle"
+    ]
 }
