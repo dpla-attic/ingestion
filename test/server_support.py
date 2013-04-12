@@ -155,7 +155,8 @@ MODULES = [
     "dplaingestion.akamod.arc-to-dpla",
     "dplaingestion.akamod.dedup_value",
     "dplaingestion.akamod.set_type_from_physical_format",
-    "dplaingestion.akamod.capitalize_value"
+    "dplaingestion.akamod.capitalize_value",
+    "dplaingestion.akamod.artstor_cleanup_creator",
     ]
 
 class download_preview:

@@ -1,4 +1,4 @@
-from server_support import server, H
+from server_support import server, H, print_error_log
 
 from amara.thirdparty import json
 from nose.tools import nottest
@@ -270,6 +270,91 @@ def test_artstor_cleanup_data_provider():
     assert str(resp.status).startswith("2")
     data = json.loads(content)
     assert data["dataProvider"] == EXPECTED["dataProvider"], DictDiffer(data, EXPECTED).diff()
+
+def test_artstor_cleanup_creator1():
+    """
+    Cleanup the creator field
+    """
+
+    INPUT = {
+        "sourceResource": {
+            "creator": "And bananas"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "creator": "bananas"
+        }
+    }
+
+    url = server() + "artstor_cleanup_creator"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    data = json.loads(content)
+    assert data == EXPECTED, DictDiffer(data, EXPECTED).diff() 
+
+def test_artstor_cleanup_creator2():
+    """
+    Cleanup the creator field
+    """
+
+    INPUT = {
+        "sourceResource": {
+            "creator": [
+                "And bananas",
+                "Artist: bananas",
+                "Author: bananas",
+                "Binder: bananas",
+                "Drawn by bananas",
+                "drawn by bananas",
+                "Illuminator: bananas",
+                "Or bananas",
+                "Scribe: bananas",
+                "Resolve bananas",
+                " Apples"
+            ]
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "creator": [
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                "bananas",
+                " Apples"
+            ]
+        }
+    }
+
+    url = server() + "artstor_cleanup_creator"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    data = json.loads(content)
+    assert data == EXPECTED, DictDiffer(data, EXPECTED).diff() 
+
+def test_artstor_cleanup_creator3():
+    """
+    Should do nothing since creator field does not exist
+    """
+
+    INPUT = {
+        "sourceResource": {
+            "subject": "bananas"
+        }
+    }
+
+    url = server() + "artstor_cleanup_creator"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    data = json.loads(content)
+    assert data == INPUT, DictDiffer(data, INPUT).diff() 
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

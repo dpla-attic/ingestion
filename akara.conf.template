@@ -170,7 +170,8 @@ MODULES = [
     "dplaingestion.akamod.david_rumsey_identify_object",
     "dplaingestion.akamod.dedup_value",
     "dplaingestion.akamod.set_type_from_physical_format",
-    "dplaingestion.akamod.capitalize_value"
+    "dplaingestion.akamod.capitalize_value",
+    "dplaingestion.akamod.artstor_cleanup_creator"
     ]
 
 ### Section 3: Other module configuration goes here
