@@ -48,13 +48,10 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
                 for place in hierarchy: 
                     fcode = place["fcode"]
                     if ("PCLI" == place["fcode"]): 
-                        str = place["toponymName"]
                         v["country"] = place["toponymName"]
                     elif ("ADM1" == place["fcode"]):
-                        str += ", %s" % place["toponymName"]
                         v["state"] = place["toponymName"]
                     elif ("ADM2" == place["fcode"]):
-                        str += ", %s" % place["toponymName"]
                         v["county"] = place["toponymName"]
 
                     # Deterine how close we are to the original coordinates, to see if this is the 
