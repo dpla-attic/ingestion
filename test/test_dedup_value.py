@@ -9,7 +9,7 @@ def _get_server_response(body, prop=None):
     return H.request(url, "POST", body=body)
 
 
-def test_dedup_value():
+def test_dedup_value1():
     """Should remove duplicate values"""
 
     props = "subject,spatial,description"
@@ -37,3 +37,24 @@ def test_dedup_value():
     resp, content = _get_server_response(json.dumps(INPUT), props)
     assert resp.status == 200
     assert_same_jsons(EXPECTED, content)
+
+def test_dedup_value2():
+    """Should do nothing if prop does not exists"""
+
+    props = "dataProvider,language"
+    INPUT = {
+        "subject": [
+            "This is a subject",
+            "This is a subject.",
+            " this is a SuBject . ",
+            "This is another subject (1780).",
+            "This is another subject 1780",
+            "   thiS IS anOther subject (1780)"
+        ],
+        "spatial": ["North Carolina", "New York"],
+        "description": "A description"
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT), props)
+    assert resp.status == 200
+    assert_same_jsons(INPUT, content)

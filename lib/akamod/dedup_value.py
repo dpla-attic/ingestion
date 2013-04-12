@@ -29,13 +29,14 @@ def dedup_value(body, ctype, action="dedup_value", prop=None):
         return "Unable to parse body as JSON"
 
     for p in prop.split(","):
-        v = getprop(data, p)
-        if isinstance(v, list):
-            # Remove whitespace, periods, parens
-            clone = [re.sub("[ \.\(\)]", "", s).lower() for s in v]
-            # Get index of unique values
-            index = list(set([clone.index(s) for s in list(set(clone))]))
+        if exists(data, p):
+            v = getprop(data, p)
+            if isinstance(v, list):
+                # Remove whitespace, periods, parens
+                clone = [re.sub("[ \.\(\)]", "", s).lower() for s in v]
+                # Get index of unique values
+                index = list(set([clone.index(s) for s in list(set(clone))]))
             
-            setprop(data, p, [v[i] for i in index])
+                setprop(data, p, [v[i] for i in index])
 
     return json.dumps(data)
