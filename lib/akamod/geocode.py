@@ -268,8 +268,9 @@ class DplaGeonamesGeocoder(object):
     def reverse_geocode(self, lat, lng): 
         params = { "lat": lat, 
                    "lng": lng,
-                   "username": module_config().get("geonames_username") }
-        url = "http://api.geonames.org/findNearbyJSON?%s" % urlencode(params)
+                   "username": module_config().get("geonames_username"), 
+                   "token": module_config().get("geonames_token") }
+        url = "http://ws.geonames.org/findNearbyJSON?%s" % urlencode(params)
         if (url not in DplaGeonamesGeocoder.resultCache):
             result = json.loads(util.decode_page(urlopen(url)))
             if ("geonames" in result \
@@ -288,8 +289,9 @@ class DplaGeonamesGeocoder(object):
         geonames_item = self.reverse_geocode(lat, lng)
         if (geonames_item): 
             params = { "geonameId": geonames_item["geonameId"],
-                       "username": module_config().get("geonames_username") }
-            url = "http://api.geonames.org/hierarchyJSON?%s" % urlencode(params)
+                       "username": module_config().get("geonames_username"), 
+                       "token": module_config().get("geonames_token") }
+            url = "http://ws.geonames.org/hierarchyJSON?%s" % urlencode(params)
             if (url not in DplaGeonamesGeocoder.resultCache):
                 result = json.loads(util.decode_page(urlopen(url)))
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
