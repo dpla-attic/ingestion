@@ -13,8 +13,8 @@ HTTP_TYPE_TEXT = 'text/plain'
 HTTP_HEADER_TYPE = 'Content-Type'
 
 CLEANUP = (
-    "And", "Artist:", "Author:", "Binder:", "Drawn by", "drawn by",
-    "Illuminator:", "Or", "Scribe:", "Resolve"
+    "And", "Artist:", "Author:", "Binder:", "Drawn by", "Illuminator:", "Or",
+    "Scribe:", "Resolve"
     )
 
 @simple_service('POST', 'http://purl.org/la/dp/artstor_cleanup_creator',
@@ -41,10 +41,8 @@ def artstor_cleanup_creator(body, ctype, prop="sourceResource/creator"):
         if not isinstance(item, list):
             item = [item]
         for i in range(len(item)):
-            item[i] = item[i].strip()
             for s in CLEANUP:
-                if item[i].startswith(s):
-                    item[i] = item[i].replace(s, "").lstrip()
+                item[i] = re.sub(r"(?i)^{0}".format(s), "", item[i].strip()).lstrip()
             
         setprop(data, prop, item[0] if len(item) == 1 else item)
 
