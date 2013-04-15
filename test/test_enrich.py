@@ -133,7 +133,6 @@ def test_shred8():
     assert json.loads(content) == INPUT
 
 
-
 def test_shred9():
     """Do not shred on values within parenthesis"""
     INPUT = {
@@ -154,6 +153,24 @@ def test_shred9():
     url = server() + "shred?prop=p,q,h,m,g"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
+
+
+def test_shred10():
+    """Shred with special chars as delimiter"""
+    INPUT = {
+        "m": "String one\\ Begin of two (String two\\ two and a part of two) String three\\ String four\\ (abc dbf\\ sss\\k)",
+        "g": "bananas"
+    }
+    EXPECTED = {
+        "m": ['String one', 'Begin of two (String two\\ two and a part of two) String three', 'String four',
+              '(abc dbf\\ sss\\k)'],
+        "g": "bananas"
+    }
+    url = server() + "shred?prop=m,g&delim=%5C"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
     FETCHED = json.loads(content)
     assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
