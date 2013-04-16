@@ -565,7 +565,6 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 CHO_TRANSFORMER = {
     "freetext/physicalDescription"  : extent_transform,
     "freetext/name"                 : creator_transform,
-    "freetext/setName"              : is_part_of_transform,
     "freetext/date"                 : transform_date,
     "freetext/notes"                : transform_description,
     "freetext/identifier"           : transform_identifier,
@@ -627,11 +626,6 @@ def edantodpla(body,ctype,geoprop=None):
     out.update(transform_is_shown_at(data))
     out.update(transform_object(data))
     out.update(transform_data_provider(data))
-
-    slugify_field(out, "sourceResource/collection/@id")
-
-    if exists(out, "sourceResource/isPartOf/name"):
-        out["sourceResource"]["collection"]["title"] = out["sourceResource"]["isPartOf"]["name"]
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:
