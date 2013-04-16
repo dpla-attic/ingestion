@@ -1,11 +1,13 @@
+import re
+import os
+
 from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import delprop, getprop, setprop, exists
-import re
-import os
 from amara.lib.iri import is_absolute
+
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-format', 'enrich-format',
                 'application/json')
@@ -33,16 +35,16 @@ def enrichformat(body, ctype, action="enrich-format",
     """
 
     FORMAT_2_TYPE_MAPPINGS = {
-            "audio": "sound",
-            "image": "image",
-            "video": "moving image",
-            "text": "text"
+        "audio": "sound",
+        "image": "image",
+        "video": "moving image",
+        "text": "text"
     }
 
-    REGEXPS = ('audio/mp3', 'audio/mpeg'), ('images/jpeg', 'image/jpeg'),\
-              ('image/jpg','image/jpeg'),('image/jp$', 'image/jpeg'),\
-              ('img/jpg', 'image/jpeg'), ('^jpeg$','image/jpeg'),\
-              ('^jpg$', 'image/jpeg'), ('\W$','')
+    REGEXPS = ('audio/mp3', 'audio/mpeg'), ('images/jpeg', 'image/jpeg'), \
+              ('image/jpg', 'image/jpeg'), ('image/jp$', 'image/jpeg'), \
+              ('img/jpg', 'image/jpeg'), ('^jpeg$', 'image/jpeg'), \
+              ('^jpg$', 'image/jpeg'), ('\W$', '')
     IMT_TYPES = ['application', 'audio', 'image', 'message', 'model',
                  'multipart', 'text', 'video']
 
@@ -50,7 +52,7 @@ def enrichformat(body, ctype, action="enrich-format",
         ext = os.path.splitext(s)[1].split('.')
 
         return ext[1] if len(ext) == 2 else ""
-        
+
     def cleanup(s):
         s = s.lower().strip()
         for pattern, replace in REGEXPS:
@@ -63,12 +65,12 @@ def enrichformat(body, ctype, action="enrich-format",
         imt_regexes = [re.compile('^' + x + '(/)') for x in IMT_TYPES]
         return any(regex.match(s) for regex in imt_regexes)
 
-    try :
+    try:
         data = json.loads(body)
-    except Exception:
+    except Exception as e:
         response.code = 500
-        response.add_header('content-type','text/plain')
-        return "Unable to parse body as JSON"
+        response.add_header('content-type', 'text/plain')
+        return "Unable to parse body as JSON\n" + str(e)
 
     imt_values = []
     if exists(data, prop):
@@ -76,7 +78,7 @@ def enrichformat(body, ctype, action="enrich-format",
         format = []
         hasview_format = []
 
-        for s in (v if not isinstance(v,basestring) else [v]):
+        for s in (v if not isinstance(v, basestring) else [v]):
             if is_absolute(s):
                 s = get_ext(s)
             cleaned = cleanup(s)
@@ -85,8 +87,8 @@ def enrichformat(body, ctype, action="enrich-format",
                 imt_values.append(cleaned)
                 # Move IMT values to hasView/format else discard
                 if exists(data, "hasView") and not \
-                   exists(data, "hasView/format") and \
-                   cleaned not in hasview_format:
+                    exists(data, "hasView/format") and \
+                                cleaned not in hasview_format:
                     hasview_format.append(cleaned)
             else:
                 # Retain non-IMT values in sourceResource/format, non-cleaned
@@ -116,6 +118,6 @@ def enrichformat(body, ctype, action="enrich-format",
         if type:
             if len(type) == 1:
                 type = type[0]
-            setprop(data, type_field, type) 
+            setprop(data, type_field, type)
 
     return json.dumps(data)

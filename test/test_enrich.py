@@ -1,10 +1,8 @@
-import sys
-from server_support import server, print_error_log, H
-
-import os
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
+
+from server_support import server, print_error_log, H
 
 
 def test_shred1():
@@ -140,17 +138,19 @@ def test_shred9():
         "q": "d;e;f",
         "h": "String one; (String two; two and a part of two) String three; String four; (abc dbf; sss;k)",
         "m": "String one; Begin of two (String two; two and a part of two) String three; String four; (abc dbf; sss;k)",
-        "g": "bananas"
-        }
+        "g": "bananas",
+        "a": "Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)"
+    }
     EXPECTED = {
         "p": ["String one", "(String two; two and a part of two)", "String three", "String four", "(abc dbf; sss;k)"],
         "q": ["d", "e", "f"],
         "h": ['String one', '(String two; two and a part of two) String three', 'String four', '(abc dbf; sss;k)'],
         "m": ['String one', 'Begin of two (String two; two and a part of two) String three', 'String four',
               '(abc dbf; sss;k)'],
+        "a": "Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)",
         "g": "bananas"
-        }
-    url = server() + "shred?prop=p,q,h,m,g"
+    }
+    url = server() + "shred?prop=p,q,h,m,g,a"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
     FETCHED = json.loads(content)
@@ -170,6 +170,27 @@ def test_shred10():
     }
     url = server() + "shred?prop=m,g&delim=%5C"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
+
+
+def test_shred11():
+    """Shred in two steps"""
+    INPUT = {
+        "a": ["Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)",
+              "Gray, green,and  brown washes with  black chalk over graphite on medium, slightly textured, brown wove paper"]
+    }
+    EXPECTED = {
+        "a": ["Sheet",
+              "9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)",
+              "Gray, green,and  brown washes with  black chalk over graphite on medium, slightly textured, brown wove paper"]
+    }
+    url = server() + "shred?prop=a"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    url = server() + "shred?prop=a&delim=%3A"
+    resp, content = H.request(url, "POST", body=content)
     assert str(resp.status).startswith("2"), content
     FETCHED = json.loads(content)
     assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
@@ -370,19 +391,28 @@ def test_physical_format_from_format_and_type():
 Test physical format appending from format and type fields
 """
     INPUT = {
-        "format": ["76.8 x 104 cm", "Oil on canvas"],
+        "format": ["76.8 x 104 cm",
+                   "Oil on canvas",
+                   "7 1/4 x 6 inches (18.4 x 15.2 cm)",
+                   "Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)"],
         "type": ["Paintings", "Painting"]
     }
     EXPECTED = {
-        "format": ["76.8 x 104 cm", "Oil on canvas", "Paintings", "Painting"]
+        "format": ["76.8 x 104 cm",
+                   "Oil on canvas",
+                   "7 1/4 x 6 inches (18.4 x 15.2 cm)",
+                   "Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)",
+                   "Paintings", "Painting"]
     }
 
     resp, content = H.request(server() + "enrich-type?prop=type&format_field=format", "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-    assert json.loads(content) == EXPECTED
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
     resp, content = H.request(server() + "enrich-format?prop=format&type_field=type", "POST", body=content)
     assert str(resp.status).startswith("2")
-    assert json.loads(content) == EXPECTED
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
 
 def test_setting_missing_type_for_missing_format():

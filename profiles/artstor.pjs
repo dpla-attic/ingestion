@@ -12,7 +12,7 @@
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
-        "/shred?prop=sourceResource%2Fformat&delim=%3b",
+        "/shred?prop=sourceResource%2Fformat&delim=%3A",
         "/cleanup_value",
         "/artstor_cleanup_creator",
         "/move_date_values?prop=sourceResource%2Fsubject",
