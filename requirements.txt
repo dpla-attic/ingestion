@@ -12,3 +12,4 @@ six
 CouchDB
 nose
 geopy
+python-cloudfiles

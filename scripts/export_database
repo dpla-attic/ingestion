@@ -1,0 +1,293 @@
+#!/usr/bin/env python
+
+"""
+Script for downloading couchdb documents into a compressed file.
+For usage look at print_usage() function or just run the script without arguments.
+
+To use listing all source names there have to be loaded script couchdb_views/export_database.js.
+"""
+
+RS_CONTAINER_NAME = "DPLA"
+
+
+"""
+The below files should contain section:
+
+    [RackspaceCDN]
+    username = 
+    api_key =
+"""
+API_KEY_FILE = "/home/szymon/rackspace_cdn.ini"
+
+
+def read_username_api_key():
+    "Reads username and api key from file."
+    import ConfigParser
+
+    config = ConfigParser.ConfigParser()
+    config.read(API_KEY_FILE)
+    return config.get("RackspaceCDN", "username"), config.get("RackspaceCDN", "api_key")
+
+
+def send_file_to_rackspace(arguments):
+    """Sends the created file to rackspace.
+
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+
+    The file saved to arguments["file"] is uploaded to Rackspace CDN
+    and stored in container RS_CONTAINER_NAME using the current file name.
+    The file name is taken with the extension, but without the whole path.
+    """
+    try:
+        import cloudfiles
+    except:
+        msg = """
+Cannot import cloudfiles.
+The cloudfiles library has been added to requirements.txt file, so
+it should be enough to run:
+
+    pip install -r requrements.txt
+
+"""
+        exit(1)
+
+    if not arguments["upload"]:
+        return
+
+    fname = arguments['file']
+    rsfname = fname.split('/')[-1:][0]
+
+    username, api_key = read_username_api_key()
+    conn = cloudfiles.get_connection(username, api_key)
+
+    container = conn.create_container(RS_CONTAINER_NAME)
+    f = container.create_object(rsfname)
+
+    print "Loading file [%s] to Rackspace CDN." % fname
+    f.load_from_filename(fname)
+
+    print "File loaded."
+
+
+def download_source_data(arguments):
+    """Downloads all documents for given source.
+
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+
+    The function uses couchdb bulk API for downloading the documents.
+    The source name is taken from arguments["source"].
+    """
+    s = arguments["source"]
+    startkey = s + "--"
+    endkey = s + '--\u9999'
+    url = url_join(arguments["url"], '/_all_docs?include_docs=true&startkey="' + startkey + '"&endkey="' + endkey + '"')
+    resp = open_connection(url, arguments)
+
+    store_result_into_file(resp, arguments)
+    send_file_to_rackspace(arguments)
+
+
+def print_all_sources(arguments):
+    """Prints all source names."""
+
+    import json as j
+    url = url_join(arguments["url"], "/_design/export_database/_view/all_source_names?group=true")
+    resp = open_connection(url, arguments)
+    data = resp.read()
+    d = j.loads(data)
+    print "%(key)s  --  %(value)s" % {"key": "Collection name", "value": "Count"}
+    for row in d["rows"]:
+        print "%(key)s  --  %(value)s" % row
+
+
+def url_join(*args):
+    """Joins and returns given urls."""
+    return "/".join(map(lambda x: str(x).rstrip("/"), args))
+
+
+def build_http_header(arguments):
+    """Builds and returns HTTP header for CouchDB authentication."""
+    import base64
+    return ('Authorization', 'Basic ' + base64.encodestring(arguments["username"]+":"+arguments["password"]))
+
+
+def open_connection(url, arguments):
+    """Opens connection to the provided url.
+
+    Returns opened connection ready for reading data.
+    """
+    import urllib2 as u
+    print "Calling URL " + url
+    opener = u.build_opener()
+    opener.addheaders = [build_http_header(arguments)]
+    try:
+        return opener.open(url)
+    except Exception as e:
+        print e
+        exit(1)
+
+
+def convert_bytes(byteno):
+    """Converts bytes count into some bigger unit like MB/GB.
+
+    Returns string with converted value.
+    """
+    size = 1.0 * byteno
+    unit = "B"
+    units = ["kB", "MB", "GB"]
+    for u in units:
+        if size >= 1000:
+            size /= 1024.0
+            unit = u
+
+    return "%0.2f %s" % (size, unit)
+
+
+def download_all_database(arguments):
+    """Downloads data from couchdb database and stores it to a file."""
+    from gzip import GzipFile as zipf
+    url = url_join(arguments["url"], "_all_docs?include_docs=true")
+    response = open_connection(url, arguments)
+
+    store_result_into_file(response, arguments)
+    send_file_to_rackspace(arguments)
+
+
+def store_result_into_file(result, arguments):
+    """Stores given result into a compressed file.
+
+    result - opened connection, file like object with read() function
+    """
+    from gzip import GzipFile as zipf
+
+    downloaded_size = 0
+    block_size = 10 * 1024 * 1024
+    with zipf(arguments["file"], "w") as zf:
+        while True:
+            buffer = result.read(block_size)
+            if not buffer:
+                break
+            downloaded_size += len(buffer)
+            zf.write(buffer)
+            status = "Downloaded " + convert_bytes(downloaded_size)
+            print status
+
+
+def print_usage():
+    """Prints information about script usage."""
+
+    print """
+
+Script for downloading the couchdb database into compressed files.
+
+Usage:
+
+  Exporting whole database into one compressed file:
+
+    export_database all <username> <password> <database_url> <output_file> <upload>
+
+  Exporting all data for given source:
+
+    export_database source <source_name> <username> <password> <database_url> <output_file> <upload>
+
+  Listing all sources:
+
+    export_database list <username> <password> <database_url>
+
+  Arguments:
+
+    username     - couchdb username
+    password     - couchdb password
+    database_url - couchdb url
+    output_file  - name of the file for storing the database
+                 - the file extension should be ".gz"
+    upload       - string "upload" if the file should be uploaded to Rackspace
+                 - nothing if the files shouldn't be uploaded to Rackspace
+
+    """
+    exit(1)
+
+
+def validate_arguments():
+    from sys import argv
+    res = {}
+
+    if len(argv) < 1:
+        print_usage()
+
+    operation = argv[1]
+    res["operation"] = operation
+
+    if operation == "all":
+
+        if not len(argv) in [6, 7]:
+            print_usage()
+
+        res["username"] = argv[2]
+        res["password"] = argv[3]
+        res["url"]      = argv[4]
+        res["file"]     = argv[5]
+
+        res["upload"]   = False
+        if len(argv) == 7:
+            if argv[6] == "upload":
+                res["upload"] = True
+            else:
+                print_usage()
+
+        if not res["file"].endswith(".gz"):
+            print "The file name has to end with '.gz'"
+            exit(1)
+
+        return res
+
+    elif operation == "list":
+
+        if len(argv) != 5:
+            print_usage()
+
+        res["username"] = argv[2]
+        res["password"] = argv[3]
+        res["url"]      = argv[4]
+
+        return res
+
+    elif operation == "source":
+
+        if not len(argv) in [7, 8]:
+            print_usage()
+
+        res["source"]   = argv[2]
+        res["username"] = argv[3]
+        res["password"] = argv[4]
+        res["url"]      = argv[5]
+        res["file"]     = argv[6]
+
+        res["upload"]   = False
+        if len(argv) == 8:
+            if argv[7] == "upload":
+                res["upload"] = True
+            else:
+                print_usage()
+
+        return res
+
+    else:
+        print_usage()
+
+
+if __name__ == "__main__":
+
+    arguments = validate_arguments()
+
+    if arguments["operation"] == "all":
+        download_all_database(arguments)
+    elif arguments["operation"] == "list":
+        print_all_sources(arguments)
+    elif arguments["operation"] == "source":
+        download_source_data(arguments)
+
+
+
