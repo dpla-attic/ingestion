@@ -20,6 +20,20 @@ The below files should contain section:
 API_KEY_FILE = "/home/szymon/rackspace_cdn.ini"
 
 
+try:
+    import cloudfiles
+except:
+    msg = """
+Cannot import cloudfiles.
+The cloudfiles library has been added to requirements.txt file, so
+it should be enough to run:
+
+pip install -r requrements.txt
+
+"""
+    exit(1)
+
+
 def read_username_api_key():
     "Reads username and api key from file."
     import ConfigParser
@@ -39,18 +53,6 @@ def send_file_to_rackspace(arguments):
     and stored in container RS_CONTAINER_NAME using the current file name.
     The file name is taken with the extension, but without the whole path.
     """
-    try:
-        import cloudfiles
-    except:
-        msg = """
-Cannot import cloudfiles.
-The cloudfiles library has been added to requirements.txt file, so
-it should be enough to run:
-
-    pip install -r requrements.txt
-
-"""
-        exit(1)
 
     if not arguments["upload"]:
         return
@@ -58,16 +60,64 @@ it should be enough to run:
     fname = arguments['file']
     rsfname = fname.split('/')[-1:][0]
 
-    username, api_key = read_username_api_key()
-    conn = cloudfiles.get_connection(username, api_key)
+    conn = get_rackspace_connection()
+    container = get_rackspace_container(conn)
 
-    container = conn.create_container(RS_CONTAINER_NAME)
     f = container.create_object(rsfname)
 
     print "Loading file [%s] to Rackspace CDN." % fname
     f.load_from_filename(fname)
 
     print "File loaded."
+    print "You can now check the information about rackspace files using `export_database rsinfo`"
+
+
+def get_rackspace_connection():
+    """Returns a new Rackspace connection.
+    """
+    username, api_key = read_username_api_key()
+    return cloudfiles.get_connection(username, api_key)
+
+
+def get_rackspace_container(connection):
+    """Returns a new Rackspace CDN container.
+
+    This container is made public if it not public.
+    """
+    container = connection.create_container(RS_CONTAINER_NAME)
+    if not container.is_public():
+        container.make_public()
+
+    return container
+
+
+def print_rackspace_info():
+    """Prints out information about all Rackspace files from the container,
+    including their public links.
+    """
+    conn = get_rackspace_connection()
+    container = get_rackspace_container(conn)
+
+    print "Rackspace CDN info"
+    print "Container name      : %s" % container.name
+    print "Container public URI: %s" % container.public_uri()
+    print "Container size      : %s" % container.size_used
+
+    objects = container.list_objects_info()
+    print "There are %d files." % len(objects)
+
+    l = 0
+    for ob in objects:
+        l = max(l, len(ob["name"]) + len("Public URI:    ") + 2)
+
+    for ob in objects:
+        print "x" * (l + len(container.public_uri()))
+        print "File name:     %s" % ob["name"]
+        print "Last modified: %s" % ob["last_modified"]
+        print "Size:          %s" % convert_bytes(ob["bytes"])
+        print "Public URI:    %s/%s" % (container.public_uri(), ob["name"])
+        
+    print "x" * (l + len(container.public_uri()))
 
 
 def download_source_data(arguments):
@@ -196,6 +246,10 @@ Usage:
 
     export_database list <username> <password> <database_url>
 
+  Listing Rackspace CDN Container information:
+
+    export_database rsinfo
+
   Arguments:
 
     username     - couchdb username
@@ -273,6 +327,13 @@ def validate_arguments():
                 print_usage()
 
         return res
+    
+    elif operation == "rsinfo":
+
+        if not len(argv) == 2:
+            print_usage()
+
+        return res
 
     else:
         print_usage()
@@ -288,6 +349,8 @@ if __name__ == "__main__":
         print_all_sources(arguments)
     elif arguments["operation"] == "source":
         download_source_data(arguments)
+    elif arguments["operation"] == "rsinfo":
+        print_rackspace_info()
 
 
 
