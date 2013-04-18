@@ -35,7 +35,16 @@ pip install -r requrements.txt
 
 
 def read_username_api_key():
-    "Reads username and api key from file."
+    """Reads username and api key from file.
+
+    The file is defined at the beginning of this script in
+    API_KEY_FILE variable.
+
+    Returns:
+
+        Tuple: (username, api_key)
+
+    """
     import ConfigParser
 
     config = ConfigParser.ConfigParser()
@@ -44,7 +53,7 @@ def read_username_api_key():
 
 
 def send_file_to_rackspace(arguments):
-    """Sends the created file to rackspace.
+    """Sends the created file to the Rackspace CDN.
 
     Arguments:
         arguments - dictionary returned by the validate_arguments function
@@ -52,6 +61,9 @@ def send_file_to_rackspace(arguments):
     The file saved to arguments["file"] is uploaded to Rackspace CDN
     and stored in container RS_CONTAINER_NAME using the current file name.
     The file name is taken with the extension, but without the whole path.
+
+    After loding the file, th function checks if the file is listed in the
+    container objects list.
     """
 
     if not arguments["upload"]:
@@ -60,30 +72,52 @@ def send_file_to_rackspace(arguments):
     fname = arguments['file']
     rsfname = fname.split('/')[-1:][0]
 
-    conn = get_rackspace_connection()
-    container = get_rackspace_container(conn)
+    container = get_rackspace_container()
 
     f = container.create_object(rsfname)
 
     print "Loading file [%s] to Rackspace CDN." % fname
     f.load_from_filename(fname)
 
-    print "File loaded."
-    print "You can now check the information about rackspace files using `export_database rsinfo`"
+    if file_is_in_container(rsfname, container):
+        rs_file_uri = url_join(container.public_uri(), rsfname)
+        print "File loaded, it is available at: %s" % rs_file_uri
+        print "You can now check the information about rackspace files using `export_database rsinfo`"
+    else:
+        print "Couldn't upload file to Rackspace CDN."
 
 
 def get_rackspace_connection():
     """Returns a new Rackspace connection.
+
+    Returns:
+        new Rackspace connection
+
+    The usrname, api_keys are taken from the config file.
     """
     username, api_key = read_username_api_key()
     return cloudfiles.get_connection(username, api_key)
 
 
-def get_rackspace_container(connection):
+def get_rackspace_container(connection=None):
     """Returns a new Rackspace CDN container.
+    
+    Arguments:
+        connection - opened connection to the Rackspace CDN
 
-    This container is made public if it not public.
+    Returns:
+        Rackspace container - created with provided connection,
+                              if the connection is None, then a new one
+                              is created.
+
+    This container is made public if it is not public.
+
+    According to Rackspace CDN API documentation, if such a container exists,
+    then it is returned. Otherwise a new one is created.
     """
+    if connection is None:
+        connection = get_rackspace_connection()
+
     container = connection.create_container(RS_CONTAINER_NAME)
     if not container.is_public():
         container.make_public()
@@ -95,15 +129,14 @@ def print_rackspace_info():
     """Prints out information about all Rackspace files from the container,
     including their public links.
     """
-    conn = get_rackspace_connection()
-    container = get_rackspace_container(conn)
+    container = get_rackspace_container()
 
     print "Rackspace CDN info"
     print "Container name      : %s" % container.name
     print "Container public URI: %s" % container.public_uri()
     print "Container size      : %s" % container.size_used
 
-    objects = container.list_objects_info()
+    objects = get_sorted_objects_from_container(container)
     print "There are %d files." % len(objects)
 
     l = 0
@@ -128,6 +161,8 @@ def download_source_data(arguments):
 
     The function uses couchdb bulk API for downloading the documents.
     The source name is taken from arguments["source"].
+
+    Then it uploads the file to Rackspace CDN if required.
     """
     s = arguments["source"]
     startkey = s + "--"
@@ -140,7 +175,11 @@ def download_source_data(arguments):
 
 
 def print_all_sources(arguments):
-    """Prints all source names."""
+    """Prints all source names.
+
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+    """
 
     import json as j
     url = url_join(arguments["url"], "/_design/export_database/_view/all_source_names?group=true")
@@ -153,20 +192,37 @@ def print_all_sources(arguments):
 
 
 def url_join(*args):
-    """Joins and returns given urls."""
+    """Joins and returns given urls.
+    
+    Arguments:
+        list of elements to join
+
+    Returns:
+        string with all elements joined with '/' inserted between
+
+    """
     return "/".join(map(lambda x: str(x).rstrip("/"), args))
 
 
 def build_http_header(arguments):
-    """Builds and returns HTTP header for CouchDB authentication."""
+    """Builds and returns HTTP header for CouchDB authentication.
+    
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+
+    """
     import base64
     return ('Authorization', 'Basic ' + base64.encodestring(arguments["username"]+":"+arguments["password"]))
 
 
 def open_connection(url, arguments):
     """Opens connection to the provided url.
+    
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
 
-    Returns opened connection ready for reading data.
+    Returns: 
+        opened connection ready for reading data.
     """
     import urllib2 as u
     print "Calling URL " + url
@@ -180,9 +236,14 @@ def open_connection(url, arguments):
 
 
 def convert_bytes(byteno):
-    """Converts bytes count into some bigger unit like MB/GB.
+    """Converts number of bytes into some bigger unit like MB/GB.
 
-    Returns string with converted value.
+
+    Arguments:
+        byteno (Int) - number of bytes for conversion
+
+    Returns:
+        String with converted number and proper unit.
     """
     size = 1.0 * byteno
     unit = "B"
@@ -192,11 +253,79 @@ def convert_bytes(byteno):
             size /= 1024.0
             unit = u
 
-    return "%0.2f %s" % (size, unit)
+    return "%0.1f %s" % (size, unit)
+
+
+def get_sorted_objects_from_container(container):
+    """Returns sorted objects from container.
+    
+    Arguments:
+        container - opened container handle
+        
+    Returns:
+        List of objects sorted by object name.
+    """
+    objects = container.list_objects_info()
+    objects = sorted(objects, key=lambda k: k['name'])
+    return objects
+
+
+def file_is_in_container(fname, container):
+    """
+    Arguments:
+        fname     - file name 
+        container - opened container handle
+    
+    Returns:
+        True if file is in container.
+        False otherwise.
+    """
+    for ob in get_sorted_objects_from_container(container):
+        if fname == ob["name"]:
+            return True
+
+    return False
+
+
+def remove_rackspace_file(arguments):
+    """Removes a file from the Rackspace CDN container.
+
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+
+    Returns:
+        nothing
+    """
+    fname = arguments["file"]
+    print "Removing file [%s] from the [%s] container." % (fname, RS_CONTAINER_NAME)
+    container = get_rackspace_container()
+
+    if not file_is_in_container(fname, container):
+        print "There is no file [%s] in the [%s] container." % (fname, RS_CONTAINER_NAME)
+        print "In this container there are files:"
+        for ob in get_sorted_objects_from_container(container):
+            print ob["name"]
+        print "You can use `export_database rsinfo` for more information."
+        return
+
+    container.delete_object(fname)
+
+    if file_is_in_container(fname, container):
+        print "Couldn't delete the file [%s]." % fname
+    else:
+        print "Successfully deleted the file [%s] from container [%s]." % (fname, RS_CONTAINER_NAME)
+
 
 
 def download_all_database(arguments):
-    """Downloads data from couchdb database and stores it to a file."""
+    """Downloads data from couchdb database and stores it in a file.
+
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+
+    Returns:
+        Nothing
+    """
     from gzip import GzipFile as zipf
     url = url_join(arguments["url"], "_all_docs?include_docs=true")
     response = open_connection(url, arguments)
@@ -208,7 +337,12 @@ def download_all_database(arguments):
 def store_result_into_file(result, arguments):
     """Stores given result into a compressed file.
 
-    result - opened connection, file like object with read() function
+    Arguments:
+        result - opened connection, file like object with read() function
+        arguments - dictionary returned by the validate_arguments function
+
+    Returns:
+        nothing
     """
     from gzip import GzipFile as zipf
 
@@ -250,6 +384,10 @@ Usage:
 
     export_database rsinfo
 
+  Removing file from the Rackspace CDN:
+
+    export_database remove <filename>
+
   Arguments:
 
     username     - couchdb username
@@ -259,12 +397,14 @@ Usage:
                  - the file extension should be ".gz"
     upload       - string "upload" if the file should be uploaded to Rackspace
                  - nothing if the files shouldn't be uploaded to Rackspace
+    filename     - file name to remove from Rackspace CDN
 
     """
     exit(1)
 
 
 def validate_arguments():
+    """Validates arguments passed to the script."""
     from sys import argv
     res = {}
 
@@ -334,6 +474,13 @@ def validate_arguments():
             print_usage()
 
         return res
+    elif operation == "remove":
+
+        if not len(argv) == 3:
+            print_usage()
+
+        res["file"] = argv[2]
+        return res
 
     else:
         print_usage()
@@ -351,6 +498,8 @@ if __name__ == "__main__":
         download_source_data(arguments)
     elif arguments["operation"] == "rsinfo":
         print_rackspace_info()
+    elif arguments["operation"] == "remove":
+        remove_rackspace_file(arguments)
 
 
 
