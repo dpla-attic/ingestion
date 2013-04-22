@@ -24,7 +24,7 @@
 	    "/enrich_location",
         "/geocode",
         "/contentdm_identify_object",
-        "/copy_prop?prop=collection%2Ftitle&to_prop=dataProvider&create=True",
+        "/copy_prop?prop=sourceResource%2Fcollection%2Ftitle&to_prop=dataProvider&create=True",
         "/lookup?prop=dataProvider&target=dataProvider&substitution=dc_data_provider&delnonexisting=True",
         "/dc_clean_invalid_dates",
         "/cleanup_language",
