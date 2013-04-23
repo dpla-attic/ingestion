@@ -1,4 +1,5 @@
 {
+    "_id": "_design/export_database",
     "language": "javascript",
     "views": {
         "all_source_names": {
