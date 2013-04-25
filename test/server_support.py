@@ -157,6 +157,7 @@ MODULES = [
     "dplaingestion.akamod.set_type_from_physical_format",
     "dplaingestion.akamod.capitalize_value",
     "dplaingestion.akamod.artstor_cleanup_creator",
+    "dplaingestion.akamod.replace_substring"
     ]
 
 class download_preview:
