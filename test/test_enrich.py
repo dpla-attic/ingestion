@@ -195,6 +195,38 @@ def test_shred11():
     FETCHED = json.loads(content)
     assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
+def test_shred12():
+    """Should shred"""
+    INPUT = {
+        "m": "McBeth, Alexander<br> Greenville (S.C.)<br>South Carolina<br>Account books<br> General stores",
+        "g": "bananas"
+    }
+    EXPECTED = {
+        "m": ["McBeth, Alexander", "Greenville (S.C.)", "South Carolina", "Account books", "General stores"],
+        "g": "bananas"
+    }
+    url = server() + "shred?prop=m,g&delim=%3Cbr%3E"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
+
+@nottest
+def test_shred13():
+    """Should not shred when multi-char delim within parens"""
+    INPUT = {
+        "m": "McBeth, Alexander<br> Greenville (S.C.<br>S.C.)<br>South Carolina<br>Account books<br> General stores",
+        "g": "bananas"
+    }
+    EXPECTED = {
+        "m": ["McBeth, Alexander", "Greenville (S.C.<br>S.C.)", "South Carolina", "Account books", "General stores"],
+        "g": "bananas"
+    }
+    url = server() + "shred?prop=m,g&delim=%3Cbr%3E"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
 def test_unshred1():
     "Valid unshredding"

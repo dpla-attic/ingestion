@@ -26,7 +26,7 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON\n" + str(e)
 
-    if action == "shred":
+    if action == "shred" and len(delim) == 1:
         try:
             par_re = re.compile("([^" + re.escape(delim) + "]*\(.*?\)[^" + re.escape(delim) + "]*)")
         except Exception as e:
@@ -34,7 +34,7 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
             response.add_header('content-type', 'text/plain')
             return "Can not construct dynamic regular expression: " + str(e)
     else:
-        par_re = None
+        par_re = re.compile(re.escape(delim))
     for p in prop.split(','):
         if exists(data, p):
             v = getprop(data, p)
