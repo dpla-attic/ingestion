@@ -44,8 +44,11 @@ def oaisetname(body,ctype,sets_service=None):
         response.add_header('content-type','text/plain')
         return "Unable to parse sets service result as JSON: " + repr(content)
 
+    setpos = data['_id'].find('--')
+    match = data['_id'][setpos+2:] if setpos > -1 else data['_id']
+
     for s in sets:
-        if data[u'_id'].endswith(s['setSpec']):
+        if match == s['setSpec']:
             data[u'title'] = s['setName']
             if s['setDescription']:
                 data[u'description'] = s['setDescription'].strip()
