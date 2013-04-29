@@ -41,7 +41,7 @@
     "subresources": [ ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-clemson", 
-        "name": "South Carolina Digital Library - Clemson"
+        "name": "South Carolina Digital Library"
     }, 
     "type": "oai", 
     "endpoint_URL": "/dpla-list-records?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe&oaiset="

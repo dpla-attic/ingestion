@@ -36,7 +36,7 @@
     "subresources": [], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-charleston", 
-        "name": "South Carolina Digital Library - College of Charleston"
+        "name": "South Carolina Digital Library"
     }, 
     "type": "oai", 
     "endpoint_URL": "/dpla-list-records?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe&oaiset="

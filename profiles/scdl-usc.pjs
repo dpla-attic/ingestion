@@ -39,7 +39,7 @@
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-usc", 
-        "name": "South Carolina Digital Library - University of South Carolina"
+        "name": "South Carolina Digital Library"
     }, 
     "type": "oai", 
     "endpoint_URL": "/dpla-list-records?endpoint=http://digital.tcl.sc.edu:81/cgi-bin/oai.exe&oaiset="
