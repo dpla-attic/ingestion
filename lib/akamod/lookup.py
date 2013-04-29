@@ -579,7 +579,7 @@ DC_DATA_PROVIDER = {
     "Railroad Commission Annual Reports": "State Library of Massachusetts Collection",
     "Railroad Commission Manuscripts": "State Library of Massachusetts Collection",
     "Railroad Commission Maps": "State Library of Massachusetts Collection",
-    "State Library Publications": "State Library of Massachusetts Collection"
+    "State Library Publications": "State Library of Massachusetts Collection",
     "State of the Commonwealth Addresses": "State Library of Massachusetts Collection",
 
     "Postcard Collection": "Stephen Phillips Trust House",
