@@ -449,13 +449,13 @@ DC_DATA_PROVIDER = {
     "Henry Whittemore Library": "Framingham State University",
 
 
-    "John W. Ragle Archives Room": "Governor’s Academy",
+    "John W. Ragle Archives Room": "Governor's Academy",
 
     "Oral History Projects": "Jewish Women's Archive",
-    "Lawrence Public Libary": "Jewish Women's Archive",
-    "Lawrence Public Library Digital Collection": "Jewish Women's Archive",
-    "Lincoln Public Library": "Jewish Women's Archive",
-    "Farrar Book": "Jewish Women's Archive",
+
+    "Lawrence Public Library Digital Collection": "Lawrence Public Library",
+
+    "Farrar Book": "Lincoln Public Library",
 
     "City of Lowell Images Collection": "Lowell National Historical Park",
 
@@ -560,27 +560,27 @@ DC_DATA_PROVIDER = {
     "Plainville Public Library": "SAILS Digital History Collection",
     "West Bridgewater Public Library Historical Postcards": "SAILS Digital History Collection",
 
-
     "College Archives Digital Collections": "Springfield College",
-    "State Library of Massachusetts Collection": "Springfield College",
-    "Attorney General Annual Reports": "Springfield College",
-    u"Bird\u2019s Eye Maps": "Springfield College",
-    "Broadsides": "Springfield College",
-    "Canal Maps": "Springfield College",
-    "Executive Orders": "Springfield College",
-    "Highway Department Annual Reports": "Springfield College",
-    "Highway Department Maps": "Springfield College",
-    "Highway Department Photographs": "Springfield College",
-    "Hoosac Tunnel Photographs": "Springfield College",
-    "Land and Harbor Commissioner Atlases": "Springfield College",
-    "Land and Harbor Commissioner Maps": "Springfield College",
-    "Legislative Maps": "Springfield College",
-    "Other Historical Maps": "Springfield College",
-    "Railroad Commission Annual Reports": "Springfield College",
-    "Railroad Commission Manuscripts": "Springfield College",
-    "Railroad Commission Maps": "Springfield College",
 
-    "State of the Commonwealth Addresses": "State Library Publications",
+    "State Library of Massachusetts Collection": "State Library of Massachusetts Collection",
+    "Attorney General Annual Reports": "State Library of Massachusetts Collection",
+    u"Bird\u2019s Eye Maps": "State Library of Massachusetts Collection",
+    "Broadsides": "State Library of Massachusetts Collection",
+    "Canal Maps": "State Library of Massachusetts Collection",
+    "Executive Orders": "State Library of Massachusetts Collection",
+    "Highway Department Annual Reports": "State Library of Massachusetts Collection",
+    "Highway Department Maps": "State Library of Massachusetts Collection",
+    "Highway Department Photographs": "State Library of Massachusetts Collection",
+    "Hoosac Tunnel Photographs": "State Library of Massachusetts Collection",
+    "Land and Harbor Commissioner Atlases": "State Library of Massachusetts Collection",
+    "Land and Harbor Commissioner Maps": "State Library of Massachusetts Collection",
+    "Legislative Maps": "State Library of Massachusetts Collection",
+    "Other Historical Maps": "State Library of Massachusetts Collection",
+    "Railroad Commission Annual Reports": "State Library of Massachusetts Collection",
+    "Railroad Commission Manuscripts": "State Library of Massachusetts Collection",
+    "Railroad Commission Maps": "State Library of Massachusetts Collection",
+    "State Library Publications": "State Library of Massachusetts Collection"
+    "State of the Commonwealth Addresses": "State Library of Massachusetts Collection",
 
     "Postcard Collection": "Stephen Phillips Trust House",
 
@@ -614,9 +614,7 @@ DC_DATA_PROVIDER = {
     "Watertown Street Views": "Watertown Free Public Library",
     "Watertown Town Hall": "Watertown Free Public Library",
 
-    "WGBH OpenVault": "WGBH",
-    "Home Contact FAQs Items Member Resources Collection Tree": "WGBH",
-    "Proudly powered by Omeka. © Digital Commonwealth 2013": "WGBH"
+    "WGBH OpenVault": "WGBH"
 }
 
 SCDL_FORMAT_PLURALIZE = {
