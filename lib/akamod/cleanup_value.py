@@ -79,6 +79,7 @@ DONT_STRIP_DOT_END = [
     "sourceResource/description",
     "sourceResource/rights",
     "sourceResource/place",
+    "sourceResource/collection/title"
 ]
 
 # Below fields should have removed do at the end.

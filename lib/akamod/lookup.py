@@ -564,7 +564,7 @@ DC_DATA_PROVIDER = {
     "College Archives Digital Collections": "Springfield College",
     "State Library of Massachusetts Collection": "Springfield College",
     "Attorney General Annual Reports": "Springfield College",
-    "Bird’s Eye Maps": "Springfield College",
+    u"Bird\u2019s Eye Maps": "Springfield College",
     "Broadsides": "Springfield College",
     "Canal Maps": "Springfield College",
     "Executive Orders": "Springfield College",
@@ -593,7 +593,7 @@ DC_DATA_PROVIDER = {
     "Lowell Neighborhoods: Historical and Architectural Survey": "University of Massachusetts Lowell Libraries",
     "Stereoview Collection": "University of Massachusetts Lowell Libraries",
 
-    "Convers Francis, 1795–1863": "Watertown Free Public Library",
+    u"Convers Francis, 1795\u20131863": "Watertown Free Public Library",
     "Watertown Arsenal": "Watertown Free Public Library",
     "Watertown Businesses": "Watertown Free Public Library",
     "Watertown Cemeteries": "Watertown Free Public Library",

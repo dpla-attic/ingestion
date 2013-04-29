@@ -435,7 +435,7 @@ OAI_GETRECORD_XML = """<?xml version="1.0" encoding="UTF-8"?>
       <header>
         <identifier>oai:dspace.mit.edu:1721.1/5451</identifier>
         <datestamp ak:rel="local-name()" ak:value=".">2006-09-20T00:15:44Z</datestamp>
-        <setSpec>hdl_1721.1_5443</setSpec>
+        <setSpec ak:rel="local-name()" ak:value=".">hdl_1721.1_18193</setSpec>
       </header>
       <metadata>
         <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
