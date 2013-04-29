@@ -19,7 +19,6 @@
         "/enrich_earliest_date", 
         "/enrich-subject", 
         "/enrich_date",
-        "/enrich-subject?prop=sourceResource%2Fcreator",  
         "/enrich-type", 
         "/enrich-format", 
         "/contentdm_identify_object", 
