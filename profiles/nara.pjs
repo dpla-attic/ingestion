@@ -24,6 +24,9 @@
         "/copy_prop?prop=sourceResource%2Frights&to_prop=sourceResource%2FhasView&key=rights",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
     ], 
+    "update_isShownAt": [
+        "/set_prop?prop=isShownAt&value=http%3A%2F%2Fdp%2Ela%2Finfo%2Fnara%2Dcontent%2Dnotification%2F"
+    ],
     "subresources": [], 
     "last_checked": "2013-03-09T14:02:39.094687", 
     "contributor": {
