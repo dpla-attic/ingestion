@@ -428,6 +428,7 @@ DC_DATA_PROVIDER = {
     "Oxford Collection": "C/W MARS",
     "Palmer Collection": "C/W MARS",
     "Princeton Collection": "C/W MARS",
+    "Public Officers of the Commonwealth of Massachusetts": "C/W MARS",
     "Shrewsbury Collection": "C/W MARS",
     "South Hadley Collection": "C/W MARS",
     "Southbridge Collection": "C/W MARS",
