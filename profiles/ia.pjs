@@ -23,11 +23,13 @@
     ], 
     "subresources": [
         "blc",
-        "clemson"
+        "clemson",
+        "bostonpubliclibrary"
     ],
     "collection_titles": {
         "blc": "Boston Library Consortium",
-        "clemson": "LYRASIS members and Sloan Foundation"
+        "clemson": "LYRASIS members and Sloan Foundation",
+        "bostonpubliclibrary": "Boston Public Library"
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/internet_archive",
