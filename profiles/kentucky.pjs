@@ -12,7 +12,7 @@
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResouce%2Fformat",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
         "/cleanup_value",
-        "/capitalize_value",
+        "/capitalize_value?exclude=sourceResource%2Frelation",
         "/enrich_earliest_date",
         "/enrich_location",
         "/enrich-subject", 

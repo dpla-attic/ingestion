@@ -58,7 +58,7 @@ def capitalize(data, prop):
 
 
 @simple_service('POST', 'http://purl.org/la/dp/capitalize_value', 'capitalize_value', 'application/json')
-def capitalize_value(body, ctype, prop=",".join(DEFAULT_PROP)):
+def capitalize_value(body, ctype, prop=",".join(DEFAULT_PROP), exclude=None):
     """
     Service that accepts a JSON document and capitalizes the prop field of that document
     """
@@ -77,7 +77,11 @@ def capitalize_value(body, ctype, prop=",".join(DEFAULT_PROP)):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON\n" + str(e)
 
-    for p in prop.split(","):
+    prop = prop.split(",")
+    if exclude in prop:
+        prop.remove(exclude)
+
+    for p in prop:
         if p:
             capitalize(data, p)
 
