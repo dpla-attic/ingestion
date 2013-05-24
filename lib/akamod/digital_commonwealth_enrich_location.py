@@ -23,7 +23,8 @@ def digital_commonwealth_enrich_location(body, ctype, action="digital_commonweal
                     "Church history.", 
                     "Dwellings",
                     "Dwellings.",
-                    "History"]
+                    "History",
+                    "Pictorial works"]
 
     if (exists(data, prop)): 
         # Spatial field is simply a list of strings, convert to a list 
