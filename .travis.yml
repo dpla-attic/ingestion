@@ -7,4 +7,4 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - python setup.py install
 # command to run tests
-script: nosetests -v
+script: nosetests -v -a '!travis_exclude'

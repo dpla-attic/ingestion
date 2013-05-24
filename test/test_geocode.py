@@ -2,8 +2,9 @@ import itertools
 import sys
 from server_support import server, H, print_error_log
 from amara.thirdparty import json
+from nose.plugins.attrib import attr
 
-    
+@attr(travis_exclude='yes')    
 def test_geocode():
     """
     Simple geocode
@@ -41,6 +42,7 @@ def test_geocode():
     assert json.loads(content) == EXPECTED
 
 
+@attr(travis_exclude='yes')    
 def test_close_multiple_results():
     """
     Geocode that returns multiple results from Bing, that are close enough to each other.
