@@ -79,7 +79,7 @@ def enrichformat(body, ctype, action="enrich-format",
         hasview_format = []
 
         for s in (v if not isinstance(v, basestring) else [v]):
-            if is_absolute(s):
+            if s.startswith("http") and is_absolute(s):
                 s = get_ext(s)
             cleaned = cleanup(s)
             if is_imt(cleaned):
