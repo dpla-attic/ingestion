@@ -23,6 +23,8 @@ def _get_server_response(body):
     return H.request(BASIC_URL, "POST", body=INPUT)
 
 
+# This may no longer be a valid test - JL 5/24
+@nottest
 def test_populating_collection_name():
     INPUT = {
             "collection": {
