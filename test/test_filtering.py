@@ -18,10 +18,11 @@ def test_full_filtering():
         "prop1": "value1"
     }
     url = server() + "filter_empty_values"
-    resp,content = H.request(url, "POST", body=json.dumps(INPUT))
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
 
 def test_filtering_with_ignore():
     """
@@ -40,10 +41,11 @@ def test_filtering_with_ignore():
         "ignore_me": ""
     }
     url = server() + "filter_empty_values?ignore_key=ignore_me"
-    resp,content = H.request(url, "POST", body=json.dumps(INPUT))
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
 
 def test_filtering_with_given_keys():
     """
@@ -62,10 +64,11 @@ def test_filtering_with_given_keys():
         "empty_key": ""
     }
     url = server() + "filter_fields?keys=filter_me"
-    resp,content = H.request(url, "POST", body=json.dumps(INPUT))
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
 
 def test_artstor_doc_filtering_optimistic():
     """
@@ -199,7 +202,7 @@ def test_artstor_doc_filtering_optimistic():
 """
 
     EXPECTED = json.loads(
-    """{
+        """{
    "_id": "artstor--oai:oaicat.oclc.org:AKRESS_10310356231",
    "_rev": "1-56c6a0d094f7642d53dc0f5fb7dc0c6b",
    "description": "Full view; pre-restoration; Formerly in the Contini Bonacossi Collection, Florence.",
@@ -323,10 +326,11 @@ def test_artstor_doc_filtering_optimistic():
     )
 
     url = server() + "filter_empty_values?ignore_key=dplaSourceRecord"
-    resp,content = H.request(url, "POST", body=INPUT_JSON)
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
 
 def test_artstor_doc_filtering_pessimistic():
     """
@@ -584,10 +588,11 @@ def test_artstor_doc_filtering_pessimistic():
     )
 
     url = server() + "filter_fields?keys=spatial,rights"
-    resp,content = H.request(url, "POST", body=INPUT_JSON)
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
 
 def test_filtering_by_path():
     """
@@ -595,7 +600,7 @@ def test_filtering_by_path():
     """
 
     INPUT_JSON = """{
-    "aggregatedCHO": {
+    "sourceResource": {
        "rights": [
            "",
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
@@ -628,8 +633,8 @@ def test_filtering_by_path():
        ]
    }}"""
 
-    EXPECTED  = json.loads("""{
-    "aggregatedCHO": {
+    EXPECTED = json.loads("""{
+    "sourceResource": {
        "rights": [
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
        ],
@@ -658,11 +663,33 @@ def test_filtering_by_path():
        ]
    }}""")
 
-    url = server() + "filter_paths?paths=aggregatedCHO/spatial,aggregatedCHO/rights"
-    resp,content = H.request(url, "POST", body=INPUT_JSON)
+    url = server() + "filter_paths?paths=sourceResource/spatial,sourceResource/rights"
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2")
 
     assert json.loads(content) == EXPECTED
+
+
+@nottest
+def test_single_step_path_filtering():
+    """
+    Filtering single step path
+    """
+
+    INPUT = {
+        "id": "999",
+        "prop1": "value1",
+        "empty_key": ""
+    }
+    EXPECTED = {
+        "id": "999",
+        "prop1": "value1"
+    }
+    url = server() + "filter_paths?paths=empty_key"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, "%s != %s" % (FETCHED, EXPECTED)
 
 
 if __name__ == "__main__":

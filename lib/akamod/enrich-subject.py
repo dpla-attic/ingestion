@@ -6,7 +6,7 @@ from dplaingestion.selector import getprop, setprop, exists
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-subject', 'enrich-subject', 'application/json')
-def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject"):
+def enrichsubject(body,ctype,action="enrich-subject",prop="sourceResource/subject"):
     '''   
     Service that accepts a JSON document and enriches the "subject" field of that document
     by: 
@@ -19,7 +19,8 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="aggregatedCHO/subject
     '''   
     
     TAGS_FOR_STRIPPING = '[\.\' ";]*' # Tags for stripping at beginning and at the end.
-    REGEXPS = (' *-- *', '--'), \
+    REGEXPS = ('\s*-{2,4}\s*', '--'), \
+              ('\s*-\s*-\s*', '--'), \
               ('^' + TAGS_FOR_STRIPPING, ''), \
               (TAGS_FOR_STRIPPING + '$','')
 

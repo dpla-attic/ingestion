@@ -11,3 +11,5 @@ simplejson
 six
 CouchDB
 nose
+geopy
+python-cloudfiles

@@ -34,8 +34,8 @@ def artstor_select_source(body, ctype):
 
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
-    artstor_source_prefix = "Image View"
-    source_key = u"isShownAt/@id"
+    artstor_source_probe = ("/object/", "Image View:")
+    source_key = u"isShownAt"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
@@ -48,14 +48,15 @@ def artstor_select_source(body, ctype):
     source = None
     http_re = re.compile("https?://.*$", re.I)
     for s in data[original_document_key][original_sources_key]:
-        if s.startswith(artstor_source_prefix):
-            match = re.search(http_re, s)
-            if match:
-                source = match.group(0)
-                break
+        for probe in artstor_source_probe:
+            if probe in s:
+                match = re.search(http_re, s)
+                if match:
+                    source = match.group(0)
+                    break
 
     if not source:
-        logger.error("Can't find url with '%s' prefix in [%s] for fetching document source for Artstor.", artstor_source_prefix, data[original_document_key][original_sources_key])
+        logger.error("Can't find url with any of '%s' probe in [%s] for fetching document source for Artstor.", artstor_source_probe, data[original_document_key][original_sources_key])
         return body
 
     try:

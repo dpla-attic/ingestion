@@ -25,7 +25,7 @@ CONTEXT = {
    "state": "dpla:state",                             
    "coordinates": "dpla:coordinates",
    "stateLocatedIn" : "dpla:stateLocatedIn",
-   "aggregatedCHO" : "edm:aggregatedCHO",
+   "sourceResource" : "edm:sourceResource",
    "dataProvider" : "edm:dataProvider",
    "hasView" : "edm:hasView",
    "isShownAt" : "edm:isShownAt",
@@ -40,6 +40,20 @@ CONTEXT = {
      "@type": "xsd:date"
    }
 }
+
+def transform_thumbnail(d):
+    url = None
+    thumbs = arc_group_extraction(d, "objects", "object")
+    if thumbs and not thumbs == [None]:
+        d = thumbs
+        if isinstance(thumbs, list) and thumbs:
+            d = thumbs[0]
+        
+        if isinstance(d, dict) and "thumbnail-url" in d:
+            url = d["thumbnail-url"]
+
+    return {"object": url} if url else {}
+
 
 def date_transform(d, groupKey, itemKey):
     date = None
@@ -76,14 +90,6 @@ def is_shown_at_transform(d):
 
     return {"isShownAt": object}
 
-def collection_transform(d):
-    collection = getprop(d, "collection")
-    items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
-    for item in (items if isinstance(items, list) else [items]):
-        if item["hierarchy-item-id"] == collection["name"]:
-            setprop(collection, "name", item["hierarchy-item-title"])
-    return {"collection": collection} if collection else {}
-
 def creator_transform(d):
     creator = None
     creators = arc_group_extraction(d, "creators", "creator")
@@ -97,9 +103,38 @@ def extent_transform(d):
     extent = []
     extents = arc_group_extraction(d, "physical-occurrences",
                                    "physical-occurrence", "extent")
-    [extent.append(e) for e in extents if e]
+    if extents:
+        [extent.append(e) for e in extents if e and e not in extent]
 
     return {"extent": extent} if extent else {}
+
+def transform_state_located_in(d):
+    phys = arc_group_extraction(d, "physical-occurrences", "physical-occurrence")
+    state_located_in = None
+    if phys:
+        for p in phys:
+            s = arc_group_extraction(p, "reference-units", "reference-unit", "state")[0]
+            if s:
+                state_located_in = s
+
+    res = {"stateLocatedIn": {"name": state_located_in}}
+    return res if state_located_in else {}
+
+def data_provider_transform(d):
+    data_provider = []
+    phys = arc_group_extraction(d, "physical-occurrences",
+                                "physical-occurrence")
+
+    for p in phys:
+        dp = arc_group_extraction(p, "reference-units", "reference-unit",
+                                  "name")[0]
+        if dp and dp not in data_provider:
+            data_provider.append(dp)
+
+    if len(data_provider) == 1:
+        data_provider = data_provider[0]
+
+    return {"dataProvider": data_provider} if data_provider else {}
 
 def subject_and_spatial_transform(d):
     v = {}
@@ -113,15 +148,6 @@ def subject_and_spatial_transform(d):
                 subject.append(s["display-name"])
             if s["subject-type"] == "TGN":
                 spatial.append(s["display-name"])
-
-    phys = arc_group_extraction(d, "physical-occurrences",
-                                "physical-occurrence")
-    for p in phys:
-        s = arc_group_extraction(p, "reference-units", "reference-unit",
-                                 "state")[0]
-        if s:
-            logger.debug("SP: %s"%s)
-            spatial.append(s)
    
     if subject:
         v["subject"] = subject
@@ -135,12 +161,12 @@ def subject_and_spatial_transform(d):
 def rights_transform(d):
     rights = []
 
-    r = arc_group_extraction(d, "access-restriction", "restriction-status")[0]
-    if r:
-        rights.append("Restrictions: %s" % r)
-    r = arc_group_extraction(d, "use-restriction", "use-status")[0]
-    if r:
-        rights.append("Use status: %s" % r)
+    r = arc_group_extraction(d, "access-restriction", "restriction-status")
+    if r and r[0] != None:
+        rights.append("Restrictions: %s" % r[0])
+    r = arc_group_extraction(d, "use-restriction", "use-status")
+    if r and r[0] != None:
+        rights.append("Use status: %s" % r[0])
 
     return {"rights": "; ".join(filter(None,rights))} if rights else {}
 
@@ -238,14 +264,15 @@ CHO_TRANSFORMER = {
     "physical-occurrences"  : extent_transform,
     "creators"              : creator_transform,
     "hierarchy"             : is_part_of_transform,
-    "release-dates"         : lambda d: date_transform(d,"release-dates","release-date"),
-    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates","broadcast-date"),
-    "production-dates"      : lambda d: date_transform(d,"production-dates","production-date"),
-    "coverage-dates"        : lambda d: date_transform(d,"coverage-dates",["cov-start-date","cov-end-date"]),
-    "copyright-dates"       : lambda d: date_transform(d,"copyright-dates","copyright-date"),
+    "release-dates"         : lambda d: date_transform(d,"release-dates", "release-date"),
+    "broadcast-dates"       : lambda d: date_transform(d,"broadcast-dates", "broadcast-date"),
+    "production-dates"      : lambda d: date_transform(d,"production-dates", "production-date"),
+    "coverage-dates"        : lambda d: date_transform(d,"coverage-dates", ["cov-start-date", "cov-end-date"]),
+    "copyright-dates"       : lambda d: date_transform(d,"copyright-dates", "copyright-date"),
     "title"                 : lambda d: {"title": d.get("title-only")},
     "scope-content-note"    : lambda d: {"description": d.get("scope-content-note")}, 
-    "languages"             : lambda d: {"language": arc_group_extraction(d,"languages","language")}
+    "languages"             : lambda d: {"language": arc_group_extraction(d, "languages", "language")},
+    "collection"            : lambda d: {"collection": d.get("collection")}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -254,8 +281,8 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord"        : lambda d: {"originalRecord": d.get("originalRecord",None)},
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
-    "collection"            : collection_transform,
-    "arc-id-desc"           : is_shown_at_transform
+    "arc-id-desc"           : is_shown_at_transform,
+    "physical-occurrences"  : data_provider_transform
 }
 
 @simple_service("POST", "http://purl.org/la/dp/arc-to-dpla", "arc-to-dpla", "application/ld+json")
@@ -278,26 +305,29 @@ def arctodpla(body,ctype,geoprop=None):
 
     out = {
         "@context": CONTEXT,
-        "aggregatedCHO": {}
+        "sourceResource": {}
     }
 
     # Apply all transformation rules from original document
     for p in data.keys():
         if p in CHO_TRANSFORMER:
-            out["aggregatedCHO"].update(CHO_TRANSFORMER[p](data))
+            out["sourceResource"].update(CHO_TRANSFORMER[p](data))
         if p in AGGREGATION_TRANSFORMER:
             out.update(AGGREGATION_TRANSFORMER[p](data))
 
     # Apply transformations that are dependent on more than one
     # original document  field
-    out["aggregatedCHO"].update(type_transform(data))
-    out["aggregatedCHO"].update(rights_transform(data))
-    out["aggregatedCHO"].update(subject_and_spatial_transform(data))
+    out["sourceResource"].update(type_transform(data))
+    out["sourceResource"].update(rights_transform(data))
+    out["sourceResource"].update(subject_and_spatial_transform(data))
     out.update(has_view_transform(data))
+    out["sourceResource"].update(transform_state_located_in(data))
 
+    if exists(out, "sourceResource/date"):
+        logger.debug("OUTTYPE: %s"%getprop(out, "sourceResource/date"))
 
-    if exists(out, "aggregatedCHO/date"):
-        logger.debug("OUTTYPE: %s"%getprop(out, "aggregatedCHO/date"))
+    if exists(data, "objects/object"):
+        out.update(transform_thumbnail(data))
 
     # Additional content not from original document
     if "HTTP_CONTRIBUTOR" in request.environ:

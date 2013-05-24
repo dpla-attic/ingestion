@@ -4,10 +4,11 @@ from akara import module_config, logger
 from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
 from amara.lib.iri import join, is_absolute
-from urllib import quote, urlencode
+from urllib import quote, urlencode, quote_plus
 import datetime
 import uuid
 import base64
+import hashlib
 
 COUCH_DATABASE = module_config().get('couch_database')
 COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
@@ -28,6 +29,8 @@ CT_JSON = {'Content-Type': 'application/json'}
 
 H = httplib2.Http()
 H.force_exception_as_status_code = True
+
+COLLECTIONS = {}
 
 # FIXME: should support changing media type in a pipeline
 def pipe(content, ctype, enrichments, wsgi_header):
@@ -106,7 +109,7 @@ def couch_rev_check_recs(docs):
     start = docs_ids[0]
     end = docs_ids[-1:][0]
 #    uri += "?" + urlencode({"startkey": start, "endkey": end})
-    uri += '?startkey="%s"&endkey="%s"'%(start,end)
+    uri += '?startkey="%s"&endkey="%s"' % (quote_plus(start), quote_plus(end))
     response, content = H.request(uri, 'GET', headers=COUCH_AUTH_HEADER)
     if str(response.status).startswith('2'):
         rows = json.loads(content)["rows"]
@@ -119,6 +122,33 @@ def couch_rev_check_recs(docs):
 
 def set_ingested_date(doc):
     doc[u'ingestDate'] = datetime.datetime.now().isoformat()
+
+def enrich_coll(ctype, source_name, collection_name, collection_title, coll_enrichments):
+    cid = COUCH_ID_BUILDER(source_name, collection_name)
+    id = hashlib.md5(cid).hexdigest()
+    at_id = "http://dp.la/api/collections/" + id
+    coll = {
+        "id": id,
+        "_id": cid,
+        "@id": at_id,
+        "title": collection_title,
+        "ingestType": "collection"
+    }
+    set_ingested_date(coll)
+    enriched_coll_text = pipe(coll, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
+    enriched_collection = json.loads(enriched_coll_text)
+
+    # FIXME. Integrate collection storage into bulk call below
+    if COUCH_DATABASE:
+        docuri = join(COUCH_DATABASE, quote(cid))
+        couch_rev_check_coll(docuri, enriched_collection)
+        resp, cont = H.request(docuri, 'PUT',
+            body=json.dumps(enriched_collection),
+            headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
+        if not str(resp.status).startswith('2'):
+            logger.warn("Error storing collection in Couch: "+repr((resp,cont)))
+
+    return enriched_collection
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich', 'enrich', 'application/json')
 def enrich(body, ctype):
@@ -136,57 +166,49 @@ def enrich(body, ctype):
         response.add_header('content-type','text/plain')
         return "Source and Collection request headers are required"
 
-    coll_enrichments = request_headers.get(u'Pipeline-Coll','').split(',')
-    rec_enrichments = request_headers.get(u'Pipeline-Rec','').split(',')
+    coll_enrichments = request_headers.get(u'Pipeline-Coll', '').split(',')
+    rec_enrichments = request_headers.get(u'Pipeline-Rec', '').split(',')
 
     data = json.loads(body)
 
-    # First, we run the collection representation through its enrichment pipeline
-    cid = COUCH_ID_BUILDER(source_name, collection_name)
-    at_id = "http://dp.la/api/collections/" + cid
-    COLL = {
-        "_id": cid,
-        "@id": at_id,
-        "ingestType": "collection",
-        "title": data.get("title",None)
-    }
-    # Set collection title field from collection_name if no sets
-    if not coll_enrichments[0]:
-        COLL['title'] = collection_name 
-    set_ingested_date(COLL)
+    # For non-OAI, the collection title is included as part of the data,
+    # so we extract it here to pass it to def enrich_coll a few lines down.
+    # For OAI, the collection enrichment pipeline with set the title and so
+    # None will be overridden. 
+    collection_title = data.get("title", None)
 
-    enriched_coll_text = pipe(COLL, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
-    enriched_collection = json.loads(enriched_coll_text)
-    # FIXME. Integrate collection storage into bulk call below
-    if COUCH_DATABASE:
-        docuri = join(COUCH_DATABASE, cid)
-        couch_rev_check_coll(docuri, enriched_collection)
-        resp, cont = H.request(docuri, 'PUT',
-            body=json.dumps(enriched_collection),
-            headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
-        if not str(resp.status).startswith('2'):
-            logger.warn("Error storing collection in Couch: "+repr((resp,cont)))
-
-    # Then the records
     docs = {}
     for record in data[u'items']:
         # Preserve record prior to any enrichments
         record['originalRecord'] = record.copy()         
 
-        # Add collection information
-        record[u'collection'] = {
-            '@id' : at_id,
-            'name' : enriched_collection.get('title',"")
-        }
-        if 'description' in enriched_collection:
-            record[u'collection']['description'] = enriched_collection.get('description',"")
+        # Add collection(s)
+        record[u'collection'] = []
+        sets = record.get('setSpec', collection_name)
+        for s in (sets if isinstance(sets, list) else [sets]):
+            if s not in COLLECTIONS:
+                COLLECTIONS[s] = enrich_coll(ctype, source_name, s,
+                                             collection_title, coll_enrichments)
+            rec_collection = {
+                'id': COLLECTIONS[s].get('id', None),
+                '@id': COLLECTIONS[s].get('@id', None),
+                'title': COLLECTIONS[s].get('title', None),
+                'description': COLLECTIONS[s].get('description', None)
+            }
+            record[u'collection'].append(dict((k, v) for k, v in
+                                         rec_collection.items() if v))
+                    
+        if len(record[u'collection']) == 1:
+            record[u'collection'] = record[u'collection'][0]
 
         record[u'ingestType'] = 'item'
         set_ingested_date(record)
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
-        docs[doc["_id"]] = doc # after pipe doc must have _id
+        # After pipe doc must have _id
+        if doc.get("_id", None):
+            docs[doc["_id"]] = doc
 
     couch_rev_check_recs(docs)
     couch_docs_text = json.dumps({"docs": docs.values()})

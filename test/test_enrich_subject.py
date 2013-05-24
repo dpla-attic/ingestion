@@ -8,7 +8,8 @@ url = server() + "enrich-subject"
 
 def _get_server_response(body, prop="subject"):
     u = url + "?prop=" + prop
-    return H.request(u,"POST",body=body)
+    return H.request(u, "POST", body=body)
+
 
 def test_enrich_subject_capitalize_firs_letter():
     """Should capitalize first letter of each subject"""
@@ -38,6 +39,7 @@ def test_enrich_subject_capitalize_firs_letter():
         ]
     }
 
+
 def test_enrich_subject_one_char_string1():
     """Should not add one or two char strings to DPLA schema"""
 
@@ -65,11 +67,12 @@ def test_enrich_subject_one_char_string1():
             {"name": "Hello"}
         ]
     }
- 
+
     resp, content = _get_server_response(json.dumps(INPUT))
     assert resp.status == 200
     print str(json.loads(content))
     assert json.loads(content) == EXPECTED
+
 
 def test_enrich_subject_one_char_string2():
     """Should not include subject"""
@@ -91,13 +94,14 @@ def test_enrich_subject_one_char_string2():
             {"name": "Asheville"},
             {"name": "North Carolina"}
         ],
-        "subject" : []
+        "subject": []
     }
 
     resp, content = _get_server_response(json.dumps(INPUT))
     assert resp.status == 200
     print str(json.loads(content))
     assert json.loads(content) == EXPECTED
+
 
 def test_enrich_subject_remove_period_space():
     """Should not include subject"""
@@ -139,6 +143,7 @@ def test_enrich_subject_remove_period_space():
     assert resp.status == 200
     assert_same_jsons(json.dumps(EXPECTED), content)
 
+
 def test_remove_spaces_around_dashes():
     """Should remove spaces around dashes."""
     INPUT = {
@@ -153,7 +158,10 @@ def test_remove_spaces_around_dashes():
             "aaa --bbb",
             "aaa-- bbb",
             "aaa --  bbb",
-            "aaa  --  bbb    -- ccc - - ddd -- "
+            "aaa  --  bbb    -- ccc - - ddd -- ",
+            "aaa- -bbb",
+            "aaa - -bbb",
+            "aaa - - bbb - - ccc"
         ]
     }
     EXPECTED = {
@@ -168,12 +176,16 @@ def test_remove_spaces_around_dashes():
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
-            {"name": "Aaa--bbb--ccc - - ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb"},
+            {"name": "Aaa--bbb--ccc"}
         ]
     }
     resp, content = _get_server_response(json.dumps(INPUT))
     assert_same_jsons(json.dumps(EXPECTED), content)
     assert resp.status == 200
+
 
 def test_enrichment_for_creator_field():
     """Should remove spaces around dashes."""
@@ -198,7 +210,9 @@ def test_enrichment_for_creator_field():
             "aaa --bbb",
             "aaa-- bbb",
             "aaa --  bbb",
-            "aaa  --  bbb    -- ccc - - ddd -- "
+            "aaa  --  bbb    -- ccc - - ddd -- ",
+            "aaa  ---  bbb    --- ccc--- ddd---",
+            "aaa  ----  bbb    ----ccc---- ddd----"
         ]
     }
     EXPECTED = {
@@ -220,12 +234,15 @@ def test_enrichment_for_creator_field():
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
             {"name": "Aaa--bbb"},
-            {"name": "Aaa--bbb--ccc - - ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"},
+            {"name": "Aaa--bbb--ccc--ddd--"}
         ]
     }
     resp, content = _get_server_response(json.dumps(INPUT), "creator")
     assert_same_jsons(json.dumps(EXPECTED), content)
     assert resp.status == 200
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

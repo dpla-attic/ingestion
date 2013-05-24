@@ -8,11 +8,11 @@ from dplaingestion.selector import getprop, setprop, exists
 REGEXPS = ('\.',''), ('\(',''), ('\)',''), ('-',''), (',','')
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_location', 'enrich_location', 'application/json')
-def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spatial"):
+def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spatial"):
     """
     Service that accepts a JSON document and enriches the "spatial" field of that document by
     iterating through the spatial fields and mapping to the state and iso3166-2, if not already
-    mapped, through teh get_isostate function. This function takes the optional parameter frm_abbrev,
+    mapped, through teh get_isostate function. This function takes the optional parameter abbrev,
     and if it is set it will search the fields for State name abbreviations. If a previous provider-
     specific location enrichment module ran, the default is to not search those fields for State name
     abbreviations, but only for full State names.
@@ -34,6 +34,7 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
             for k in v[0].keys():
                 v[0][k] = remove_space_around_semicolons(v[0][k])
 
+            """
             if 'state' in v[0]:
                 # Handle case where a previous provider-specific location
                 # enrichment set the state field
@@ -58,6 +59,7 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
                         v[0]['iso3166-2'] = isostate[0]
                         v[0]['state'] = isostate[1]
                         break
+            """
         else:
             # Handle the case where no previous provider-specific location
             # enrichment occured. Convert spatial from list of strings to
@@ -66,10 +68,12 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
             for s in (v if not isinstance(v, basestring) else [v]):
                 d= {}
                 d['name'] = remove_space_around_semicolons(s)
-                isostate = get_isostate(s, frm_abbrev="Yes")
+                """
+                isostate = get_isostate(d['name'], abbrev="Yes")
                 if isostate[0]:
                     d['iso3166-2'] = isostate[0]
                     d['state'] = isostate[1]
+                """
                 sp.append(d)
             v = sp
 
@@ -86,27 +90,29 @@ def enrichlocation(body,ctype,action="enrich_location", prop="aggregatedCHO/spat
 
     return json.dumps(data)
 
-def get_isostate(strg, frm_abbrev=None):
+def get_isostate(strg, abbrev=None):
     if not isinstance(strg, basestring):
         response.code = 500
         response.add_header('content-type', 'text/plain')
         return "Non-string parameter supplied to get_isostate"
 
     iso_arr, state_arr = [], []
-    strg_arr = strg.split(';')
-    for strg_item in strg_arr:
-        if frm_abbrev:
-            states = from_abbrev(strg_item)
-        else:
-            states = [strg_item]
-        for state in states:
+    for s in strg.split(";"):
+        states = from_abbrev(s) if abbrev else s
+        for state in (states if isinstance(states, list) else [states]):
+            append_empty_strings = True
             for st in STATES:
                 if st in state.upper():
                     iso_arr.append(STATES[st])
                     state_arr.append(st.title())
+                    append_empty_strings = None
+            if append_empty_strings:
+                iso_arr.append("")
+                state_arr.append("")
 
-    iso, state = None, None
-    if iso_arr:
+    iso = None
+    state = None
+    if filter(None, iso_arr):
         iso = ';'.join(iso_arr)
         if state_arr:
             state = ';'.join(state_arr)
@@ -144,7 +150,7 @@ def create_dictionaries(data):
     for d in data:
         all = [] 
         for k,v in d.iteritems():
-            all.append(filter(None,v.split(";")))
+            all.append(v.split(";"))
             all[-1].insert(0,k)
 
         if all:
@@ -155,15 +161,18 @@ def create_dictionaries(data):
             for i in range(1,total):
                 dict = {}
                 for item in all:
-                    if i < len(item):
+                    if i < len(item) and item[i]:
                         dict[item[0]] = item[i]
-                dicts.append(dict)
-    return dicts
+                # Don't add duplicates 
+                if dict not in dicts: 
+                    dicts.append(dict)
+    return filter(None, dicts)
 
 def remove_space_around_semicolons(strg):
     strg_arr = strg.split(';')
     for i in range(len(strg_arr)):
         strg_arr[i] = re.sub('^  *','',strg_arr[i])
+        strg_arr[i] = re.sub('^\[','',strg_arr[i])
         strg_arr[i] = re.sub(' *$','',strg_arr[i])
     strg = ';'.join(strg_arr)
     return strg

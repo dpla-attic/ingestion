@@ -1,0 +1,47 @@
+{
+    "list_sets": "/oai.listsets.json?endpoint=http://digitalcommonwealth.org/oai-pmh-repository/request",
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://digitalcommonwealth.org/oai-pmh-repository/request"
+    ], 
+    "name": "digital-commonwealth", 
+    "enrichments_rec": [
+        "/select-id",
+        "/oai-to-dpla",
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
+        "/cleanup_value",
+        "/move_date_values?prop=sourceResource%2Fsubject",
+        "/move_date_values?prop=sourceResource%2Fspatial",
+        "/shred?prop=sourceResource%2Fspatial&delim=--",
+        "/capitalize_value",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+	    "/digital_commonwealth_enrich_location",
+	    "/enrich_location",
+        "/geocode",
+        "/contentdm_identify_object",
+        "/copy_prop?prop=sourceResource%2Fcollection%2Ftitle&to_prop=dataProvider&create=True",
+        "/lookup?prop=dataProvider&target=dataProvider&substitution=dc_data_provider&delnonexisting=True",
+        "/dc_clean_invalid_dates",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/filter_empty_values",
+        "/unset_prop?prop=sourceResource%2Fpublisher",
+        "/unset_prop?prop=sourceResource%2Fcontributor",
+        "/unset_prop?prop=sourceResource%2Frelation",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+    ], 
+    "blacklist": ["3","5","6","8","13","18","19","20","27","41","177"],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/digital-commonwealth",
+        "name": "Digital Commonwealth"
+    }, 
+    "type": "oai", 
+    "endpoint_URL": "/dpla-list-records?endpoint=http://digitalcommonwealth.org/oai-pmh-repository/request&oaiset="
+}

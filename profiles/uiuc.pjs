@@ -1,0 +1,60 @@
+{
+    "list_sets": "/oai.listsets.json?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe",
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe"
+    ], 
+    "name": "uiuc", 
+    "enrichments_rec": [
+        "/select-id",
+        "/oai-to-dpla",
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
+        "/cleanup_value",
+        "/move_date_values?prop=sourceResource%2Fsubject",
+        "/move_date_values?prop=sourceResource%2Fspatial",
+        "/shred?prop=sourceResource%2Fspatial&delim=--",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/uiuc_enrich_location",
+        "/geocode",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/contentdm_identify_object",
+        "/uiuc_publisher_to_dataprovider",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+    ], 
+    "subresources": [
+        "kennedy",
+        "olin",
+        "cartoons",
+        "wwposters",
+        "maps",
+        "exlibris",
+        "africanmaps",
+        "motley",
+        "actors",
+        "cubuilding",
+        "tdc",
+        "chicago",
+        "sousa",
+        "bronze",
+        "ALA",
+        "reston",
+        "koopman",
+        "blueprints"
+    ], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/uiuc",
+        "name": "University of Illinois at Urbana-Champaign"
+    }, 
+    "type": "oai", 
+    "endpoint_URL": "/dpla-list-records?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe&oaiset="
+}

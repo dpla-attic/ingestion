@@ -1,0 +1,36 @@
+{
+    "list_sets": "http://j2k.repo.nypl.org/api/v1/items/listCollections",
+    "enrichments_coll": [
+        "/nypl-coll-title?list_sets=http://j2k.repo.nypl.org/api/v1/items/listCollections"
+    ],
+    "name": "nypl",
+    "enrichments_rec": [
+        "/select-id?prop=_id",
+        "/mods-to-dpla?version=3.4",
+        "/nypl_identify_object",
+        "/nypl_select_hasview",
+        "/cleanup_value",
+        "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Fdescription",
+        "/capitalize_value",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/set_prop?prop=sourceResource%2Frights&value=No%20Known%20US%20Copyright%20Restrictions",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+    ], 
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/nypl",
+        "name": "New York Public Library"
+    }, 
+    "type": "nypl",
+    "endpoint_URL": "http://j2k.repo.nypl.org/api/v1/items/{0}",
+    "get_record_URL": "http://j2k.repo.nypl.org/api/v1/items/mods/{0}"
+}

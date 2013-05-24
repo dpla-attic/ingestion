@@ -19,15 +19,15 @@ def convert(data, prop):
     if exists(data, prop):
         v = getprop(data, prop)
         if isinstance(v, basestring):
-            setprop(data, prop, cleanup(v))
+            setprop(data, prop, cleanup(v, prop))
         elif isinstance(v, list):
             temp = []
             for val in v:
-                temp.append(cleanup(val))
+                temp.append(cleanup(val, prop))
             setprop(data, prop, temp)
 
 
-def cleanup(value):
+def cleanup(value, prop):
     """ Performs a cleanup of value using a bunch of regexps.
 
     Arguments:
@@ -36,12 +36,26 @@ def cleanup(value):
     Returns:
         Converted string.
     """
-    TAGS_FOR_STRIPPING = '[\.\' \r\t\n";,]*' # Tags for stripping at beginning and at the end.
-    REGEXPS = (' *-- *', '--'), \
+    # Do not remove double quotes from title
+    dquote = '' if prop == "sourceResource/title" else '"'
+
+    # Remove dot at the end if field name is not in the
+    # DONT_STRIP_DOT_END table.
+    with_dot = '' if prop in DONT_STRIP_DOT_END else "\."
+    # Tags for stripping at beginning and at the end.
+
+    TAGS_FOR_STRIPPING = '[%s\' \r\t\n;,%s]*'
+
+    TAGS_FOR_STRIPPING_AT_BEGIN = TAGS_FOR_STRIPPING % ("\.", dquote)
+    TAGS_FOR_STRIPPING_AT_END = TAGS_FOR_STRIPPING % (with_dot, dquote)
+
+    REGEXPS = ('\( ', '('), \
+              (' \)', ')'), \
+              (' *-- *', '--'), \
               ('[\t ]{2,}', ' '), \
-              ('^' + TAGS_FOR_STRIPPING, ''), \
-              (TAGS_FOR_STRIPPING + '$', '')
-    
+              ('^' + TAGS_FOR_STRIPPING_AT_BEGIN, ''), \
+              (TAGS_FOR_STRIPPING_AT_END + '$', '')
+
     if isinstance(value, basestring):
         value = value.strip()
         for pattern, replace in REGEXPS:
@@ -51,26 +65,41 @@ def cleanup(value):
 
 """
 Fields which should not be changed:
--- physicalMedium (there are often dimensions in this field)
+-- format (there are often dimensions in this field)
 -- extent (for the same reason)
 -- descriptions (full text, includes sentences)
 -- rights (full text, includes sentences)
 -- place (may end in an abbreviated state name)
 
 """
+DONT_STRIP_DOT_END = [
+    "hasView/format",
+    "sourceResource/format",
+    "sourceResource/extent",
+    "sourceResource/description",
+    "sourceResource/rights",
+    "sourceResource/place",
+    "sourceResource/collection/title"
+]
+
+# Below fields should have removed do at the end.
 DEFAULT_PROP = [
-    "aggregatedCHO/language",
-    "aggregatedCHO/title",
-    "aggregatedCHO/creator",
-    "aggregatedCHO/relation",
-    "aggregatedCHO/publisher",
-    "aggregatedCHO/subject",
-    "aggregatedCHO/format",
+    "sourceResource/language",
+    "sourceResource/title",
+    "sourceResource/creator",
+    "sourceResource/relation",
+    "sourceResource/publisher",
+    "sourceResource/subject",
+    "sourceResource/date",
+    "sourceResource/description",
+    "sourceResource/collection/title",
+    "sourceResource/collection/description",
+    "sourceResource/contributor"
 ]
 
 
 @simple_service('POST', 'http://purl.org/la/dp/cleanup_value', 'cleanup_value', 'application/json')
-def cleanup_value(body, ctype, action="cleanup_value", prop=",".join(DEFAULT_PROP)):
+def cleanup_value(body, ctype, action="cleanup_value", prop=",".join(DEFAULT_PROP + DONT_STRIP_DOT_END)):
     '''
     Service that accepts a JSON document and enriches the prop field of that document by:
 

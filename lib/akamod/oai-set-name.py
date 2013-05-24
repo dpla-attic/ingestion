@@ -26,13 +26,6 @@ def oaisetname(body,ctype,sets_service=None):
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    try :
-        collection = request.environ['HTTP_COLLECTION']
-    except:
-        response.code = 500
-        response.add_header('content-type','text/plain')
-        return "No Collection header found"
-
     if not is_absolute(sets_service):
         prefix = request.environ['wsgi.url_scheme'] + '://' 
         prefix += request.environ['HTTP_HOST'] if request.environ.get('HTTP_HOST') else request.environ['SERVER_NAME']
@@ -51,11 +44,14 @@ def oaisetname(body,ctype,sets_service=None):
         response.add_header('content-type','text/plain')
         return "Unable to parse sets service result as JSON: " + repr(content)
 
+    setpos = data['_id'].find('--')
+    match = data['_id'][setpos+2:] if setpos > -1 else data['_id']
+
     for s in sets:
-        if s['setSpec'] == collection:
-             data[u'title'] = s['setName']
-             if s['setDescription']:
-                 data[u'description'] = s['setDescription']
-             break
+        if match == s['setSpec']:
+            data[u'title'] = s['setName']
+            if s['setDescription']:
+                data[u'description'] = s['setDescription'].strip()
+            break
 
     return json.dumps(data)

@@ -5,23 +5,33 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
 import re
 
-@simple_service('POST', 'http://purl.org/la/dp/move_date_values', 'move_date_values', 'application/json')
-def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggregatedCHO/temporal"):
+@simple_service('POST', 'http://purl.org/la/dp/move_date_values',
+                'move_date_values', 'application/json')
+def movedatevalues(body, ctype, action="move_date_values", prop=None,
+                   to_prop="sourceResource/temporal"):
     """
-    Service that accepts a JSON document and moves any dates found in the prop field to the
-    temporal field.
+    Service that accepts a JSON document and moves any dates found in the prop
+    field to the temporal field.
     """
 
     if not prop:
         logger.error("No prop supplied")
         return body
 
-    REGSUB = ("\(", ""), ("\)", ""), ("\.",""), ("\?","")
-    REGSEARCH = ["\d{1,4} *[-/] *\d{1,4} *[-/] *\d{1,4}", "\d{4} *[-/] *\d{4}", "\d{4}"]
+    REGSEARCH = [
+        "\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}",
+        "\d{1,2}\s*[-/]\s*\d{4}\s*[-/]\s*\d{1,2}\s*[-/]\s*\d{4}",
+        "\d{4}\s*[-/]\s*\d{1,2}\s*[-/]\s*\d{4}\s*[-/]\s*\d{1,2}",
+        "\d{1,4}\s*[-/]\s*\d{1,4}\s*[-/]\s*\d{1,4}",
+        "\d{4}\s*[-/]\s*\d{4}",
+        "\d{1,2}\s*[-/]\s*\d{4}",
+        "\d{4}\s*[-/]\s*\d{1,2}",
+        "\d{4}s?",
+        "\d{1,2}\s*(?:st|nd|rd|th)\s*century"
+        ]
 
     def cleanup(s):
-        for p,r in REGSUB:
-            s = re.sub(p,r,s)
+        s = re.sub("[\(\)\.\?]", "",s)
         return s.strip()
 
     try:
@@ -36,10 +46,10 @@ def movedatevalues(body,ctype,action="move_date_values",prop=None,to_prop="aggre
         remove = []
         toprop = getprop(data, to_prop) if exists(data, to_prop) else []
         
-        for v in values:
+        for v in (values if isinstance(values, list) else [values]):
             c = cleanup(v)
             for pattern in REGSEARCH:
-                m = re.compile(pattern).findall(c)
+                m = re.compile(pattern, re.I).findall(c)
                 if len(m) == 1 and not re.sub(m[0],"",c).strip():
                     toprop.append(m[0])
                     # Append the non-cleaned value to remove
