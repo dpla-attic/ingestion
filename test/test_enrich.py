@@ -211,15 +211,14 @@ def test_shred12():
     FETCHED = json.loads(content)
     assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
-@nottest
 def test_shred13():
     """Should not shred when multi-char delim within parens"""
     INPUT = {
-        "m": "McBeth, Alexander<br> Greenville (S.C.<br>S.C.)<br>South Carolina<br>Account books<br> General stores",
+        "m": "McBeth, Alexander<br> Greenville (S.C.<br>S.C.)<br>South Carolina<br>(a(b)) c<br>(a(b<br><br>c(<br>d))efg<br>)(<br>h<br>i<br>) jklmn<br>op",
         "g": "bananas"
     }
     EXPECTED = {
-        "m": ["McBeth, Alexander", "Greenville (S.C.<br>S.C.)", "South Carolina", "Account books", "General stores"],
+        "m": ["McBeth, Alexander", "Greenville (S.C.<br>S.C.)", "South Carolina", "(a(b)) c", "(a(b<br><br>c(<br>d))efg<br>)(<br>h<br>i<br>) jklmn", "op"],
         "g": "bananas"
     }
     url = server() + "shred?prop=m,g&delim=%3Cbr%3E"
