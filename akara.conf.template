@@ -111,7 +111,7 @@ MODULES = [
     "freemix_akara.contentdm",
     "freemix_akara.oai",
     "dplaingestion.oai",
-    "zen.akamod.geocoding",
+    "dplaingestion.couch",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
@@ -187,14 +187,10 @@ class geocode:
     geonames_username = "${Geonames__Username}"
     geonames_token = "${Geonames__Token}"
 
-class enrich:
+class dpla_thumbs:
     couch_database = "${CouchDb__Url}"
     couch_database_username = "${CouchDb__Username}"
     couch_database_password = "${CouchDb__Password}"
-
-# Another module which needs to access the couchdb database.
-class dpla_thumbs(enrich):
-    pass
 
 class download_preview:
     thumbs_root_path = '/tmp/thumbs/'

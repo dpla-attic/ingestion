@@ -1,7 +1,7 @@
 {
     "list_sets": "",
     "enrichments_coll": [],
-    "name": "ia",
+    "name": "internet_archive",
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/ia-to-dpla",

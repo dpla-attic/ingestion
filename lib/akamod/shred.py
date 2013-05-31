@@ -26,15 +26,9 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON\n" + str(e)
 
-    if action == "shred" and len(delim) == 1:
-        try:
-            par_re = re.compile("([^" + re.escape(delim) + "]*\(.*?\)[^" + re.escape(delim) + "]*)")
-        except Exception as e:
-            response.code = 500
-            response.add_header('content-type', 'text/plain')
-            return "Can not construct dynamic regular expression: " + str(e)
-    else:
-        par_re = re.compile(re.escape(delim))
+    def mismatch_parens(s):
+        return s.count("(") != s.count(")")
+
     for p in prop.split(','):
         if exists(data, p):
             v = getprop(data, p)
@@ -49,13 +43,12 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
                 else:
                     continue
 
-                shredded = []
-                par_expressions = re.split(par_re, v)
-                for exp in par_expressions:
-                    if "(" not in exp and ")" not in exp:
-                        shredded += exp.split(delim)
+                shredded = [""]
+                for s in re.split(re.escape(delim), v):
+                    if mismatch_parens(shredded[-1]):
+                        shredded[-1] += "%s%s" % (delim, s)
                     else:
-                        shredded.append(exp)
+                        shredded.append(s)
                 shredded = [i.strip() for i in shredded if i.strip()]
                 if not keepdup:
                     result = []

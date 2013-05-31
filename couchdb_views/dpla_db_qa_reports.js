@@ -1,5 +1,5 @@
 {
-   "_id": "_design/lists",
+   "_id": "_design/qa_reports",
    "language": "javascript",
    "views": {
        "title": {
