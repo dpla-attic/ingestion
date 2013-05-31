@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+"""
+Script to rollback a provider's data to a previous ingestion.
+
+Usage:
+    $ python rollback_ingestion.py provider_name ingestion_version
+"""
+import sys
+import argparse
+from dplaingestion.couch import Couch
+
+def define_arguments():
+    """Defines command line arguments for the current script
+    """
+    parser = argparse.ArgumentParser()
+    name_help = "The provider's name as listed in the provider's profile"
+    version_help = "The ingestion version to rollback to"
+    parser.add_argument("provider_name", help="adfads", type=str)
+    parser.add_argument("ingestion_version", help="adfasdf", type=int)
+    return parser
+
+def main(argv):
+    couch = Couch()
+    parser = define_arguments()
+    args = parser.parse_args(argv[1:])
+    resp = couch.rollback(args.provider_name, args.ingestion_version)
+    print >> sys.stderr, resp
+
+if __name__ == "__main__":
+    main(sys.argv)

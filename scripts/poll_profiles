@@ -5,6 +5,7 @@
 import sys, os, fnmatch
 import argparse
 import time
+from datetime import datetime
 import base64
 from urllib import urlencode
 from amara.thirdparty import json, httplib2
@@ -14,6 +15,7 @@ from multiprocessing.dummy import Pool
 from Queue import Full, Empty, Queue
 from threading import Lock
 import signal
+from dplaingestion.couch import Couch
 
 try:
     from collections import OrderedDict, Counter
@@ -34,9 +36,12 @@ ENRICH = "/enrich" # enrichment service URI
 H = httplib2.Http('/tmp/.pollcache')
 H.force_exception_as_status_code = True
 
+INGESTION_DOC_ID = None
+
+couch = Couch()
 
 def process_profile(uri_base, profile_f):
-    global URI_BASE, ENRICH
+    global URI_BASE, ENRICH, INGESTION_DOC_ID
 
     with open(profile_f, 'r') as fprof:
         try:
@@ -58,6 +63,9 @@ def process_profile(uri_base, profile_f):
     subResources = profile.get(u'subresources')
     blacklist = profile.get(u'blacklist', [])
     ptype = profile.get(u'type').lower()
+
+    backupdb_name = "%s_%s" % (profile.get("name"), datetime.now().strftime("%Y%m%d%H%M%S"))
+    INGESTION_DOC_ID = couch.create_ingestion_doc_and_backup_db(profile.get("name"))
     if getRecord:
         process = TYPE_PROCESSORS.get((ptype, 'rec'))
         process(profile)
@@ -74,6 +82,7 @@ def process_profile(uri_base, profile_f):
         for subr in subResources:
             process(profile, subr)
             time.sleep(sleep)
+    couch.process_deleted_docs(INGESTION_DOC_ID)
 
     return True
 
@@ -186,7 +195,7 @@ def process_arc_all(profile, blacklist=None):
 
 def enrich_coll(profile, subr, content):
     # Enrich retrieved data
-    global ENRICH
+    global ENRICH, INGESTION_DOC_ID
 
     headers = {
         "Content-Type": "application/json",
@@ -202,6 +211,9 @@ def enrich_coll(profile, subr, content):
     if not str(resp.status).startswith('2'):
         print >> sys.stderr, '  HTTP error with enrichment service: ' + repr(resp)
 
+    # Post-enrichment process and post to DPLA database
+    docs = json.loads(content)
+    couch.process_and_post_to_dpla(docs, INGESTION_DOC_ID)
 
 def process_oai_rec(profile):
     endpoint = profile[u'get_record']
@@ -227,7 +239,7 @@ def process_oai_coll(profile, subr):
     # If multiple requests are required to harvest all information from a resource, they will
     # give us 'resumption tokens' after each request until we are done. Passing the resumption
     # token will provide the next batch of results
-    global URI_BASE
+    global URI_BASE, INGESTION_DOC_ID
 
     request_more, resumption_token = True, ""
     while request_more:
@@ -245,6 +257,7 @@ def process_oai_coll(profile, subr):
         endpoint_content = json.loads(content)
         resumption_token = endpoint_content['resumption_token']
 
+        endpoint_content['ingestion_doc_id'] = INGESTION_DOC_ID
         content = json.dumps(endpoint_content)
         enrich_coll(profile, subr, content)
 
@@ -279,7 +292,6 @@ def process_oai_all(profile, blacklist=tuple()):
     for subr in subr_to_process:
         process_oai_coll(profile, subr)
         time.sleep(sleep)
-
 
 def get_current_username():
     """Returns the name of the current user."""

@@ -1,6 +1,6 @@
 {
     "enrichments_coll": [], 
-    "name": "kentucky", 
+    "name": "kdl", 
     "list_sets": "/oai.listsets.json?endpoint=http://kdl.kyvl.org/catalog/oai/", 
     "enrichments_rec": [
         "/select-id", 

@@ -10,22 +10,12 @@ import uuid
 import base64
 import hashlib
 
-COUCH_DATABASE = module_config().get('couch_database')
-COUCH_DATABASE_USERNAME = module_config().get('couch_database_username')
-COUCH_DATABASE_PASSWORD = module_config().get('couch_database_password')
 
 COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
 # Set id to value of the first identifier, disambiguated w source. Not sure if
 # an OAI handle is guaranteed or on what scale it's unique.
 # FIXME it's looking like an id builder needs to be part of the profile. Or UUID as fallback?
 COUCH_REC_ID_BUILDER = lambda src, rec: COUCH_ID_BUILDER(src,rec.get(u'id','no-id').strip().replace(" ","__"))
-
-if COUCH_DATABASE_USERNAME and COUCH_DATABASE_PASSWORD:
-    COUCH_AUTH_HEADER = { 'Authorization' : 'Basic ' + base64.encodestring(COUCH_DATABASE_USERNAME+":"+COUCH_DATABASE_PASSWORD) }
-
-# FIXME: this should be JSON-LD, but CouchDB doesn't support +json yet
-CT_JSON = {'Content-Type': 'application/json'}
-
 
 H = httplib2.Http()
 H.force_exception_as_status_code = True
@@ -138,16 +128,6 @@ def enrich_coll(ctype, source_name, collection_name, collection_title, coll_enri
     enriched_coll_text = pipe(coll, ctype, coll_enrichments, 'HTTP_PIPELINE_COLL')
     enriched_collection = json.loads(enriched_coll_text)
 
-    # FIXME. Integrate collection storage into bulk call below
-    if COUCH_DATABASE:
-        docuri = join(COUCH_DATABASE, quote(cid))
-        couch_rev_check_coll(docuri, enriched_collection)
-        resp, cont = H.request(docuri, 'PUT',
-            body=json.dumps(enriched_collection),
-            headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
-        if not str(resp.status).startswith('2'):
-            logger.warn("Error storing collection in Couch: "+repr((resp,cont)))
-
     return enriched_collection
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich', 'enrich', 'application/json')
@@ -210,17 +190,11 @@ def enrich(body, ctype):
         if doc.get("_id", None):
             docs[doc["_id"]] = doc
 
-    couch_rev_check_recs(docs)
-    couch_docs_text = json.dumps({"docs": docs.values()})
-    if COUCH_DATABASE:
-        resp, content = H.request(join(COUCH_DATABASE,'_bulk_docs'), 'POST',
-            body=couch_docs_text,
-            headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
-        logger.debug("Couch bulk update response: "+content)
-        if not str(resp.status).startswith('2'):
-            logger.warn('HTTP error posting to CouchDB: '+repr((resp,content)))
+    # Add collections to docs
+    for collection in COLLECTIONS.values():
+        docs[collection["_id"]] = collection
 
-    return couch_docs_text
+    return json.dumps(docs)
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich_storage', 'enrich_storage', 'application/json')
 def enrich_storage(body, ctype):
