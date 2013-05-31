@@ -9,7 +9,10 @@ from datetime import datetime
 from dplaingestion.dict_differ import DictDiffer
 
 config = ConfigParser.ConfigParser()
-config.readfp(open("akara.ini"))
+try:
+    config.readfp(open("akara.ini"))
+except Exception:
+    sys.exit("Cannot find akara.ini")
 
 couch_server = config.get("CouchDb", "Server")
 couch_database_dpla = config.get("CouchDb", "DPLADatabase")

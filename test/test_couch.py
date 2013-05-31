@@ -34,7 +34,7 @@ TEST_DPLA_DB = "test_dpla"
 config = ConfigParser.ConfigParser()
 try:
     config.readfp(open("akara.ini"))
-except Exception as e:
+except Exception:
     sys.exit("Cannot find akara.ini")
 COUCH_SERVER = config.get("CouchDb", "Server")
 COUCH_VIEWS_DIRECTORY = config.get("CouchDb", "ViewsDirectory")
