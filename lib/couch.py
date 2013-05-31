@@ -8,17 +8,6 @@ from couchdb import Server
 from datetime import datetime
 from dplaingestion.dict_differ import DictDiffer
 
-config = ConfigParser.ConfigParser()
-try:
-    config.readfp(open("akara.ini"))
-except Exception:
-    sys.exit("Cannot find akara.ini")
-
-couch_server = config.get("CouchDb", "Server")
-couch_database_dpla = config.get("CouchDb", "DPLADatabase")
-couch_database_dashboard = config.get("CouchDb", "DashboardDatabase")
-couch_views_directory = config.get("CouchDb", "ViewsDirectory")
-
 class Couch(object):
     """A class to hold the couchdb-python functionality used during ingestion.
 
@@ -27,19 +16,33 @@ class Couch(object):
     ingestions.
     """
 
-    def __init__(self, server_url=couch_server,
-                 dpla_db_name=couch_database_dpla,
-                 dashboard_db_name=couch_database_dashboard,
-                 views_directory=couch_views_directory):
-        """Instantiate this class with:
+    def __init__(self, config_file="akara.ini", **kwargs):
+        """
 
-        Args:
+        Default Args:
+            config_file: The configuration file that includes the Couch server
+                         url, dpla and dashboard database names, and the views
+                         directory path.
+        Optional Args (if provided, config_file is not used:
             server_url: The server url with login credentials included.
             dpla_db_name: The name of the DPLA database.
             dashboard_db_name: The name of the Dashboard database.
             views_directory: The path where the view JavaScript files
-                                   are located.
+                             are located.
         """
+        if not kwargs:
+            config = ConfigParser.ConfigParser()
+            config.readfp(open(config_file))
+            server_url = config.get("CouchDb", "Server")
+            dpla_db_name = config.get("CouchDb", "DPLADatabase")
+            dashboard_db_name = config.get("CouchDb", "DashboardDatabase")
+            views_directory = config.get("CouchDb", "ViewsDirectory")
+        else:
+            server_url = kwargs.get("server_url")
+            dpla_db_name = kwargs.get("dpla_db_name")
+            dashboard_db_name = kwargs.get("dashboard_db_name")
+            views_directory = kwargs.get("views_directory")
+
         self.server_url = server_url
         self.server = Server(server_url)
         self.dpla_db = self._get_db(dpla_db_name)
@@ -54,6 +57,8 @@ class Couch(object):
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
+
+        self._sync_views()
 
     def _get_db(self, name):
         """Return a database given the database name, creating the database
@@ -81,7 +86,7 @@ class Couch(object):
             with open(fname, "r") as f:
                 view = json.load(f)
                 previous_view = db.get(view["_id"])
-                if  previous_view:
+                if previous_view:
                     view["_rev"] = previous_view["_rev"]
                 db[view["_id"]] = view
 
@@ -209,12 +214,10 @@ class Couch(object):
         self.logger.debug("Dashboard database response: %s" % resp)
 
     def create_ingestion_doc_and_backup_db(self, provider):
-        """Syncs the views then creates the ingestion document and backs up the
-           provider documents if this is not the first ingestion. Returns the
-           ingestion document id.
+        """Creates the ingestion document and backs up the provider documents
+           if this is not the first ingestion, then returns the ingestion
+           document id.
         """
-        self._sync_views()
-
         ingestion_doc = {
             "provider": provider,
             "type": "ingestion",

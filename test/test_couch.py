@@ -1,11 +1,10 @@
 import os
 import sys
-import time
 import base64
-import xmltodict
 import ConfigParser
-from datetime import datetime
+from nose import with_setup
 from nose.tools import nottest
+from nose.plugins.attrib import attr
 from dplaingestion.couch import Couch
 from couchdb.design import ViewDefinition
 from amara.thirdparty import json, httplib2
@@ -28,18 +27,21 @@ DATA_DELETED = DATA_PATH + "clemson_ctm_delete10"
 
 PROVIDER = "scdl-clemson"
 
-TEST_DASHBOARD_DB = "test_dashboard"
-TEST_DPLA_DB = "test_dpla"
-
-config = ConfigParser.ConfigParser()
-try:
+if "TRAVIS" in os.environ:
+    SERVER_URL = "http://travis_user:travis_pass@127.0.0.1:5984/"
+else:
+    config = ConfigParser.ConfigParser()
     config.readfp(open("akara.ini"))
-except Exception:
-    sys.exit("Cannot find akara.ini")
-COUCH_SERVER = config.get("CouchDb", "Server")
-COUCH_VIEWS_DIRECTORY = config.get("CouchDb", "ViewsDirectory")
+    SERVER_URL = config.get("CouchDb", "Server")
+
+TEST_DPLA_DB = "test_dpla"
+TEST_DASHBOARD_DB = "test_dashboard"
+VIEWS_DIRECTORY = "couchdb_views"
 
 class CouchTest(Couch):
+    def __init__(self, **kwargs):
+        super(CouchTest, self).__init__(**kwargs)
+
     def _sync_test_views(self):
         dashboard_view = ViewDefinition("record_docs", "by_ingestion_version_include_status",
                                          """function(doc) { if (doc.type == 'record') { emit(doc.ingestion_version, doc.status) } }""")
@@ -56,23 +58,27 @@ class CouchTest(Couch):
                 backup_db = row["doc"]["backup_db"]
                 del self.server[backup_db]
 
-    def _delete_all_test_server_databases(self):
+    def _delete_all_test_databases(self):
+        self._delete_all_test_backups()
         for db in self.server:
             if db == TEST_DPLA_DB or db == TEST_DASHBOARD_DB:
                 del self.server[db]
 
-    def _setup(self):
-        self._teardown()
+    def _recreate_test_databases(self):
+        del self.server[TEST_DPLA_DB]
+        del self.server[TEST_DASHBOARD_DB]
         self.dpla_db = self.server.create(TEST_DPLA_DB)
         self.dashboard_db = self.server.create(TEST_DASHBOARD_DB)
         self._sync_views()
+
+    def _setup(self):
+        self._delete_all_test_backups()
+        self._recreate_test_databases()
         self._sync_test_views()
 
     def _teardown(self):
-        self._sync_views()
-        self._sync_test_views()
         self._delete_all_test_backups()
-        self._delete_all_test_server_databases()
+        self._delete_test_datbases()
 
     def get_provider_backups(self):
         return [db for db in self.server if db.startswith(PROVIDER + "_")]
@@ -94,13 +100,21 @@ class CouchTest(Couch):
 
 @nottest
 def couch_setup():
-    couch = CouchTest(COUCH_SERVER, TEST_DPLA_DB, TEST_DASHBOARD_DB, COUCH_VIEWS_DIRECTORY)
-    couch._setup()
-    return couch
+    global couch
+    couch = CouchTest(server_url=SERVER_URL,
+                      dpla_db_name=TEST_DPLA_DB,
+                      dashboard_db_name=TEST_DASHBOARD_DB,
+                      views_directory=VIEWS_DIRECTORY)
+    couch._sync_test_views()
 
+@nottest
+def couch_teardown():
+    global couch
+    couch._delete_all_test_databases()
+
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
 def test_backup():
-    couch = couch_setup()
-
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
     first_ingestion_all_rows = couch._query_all_dpla_provider_docs(PROVIDER).rows
     second_ingestion_doc_id = couch.ingest(DATA_ADDED, PROVIDER)
@@ -113,11 +127,9 @@ def test_backup():
     all_backup_docs = [row["id"] for row in all_backup_rows]
     assert set(all_ingestion_docs) == set(all_backup_docs)
 
-    couch._teardown()
-
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
 def test_added_docs():
-    couch = couch_setup()
-
     DOCS_ADDED = ["scdl-clemson--http://repository.clemson.edu/u?/added%s" % i for i in range(1,6)]
     
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
@@ -141,11 +153,9 @@ def test_added_docs():
     docs_deleted = [row["doc"] for row in rows if row["doc"]["status"] == "deleted"]
     assert len(docs_deleted) == 0
 
-    couch._teardown()
-
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
 def test_deleted_docs():
-    couch = couch_setup()
-
     nums = [372, 373, 374, 375, 376, 377, 51, 68, 77, 94]
     DOCS_DELETED = ["scdl-clemson--http://repository.clemson.edu/u?/ctm,%s" % num for num in nums]
 
@@ -169,11 +179,9 @@ def test_deleted_docs():
     docs_added = [row["doc"] for row in rows if row["doc"]["status"] == "added"]
     assert len(docs_added) == 0
 
-    couch._teardown()
-
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
 def test_changed_docs():
-    couch = couch_setup()
-    
     DOCS_CHANGED = {
         "scdl-clemson--http://repository.clemson.edu/u?/ctm,161": {"changed": ["originalRecord/title", "sourceResource/title"]},
         "scdl-clemson--http://repository.clemson.edu/u?/ctm,169": {"changed": ["originalRecord/coverage", "sourceResource/spatial"]},
@@ -201,11 +209,9 @@ def test_changed_docs():
     docs_deleted = [row["doc"] for row in rows if row["doc"]["status"] == "deleted"]
     assert len(docs_deleted) == 0
 
-    couch._teardown()
-
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
 def test_rollback():
-    couch = couch_setup()
-
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
     first_ingestion_all_rows = couch._query_all_dpla_provider_docs(PROVIDER).rows
     first_ingestion_docs = [row["id"] for row in first_ingestion_all_rows]
@@ -223,11 +229,11 @@ def test_rollback():
     rollback_docs = [row["id"] for row in rollback_all_rows]
     assert set(rollback_docs) == set(first_ingestion_docs)
 
-    couch._teardown()
-
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
 def test_multiple_ingestions():
     import copy
-    couch = couch_setup()
+
     with open(DATA) as f:
         data = json.load(f)
 
@@ -293,5 +299,3 @@ def test_multiple_ingestions():
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_added"] == 10
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_changed"] == 0
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_deleted"] == 0
-
-    couch._teardown()
