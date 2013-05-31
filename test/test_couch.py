@@ -32,7 +32,10 @@ TEST_DASHBOARD_DB = "test_dashboard"
 TEST_DPLA_DB = "test_dpla"
 
 config = ConfigParser.ConfigParser()
-config.readfp(open("akara.ini"))
+try:
+    config.readfp(open("akara.ini"))
+except Exception as e:
+    sys.exit("Cannot find akara.ini")
 COUCH_SERVER = config.get("CouchDb", "Server")
 COUCH_VIEWS_DIRECTORY = config.get("CouchDb", "ViewsDirectory")
 
@@ -95,7 +98,6 @@ def couch_setup():
     couch._setup()
     return couch
 
-@attr(travis_exclude='yes')
 def test_backup():
     couch = couch_setup()
 
@@ -113,7 +115,6 @@ def test_backup():
 
     couch._teardown()
 
-@attr(travis_exclude='yes')
 def test_added_docs():
     couch = couch_setup()
 
@@ -142,7 +143,6 @@ def test_added_docs():
 
     couch._teardown()
 
-@attr(travis_exclude='yes')
 def test_deleted_docs():
     couch = couch_setup()
 
@@ -171,7 +171,6 @@ def test_deleted_docs():
 
     couch._teardown()
 
-@attr(travis_exclude='yes')
 def test_changed_docs():
     couch = couch_setup()
     
@@ -204,7 +203,6 @@ def test_changed_docs():
 
     couch._teardown()
 
-@attr(travis_exclude='yes')
 def test_rollback():
     couch = couch_setup()
 
@@ -227,7 +225,6 @@ def test_rollback():
 
     couch._teardown()
 
-@attr(travis_exclude='yes')
 def test_multiple_ingestions():
     import copy
     couch = couch_setup()
