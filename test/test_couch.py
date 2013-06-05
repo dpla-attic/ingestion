@@ -117,16 +117,17 @@ def couch_teardown():
 @with_setup(couch_setup, couch_teardown)
 def test_backup():
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
-    first_ingestion_all_rows = couch._query_all_dpla_provider_docs(PROVIDER).rows
+    first_ingestion_all_docs = [doc for doc in
+                                couch._query_all_dpla_provider_docs(PROVIDER)]
     second_ingestion_doc_id = couch.ingest(DATA_ADDED, PROVIDER)
 
     first_ingestion_doc = couch.dashboard_db.get(first_ingestion_doc_id)
     first_ingestion_backup = first_ingestion_doc["backup_db"]
     all_backup_rows = couch.server[first_ingestion_backup].view("_all_docs").rows
 
-    all_ingestion_docs = [row["id"] for row in first_ingestion_all_rows]
-    all_backup_docs = [row["id"] for row in all_backup_rows]
-    assert set(all_ingestion_docs) == set(all_backup_docs)
+    all_ingestion_ids = [doc["_id"] for doc in first_ingestion_all_docs]
+    all_backup_ids = [row["id"] for row in all_backup_rows]
+    assert set(all_ingestion_ids) == set(all_backup_ids)
 
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)
@@ -214,21 +215,20 @@ def test_changed_docs():
 @with_setup(couch_setup, couch_teardown)
 def test_rollback():
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
-    first_ingestion_all_rows = couch._query_all_dpla_provider_docs(PROVIDER).rows
-    first_ingestion_docs = [row["id"] for row in first_ingestion_all_rows]
+    first_ingestion_all_docs = couch._query_all_dpla_provider_docs(PROVIDER)
+    first_ingestion_all_ids = [doc["_id"] for doc in first_ingestion_all_docs]
 
     second_ingestion_doc_id = couch.ingest(DATA_ADDED, PROVIDER)
-    second_ingestion_all_rows = couch._query_all_dpla_provider_docs(PROVIDER).rows
-    second_ingestion_docs = [row["id"] for row in second_ingestion_all_rows]
+    second_ingestion_all_docs = couch._query_all_dpla_provider_docs(PROVIDER)
+    second_ingestion_all_ids = [doc["_id"] for doc in second_ingestion_all_docs]
     
-    print_error_log()
-    assert set(first_ingestion_docs) != set(second_ingestion_docs)
+    assert set(first_ingestion_all_ids) != set(second_ingestion_all_ids)
 
     ingestion_doc = couch.dashboard_db.get(first_ingestion_doc_id)
     couch.rollback(PROVIDER, ingestion_doc["ingestion_version"])
-    rollback_all_rows = couch._query_all_dpla_provider_docs(PROVIDER).rows
-    rollback_docs = [row["id"] for row in rollback_all_rows]
-    assert set(rollback_docs) == set(first_ingestion_docs)
+    rollback_all_docs = couch._query_all_dpla_provider_docs(PROVIDER)
+    rollback_all_ids = [doc["_id"] for doc in rollback_all_docs]
+    assert set(rollback_all_ids) == set(first_ingestion_all_ids)
 
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)
@@ -251,23 +251,23 @@ def test_multiple_ingestions():
     data_added["items"] += add_later
 
     first_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
-    dashboard_db_docs = couch._query_all_docs(couch.dashboard_db)
+    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
     total_dashboard_docs_first = len(dashboard_db_docs)
 
     second_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
-    dashboard_db_docs = couch._query_all_docs(couch.dashboard_db)
+    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
     total_dashboard_docs_second = len(dashboard_db_docs)
 
     third_ingestion_doc_id = couch.ingest(data_deleted, PROVIDER, json_content=True)
-    dashboard_db_docs = couch._query_all_docs(couch.dashboard_db)
+    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
     total_dashboard_docs_third = len(dashboard_db_docs)
 
     fourth_ingestion_doc_id = couch.ingest(data_changed, PROVIDER, json_content=True)
-    dashboard_db_docs = couch._query_all_docs(couch.dashboard_db)
+    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
     total_dashboard_docs_fourth = len(dashboard_db_docs)
 
     fifth_ingestion_doc_id = couch.ingest(data_added, PROVIDER, json_content=True)
-    dashboard_db_docs = couch._query_all_docs(couch.dashboard_db)
+    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
     total_dashboard_docs_fifth = len(dashboard_db_docs)
 
     # Second ingestion should have an extra ingestion doc
@@ -325,10 +325,10 @@ def test_legacy():
     assert ingest_doc["count_changed"] == 0
 
     # Get all provider documents in database
-    rows = couch._query_all_dpla_provider_docs(PROVIDER)
-    assert len(rows) == 244
-    for row in rows:
-        assert row["doc"]["ingestion_version"] == 1
+    docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]
+    assert len(docs) == 244
+    for doc in docs:
+        assert doc["ingestion_version"] == 1
 
     # Ingest to override data
     couch.ingest(DATA, PROVIDER)
@@ -339,7 +339,7 @@ def test_legacy():
     assert ingest_doc["count_changed"] == 244
 
     # Get all provider documents in database
-    rows = couch._query_all_dpla_provider_docs(PROVIDER)
-    assert len(rows) == 244
-    for row in rows:
-        assert row["doc"]["ingestion_version"] == 2
+    docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]
+    assert len(docs) == 244
+    for doc in docs:
+        assert doc["ingestion_version"] == 2

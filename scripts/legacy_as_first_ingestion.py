@@ -39,39 +39,52 @@ def main(argv=None, couch=None, provider_legacy_name=None):
     else:
         provider_name = provider_legacy_name
 
-    provider_legacy_rows = couch._query_all_dpla_provider_docs(provider_name)
+    legacy_provider_docs = couch._query_all_dpla_provider_docs(provider_name)
     ingest_docs = couch._query_all_provider_ingestion_docs(provider_name)
 
     # Proceed only if there are no ingestion documents for the provider but
     # there are provider_legacy_rows.
+    proceed = True
     if len(ingest_docs) > 0:
         num = len(ingest_docs)
         print >> sys.stderr, "Error: %s ingestion document(s) exists" % num
-    elif len(provider_legacy_rows) == 0:
+        proceed = False
+    try:
+        next_item = next(couch._query_all_dpla_provider_docs(provider_name))
+    except:
         print >> sys.stderr, "Error: No documents found for this provider"
-    else:
+        proceed = False
+
+    if proceed:
         # Use the new provider_name for the ingestion document
         ingest_doc_id = couch.create_ingestion_doc_and_backup_db(provider_name)
 
         added_docs = []
-        count = 0
-        total = len(provider_legacy_rows)
         print >> sys.stderr, "Fetching all docs..."
-        for row in provider_legacy_rows:
+        count = 0
+        for doc in legacy_provider_docs:
             count += 1
-            row["doc"]["ingestion_version"] = 1
-            couch.dpla_db.save(row["doc"])
+            doc["ingestion_version"] = 1
+            couch.dpla_db.save(doc)
 
-            added_docs.append({"id": row["doc"]["id"],
+            added_docs.append({"id": doc["_id"],
                                "type": "record",
                                "status": "added",
+                               "provider": provider_name,
                                "ingestion_version": 1})
             # POST every 1000
-            if len(added_docs) == 1000 or count == total:
-                print >> sys.stderr, "Processed %s of %s" % (count, total)
+            if len(added_docs) == 1000:
+                print >> sys.stderr, "Processed %s docs" % count
                 couch.bulk_post_to_dashboard(added_docs)
                 couch._update_ingestion_doc_counts(ingest_doc_id,
                                                   count_added=len(added_docs))
+        # Last POST
+        if added_docs:
+            print >> sys.stderr, "Processed %s docs" % count
+            couch.bulk_post_to_dashboard(added_docs)
+            couch._update_ingestion_doc_counts(ingest_doc_id,
+                                              count_added=len(added_docs))
+
         print >> sys.stderr, "Complete" 
 
 if __name__ == "__main__":
