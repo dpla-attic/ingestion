@@ -118,6 +118,13 @@ class Couch(object):
                                  include_docs=True, key=provider_name)
         return docs
 
+    def _query_all_dpla_prov_docs_by_ingest_ver(self, provider_name,
+                                                ingestion_version):
+        docs = self.dpla_db.view("all_provider_docs/by_provider_name_and_" +
+                                 "ingestion_version", include_docs=True,
+                                 key=[provider_name, ingestion_version])
+        return docs
+
     def _query_all_provider_ingestion_docs(self, provider_name):
         return self.dashboard_db.view("all_ingestion_docs/by_provider_name",
                                       include_docs=True, key=provider_name)
@@ -253,26 +260,26 @@ class Couch(object):
         if not self._is_first_ingestion(ingestion_doc_id):
             curr_ingest_doc = self.dashboard_db[ingestion_doc_id]
             provider = curr_ingest_doc["provider"]
-            curr_ingest_version = int(curr_ingest_doc["ingestion_version"])
-            prev_ingest_version = curr_ingest_version - 1
+            curr_version = int(curr_ingest_doc["ingestion_version"])
+            prev_version = curr_version - 1
 
-            rows  = self._query_all_dpla_provider_docs(provider)
+            rows  = self._query_all_dpla_prov_docs_by_ingest_ver(provider,
+                                                                 prev_version)
             delete_docs = []
             dashboard_docs = []
             count = 0
             for row in rows:
                 count += 1
-                if int(row["doc"]["ingestion_version"]) == prev_ingest_version:
-                    delete_docs.append(row["doc"])
-                    dashboard_docs.append({"id": row["id"],
-                                           "type": "record",
-                                           "status": "deleted",
-                                           "ingestion_version": curr_ingest_version})
+                delete_docs.append(row["doc"])
+                dashboard_docs.append({"id": row["doc"]["_id"],
+                                       "type": "record",
+                                       "status": "deleted",
+                                       "provider": provider,
+                                       "ingestion_version": curr_version})
 
                 # So as not to use too much memory at once, do the bulk posts
                 # and deletions in sets of 1000 documents
-                if delete_docs and (len(delete_docs)%1000 == 0 or
-                                    count == len(rows)):
+                if len(delete_docs)%1000 == 0 or count == len(rows):
                     self.bulk_post_to_dashboard(dashboard_docs)
                     self._update_ingestion_doc_counts(
                         ingestion_doc_id, count_deleted=len(delete_docs)
@@ -296,6 +303,7 @@ class Couch(object):
         ingestion_doc_id -  The "_id" of the ingestion document
         """
         ingestion_doc = self.dashboard_db.get(ingestion_doc_id)
+        provider = ingestion_doc["provider"]
         ingestion_version = ingestion_doc["ingestion_version"]
 
         added_docs = []
@@ -304,11 +312,32 @@ class Couch(object):
             # Add ingeston_version to harvested document
             harvested_docs[hid]["ingestion_version"] = ingestion_version
 
+            # Handle legacy _id: We want to compare harvested documents with
+            # old legacy documents so we use the legacy name to retreive the
+            # matching database document.
+            legacy_id = None
+            replacers = ("scdl-clemson", "clemson"), ("kdl", "kentucky"), \
+                        ("internet_archive", "ia"), ("mdl", "minnesota")
+            for new, old in replacers:
+                if harvested_docs[hid]["_id"].startswith(new):
+                    legacy_id = harvested_docs[hid]["_id"].replace(new, old)
+                    break
+
             # Add the revision and find the fields changed for harvested
             # documents that were ingested in a prior ingestion
-            if harvested_docs[hid]["_id"] in self.dpla_db:
-                db_doc = self.dpla_db.get(harvested_docs[hid]["_id"])
-                harvested_docs[hid]["_rev"] = db_doc["_rev"]
+            if hid in self.dpla_db or (legacy_id and
+                                       legacy_id in self.dpla_db):
+                db_doc = self.dpla_db.get(hid)
+                # Handle legacy "_rev": If fetching via hid fails, then fetch
+                # via legacy _id. We don't want to set the "_rev" field of the
+                # legacy document in the harvested document because the change
+                # in UUID causes a conflict when saving to the database.
+                if not db_doc:
+                    db_doc = self.dpla_db.get(legacy_id)
+                else:
+                    # Set the "_rev" for non-legacy documents
+                    harvested_docs[hid]["_rev"] = db_doc["_rev"]
+
                 db_doc = self._prep_for_diff(db_doc)
                 harvested_doc = self._prep_for_diff(deepcopy(harvested_docs[hid]))
 
@@ -319,12 +348,14 @@ class Couch(object):
                                          "type": "record",
                                          "status": "changed",
                                          "fields_changed": fields_changed,
+                                         "provider": provider,
                                          "ingestion_version": ingestion_version})
             # New document not previousely ingested
             else:
                 added_docs.append({"id": hid,
                                    "type": "record",
                                    "status": "added",
+                                   "provider": provider,
                                    "ingestion_version": ingestion_version})
 
         self.bulk_post_to_dashboard(added_docs + changed_docs)

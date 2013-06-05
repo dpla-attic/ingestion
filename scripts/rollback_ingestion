@@ -15,8 +15,8 @@ def define_arguments():
     parser = argparse.ArgumentParser()
     name_help = "The provider's name as listed in the provider's profile"
     version_help = "The ingestion version to rollback to"
-    parser.add_argument("provider_name", help="adfads", type=str)
-    parser.add_argument("ingestion_version", help="adfasdf", type=int)
+    parser.add_argument("provider_name", help=name_help, type=str)
+    parser.add_argument("ingestion_version", help=version_help, type=int)
     return parser
 
 def main(argv):
