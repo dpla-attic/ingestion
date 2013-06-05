@@ -138,7 +138,6 @@ MODULES = [
     "dplaingestion.akamod.dpla-get-record",
     "dplaingestion.akamod.mods_to_dpla",
     "dplaingestion.akamod.artstor_cleanup",
-    "dplaingestion.akamod.uiuc_publisher_to_dataprovider",
     "dplaingestion.akamod.nypl_identify_object",
     "dplaingestion.akamod.nypl_coll_title",
     "dplaingestion.akamod.nypl_select_hasview",
@@ -158,7 +157,8 @@ MODULES = [
     "dplaingestion.akamod.set_type_from_physical_format",
     "dplaingestion.akamod.capitalize_value",
     "dplaingestion.akamod.artstor_cleanup_creator",
-    "dplaingestion.akamod.replace_substring"
+    "dplaingestion.akamod.replace_substring",
+    "dplaingestion.akamod.uiuc_cleanup_spatial_name"
     ]
 
 class download_preview:
