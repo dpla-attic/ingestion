@@ -44,19 +44,19 @@ class CouchTest(Couch):
         super(CouchTest, self).__init__(**kwargs)
 
     def _sync_test_views(self):
-        dashboard_view = ViewDefinition("record_docs", "by_ingestion_version_include_status",
-                                         """function(doc) { if (doc.type == 'record') { emit(doc.ingestion_version, doc.status) } }""")
+        dashboard_view = ViewDefinition("record_docs", "by_ingestion_sequence_include_status",
+                                         """function(doc) { if (doc.type == 'record') { emit(doc.ingestionSequence, doc.status) } }""")
         dashboard_view.sync(self.dashboard_db)
 
-    def _query_records_by_ingestion_version_include_status(self, ingestion_version):
-        query = self.dashboard_db.view("record_docs/by_ingestion_version_include_status", include_docs=True, key=ingestion_version)
+    def _query_records_by_ingestion_sequence_include_status(self, ingestion_sequence):
+        query = self.dashboard_db.view("record_docs/by_ingestion_sequence_include_status", include_docs=True, key=ingestion_sequence)
         return query.rows
 
     def _delete_all_test_backups(self):
         query = self.dashboard_db.view("all_ingestion_docs/by_provider_name", include_docs=True, key=PROVIDER)
         for row in query:
-            if "backup_db" in row["doc"]:
-                backup_db = row["doc"]["backup_db"]
+            if "backupDB" in row["doc"]:
+                backup_db = row["doc"]["backupDB"]
                 del self.server[backup_db]
 
     def _delete_all_test_databases(self):
@@ -121,9 +121,9 @@ def test_backup():
                                 couch._query_all_dpla_provider_docs(PROVIDER)]
     second_ingestion_doc_id = couch.ingest(DATA_ADDED, PROVIDER)
 
-    first_ingestion_doc = couch.dashboard_db.get(first_ingestion_doc_id)
-    first_ingestion_backup = first_ingestion_doc["backup_db"]
-    all_backup_rows = couch.server[first_ingestion_backup].view("_all_docs").rows
+    second_ingestion_doc = couch.dashboard_db.get(second_ingestion_doc_id)
+    second_ingestion_backup = second_ingestion_doc["backupDB"]
+    all_backup_rows = couch.server[second_ingestion_backup].view("_all_docs").rows
 
     all_ingestion_ids = [doc["_id"] for doc in first_ingestion_all_docs]
     all_backup_ids = [row["id"] for row in all_backup_rows]
@@ -139,11 +139,11 @@ def test_added_docs():
 
     second_ingestion_doc = couch.dashboard_db.get(second_ingestion_doc_id)
 
-    assert second_ingestion_doc["count_added"] == len(DOCS_ADDED)
-    assert second_ingestion_doc["count_changed"] == 0
-    assert second_ingestion_doc["count_deleted"] == 0
+    assert second_ingestion_doc["countAdded"] == len(DOCS_ADDED)
+    assert second_ingestion_doc["countChanged"] == 0
+    assert second_ingestion_doc["countDeleted"] == 0
 
-    rows = couch._query_records_by_ingestion_version_include_status(second_ingestion_doc["ingestion_version"])
+    rows = couch._query_records_by_ingestion_sequence_include_status(second_ingestion_doc["ingestionSequence"])
 
     docs_added_ids = [row["doc"]["id"] for row in rows if row["doc"]["status"] == "added"]
     assert len(docs_added_ids) == len(DOCS_ADDED)
@@ -165,11 +165,11 @@ def test_deleted_docs():
     second_ingestion_doc_id = couch.ingest(DATA_DELETED, PROVIDER)
 
     second_ingestion_doc = couch.dashboard_db.get(second_ingestion_doc_id)
-    assert second_ingestion_doc["count_deleted"] == len(DOCS_DELETED)
-    assert second_ingestion_doc["count_changed"] == 0
-    assert second_ingestion_doc["count_added"] == 0
+    assert second_ingestion_doc["countDeleted"] == len(DOCS_DELETED)
+    assert second_ingestion_doc["countChanged"] == 0
+    assert second_ingestion_doc["countAdded"] == 0
 
-    rows = couch._query_records_by_ingestion_version_include_status(second_ingestion_doc["ingestion_version"])
+    rows = couch._query_records_by_ingestion_sequence_include_status(second_ingestion_doc["ingestionSequence"])
 
     docs_deleted_ids = [row["doc"]["id"] for row in rows if row["doc"]["status"] == "deleted"]
     assert len(docs_deleted_ids) == len(DOCS_DELETED)
@@ -194,13 +194,13 @@ def test_changed_docs():
     second_ingestion_doc_id = couch.ingest(DATA_CHANGED, PROVIDER)
 
     second_ingestion_doc = couch.dashboard_db.get(second_ingestion_doc_id)
-    assert second_ingestion_doc["count_changed"] == len(DOCS_CHANGED.keys())
-    assert second_ingestion_doc["count_added"] == 0
-    assert second_ingestion_doc["count_deleted"] == 0
+    assert second_ingestion_doc["countChanged"] == len(DOCS_CHANGED.keys())
+    assert second_ingestion_doc["countAdded"] == 0
+    assert second_ingestion_doc["countDeleted"] == 0
 
-    rows = couch._query_records_by_ingestion_version_include_status(second_ingestion_doc["ingestion_version"])
+    rows = couch._query_records_by_ingestion_sequence_include_status(second_ingestion_doc["ingestionSequence"])
 
-    docs_changed = dict((row["doc"]["id"], row["doc"]["fields_changed"]) for row in rows if row["doc"]["status"] == "changed")
+    docs_changed = dict((row["doc"]["id"], row["doc"]["fieldsChanged"]) for row in rows if row["doc"]["status"] == "changed")
     assert len(docs_changed.keys()) == len(DOCS_CHANGED.keys())
     for k, v in docs_changed.iteritems():
         assert set(docs_changed[k]["changed"]) == set(DOCS_CHANGED[k]["changed"])
@@ -224,8 +224,8 @@ def test_rollback():
     
     assert set(first_ingestion_all_ids) != set(second_ingestion_all_ids)
 
-    ingestion_doc = couch.dashboard_db.get(first_ingestion_doc_id)
-    couch.rollback(PROVIDER, ingestion_doc["ingestion_version"])
+    second_ingestion_doc = couch.dashboard_db.get(second_ingestion_doc_id)
+    couch.rollback(PROVIDER, second_ingestion_doc["ingestionSequence"])
     rollback_all_docs = couch._query_all_dpla_provider_docs(PROVIDER)
     rollback_all_ids = [doc["_id"] for doc in rollback_all_docs]
     assert set(rollback_all_ids) == set(first_ingestion_all_ids)
@@ -280,32 +280,32 @@ def test_multiple_ingestions():
     assert int(total_dashboard_docs_fourth) + 11 == int(total_dashboard_docs_fifth)
     
 
-    assert couch.dashboard_db.get(first_ingestion_doc_id)["count_added"] == 244
-    assert couch.dashboard_db.get(first_ingestion_doc_id)["count_changed"] == 0
-    assert couch.dashboard_db.get(first_ingestion_doc_id)["count_deleted"] == 0
+    assert couch.dashboard_db.get(first_ingestion_doc_id)["countAdded"] == 244
+    assert couch.dashboard_db.get(first_ingestion_doc_id)["countChanged"] == 0
+    assert couch.dashboard_db.get(first_ingestion_doc_id)["countDeleted"] == 0
 
-    assert couch.dashboard_db.get(second_ingestion_doc_id)["count_added"] == 0
-    assert couch.dashboard_db.get(second_ingestion_doc_id)["count_changed"] == 0
-    assert couch.dashboard_db.get(second_ingestion_doc_id)["count_deleted"] == 0
+    assert couch.dashboard_db.get(second_ingestion_doc_id)["countAdded"] == 0
+    assert couch.dashboard_db.get(second_ingestion_doc_id)["countChanged"] == 0
+    assert couch.dashboard_db.get(second_ingestion_doc_id)["countDeleted"] == 0
     
 
-    assert couch.dashboard_db.get(third_ingestion_doc_id)["count_added"] == 0
-    assert couch.dashboard_db.get(third_ingestion_doc_id)["count_changed"] == 0
-    assert couch.dashboard_db.get(third_ingestion_doc_id)["count_deleted"] == 10
+    assert couch.dashboard_db.get(third_ingestion_doc_id)["countAdded"] == 0
+    assert couch.dashboard_db.get(third_ingestion_doc_id)["countChanged"] == 0
+    assert couch.dashboard_db.get(third_ingestion_doc_id)["countDeleted"] == 10
 
-    assert couch.dashboard_db.get(fourth_ingestion_doc_id)["count_added"] == 0
-    assert couch.dashboard_db.get(fourth_ingestion_doc_id)["count_changed"] == 5
-    assert couch.dashboard_db.get(fourth_ingestion_doc_id)["count_deleted"] == 0
+    assert couch.dashboard_db.get(fourth_ingestion_doc_id)["countAdded"] == 0
+    assert couch.dashboard_db.get(fourth_ingestion_doc_id)["countChanged"] == 5
+    assert couch.dashboard_db.get(fourth_ingestion_doc_id)["countDeleted"] == 0
 
-    assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_added"] == 10
-    assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_changed"] == 0
-    assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_deleted"] == 0
+    assert couch.dashboard_db.get(fifth_ingestion_doc_id)["countAdded"] == 10
+    assert couch.dashboard_db.get(fifth_ingestion_doc_id)["countChanged"] == 0
+    assert couch.dashboard_db.get(fifth_ingestion_doc_id)["countDeleted"] == 0
 
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)
 def test_legacy():
     # Ingest legacy data. Record _ids will start with "clemson" instead of
-    # "scdl-clemson" and records will not have an "ingestion_version" field
+    # "scdl-clemson" and records will not have an "ingestionSequence" field
     with open(DATA_LEGACY) as f:
         data = f.readlines()
     content = json.loads("".join(data))
@@ -319,27 +319,27 @@ def test_legacy():
 
     # Get last Clemson ingestion document
     ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
-    assert ingest_doc["ingestion_version"] == 1
-    assert ingest_doc["count_added"] == 244
-    assert ingest_doc["count_deleted"] == 0
-    assert ingest_doc["count_changed"] == 0
+    assert ingest_doc["ingestionSequence"] == 1
+    assert ingest_doc["countAdded"] == 244
+    assert ingest_doc["countDeleted"] == 0
+    assert ingest_doc["countChanged"] == 0
 
     # Get all provider documents in database
     docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]
     assert len(docs) == 244
     for doc in docs:
-        assert doc["ingestion_version"] == 1
+        assert doc["ingestionSequence"] == 1
 
     # Ingest to override data
     couch.ingest(DATA, PROVIDER)
     ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
-    assert ingest_doc["ingestion_version"] == 2
-    assert ingest_doc["count_added"] == 0
-    assert ingest_doc["count_deleted"] == 244
-    assert ingest_doc["count_changed"] == 244
+    assert ingest_doc["ingestionSequence"] == 2
+    assert ingest_doc["countAdded"] == 0
+    assert ingest_doc["countDeleted"] == 244
+    assert ingest_doc["countChanged"] == 244
 
     # Get all provider documents in database
     docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]
     assert len(docs) == 244
     for doc in docs:
-        assert doc["ingestion_version"] == 2
+        assert doc["ingestionSequence"] == 2
