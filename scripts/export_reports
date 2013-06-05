@@ -49,9 +49,9 @@ mkdir $dir
 
 for i in "${report[@]}"
 do
-    echo "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/qa_report/_list/csv/$i"
-    curl -o $dir/$i "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/qa_report/_list/csv/$i"
-    curl -o "${dir}/${i}_count" "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/qa_report/_list/count_csv/${i}_count?group=true"
+    echo "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/qa_reports/_list/csv/$i"
+    curl -o $dir/$i "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/qa_reports/_list/csv/$i"
+    curl -o "${dir}/${i}_count" "http://$username:$password@camp.dpla.berkman.temphost.net:$port/dpla/_design/qa_reports/_list/count_csv/${i}_count?group=true"
 done
 
 [ $(ls $dir | wc -l) -ne 0 ] || die "Error: check parameters - username=$1 password=$2 provider=$3 port=$4"

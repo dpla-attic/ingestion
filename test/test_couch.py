@@ -24,6 +24,7 @@ DATA = DATA_PATH + "clemson_ctm"
 DATA_ADDED = DATA_PATH + "clemson_ctm_add5"
 DATA_CHANGED = DATA_PATH + "clemson_ctm_change3"
 DATA_DELETED = DATA_PATH + "clemson_ctm_delete10"
+DATA_LEGACY = DATA_PATH + "clemson_ctm_legacy"
 
 PROVIDER = "scdl-clemson"
 
@@ -299,3 +300,46 @@ def test_multiple_ingestions():
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_added"] == 10
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_changed"] == 0
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["count_deleted"] == 0
+
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
+def test_legacy():
+    # Ingest legacy data. Record _ids will start with "clemson" instead of
+    # "scdl-clemson" and records will not have an "ingestion_version" field
+    with open(DATA_LEGACY) as f:
+        data = f.readlines()
+    content = json.loads("".join(data))
+    docs = [c["doc"] for c in content]
+    couch.bulk_post_to_dpla(docs)
+
+    # Run legacy_as_first_ingestion script
+    sys.path.append(os.path.join(os.getcwd(), "scripts"))
+    from legacy_as_first_ingestion import main
+    main(couch=couch, provider_legacy_name="clemson")
+
+    # Get last Clemson ingestion document
+    ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingest_doc["ingestion_version"] == 1
+    assert ingest_doc["count_added"] == 244
+    assert ingest_doc["count_deleted"] == 0
+    assert ingest_doc["count_changed"] == 0
+
+    # Get all provider documents in database
+    rows = couch._query_all_dpla_provider_docs(PROVIDER)
+    assert len(rows) == 244
+    for row in rows:
+        assert row["doc"]["ingestion_version"] == 1
+
+    # Ingest to override data
+    couch.ingest(DATA, PROVIDER)
+    ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingest_doc["ingestion_version"] == 2
+    assert ingest_doc["count_added"] == 0
+    assert ingest_doc["count_deleted"] == 244
+    assert ingest_doc["count_changed"] == 244
+
+    # Get all provider documents in database
+    rows = couch._query_all_dpla_provider_docs(PROVIDER)
+    assert len(rows) == 244
+    for row in rows:
+        assert row["doc"]["ingestion_version"] == 2
