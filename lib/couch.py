@@ -95,7 +95,7 @@ class Couch(object):
 
     def _is_first_ingestion(self, ingestion_doc_id):
         ingestion_doc = self.dashboard_db.get(ingestion_doc_id)
-        return True if ingestion_doc["ingestion_version"] == 1 else False
+        return True if ingestion_doc["ingestionSequence"] == 1 else False
 
     def _get_range_query_kwargs(self, doc_ids):
         """Returns a dict of keyword arguments to be used in the
@@ -152,11 +152,11 @@ class Couch(object):
         return self._paginated_query(self.dpla_db, view_name,
                                      startkey=startkey)
 
-    def _query_all_dpla_prov_docs_by_ingest_ver(self, provider_name,
-                                                ingestion_version):
-        view_name = "all_provider_docs/by_provider_name_and_ingestion_version"
-        startkey=[provider_name, ingestion_version]
-        endkey=[provider_name, ingestion_version]
+    def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
+                                                ingestion_sequence):
+        view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
+        startkey=[provider_name, ingestion_sequence]
+        endkey=[provider_name, ingestion_sequence]
         return self._paginated_query(self.dpla_db, view_name,
                                      startkey=startkey, endkey=endkey)
 
@@ -165,16 +165,16 @@ class Couch(object):
                                       include_docs=True, key=provider_name)
         return [row["doc"] for row in view.rows]
 
-    def _query_prov_ingest_doc_by_ingest_ver(self, provider_name,
-                                             ingestion_version):
-        view_name = "all_ingestion_docs/by_provider_name_and_ingestion_version"
+    def _query_prov_ingest_doc_by_ingest_seq(self, provider_name,
+                                             ingestion_sequence):
+        view_name = "all_ingestion_docs/by_provider_name_and_ingestion_sequence"
         view = self.dashboard_db.view(view_name, include_docs=True,
-                                      key=[provider_name, ingestion_version])
+                                      key=[provider_name, ingestion_sequence])
         return view.rows[-1]["doc"]
 
     def _prep_for_diff(self, doc):
         """Removes keys from document that should not be compared."""
-        ignore_keys = ["_rev", "admin", "ingestDate", "ingestion_version"]
+        ignore_keys = ["_rev", "admin", "ingestDate", "ingestionSequence"]
         for key in ignore_keys:
             if key in doc:
                 del doc[key]
@@ -289,58 +289,58 @@ class Couch(object):
         ingestion_doc = {
             "provider": provider,
             "type": "ingestion",
-            "ingest_date": datetime.now().isoformat(),
-            "count_added": 0,
-            "count_changed": 0,
-            "count_deleted": 0
+            "ingestDate": datetime.now().isoformat(),
+            "countAdded": 0,
+            "countChanged": 0,
+            "countDeleted": 0
         }
 
         last_ingestion_doc = self._get_last_ingestion_doc_for(provider)
         if not last_ingestion_doc:
-            ingestion_version = 1
+            ingestion_sequence = 1
         else:
             # Since this is not the first ingestion we will back up the
-            # provider documents and upate the last ingestion document with
+            # provider documents and upate the current ingestion document with
             # the backup database name.
-            ingestion_version = last_ingestion_doc["ingestion_version"] + 1
+            ingestion_sequence = last_ingestion_doc["ingestionSequence"] + 1
             backup_db_name = self._backup_db(provider)
-            last_ingestion_doc["backup_db"] = backup_db_name
+            ingestion_doc["backupDB"] = backup_db_name
             self.dashboard_db.save(last_ingestion_doc)
             
 
-        ingestion_doc["ingestion_version"] = ingestion_version
+        ingestion_doc["ingestionSequence"] = ingestion_sequence
         ingestion_doc_id = self.dashboard_db.save(ingestion_doc)[0]
         return ingestion_doc_id
 
     def process_deleted_docs(self, ingestion_doc_id):
-        """Deletes any provider document whose ingestion_version equals the
-           previous ingestion's ingestion version, adds the deleted document id
-           to the dashboard database, and updated the current ingestion
-           document's deleted count.
+        """Deletes any provider document whose ingestionSequence equals the
+           previous ingestion's ingestionSequence, adds the deleted document id
+           to the dashboard database, and updates the current ingestion
+           document's countDeleted.
         """
         if not self._is_first_ingestion(ingestion_doc_id):
             curr_ingest_doc = self.dashboard_db[ingestion_doc_id]
             provider = curr_ingest_doc["provider"]
-            curr_version = int(curr_ingest_doc["ingestion_version"])
-            prev_version = curr_version - 1
+            curr_seq = int(curr_ingest_doc["ingestionSequence"])
+            prev_seq = curr_seq - 1
 
             delete_docs = []
             dashboard_docs = []
-            for doc in self._query_all_dpla_prov_docs_by_ingest_ver(provider,
-                                                                    prev_version):
+            for doc in self._query_all_dpla_prov_docs_by_ingest_seq(provider,
+                                                                    prev_seq):
                 delete_docs.append(doc)
                 dashboard_docs.append({"id": doc["_id"],
                                        "type": "record",
                                        "status": "deleted",
                                        "provider": provider,
-                                       "ingestion_version": curr_version})
+                                       "ingestionSequence": curr_seq})
 
                 # So as not to use too much memory at once, do the bulk posts
                 # and deletions in sets of 1000 documents
                 if len(delete_docs) == 1000:
                     self.bulk_post_to_dashboard(dashboard_docs)
                     self._update_ingestion_doc_counts(
-                        ingestion_doc_id, count_deleted=len(delete_docs)
+                        ingestion_doc_id, countDeleted=len(delete_docs)
                         )
                     self._delete_documents(self.dpla_db, delete_docs)
                     delete_docs = []
@@ -350,7 +350,7 @@ class Couch(object):
                 # Last bulk post
                 self.bulk_post_to_dashboard(dashboard_docs)
                 self._update_ingestion_doc_counts(
-                    ingestion_doc_id, count_deleted=len(delete_docs)
+                    ingestion_doc_id, countDeleted=len(delete_docs)
                     )
                 self._delete_documents(self.dpla_db, delete_docs)
 
@@ -358,10 +358,10 @@ class Couch(object):
         """Processes the harvested documents by:
 
         1. Removing unmodified docs from harvested set
-        2. Counting modified docs
+        2. Counting changed docs
         3. Counting added docs
-        4. Adding the ingestion_version to the harvested doc
-        5. Inserting the modified and added docs to the ingestion database
+        4. Adding the ingestionSequence to the harvested doc
+        5. Inserting the changed and added docs to the ingestion database
 
         Params:
         harvested_docs - A dictionary with the doc "_id" as the key and the
@@ -370,13 +370,13 @@ class Couch(object):
         """
         ingestion_doc = self.dashboard_db.get(ingestion_doc_id)
         provider = ingestion_doc["provider"]
-        ingestion_version = ingestion_doc["ingestion_version"]
+        ingestion_sequence = ingestion_doc["ingestionSequence"]
 
         added_docs = []
         changed_docs = []
         for hid in harvested_docs:
-            # Add ingeston_version to harvested document
-            harvested_docs[hid]["ingestion_version"] = ingestion_version
+            # Add ingestonSequence to harvested document
+            harvested_docs[hid]["ingestionSequence"] = ingestion_sequence
 
             # Handle legacy _id: We want to compare harvested documents with
             # old legacy documents so we use the legacy name to retreive the
@@ -413,34 +413,34 @@ class Couch(object):
                     changed_docs.append({"id": hid,
                                          "type": "record",
                                          "status": "changed",
-                                         "fields_changed": fields_changed,
+                                         "fieldsChanged": fields_changed,
                                          "provider": provider,
-                                         "ingestion_version": ingestion_version})
+                                         "ingestionSequence": ingestion_sequence})
             # New document not previousely ingested
             else:
                 added_docs.append({"id": hid,
                                    "type": "record",
                                    "status": "added",
                                    "provider": provider,
-                                   "ingestion_version": ingestion_version})
+                                   "ingestionSequence": ingestion_sequence})
 
         self.bulk_post_to_dashboard(added_docs + changed_docs)
         self._update_ingestion_doc_counts(ingestion_doc_id,
-                                          count_added=len(added_docs),
-                                          count_changed=len(changed_docs))
+                                          countAdded=len(added_docs),
+                                          countChanged=len(changed_docs))
         self.bulk_post_to_dpla(harvested_docs.values())
 
-    def rollback(self, provider, ingest_version):
+    def rollback(self, provider, ingest_sequence):
         """ Rolls back the provider documents by:
 
         1. Fetching the backup database name of an ingestion document given by
-           the provider and ingestion_version
+           the provider and ingestion sequence
         2. Removing all provider documents from the DPLA database
         3. Replicating the backup database to the DPLA database
         """
-        ingest_doc = self._query_prov_ingest_doc_by_ingest_ver(provider,
-                                                               ingest_version)
-        backup_db_name = ingest_doc["backup_db"] if ingest_doc else None
+        ingest_doc = self._query_prov_ingest_doc_by_ingest_seq(provider,
+                                                               ingest_sequence)
+        backup_db_name = ingest_doc["backupDB"] if ingest_doc else None
         if backup_db_name:
             delete_docs = []
             for doc in self._query_all_dpla_provider_docs(provider):
@@ -464,7 +464,7 @@ class Couch(object):
                 msg = "Rollback success! Response: %s" % resp
         else:
             msg = "Attempted to rollback but no ingestion document with " + \
-                  "ingestion_version of %s was found" % ingest_version
+                  "ingestionSequence of %s was found" % ingest_sequence
             self.logger.error("msg")
 
         return msg
