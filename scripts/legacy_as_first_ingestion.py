@@ -78,6 +78,9 @@ def main(argv=None, couch=None, provider_legacy_name=None):
                 couch.bulk_post_to_dashboard(added_docs)
                 couch._update_ingestion_doc_counts(ingest_doc_id,
                                                   countAdded=len(added_docs))
+                # Reset added_docs
+                added_docs = []
+
         # Last POST
         if added_docs:
             print >> sys.stderr, "Processed %s docs" % count
