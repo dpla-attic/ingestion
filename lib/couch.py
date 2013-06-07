@@ -71,8 +71,8 @@ class Couch(object):
 
     def _sync_views(self):
         """Fetches views from the views_directory and saves/updates them
-           in the appropriate database, then runs each view to kick of the
-           indexing.
+           in the appropriate database, then builds the views neded for
+           ingestion.
         """
         for file in os.listdir(self.views_directory):
             if file.startswith("dpla_db"):
@@ -91,26 +91,19 @@ class Couch(object):
             # Save thew view
             db[view["_id"]] = view
 
-        # Build each design view
-        for db in [self.dpla_db, self.dashboard_db]:
-            for row in db.view("_all_docs", include_docs=True)["_design":
-                                                               "_design0"]:
-                design_doc = row["doc"]
-                if "views" in design_doc:
-                    for name in design_doc["views"]:
-                        # Skip QA report views
-                        if "qa_reports" in design_doc["_id"]:
-                            continue
-                        # Remove "_design" from the prefix
-                        prefix = design_doc["_id"].split("/")[-1]
-                        view_name = "%s/%s" % (prefix, name)
-                        # Build the view
-                        print >> sys.stderr, "Bulding view " + view_name
-                        start = time.time()
-                        for doc in self._paginated_query(db, view_name):
-                            pass
-                        build_time = (time.time() - start)/60
-                        print >> sys.stderr, "Completed in %s minutes" % build_time
+        # Build views
+        db_design_docs = (self.dpla_db, "all_provider_docs"), \
+                         (self.dashboard_db, "all_ingestion_docs")
+        views = ["by_provider_name", "by_provider_name_and_ingestion_sequence"]
+        for db, design_doc in db_design_docs:
+            for view in views:
+                view_name = "%s/%s" % (design_doc, view)
+                print >> sys.stderr, "Bulding view " + view_name
+                start = time.time()
+                for doc in self._paginated_query(db, view_name):
+                    pass
+                build_time = (time.time() - start)/60
+                print >> sys.stderr, "Completed in %s minutes" % build_time
 
     def _get_doc_ids(self, docs):
         return [doc["id"] for doc in docs]
@@ -131,7 +124,7 @@ class Couch(object):
         }
         return kwargs
 
-    def _paginated_query(self, db, view_name,
+    def _paginated_query(self, db, view_name, include_docs=None,
                          startkey=None, startkey_docid=None,
                          endkey=None, endkey_docid=None, bulk=1000):
         # Request one extra row to resume the listing there later.
@@ -144,10 +137,12 @@ class Couch(object):
             options["endkey"] = endkey
             if endkey_docid:
                 options["endkey_docid"] = endkey_docid
+        if include_docs:
+            options["include_docs"] = True
 
         done = False
         while not done:
-            view = db.view(view_name, include_docs=True, **options)
+            view = db.view(view_name, **options)
             rows = []
             # If we get a short result we know we are done.
             if len(view) <= bulk:
@@ -166,13 +161,15 @@ class Couch(object):
 
     def _query_all_docs(self, db):
         view_name = "_all_docs"
-        return self._paginated_query(db, view_name)
+        include_docs = True
+        return self._paginated_query(db, view_name, include_docs)
 
     def _query_all_dpla_provider_docs(self, provider_name):
         view_name = "all_provider_docs/by_provider_name"
         startkey = provider_name
         endkey = provider_name
-        return self._paginated_query(self.dpla_db, view_name,
+        include_docs = True
+        return self._paginated_query(self.dpla_db, view_name, include_docs,
                                      startkey=startkey, endkey=endkey)
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
@@ -180,7 +177,8 @@ class Couch(object):
         view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
         startkey=[provider_name, ingestion_sequence]
         endkey=[provider_name, ingestion_sequence]
-        return self._paginated_query(self.dpla_db, view_name,
+        include_docs = True
+        return self._paginated_query(self.dpla_db, view_name, include_docs,
                                      startkey=startkey, endkey=endkey)
 
     def _query_all_provider_ingestion_docs(self, provider_name):
@@ -266,43 +264,37 @@ class Couch(object):
         """
         backup_db_name = "%s_%s" % (provider,
                                     datetime.now().strftime("%Y%m%d%H%M%S"))
-        self.server.create(backup_db_name)
-        provider_ids = []
+        backup_db = self.server.create(backup_db_name)
+
+        msg = "Backing up %s to database %s" % (provider, backup_db_name)
+        self.logger.debug(msg)
+        print >> sys.stderr, msg
+
+        count = 0
+        provider_docs = []
         for doc in self._query_all_dpla_provider_docs(provider):
-            provider_ids.append(doc["_id"])
-            # Replicate every 1000 dccuments
-            if len(provider_ids) == 1000:
-                resp = self.server.replicate(self.server_url +
-                                             self.dpla_db.name,
-                                             self.server_url + backup_db_name,
-                                             doc_ids=provider_ids)
-                provider_ids = []
+            count += 1
+            provider_docs.append(doc)
+            # Bulk post every 1000
+            if len(provider_docs) == 1000:
+                self._bulk_post_to(backup_db, provider_docs)
+                provider_docs = []
+                print >> sys.stderr, "Backed up %s documents" % count
 
-                if not resp["ok"]:
-                    msg = "Backup failed. Response: %s" % resp
-                    self.logger.error(msg)
-                    raise Exception(msg)
+        if provider_docs:
+            # Last bulk post
+            self._bulk_post_to(backup_db, provider_docs)
+            print >> sys.stderr, "Backed up %s documents" % count
 
-        if provider_ids:
-            # Last replicate
-            resp = self.server.replicate(self.server_url +
-                                         self.dpla_db.name,
-                                         self.server_url + backup_db_name,
-                                         doc_ids=provider_ids)
-            if not resp["ok"]:
-                msg = "Backup failed. Response: %s" % resp
-                self.logger.error(msg)
-                raise Exception(msg)
+        msg = "Backup complete"
+        self.logger.debug(msg)
+        print >> sys.stderr, msg
 
         return backup_db_name
 
-    def bulk_post_to_dpla(self, docs):
-        resp = self.dpla_db.update(docs)
-        self.logger.debug("DPLA database response: %s" % resp)
-
-    def bulk_post_to_dashboard(self, docs):
-        resp = self.dashboard_db.update(docs)
-        self.logger.debug("Dashboard database response: %s" % resp)
+    def _bulk_post_to(self, db, docs):
+        resp = db.update(docs)
+        self.logger.debug("%s database response: %s" % (db.name, resp))
 
     def create_ingestion_doc_and_backup_db(self, provider):
         """Creates the ingestion document and backs up the provider documents
@@ -361,7 +353,7 @@ class Couch(object):
                 # So as not to use too much memory at once, do the bulk posts
                 # and deletions in sets of 1000 documents
                 if len(delete_docs) == 1000:
-                    self.bulk_post_to_dashboard(dashboard_docs)
+                    self._bulk_post_to(self.dashboard_db, dashboard_docs)
                     self._update_ingestion_doc_counts(
                         ingestion_doc_id, countDeleted=len(delete_docs)
                         )
@@ -371,7 +363,7 @@ class Couch(object):
 
             if delete_docs:
                 # Last bulk post
-                self.bulk_post_to_dashboard(dashboard_docs)
+                self._bulk_post_to(self.dashboard_db, dashboard_docs)
                 self._update_ingestion_doc_counts(
                     ingestion_doc_id, countDeleted=len(delete_docs)
                     )
@@ -447,11 +439,11 @@ class Couch(object):
                                    "provider": provider,
                                    "ingestionSequence": ingestion_sequence})
 
-        self.bulk_post_to_dashboard(added_docs + changed_docs)
+        self._bulk_post_to(self.dashboard_db, added_docs + changed_docs)
         self._update_ingestion_doc_counts(ingestion_doc_id,
                                           countAdded=len(added_docs),
                                           countChanged=len(changed_docs))
-        self.bulk_post_to_dpla(harvested_docs.values())
+        self._bulk_post_to(self.dpla_db, harvested_docs.values())
 
     def rollback(self, provider, ingest_sequence):
         """ Rolls back the provider documents by:

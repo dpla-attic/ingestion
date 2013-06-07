@@ -28,13 +28,13 @@ def nara_update_links():
         # POST every 1000 documents
         if len(docs) == 1000:
             print >> sys.stderr, "Processed %s documents" % count
-            couch.bulk_post_to_dpla(docs)
+            couch._bulk_post_to(couch.dpla_db, docs)
             docs = []
 
     # Last POST
     if docs:
         print >> sys.stderr, "Processed %s documents" % count
-        couch.bulk_post_to_dpla(docs)
+        couch.bulk_post_to(couch.dpla_db, docs)
 
     process_time = time.time() - start
     print >> sys.stderr, "Done"
