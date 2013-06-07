@@ -55,6 +55,12 @@ def main(argv=None, couch=None, provider_legacy_name=None):
         print >> sys.stderr, "Error: No documents found for this provider"
         proceed = False
 
+    def _post(dpla_docs, dashboard_docs, ingest_doc_id):
+        couch._bulk_post_to(couch.dpla_db, dpla_docs)
+        couch._bulk_post_to(couch.dashboard_db, dashboard_docs)
+        couch._update_ingestion_doc_counts(ingest_doc_id,
+                                           countAdded=len(dashboard_docs))
+
     if proceed:
         # Use the new provider_name for the ingestion document
         ingest_doc_id = couch.create_ingestion_doc_and_backup_db(provider_name)
@@ -76,10 +82,7 @@ def main(argv=None, couch=None, provider_legacy_name=None):
             # POST every 1000
             if len(docs) == 1000:
                 print >> sys.stderr, "Processed %s docs" % count
-                couch.bulk_post_to_dpla(docs)
-                couch.bulk_post_to_dashboard(added_docs)
-                couch._update_ingestion_doc_counts(ingest_doc_id,
-                                                  countAdded=len(added_docs))
+                _post(docs, added_docs, ingest_doc_id)
                 # Reset
                 docs = []
                 added_docs = []
@@ -87,10 +90,7 @@ def main(argv=None, couch=None, provider_legacy_name=None):
         # Last POST
         if docs:
             print >> sys.stderr, "Processed %s docs" % count
-            couch.bulk_post_to_dpla(docs)
-            couch.bulk_post_to_dashboard(added_docs)
-            couch._update_ingestion_doc_counts(ingest_doc_id,
-                                              countAdded=len(added_docs))
+            _post(docs, added_docs, ingest_doc_id)
 
         print >> sys.stderr, "Complete" 
 

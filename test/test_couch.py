@@ -311,7 +311,7 @@ def test_legacy():
         data = f.readlines()
     content = json.loads("".join(data))
     docs = [c["doc"] for c in content]
-    couch.bulk_post_to_dpla(docs)
+    couch._bulk_post_to(couch.dpla_db, docs)
 
     # Run legacy_as_first_ingestion script
     sys.path.append(os.path.join(os.getcwd(), "scripts"))
