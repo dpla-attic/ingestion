@@ -59,13 +59,14 @@ def main(argv=None, couch=None, provider_legacy_name=None):
         # Use the new provider_name for the ingestion document
         ingest_doc_id = couch.create_ingestion_doc_and_backup_db(provider_name)
 
+        docs = []
         added_docs = []
         print >> sys.stderr, "Fetching all docs..."
         count = 0
         for doc in legacy_provider_docs:
             count += 1
             doc["ingestionSequence"] = 1
-            couch.dpla_db.save(doc)
+            docs.append(doc)
 
             added_docs.append({"id": doc["_id"],
                                "type": "record",
@@ -73,17 +74,20 @@ def main(argv=None, couch=None, provider_legacy_name=None):
                                "provider": provider_name,
                                "ingestionSequence": 1})
             # POST every 1000
-            if len(added_docs) == 1000:
+            if len(docs) == 1000:
                 print >> sys.stderr, "Processed %s docs" % count
+                couch.bulk_post_to_dpla(docs)
                 couch.bulk_post_to_dashboard(added_docs)
                 couch._update_ingestion_doc_counts(ingest_doc_id,
                                                   countAdded=len(added_docs))
-                # Reset added_docs
+                # Reset
+                docs = []
                 added_docs = []
 
         # Last POST
-        if added_docs:
+        if docs:
             print >> sys.stderr, "Processed %s docs" % count
+            couch.bulk_post_to_dpla(docs)
             couch.bulk_post_to_dashboard(added_docs)
             couch._update_ingestion_doc_counts(ingest_doc_id,
                                               countAdded=len(added_docs))

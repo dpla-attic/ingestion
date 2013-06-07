@@ -106,6 +106,7 @@ def couch_setup():
                       dpla_db_name=TEST_DPLA_DB,
                       dashboard_db_name=TEST_DASHBOARD_DB,
                       views_directory=VIEWS_DIRECTORY)
+    couch._sync_views()
     couch._sync_test_views()
 
 @nottest
