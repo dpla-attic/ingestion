@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import time
 import logging
 import ConfigParser
 from copy import deepcopy
@@ -58,8 +59,6 @@ class Couch(object):
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
-        self._sync_views()
-
     def _get_db(self, name):
         """Return a database given the database name, creating the database
            if it does not exist.
@@ -72,7 +71,8 @@ class Couch(object):
 
     def _sync_views(self):
         """Fetches views from the views_directory and saves/updates them
-           in the appropriate database.
+           in the appropriate database, then runs each view to kick of the
+           indexing.
         """
         for file in os.listdir(self.views_directory):
             if file.startswith("dpla_db"):
@@ -85,10 +85,32 @@ class Couch(object):
             fname = os.path.join(self.views_directory, file)
             with open(fname, "r") as f:
                 view = json.load(f)
-                previous_view = db.get(view["_id"])
-                if previous_view:
-                    view["_rev"] = previous_view["_rev"]
-                db[view["_id"]] = view
+            previous_view = db.get(view["_id"])
+            if previous_view:
+                view["_rev"] = previous_view["_rev"]
+            # Save thew view
+            db[view["_id"]] = view
+
+        # Build each design view
+        for db in [self.dpla_db, self.dashboard_db]:
+            for row in db.view("_all_docs", include_docs=True)["_design":
+                                                               "_design0"]:
+                design_doc = row["doc"]
+                if "views" in design_doc:
+                    for name in design_doc["views"]:
+                        # Skip QA report views
+                        if "qa_reports" in design_doc["_id"]:
+                            continue
+                        # Remove "_design" from the prefix
+                        prefix = design_doc["_id"].split("/")[-1]
+                        view_name = "%s/%s" % (prefix, name)
+                        # Build the view
+                        print >> sys.stderr, "Bulding view " + view_name
+                        start = time.time()
+                        for doc in self._paginated_query(db, view_name):
+                            pass
+                        build_time = (time.time() - start)/60
+                        print >> sys.stderr, "Completed in %s minutes" % build_time
 
     def _get_doc_ids(self, docs):
         return [doc["id"] for doc in docs]
@@ -149,8 +171,9 @@ class Couch(object):
     def _query_all_dpla_provider_docs(self, provider_name):
         view_name = "all_provider_docs/by_provider_name"
         startkey = provider_name
+        endkey = provider_name
         return self._paginated_query(self.dpla_db, view_name,
-                                     startkey=startkey)
+                                     startkey=startkey, endkey=endkey)
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
                                                 ingestion_sequence):
