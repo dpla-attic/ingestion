@@ -17,19 +17,20 @@
         "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich-subject",
-        "/enrich_date",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
         "/uiuc_enrich_location",
         "/geocode",
+        "/uiuc_cleanup_spatial_name",
+        "/enrich_date",
         "/cleanup_language",
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/contentdm_identify_object",
-        "/uiuc_publisher_to_dataprovider",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+        "/unset_prop?prop=dataProvider",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True"
     ], 
     "subresources": [
         "kennedy",
@@ -49,7 +50,9 @@
         "ALA",
         "reston",
         "koopman",
-        "blueprints"
+        "blueprints",
+        "cannon",
+        "sanborn"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/uiuc",

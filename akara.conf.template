@@ -152,7 +152,6 @@ MODULES = [
     "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_enrich_state_located_in",
     "dplaingestion.akamod.artstor_cleanup",
-    "dplaingestion.akamod.uiuc_publisher_to_dataprovider",
     "dplaingestion.akamod.nypl_identify_object",
     "dplaingestion.akamod.nypl_coll_title",
     "dplaingestion.akamod.nypl_select_hasview",
@@ -172,7 +171,8 @@ MODULES = [
     "dplaingestion.akamod.set_type_from_physical_format",
     "dplaingestion.akamod.capitalize_value",
     "dplaingestion.akamod.artstor_cleanup_creator",
-    "dplaingestion.akamod.replace_substring"
+    "dplaingestion.akamod.replace_substring",
+    "dplaingestion.akamod.uiuc_cleanup_spatial_name"
     ]
 
 ### Section 3: Other module configuration goes here
