@@ -432,6 +432,7 @@ def process_mets_coll(profile, subr):
     items = []
     count = 0
     total_count = 0
+    collection_title = profile["collection_titles"].get(subr, subr)
     for doc_url in document_links(endpoint):
         resp, content = H.request(doc_url)
         if not resp[u'status'].startswith('2'):
@@ -447,12 +448,12 @@ def process_mets_coll(profile, subr):
                     count += 1
                     total_count += 1
         if count >= 100:
-            enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
+            enrich_coll(profile, subr, json.dumps({"items": items, "title": collection_title}))
             print >> sys.stderr, "%d documents processed" % total_count
             count = 0
             items = []
     if items:
-        enrich_coll(profile, subr, json.dumps({"items": items, "title": subr}))
+        enrich_coll(profile, subr, json.dumps({"items": items, "title": collection_title}))
         print >> sys.stderr, "%d documents processed" % total_count
 
 

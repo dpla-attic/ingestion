@@ -18,16 +18,21 @@
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3", 
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True" 
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
     ], 
     "subresources": [
-        "744806"
+        "744806",
+        "817985"
     ], 
+    "collection_titles": {
+        "744806": "Negatives from the Charlottesville photographic studio plus an index volume ca. 1890-1938. Holsinger Studio Collection.",
+        "817985": "University of Virginia Visual History Collection ca. 1825-present. University of Virginia Online Visual History."
+    },
     "last_checked": "2013-02-05T18:29:41.395772", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/virginia",
         "name": "University of Virginia Library"
     }, 
     "type": "mets",
-    "endpoint_URL": "http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A{0}/methods/uva-lib%3AmetsSDef/getMETS"
+    "endpoint_URL": "http://fedoraproxy.lib.virginia.edu/fedora/objects/uva-lib%3A{0}/methods/uva-lib%3AmetsSDef/getMETS"
 }
