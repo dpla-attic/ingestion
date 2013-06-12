@@ -59,13 +59,14 @@ def physical_description_handler(d, p):
 
 def subject_handler_uva(d, p):
     orig_subject = _as_list(getprop(d, p))
-    subjects = {"subject": []}
+    subject = []
     for _dict in orig_subject:
         if "topic" in _dict:
-            subjects["subject"].append(_dict["topic"])
+            subject.append(_dict["topic"])
         if "name" in _dict:
-            subjects["subject"].append(getprop(_dict, "name/namePart"))
-    return subjects
+            subject.append(getprop(_dict, "name/namePart"))
+
+    return {"subject": subject} if subject else {}
 
 def get_media_type(d):
     pd = _as_list(getprop(d, "physicalDescription"))
@@ -205,7 +206,84 @@ def language_transform(d, p):
 
     return {"language": language} if language else {}
 
-CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
+def spatial_transform_UVA_books(d):
+    spatial = []
+    if "subject" in d:
+        for s in _as_list(getprop(d, "subject")):
+            if "hierarchicalGeographic" in s:
+                spatial = s["hierarchicalGeographic"]
+
+    if not spatial and exists(d, "originInfo/place"):
+        for s in _as_list(getprop(d, "originInfo/place")):
+            if "placeTerm" in s:
+                spatial.append(s["placeTerm"]["#text"])
+
+    return {"spatial": spatial} if spatial else {}
+
+def title_transform_UVA_books(d, p):
+    title = [s.get("nonSort") + s.get("title") for s in _as_list(getprop(d, p))
+             if isinstance(s, dict) and "nonSort" in s and "title" in s]
+
+    title = filter(None, title)
+    return {"title": title} if title else {}
+
+def date_transform_UVA_books(d, p):
+    date = []
+    for s in _as_list(getprop(d, p)):
+        if isinstance(s, basestring):
+            date.append(s)
+        if "#text" in s:
+            date.append(s["#text"])
+
+    return {"date": date} if date else {}
+
+def subject_transform_UVA_books(d, p):
+    subject = []
+    for _dict in _as_list(getprop(d, p)):
+        if "topic" in _dict:
+            topic = _dict["topic"]
+            if isinstance(topic, list):
+                subject += topic
+            else:
+                subject.append(topic)
+        if "name" in _dict:
+            name_part = getprop(_dict, "name/namePart")
+            if isinstance(name_part, list):
+                subj = None
+                n = None
+                terms_of_address = None
+                date = None
+                for name in name_part:
+                    if isinstance(name, basestring):
+                        n = name
+                    if isinstance(name, dict):
+                        if name.get("type") == "termsOfAddress":
+                            terms_of_address = " " + name["#text"]
+                        if name.get("type") == "date":
+                            date = " " + name["#text"]
+                if n:
+                    subj = n
+                if terms_of_address:
+                    subj += terms_of_address
+                if date:
+                    subj += date
+                if subj:
+                    subject.append(subj)
+                    
+            else:
+                subject.append(name_part)
+
+    return {"subject": subject} if subject else {}
+
+def description_transform(d, p):
+    description = [s.get("#text") for s in _as_list(getprop(d, p))
+                   if isinstance(s, dict) and "type" in s and
+                   s.get("type") == "content"]
+
+    description = filter(None, description)
+    return {"description": description} if description else {}
+
+CHO_TRANSFORMER = {"3.3": {}, "3.4": {}, "UVA_books": {}, "common": {}}
 AGGREGATION_TRANSFORMER = {"3.3": {}, "3.4": {}, "common": {}}
 
 # Structure mapping the original property to a function returning a single
@@ -239,6 +317,18 @@ CHO_TRANSFORMER["3.4"] = {
     "subject": lambda d, p: {"spatial": [getprop(s, "geographic/#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and exists(s, "geographic/authority") and getprop(s, "geographic/authority") == "naf" and exists(s, "geographic/#text")]}
 }
 
+CHO_TRANSFORMER["UVA_books"] = {
+    "language/languageTerm": language_transform,
+    "name": creator_handler_uva,
+    "physicalDescription": physical_description_handler,
+    "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("type") == "uri")},
+    "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
+    "titleInfo": title_transform_UVA_books,
+    "originInfo/dateIssued": date_transform_UVA_books,
+    "note": description_transform,
+    "subject": subject_transform_UVA_books,
+    "originInfo/publisher": lambda d, p: {"publisher": getprop(d, p)}
+}
 
 AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/" + getprop(d, p)},
@@ -280,8 +370,26 @@ def mods_to_dpla(body, ctype, geoprop=None, version=None):
         "sourceResource" : {}
     }
 
+    def _remove_mods_colon(d):
+        for key in d.keys():
+            new_key = key.replace("mods:", "")
+            if new_key != key:
+                d[new_key] = d[key]
+                del d[key]
+                for item in _as_list(d[new_key]):
+                    if isinstance(item, dict):
+                        _remove_mods_colon(item)
+        return d
+
     if not version:
         version = getprop(data, "version")
+
+    if version == "UVA_books":
+        # Remove "mods:" prefix in keys
+        _remove_mods_colon(data)
+        # Transformations that are dependent of multiple fields
+        out["sourceResource"].update(spatial_transform_UVA_books(data))
+        
 
     # Apply all transformation rules from original document
     transformer_pipeline = {}

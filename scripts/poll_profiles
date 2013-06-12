@@ -426,16 +426,6 @@ def process_mets_coll(profile, subr):
                     if not record["ID"].startswith("collection-description-mods"):
                         yield record["mets:mdRef"]["xlink:href"]
 
-    def _remove_mods_colon(d):
-        for key in d.keys():
-            new_key = key.replace("mods:", "")
-            if new_key != key:
-                d[new_key] = d[key]
-                del d[key]
-                if isinstance(d[new_key], dict):
-                    _remove_mods_colon(d[new_key])
-        return d
-
     def _listify(item):
         if not isinstance(item, list):
             item = [item]
@@ -456,12 +446,13 @@ def process_mets_coll(profile, subr):
         doc_content = ARC_PARSE(content)
 
         # Handle "mods:<key>" in UVA book collection
+        key_prefix = ""
         if "mods:mods" in doc_content:
-            doc_content =_remove_mods_colon(doc_content)
+            key_prefix = "mods:"
 
-        if "mods" in doc_content:
-            item = doc_content["mods"]
-            for _id_dict in _listify(item["identifier"]):
+        if key_prefix + "mods" in doc_content:
+            item = doc_content[key_prefix + "mods"]
+            for _id_dict in _listify(item[key_prefix + "identifier"]):
                 if _id_dict["type"] == "uri":
                     item["_id"] = _id_dict["#text"]
                     items.append(item)
