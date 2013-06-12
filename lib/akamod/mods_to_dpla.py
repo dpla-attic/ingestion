@@ -211,7 +211,10 @@ def spatial_transform_UVA_books(d):
     if "subject" in d:
         for s in _as_list(getprop(d, "subject")):
             if "hierarchicalGeographic" in s:
-                spatial = [s["hierarchicalGeographic"]]
+                spatial = s["hierarchicalGeographic"]
+                spatial["name"] = spatial.get("city") + ", " + \
+                                  spatial.get("country")
+                spatial = [spatial]
 
     if not spatial and exists(d, "originInfo/place"):
         for s in _as_list(getprop(d, "originInfo/place")):
