@@ -224,8 +224,13 @@ def spatial_transform_UVA_books(d):
     return {"spatial": spatial} if spatial else {}
 
 def title_transform_UVA_books(d, p):
-    title = [s.get("nonSort") + s.get("title") for s in _as_list(getprop(d, p))
-             if isinstance(s, dict) and "nonSort" in s and "title" in s]
+    title = []
+    for s in _as_list(getprop(d, p)):
+        if isinstance(s, dict):
+            t = s.get("title")
+            if t and "nonSort" in s:
+                t = s.get("nonSort") + t
+            title.append(t)
 
     title = filter(None, title)
     return {"title": title} if title else {}
