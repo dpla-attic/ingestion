@@ -233,7 +233,7 @@ def title_transform_UVA_books(d, p):
             title.append(t)
 
     title = filter(None, title)
-    return {"title": title} if title else {}
+    return {"title": title[-1]} if title else {}
 
 def date_transform_UVA_books(d, p):
     date = []
