@@ -117,6 +117,33 @@ def creator_handler_uva(d, p):
             return {"creator": creator_dict["namePart"]}
     return {}
 
+def creator_transform_UVA_books(d, p):
+    personal_creator = []
+    corporate_creator = []
+    for s in _as_list(getprop(d, p)):
+        creator = [None, None, None]
+        for name in _as_list(s.get("namePart")):
+            if isinstance(name, basestring):
+                    creator[0] = name
+            if isinstance(name, dict):
+                if name.get("type") == "termsOfAddress":
+                    creator[1] = name["#text"]
+                if name.get("type") == "date":
+                    creator[2] = name["#text"]
+        creator = ", ".join(filter(None, creator))
+
+        if s.get("type") == "personal" and creator not in personal_creator:
+            personal_creator.append(creator)
+        if s.get("type") == "corporate" and creator not in corporate_creator:
+            corporate_creator.append(creator)
+
+    if personal_creator:
+        return {"creator": personal_creator}
+    elif corporate_creator:
+        return {"creator": corporate_creator}
+    else:
+        return {}
+
 def creator_handler_nypl(d, p):
     def update_value(d, k, v):
         if k in d:
@@ -257,26 +284,17 @@ def subject_transform_UVA_books(d, p):
         if "name" in _dict:
             name_part = getprop(_dict, "name/namePart")
             if isinstance(name_part, list):
-                subj = None
-                n = None
-                terms_of_address = None
-                date = None
+                subj = [None, None, None]
                 for name in name_part:
                     if isinstance(name, basestring):
-                        n = name
+                        subj[0] = name
                     if isinstance(name, dict):
                         if name.get("type") == "termsOfAddress":
-                            terms_of_address = " " + name["#text"]
+                            subj[1] = name["#text"]
                         if name.get("type") == "date":
-                            date = " " + name["#text"]
-                if n:
-                    subj = n
-                if terms_of_address:
-                    subj += terms_of_address
-                if date:
-                    subj += date
+                            subj[2] = name["#text"]
                 if subj:
-                    subject.append(subj)
+                    subject.append(" ".join(filter(None, subj)))
                     
             else:
                 subject.append(name_part)
@@ -327,7 +345,7 @@ CHO_TRANSFORMER["3.4"] = {
 
 CHO_TRANSFORMER["UVA_books"] = {
     "language/languageTerm": language_transform,
-    "name": creator_handler_uva,
+    "name": creator_transform_UVA_books,
     "physicalDescription": physical_description_handler,
     "identifier": lambda d, p: {"identifier": "-".join(s.get("#text") for s in _as_list(getprop(d, p)) if isinstance(s, dict) and s.get("type") == "uri")},
     "typeOfResource/#text": lambda d, p: {"type": getprop(d, p)},
