@@ -370,6 +370,10 @@ AGGREGATION_TRANSFORMER["3.3"] = {
     "recordInfo/recordContentSource": lambda d, p: {"provider": getprop(d, p)}
 }
 
+AGGREGATION_TRANSFORMER["UVA_books"] = {
+    "location": location_handler
+}
+
 @simple_service('POST', 'http://purl.org/la/dp/mods-to-dpla', 'mods-to-dpla', 'application/ld+json')
 def mods_to_dpla(body, ctype, geoprop=None, version=None):
     """
