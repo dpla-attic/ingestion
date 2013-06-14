@@ -34,6 +34,7 @@ else:
     config = ConfigParser.ConfigParser()
     config.readfp(open("akara.ini"))
     SERVER_URL = config.get("CouchDb", "Server")
+    ITERVIEW_BATCH = config.get("CouchDb", "IterviewBatch")
 
 TEST_DPLA_DB = "test_dpla"
 TEST_DASHBOARD_DB = "test_dashboard"
@@ -105,7 +106,8 @@ def couch_setup():
     couch = CouchTest(server_url=SERVER_URL,
                       dpla_db_name=TEST_DPLA_DB,
                       dashboard_db_name=TEST_DASHBOARD_DB,
-                      views_directory=VIEWS_DIRECTORY)
+                      views_directory=VIEWS_DIRECTORY,
+                      iterview_batch=ITERVIEW_BATCH)
     couch._sync_views()
     couch._sync_test_views()
 
