@@ -22,14 +22,16 @@ class Couch(object):
 
         Default Args:
             config_file: The configuration file that includes the Couch server
-                         url, dpla and dashboard database names, and the views
-                         directory path.
+                         url, dpla and dashboard database names, the views
+                         directory path, and the batch size to use with
+                         iterview
         Optional Args (if provided, config_file is not used:
             server_url: The server url with login credentials included.
             dpla_db_name: The name of the DPLA database.
             dashboard_db_name: The name of the Dashboard database.
             views_directory: The path where the view JavaScript files
                              are located.
+            iterview_batch: The batch size to use with iterview
         """
         if not kwargs:
             config = ConfigParser.ConfigParser()
@@ -38,17 +40,20 @@ class Couch(object):
             dpla_db_name = config.get("CouchDb", "DPLADatabase")
             dashboard_db_name = config.get("CouchDb", "DashboardDatabase")
             views_directory = config.get("CouchDb", "ViewsDirectory")
+            iterview_batch = config.get("CouchDb", "IterviewBatch")
         else:
             server_url = kwargs.get("server_url")
             dpla_db_name = kwargs.get("dpla_db_name")
             dashboard_db_name = kwargs.get("dashboard_db_name")
             views_directory = kwargs.get("views_directory")
+            iterview_batch = kwargs.get("iterview_batch")
 
         self.server_url = server_url
         self.server = Server(server_url)
         self.dpla_db = self._get_db(dpla_db_name)
         self.dashboard_db = self._get_db(dashboard_db_name)
         self.views_directory = views_directory
+        self.iterview_batch = int(iterview_batch)
 
         self.logger = logging.getLogger("couch")
         handler = logging.FileHandler("logs/couch.log")
@@ -100,7 +105,7 @@ class Couch(object):
                 view_name = "%s/%s" % (design_doc, view)
                 print >> sys.stderr, "Bulding view " + view_name
                 start = time.time()
-                for doc in self._paginated_query(db, view_name):
+                for doc in db.iterview(view_name, batch=self.iterview_batch):
                     pass
                 build_time = (time.time() - start)/60
                 print >> sys.stderr, "Completed in %s minutes" % build_time
@@ -124,62 +129,29 @@ class Couch(object):
         }
         return kwargs
 
-    def _paginated_query(self, db, view_name, include_docs=None,
-                         startkey=None, startkey_docid=None,
-                         endkey=None, endkey_docid=None, bulk=1000):
-        # Request one extra row to resume the listing there later.
-        options = {"limit": bulk + 1}
-        if startkey:
-            options["startkey"] = startkey
-            if startkey_docid:
-                options["startkey_docid"] = startkey_docid
-        if endkey:
-            options["endkey"] = endkey
-            if endkey_docid:
-                options["endkey_docid"] = endkey_docid
-        if include_docs:
-            options["include_docs"] = True
-
-        done = False
-        while not done:
-            view = db.view(view_name, **options)
-            rows = []
-            # If we get a short result we know we are done.
-            if len(view) <= bulk:
-                done = True
-                rows = view.rows
-            else:
-                # Otherwise continue at the new start position.
-                rows = view.rows[:-1]
-                last = view.rows[-1]
-                options["startkey"] = last.key
-                options["startkey_docid"] = last.id
-
-            for row in rows:
-                if "doc" in row:
-                    yield row["doc"]
-
     def _query_all_docs(self, db):
         view_name = "_all_docs"
-        include_docs = True
-        return self._paginated_query(db, view_name, include_docs)
+        for row in db.iterview(view_name, batch=self.iterview_batch,
+                               include_docs=True):
+            yield row["doc"]
 
     def _query_all_dpla_provider_docs(self, provider_name):
         view_name = "all_provider_docs/by_provider_name"
-        startkey = provider_name
-        endkey = provider_name
         include_docs = True
-        return self._paginated_query(self.dpla_db, view_name, include_docs,
-                                     startkey=startkey, endkey=endkey)
+        for row in self.dpla_db.iterview(view_name, batch=self.iterview_batch,
+                                         include_docs=True,
+                                         key=provider_name):
+            yield row["doc"]
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
                                                 ingestion_sequence):
         view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
-        startkey=[provider_name, ingestion_sequence]
-        endkey=[provider_name, ingestion_sequence]
         include_docs = True
-        return self._paginated_query(self.dpla_db, view_name, include_docs,
-                                     startkey=startkey, endkey=endkey)
+        for row in self.dpla_db.iterview(view_name, batch=self.iterview_batch,
+                                         include_docs=True,
+                                         key=[provider_name,
+                                              ingestion_sequence]):
+            yield row["doc"]
 
     def _query_all_provider_ingestion_docs(self, provider_name):
         view = self.dashboard_db.view("all_ingestion_docs/by_provider_name",
