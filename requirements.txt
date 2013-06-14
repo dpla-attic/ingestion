@@ -9,7 +9,7 @@ python-dateutil
 timelib
 simplejson
 six
-CouchDB
+CouchDB==0.9
 nose
 geopy
 python-cloudfiles
