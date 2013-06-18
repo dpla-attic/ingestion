@@ -152,12 +152,19 @@ class Couch(object):
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
                                                 ingestion_sequence):
+        """Fetches all provider docs by provider name and ingestion sequence.
+           The key for this view is the list [provider_name,
+           ingestion_sequence, doc._id], so we supply "a" as the startkey
+           doc._id and "z" as the endkey doc._id in order to ensure proper
+           sorting.
+        """
         view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
         include_docs = True
+        startkey = [provider_name, ingestion_sequence, "a"]
+        endkey = [provider_name, ingestion_sequence, "z"]
         for row in self.dpla_db.iterview(view_name, batch=self.iterview_batch,
-                                         include_docs=True,
-                                         key=[provider_name,
-                                              ingestion_sequence]):
+                                         include_docs=True, startkey=startkey,
+                                         endkey=endkey):
             yield row["doc"]
 
     def _query_all_provider_ingestion_docs(self, provider_name):
