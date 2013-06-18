@@ -242,7 +242,9 @@ class Couch(object):
         for doc in docs:
             doc["_deleted"] = True
         db.update(docs)
-        db.purge(docs)
+        # TODO: BigCouch v0.4.2 does not currently support the couchdb-python
+        # purge implementation. 
+        # db.purge(docs)
 
     def _backup_db(self, provider):
         """Fetches all provider docs from the DPLA database and replicates them
