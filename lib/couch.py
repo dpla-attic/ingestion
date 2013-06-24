@@ -247,8 +247,8 @@ class Couch(object):
         # db.purge(docs)
 
     def _backup_db(self, provider):
-        """Fetches all provider docs from the DPLA database and replicates them
-           to the backup database, returning the backup database name.
+        """Fetches all provider docs from the DPLA database and posts them to
+           the backup database, returning the backup database name.
         """
         backup_db_name = "%s_%s" % (provider,
                                     datetime.now().strftime("%Y%m%d%H%M%S"))
@@ -262,6 +262,9 @@ class Couch(object):
         provider_docs = []
         for doc in self._query_all_dpla_provider_docs(provider):
             count += 1
+            # Revision not necessary in backup database
+            if "_rev" in doc:
+                del doc["_rev"]
             provider_docs.append(doc)
             # Bulk post every 1000
             if len(provider_docs) == 1000:
@@ -280,8 +283,8 @@ class Couch(object):
 
         return backup_db_name
 
-    def _bulk_post_to(self, db, docs):
-        resp = db.update(docs)
+    def _bulk_post_to(self, db, docs, **options):
+        resp = db.update(docs, **options)
         self.logger.debug("%s database response: %s" % (db.name, resp))
 
     def create_ingestion_doc_and_backup_db(self, provider):
@@ -439,7 +442,8 @@ class Couch(object):
         1. Fetching the backup database name of an ingestion document given by
            the provider and ingestion sequence
         2. Removing all provider documents from the DPLA database
-        3. Replicating the backup database to the DPLA database
+        3. Fetching all the backup database documents, removing the "_rev"
+           field, then posting to the DPLA database
         """
         ingest_doc = self._query_prov_ingest_doc_by_ingest_seq(provider,
                                                                ingest_sequence)
@@ -452,22 +456,28 @@ class Couch(object):
                 if len(delete_docs) == 1000:
                     self._delete_documents(self.dpla_db, delete_docs)
                     delete_docs = []
-
             # Last delete
             if delete_docs:
                     self._delete_documents(self.dpla_db, delete_docs)
 
-            # Replicate now that all provider docs have been removed from DPLA
-            resp = self.server.replicate(self.server_url + backup_db_name,
-                                         self.server_url + self.dpla_db.name)
-            if not resp["ok"]:
-                msg = "Rollback failed. Response: %s" % resp
-                self.logger.error(msg)
-            else:
-                msg = "Rollback success! Response: %s" % resp
+            # Bulk post backup database documents without revision
+            docs = []
+            for doc in self._query_all_docs(self.server[backup_db_name]):
+                if "_rev" in doc:
+                    del doc["_rev"]
+                docs.append(doc)
+                if len(docs) == 1000:
+                    self._bulk_post_to(self.dpla_db, docs)
+                    docs = []
+            # Last POST
+            if docs:
+                self._bulk_post_to(self.dpla_db, docs)
+
+            msg = "Rollback success!"
+            self.logger.debug(msg)
         else:
             msg = "Attempted to rollback but no ingestion document with " + \
                   "ingestionSequence of %s was found" % ingest_sequence
-            self.logger.error("msg")
+            self.logger.error(msg)
 
         return msg

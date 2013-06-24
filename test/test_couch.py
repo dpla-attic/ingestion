@@ -313,7 +313,9 @@ def test_legacy():
         data = f.readlines()
     content = json.loads("".join(data))
     docs = [c["doc"] for c in content]
-    couch._bulk_post_to(couch.dpla_db, docs)
+    # The test legacy documents contain revision so we pass new_edits=False
+    # to avoid collision errors
+    couch._bulk_post_to(couch.dpla_db, docs, new_edits=False)
 
     # Run legacy_as_first_ingestion script
     sys.path.append(os.path.join(os.getcwd(), "scripts"))
