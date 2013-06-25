@@ -445,35 +445,49 @@ class Couch(object):
         3. Fetching all the backup database documents, removing the "_rev"
            field, then posting to the DPLA database
         """
+        # Since the ingestion that triggered a backup contains the backup
+        # database name, we add 1 to the ingestion sequence provider to fetch
+        # the appropriate ingestion document.
+        ingest_sequence += 1
         ingest_doc = self._query_prov_ingest_doc_by_ingest_seq(provider,
                                                                ingest_sequence)
         backup_db_name = ingest_doc["backupDB"] if ingest_doc else None
         if backup_db_name:
+            print "Deleting DPLA provider documents..."
+            count = 0
             delete_docs = []
             for doc in self._query_all_dpla_provider_docs(provider):
                 delete_docs.append(doc)
+                count += 1
                 # Delete in sets of 1000 so as not to use too much memory
                 if len(delete_docs) == 1000:
+                    print "%s documents deleted" % count
                     self._delete_documents(self.dpla_db, delete_docs)
                     delete_docs = []
             # Last delete
             if delete_docs:
+                    print "%s documents deleted" % count
                     self._delete_documents(self.dpla_db, delete_docs)
 
             # Bulk post backup database documents without revision
+            print "Retrieving documents from database %s" % backup_db_name
+            count = 0
             docs = []
             for doc in self._query_all_docs(self.server[backup_db_name]):
+                count += 1
                 if "_rev" in doc:
                     del doc["_rev"]
                 docs.append(doc)
                 if len(docs) == 1000:
+                    print "%s documents rolled back" % count
                     self._bulk_post_to(self.dpla_db, docs)
                     docs = []
             # Last POST
             if docs:
+                print "%s documents rolled back" % count
                 self._bulk_post_to(self.dpla_db, docs)
 
-            msg = "Rollback success!"
+            msg = "Rollback complete"
             self.logger.debug(msg)
         else:
             msg = "Attempted to rollback but no ingestion document with " + \
