@@ -3,7 +3,7 @@
 Script to rollback a provider's data to a previous ingestion.
 
 Usage:
-    $ python rollback_ingestion.py provider_name ingestion_version
+    $ python rollback_ingestion.py provider_name ingestion_sequence
 """
 import sys
 import argparse
@@ -14,16 +14,16 @@ def define_arguments():
     """
     parser = argparse.ArgumentParser()
     name_help = "The provider's name as listed in the provider's profile"
-    version_help = "The ingestion version to rollback to"
+    sequence_help = "The ingestion sequence to rollback to"
     parser.add_argument("provider_name", help=name_help, type=str)
-    parser.add_argument("ingestion_version", help=version_help, type=int)
+    parser.add_argument("ingestion_sequence", help=sequence_help, type=int)
     return parser
 
 def main(argv):
     couch = Couch()
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
-    resp = couch.rollback(args.provider_name, args.ingestion_version)
+    resp = couch.rollback(args.provider_name, args.ingestion_sequence)
     print >> sys.stderr, resp
 
 if __name__ == "__main__":
