@@ -227,8 +227,8 @@ def test_rollback():
     
     assert set(first_ingestion_all_ids) != set(second_ingestion_all_ids)
 
-    second_ingestion_doc = couch.dashboard_db.get(second_ingestion_doc_id)
-    couch.rollback(PROVIDER, second_ingestion_doc["ingestionSequence"])
+    first_ingestion_doc = couch.dashboard_db.get(first_ingestion_doc_id)
+    couch.rollback(PROVIDER, first_ingestion_doc["ingestionSequence"])
     rollback_all_docs = couch._query_all_dpla_provider_docs(PROVIDER)
     rollback_all_ids = [doc["_id"] for doc in rollback_all_docs]
     assert set(rollback_all_ids) == set(first_ingestion_all_ids)
