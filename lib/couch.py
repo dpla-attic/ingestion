@@ -384,31 +384,11 @@ class Couch(object):
             # Add ingestonSequence to harvested document
             harvested_docs[hid]["ingestionSequence"] = ingestion_sequence
 
-            # Handle legacy _id: We want to compare harvested documents with
-            # old legacy documents so we use the legacy name to retreive the
-            # matching database document.
-            legacy_id = None
-            replacers = ("scdl-clemson", "clemson"), ("kdl", "kentucky"), \
-                        ("internet_archive", "ia"), ("mdl", "minnesota")
-            for new, old in replacers:
-                if harvested_docs[hid]["_id"].startswith(new):
-                    legacy_id = harvested_docs[hid]["_id"].replace(new, old)
-                    break
-
             # Add the revision and find the fields changed for harvested
             # documents that were ingested in a prior ingestion
-            if hid in self.dpla_db or (legacy_id and
-                                       legacy_id in self.dpla_db):
+            if hid in self.dpla_db:
                 db_doc = self.dpla_db.get(hid)
-                # Handle legacy "_rev": If fetching via hid fails, then fetch
-                # via legacy _id. We don't want to set the "_rev" field of the
-                # legacy document in the harvested document because the change
-                # in UUID causes a conflict when saving to the database.
-                if not db_doc:
-                    db_doc = self.dpla_db.get(legacy_id)
-                else:
-                    # Set the "_rev" for non-legacy documents
-                    harvested_docs[hid]["_rev"] = db_doc["_rev"]
+                harvested_docs[hid]["_rev"] = db_doc["_rev"]
 
                 db_doc = self._prep_for_diff(db_doc)
                 harvested_doc = self._prep_for_diff(deepcopy(harvested_docs[hid]))

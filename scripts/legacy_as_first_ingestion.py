@@ -4,7 +4,7 @@ Script to create first ingestion document and update records with ingestion
 version 1 for legacy data.
 
 Usage:
-    $ python scripts/legacy_as_first_ingestion.py provider_legacy_name
+    $ python scripts/legacy_as_first_ingestion.py provider_name
 """
 import sys
 import argparse
@@ -14,36 +14,25 @@ def define_arguments():
     """Defines command line arguments for the current script
     """
     parser = argparse.ArgumentParser()
-    name_help = "The provider's name as listed in the provider's legacy profile"
-    parser.add_argument("provider_legacy_name", help=name_help, type=str)
+    name_help = "The provider's name as listed in the provider's profile"
+    parser.add_argument("provider_name", help=name_help, type=str)
     return parser
 
-def main(argv=None, couch=None, provider_legacy_name=None):
-    # For testing, couch and provider_legacy_name will be provided as params
+def main(argv=None, couch=None, provider_name=None):
+    # For testing, couch and provider_name will be provided as params
     if couch:
-        provider_legacy_name = provider_legacy_name
+        provider_name = provider_name
     else:
         couch = Couch()
         parser = define_arguments()
         args = parser.parse_args(argv[1:])
-        provider_legacy_name = args.provider_legacy_name
+        provider_name = args.provider_name
 
-    if provider_legacy_name == "clemson":
-        provider_name = "scdl-clemson"
-    elif provider_legacy_name == "ia":
-        provider_name = "internet_archive"
-    elif provider_legacy_name == "kentucky":
-        provider_name = "kdl"
-    elif provider_legacy_name == "minnesota":
-        provider_name = "mdl"
-    else:
-        provider_name = provider_legacy_name
-
-    legacy_provider_docs = couch._query_all_dpla_provider_docs(provider_name)
+    provider_legacy_docs = couch._query_all_dpla_provider_docs(provider_name)
     ingest_docs = couch._query_all_provider_ingestion_docs(provider_name)
 
     # Proceed only if there are no ingestion documents for the provider but
-    # there are provider_legacy_rows.
+    # there are provider_legacy_docs.
     proceed = True
     if len(ingest_docs) > 0:
         num = len(ingest_docs)
@@ -52,7 +41,7 @@ def main(argv=None, couch=None, provider_legacy_name=None):
     try:
         next_item = next(couch._query_all_dpla_provider_docs(provider_name))
     except:
-        print >> sys.stderr, "Error: No documents found for this provider"
+        print >> sys.stderr, "Error: No documents found for %s" % provider_name
         proceed = False
 
     def _post(dpla_docs, dashboard_docs, ingest_doc_id):
@@ -62,14 +51,13 @@ def main(argv=None, couch=None, provider_legacy_name=None):
                                            countAdded=len(dashboard_docs))
 
     if proceed:
-        # Use the new provider_name for the ingestion document
         ingest_doc_id = couch.create_ingestion_doc_and_backup_db(provider_name)
 
         docs = []
         added_docs = []
         print >> sys.stderr, "Fetching all docs..."
         count = 0
-        for doc in legacy_provider_docs:
+        for doc in provider_legacy_docs:
             count += 1
             doc["ingestionSequence"] = 1
             docs.append(doc)

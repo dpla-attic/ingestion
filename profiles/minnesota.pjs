@@ -2,7 +2,7 @@
     "enrichments_coll": [
         "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php"
     ], 
-    "name": "mdl", 
+    "name": "minnesota", 
     "list_sets": "/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php",
     "enrichments_rec": [
         "/select-id", 
