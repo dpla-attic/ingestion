@@ -15,7 +15,7 @@ headers = {
     "Content-Type": "application/json",
     "Pipeline-Coll": u"/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe",
     "Pipeline-Rec": u"/select-id,/oai-to-dpla",
-    "Source": u"scdl-clemson",
+    "Source": u"clemson",
     "Contributor": base64.b64encode(json.dumps({u"@id": "http://dp.la/api/contributor/scdl-clemson", u"name": "South Carolina Digital Library"}))
 }
 
@@ -26,7 +26,7 @@ DATA_CHANGED = DATA_PATH + "clemson_ctm_change3"
 DATA_DELETED = DATA_PATH + "clemson_ctm_delete10"
 DATA_LEGACY = DATA_PATH + "clemson_ctm_legacy"
 
-PROVIDER = "scdl-clemson"
+PROVIDER = "clemson"
 
 if "TRAVIS" in os.environ:
     SERVER_URL = "http://travis_user:travis_pass@127.0.0.1:5984/"
@@ -135,7 +135,7 @@ def test_backup():
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)
 def test_added_docs():
-    DOCS_ADDED = ["scdl-clemson--http://repository.clemson.edu/u?/added%s" % i for i in range(1,6)]
+    DOCS_ADDED = ["clemson--http://repository.clemson.edu/u?/added%s" % i for i in range(1,6)]
     
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
     second_ingestion_doc_id = couch.ingest(DATA_ADDED, PROVIDER)
@@ -162,7 +162,7 @@ def test_added_docs():
 @with_setup(couch_setup, couch_teardown)
 def test_deleted_docs():
     nums = [372, 373, 374, 375, 376, 377, 51, 68, 77, 94]
-    DOCS_DELETED = ["scdl-clemson--http://repository.clemson.edu/u?/ctm,%s" % num for num in nums]
+    DOCS_DELETED = ["clemson--http://repository.clemson.edu/u?/ctm,%s" % num for num in nums]
 
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
     second_ingestion_doc_id = couch.ingest(DATA_DELETED, PROVIDER)
@@ -188,9 +188,9 @@ def test_deleted_docs():
 @with_setup(couch_setup, couch_teardown)
 def test_changed_docs():
     DOCS_CHANGED = {
-        "scdl-clemson--http://repository.clemson.edu/u?/ctm,161": {"changed": ["originalRecord/title", "sourceResource/title"]},
-        "scdl-clemson--http://repository.clemson.edu/u?/ctm,169": {"changed": ["originalRecord/coverage", "sourceResource/spatial"]},
-        "scdl-clemson--http://repository.clemson.edu/u?/ctm,179": {"changed": ["originalRecord/subject", "sourceResource/subject"]}
+        "clemson--http://repository.clemson.edu/u?/ctm,161": {"changed": ["originalRecord/title", "sourceResource/title"]},
+        "clemson--http://repository.clemson.edu/u?/ctm,169": {"changed": ["originalRecord/coverage", "sourceResource/spatial"]},
+        "clemson--http://repository.clemson.edu/u?/ctm,179": {"changed": ["originalRecord/subject", "sourceResource/subject"]}
     }
     
     first_ingestion_doc_id = couch.ingest(DATA, PROVIDER)
@@ -307,8 +307,7 @@ def test_multiple_ingestions():
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)
 def test_legacy():
-    # Ingest legacy data. Record _ids will start with "clemson" instead of
-    # "scdl-clemson" and records will not have an "ingestionSequence" field
+    # Ingest legacy data. Records will not have an "ingestionSequence" field
     with open(DATA_LEGACY) as f:
         data = f.readlines()
     content = json.loads("".join(data))
@@ -320,7 +319,7 @@ def test_legacy():
     # Run legacy_as_first_ingestion script
     sys.path.append(os.path.join(os.getcwd(), "scripts"))
     from legacy_as_first_ingestion import main
-    main(couch=couch, provider_legacy_name="clemson")
+    main(couch=couch, provider_name=PROVIDER)
 
     # Get last Clemson ingestion document
     ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
@@ -340,7 +339,7 @@ def test_legacy():
     ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
     assert ingest_doc["ingestionSequence"] == 2
     assert ingest_doc["countAdded"] == 0
-    assert ingest_doc["countDeleted"] == 244
+    assert ingest_doc["countDeleted"] == 0
     assert ingest_doc["countChanged"] == 244
 
     # Get all provider documents in database
