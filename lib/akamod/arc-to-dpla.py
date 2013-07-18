@@ -113,9 +113,9 @@ def transform_state_located_in(d):
     state_located_in = None
     if phys:
         for p in phys:
-            s = arc_group_extraction(p, "reference-units", "reference-unit", "state")[0]
-            if s:
-                state_located_in = s
+            s = arc_group_extraction(p, "reference-units", "reference-unit", "state")
+            if s and s[0]:
+                state_located_in = s[0]
 
     res = {"stateLocatedIn": {"name": state_located_in}}
     return res if state_located_in else {}
@@ -125,14 +125,15 @@ def data_provider_transform(d):
     phys = arc_group_extraction(d, "physical-occurrences",
                                 "physical-occurrence")
 
-    for p in phys:
-        dp = arc_group_extraction(p, "reference-units", "reference-unit",
-                                  "name")[0]
-        if dp and dp not in data_provider:
-            data_provider.append(dp)
+    if phys:
+        for p in phys:
+            dp = arc_group_extraction(p, "reference-units", "reference-unit",
+                                      "name")
+            if dp and dp[0] not in data_provider:
+                data_provider.append(dp[0])
 
-    if len(data_provider) == 1:
-        data_provider = data_provider[0]
+        if len(data_provider) == 1:
+            data_provider = data_provider[0]
 
     return {"dataProvider": data_provider} if data_provider else {}
 
@@ -176,7 +177,7 @@ def type_transform(d):
     if "general-records-types" in d:
         type = arc_group_extraction(d, "general-records-types", "general-records-type",
                                     "general-records-type-desc")
-    if "physical-occurrences" in d:
+    if exists(d, "physical-occurrences/physical-occurrence"):
         phys_occur = getprop(d, "physical-occurrences/physical-occurrence")
         type_key = "media-occurrences/media-occurrence/media-type"
         for p in phys_occur:
@@ -191,7 +192,7 @@ def has_view_transform(d):
     def add_views(has_view,rge,url,format=None):
         for i in range(0,rge):
             view = {}
-            view["url"] = url[i]
+            view["@id"] = url[i]
             if format:
                 view["format"] = format[i]
             has_view.append(view)

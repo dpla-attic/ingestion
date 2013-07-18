@@ -618,11 +618,38 @@ DC_DATA_PROVIDER = {
     "WGBH OpenVault": "WGBH"
 }
 
-SCDL_FORMAT_PLURALIZE = {
+SCDL_FIX_FORMAT = {
     "Pamphlet": "Pamphlets",
+    "Pamplet": "Pamphlets",
+    "Pamplets": "Pamphlets",
+    "Pamplets\n": "Pamphlets",
     "pamphlets": "Pamphlets",
     "Manuscript": "Manuscripts",
     "manuscripts": "Manuscripts",
     "Photograph": "Photographs",
-    "Photograph": "Photographs"
+    "Baskets (Containers)": "Baskets (containers)",
+    "color print": "Color prints",
+    "color prints": "Color prints",
+    "Image": "Images",
+    "Manuscript": "Manuscripts",
+    "Masks (costume)": "Masks (costumes)",
+    "Newspaper": "Newspapers",
+    "Object": "Objects",
+    "Still image": "Still images",
+    "Still Image": "Still images",
+    "StillImage": "Still images",
+    "Text\nText": "Texts",
+    "Text": "Texts",
+    "Batik": "Batiks",
+    "Book": "Books",
+    "Map": "Maps",
+    "maps": "Maps",
+    "Picture Postcards": "Picture postcards",
+    "Religous objects": "Religious objects",
+    "Tray": "Trays",
+    "Wall hanging": "Wall hangings",
+    "Wood carving": "Wood carvings",
+    "Woodcarving": "Wood carvings",
+    "Cartoons (humourous images)": "Cartoons (humorous images)",
+    "black-and-white photographs": "Black-and-white photographs"
 }

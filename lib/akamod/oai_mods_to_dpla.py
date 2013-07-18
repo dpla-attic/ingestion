@@ -253,6 +253,13 @@ def format_transform(d, p):
     format = filter(None, format)
 
     return {"format": format} if format else {}
+
+def description_transform(d, p):
+    desc = getprop(d, p)
+    if not isinstance(desc, basestring):
+        desc = desc["#text"] if "#text" in desc else None
+
+    return {"description": desc} if desc else {}
     
 def url_transform(d):
     iho = {}
@@ -311,7 +318,7 @@ def identifier_transform(d):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "collection"                                         : lambda d, p: {"collection": getprop(d, p)},
-    MODS + "note"                                        : lambda d, p: {"description": getprop(d, p)},
+    MODS + "note"                                        : description_transform,
     MODS + "name"                                        : creator_and_contributor_transform,
     MODS + "genre"                                       : format_transform,
     MODS + "relatedItem"                                 : is_part_of_transform,

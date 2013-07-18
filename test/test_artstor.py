@@ -44,7 +44,7 @@ def test_artstor_identify_object():
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
        ],
        "handle": [
-           "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
+           "Thumbnail: http://media.artstor.net/imgstor/size1/kress/d0001/kress_1103_post.jpg",
            "Image View: http://www.artstor.org/artstor/ViewImages?id=8DtZYyMmJloyLyw7eDt5QHgt&userId=gDBAdA%3D%3D",
            "Ranking: 13000"
        ],
@@ -111,14 +111,14 @@ def test_artstor_identify_object():
        "@id": "http://dp.la/api/contributor/artstor",
        "name": "ARTstor OAICatMuseum"
    },
-   "isShownAt": "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
+   "isShownAt": "Thumbnail: http://media.artstor.net/imgstor/size1/kress/d0001/kress_1103_post.jpg",
    "ingestType": "item",
    "@id": "http://dp.la/api/items/6ae54cee603f75c275fd913e04c49a3f",
    "id": "6ae54cee603f75c275fd913e04c49a3f"
 }
     """
 
-    EXPECTED_PREVIEW = "http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg"
+    EXPECTED_PREVIEW = "http://media.artstor.net/imgstor/size1/kress/d0001/kress_1103_post.jpg"
 
     url = server() + "artstor_identify_object"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
@@ -171,7 +171,7 @@ def test_artstor_source_fetching():
            "Please note that if this image is under copyright, you may need to contact one or more copyright owners for any use that is not permitted under the ARTstor Terms and Conditions of Use or not otherwise permitted by law. While ARTstor tries to update contact information, it cannot guarantee that such information is always accurate. Determining whether those permissions are necessary, and obtaining such permissions, is your sole responsibility."
        ],
        "handle": [
-           "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
+           "Thumbnail: http://media.artstor.net/imgstor/size1/kress/d0001/kress_1103_post.jpg",
            "Image View: http://www.artstor.org/artstor/ViewImages?id=8DtZYyMmJloyLyw7eDt5QHgt&userId=gDBAdA%3D%3D",
            "Ranking: 13000"
        ],
@@ -238,7 +238,7 @@ def test_artstor_source_fetching():
        "@id": "http://dp.la/api/contributor/artstor",
        "name": "ARTstor OAICatMuseum"
    },
-   "isShownAt": "Thumbnail: http://media.artstor.net/imgstor/size2/kress/d0001/kress_1103_post.jpg",
+   "isShownAt": "Thumbnail: http://media.artstor.net/imgstor/size1/kress/d0001/kress_1103_post.jpg",
    "ingestType": "item",
    "@id": "http://dp.la/api/items/6ae54cee603f75c275fd913e04c49a3f",
    "id": "6ae54cee603f75c275fd913e04c49a3f"

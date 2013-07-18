@@ -131,6 +131,43 @@ def test_origin_info_transform():
     }
 
     resp, content = _get_server_response(json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"]) 
+
+def test_description_transform1():
+    INPUT = {
+        "metadata": {
+            "mods": {
+                "note": "A description"
+            }
+        }
+    }
+    EXPECTED = {
+        "description": "A description"
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT))
+    print_error_log()
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"])
+
+def test_description_transform2():
+    INPUT = {
+        "metadata": {
+            "mods": {
+                "note": {
+                    "#text": "A description"
+                }
+            }
+        }
+    }
+    EXPECTED = {
+        "description": "A description"
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"])
+
+if __name__ == "__main__":
+    raise SystemExit("Use nosetest")

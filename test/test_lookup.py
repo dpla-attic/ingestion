@@ -386,7 +386,7 @@ def test_substitution_using_scdl_format_dict():
         data["aaa"] = f[1]
         EXPECTED_OUTPUT = json.dumps(data)
         print "Checking: %s" + repr(f)
-        resp, content = _get_server_response(INPUT, "aaa", "aaa", "scdl_format_pluralize", None, False)
+        resp, content = _get_server_response(INPUT, "aaa", "aaa", "scdl_fix_format", None, False)
         print_error_log()
         assert resp.status == 200
         assert_same_jsons(EXPECTED_OUTPUT, content)
