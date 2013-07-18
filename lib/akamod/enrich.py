@@ -186,9 +186,12 @@ def enrich(body, ctype):
 
         doc_text = pipe(record, ctype, rec_enrichments, 'HTTP_PIPELINE_REC')
         doc = json.loads(doc_text)
-        # After pipe doc must have _id
+        # After pipe doc must have _id and sourceResource
         if doc.get("_id", None):
-            docs[doc["_id"]] = doc
+            if "sourceResource" in doc:
+                docs[doc["_id"]] = doc
+            else:
+                logger.error("Document does not have sourceResource: %s" % doc["_id"])
 
     # Add collections to docs
     for collection in COLLECTIONS.values():

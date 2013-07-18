@@ -39,7 +39,7 @@ def artstor_identify_object(body, ctype, download="True"):
 
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
-    artstor_preview_prefix = "/size2/"
+    artstor_preview_prefix = "/size1/"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])

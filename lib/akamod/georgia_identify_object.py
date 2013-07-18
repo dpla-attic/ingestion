@@ -55,7 +55,7 @@ def georgia_identify_object(body, ctype, download="True"):
         return body
 
     try:
-        repo, coll, item = _item_id_tuple.split("_", 3)
+        repo, coll, item = _item_id_tuple.split("_", 2)
     except ValueError:
         logger.error("Can not fetch \"repo, coll, item\" values from [%s], splitting by \"_\"", _item_id_tuple)
         return body
