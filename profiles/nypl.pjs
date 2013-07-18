@@ -6,7 +6,7 @@
     "name": "nypl",
     "enrichments_rec": [
         "/select-id?prop=_id",
-        "/mods-to-dpla?version=3.4",
+        "/mods-to-dpla?provider=NYPL",
         "/nypl_identify_object",
         "/nypl_select_hasview",
         "/cleanup_value",

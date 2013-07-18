@@ -4,7 +4,7 @@ The DPLA Ingestion
 Build Status
 -------------------
 
-[![Build Status](https://travis-ci.org/dpla/ingestion.png?branch=master)](https://travis-ci.org/dpla/ingestion)
+[![Build Status](https://travis-ci.org/dpla/ingestion.png?branch=develop)](https://travis-ci.org/dpla/ingestion)
 
 Documentation
 -------------------
