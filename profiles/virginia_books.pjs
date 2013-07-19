@@ -1,7 +1,7 @@
 {
     "list_sets": "",
     "enrichments_coll": [],
-    "name": "virginia",
+    "name": "virginia_books",
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=UVA",
