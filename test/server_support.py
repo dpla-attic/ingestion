@@ -158,7 +158,8 @@ MODULES = [
     "dplaingestion.akamod.capitalize_value",
     "dplaingestion.akamod.artstor_cleanup_creator",
     "dplaingestion.akamod.replace_substring",
-    "dplaingestion.akamod.uiuc_cleanup_spatial_name"
+    "dplaingestion.akamod.uiuc_cleanup_spatial_name",
+    "dplaingestion.akamod.remove_list_values",
     ]
 
 class download_preview:

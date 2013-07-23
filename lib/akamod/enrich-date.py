@@ -70,6 +70,8 @@ def robust_date_parser(d):
 
     return dd
 
+# ie 1970/1971
+year_range = re.compile("(?P<year1>^\d{4})[-/](?P<year2>\d{4})$")
 # ie 1970-08-01/02
 day_range = re.compile("(?P<year>^\d{4})[-/](?P<month>\d{1,2})[-/](?P<day_begin>\d{1,2})[-/](?P<day_end>\d{1,2}$)")
 # ie 1970-90
@@ -91,6 +93,9 @@ def parse_date_or_range(d):
 
     if re.search("B\.?C\.?|A\.?D\.?|A\.?H\.?", d.upper()):
         pass
+    elif year_range.match(d):
+        match = year_range.match(d)
+        a, b = sorted((match.group("year1"), match.group("year2")))
     elif len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
         # Handle ranges
         delim = "-" if len(d.split("-"))%2 == 0 else "/"

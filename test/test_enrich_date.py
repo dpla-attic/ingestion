@@ -682,5 +682,17 @@ def test_wordy_date():
     assert str(resp.status).startswith("2")
     assert_same_jsons(EXPECTED, content)
 
+def test_reversed_date_range():
+    """Should handle reversed date range"""
+    INPUT = {"date": "1911/0140"}
+    EXPECTED = {"date": {"begin": "0140", "end": "1911", "displayDate": INPUT["date"]}}
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    print_error_log()
+    assert str(resp.status).startswith("2")
+    assert_same_jsons(EXPECTED, content)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
