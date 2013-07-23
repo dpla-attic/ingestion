@@ -50,8 +50,9 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
             c = cleanup(v)
             for pattern in REGSEARCH:
                 m = re.compile(pattern, re.I).findall(c)
-                if len(m) == 1 and not re.sub(m[0],"",c).strip():
-                    toprop.append(m[0])
+                if len(m) == 1 and not re.sub(m[0], "", c).strip():
+                    if m[0] not in toprop:
+                        toprop.append(m[0])
                     # Append the non-cleaned value to remove
                     remove.append(v)
                     break

@@ -28,12 +28,13 @@ def test_move_date_values_no_prop():
 def test_move_date_values_spatial1():
     """
     Should remove dates from the spatial field and place them in the
-    temporal field.
+    temporal field without duplication.
     """
     prop = "sourceResource/spatial"
     INPUT = {
         "sourceResource": {
             "spatial" : [
+                "1901-1999",
                 "1901-1999",
                 " 1901 - 1999 ",
                 "1901 - 01 - 01",
@@ -44,6 +45,7 @@ def test_move_date_values_spatial1():
                 "1901",
                 "02/1901 - 02/1902",
                 "1901-02 / 1902-02",
+                "1930s",
                 "1930s",
                 "North Carolina"
             ]
