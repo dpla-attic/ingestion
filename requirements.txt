@@ -13,3 +13,4 @@ CouchDB==0.9
 nose
 geopy
 python-cloudfiles
+ordereddict

@@ -61,7 +61,8 @@ PREFIXES = {
     u'o': u'http://www.openarchives.org/OAI/2.0/',
     u'dc': u'http://purl.org/dc/elements/1.1/',
     u'oai_dc': u'http://www.openarchives.org/OAI/2.0/oai_dc/',
-    u'qdc': u'http://epubs.cclrc.ac.uk/xmlns/qdc/'
+    u'qdc': u'http://epubs.cclrc.ac.uk/xmlns/qdc/',
+    u'marc': u'http://www.loc.gov/MARC21/slim'
 }
 
 class oaiservice(object):
@@ -165,15 +166,15 @@ class oaiservice(object):
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
 
-        if metadataPrefix == "mods":
-            mods = XML_PARSE(content)
+        if metadataPrefix == "mods" or metadataPrefix == "marc":
+            xml_content = XML_PARSE(content)
             records = []
-            for record in mods["OAI-PMH"]["ListRecords"]["record"]:
+            for record in xml_content["OAI-PMH"]["ListRecords"]["record"]:
                 id = record["header"]["identifier"]
                 if "null" not in id:
-                    records.append((id,record))
-            if "resumptionToken" in mods["OAI-PMH"]["ListRecords"]:
-                resumption_token = mods["OAI-PMH"]["ListRecords"]["resumptionToken"]
+                    records.append((id, record))
+            if "resumptionToken" in xml_content["OAI-PMH"]["ListRecords"]:
+                resumption_token = xml_content["OAI-PMH"]["ListRecords"]["resumptionToken"]
             else:
                 resumption_token = ''
         else:

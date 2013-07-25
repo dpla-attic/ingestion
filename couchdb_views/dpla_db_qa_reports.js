@@ -2,6 +2,20 @@
    "_id": "_design/qa_reports",
    "language": "javascript",
    "views": {
+       "spec_type": {
+           "map": "function(doc) { v = doc.sourceResource.specType; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(doc['id'], v[i]); }}}"
+       },
+       "spec_type_count": {
+           "map": "function(doc) { v = doc.sourceResource.specType; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(v[i],1); }}}",
+           "reduce": "_count"
+       },
+       "is_shown_at": {
+           "map": "function(doc) { v = doc.isShownAt; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(doc['id'], v[i]); }}}"
+       },
+       "is_shown_at_count": {
+           "map": "function(doc) { v = doc.isShownAt; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(v[i],1); }}}",
+           "reduce": "_count"
+       },
        "title": {
            "map": "function(doc) { v = doc.sourceResource.title; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit(doc['id'], v[i]); }}}"
        },
