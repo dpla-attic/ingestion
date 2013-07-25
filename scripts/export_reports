@@ -42,6 +42,8 @@ report[22]="is_part_of"
 report[23]="relation"
 report[24]="extent"
 report[25]="identifier"
+report[26]="is_shown_at"
+report[27]="spec_type"
 
 dir="${provider}_exports"
 rm -r $dir "${dir}.zip"

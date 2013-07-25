@@ -1,0 +1,36 @@
+{
+    "list_sets": "/oai.listsets.json?endpoint=http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp",
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp"
+    ], 
+    "name": "uiuc", 
+    "enrichments_rec": [
+        "/select-id?prop=header%2Fidentifier",
+        "/marc_to_dpla",
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fspatial",
+        "/cleanup_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format", 
+        "/enrich_location",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/copy_prop?prop=dataProvider&to_prop=provider&create=True"
+    ], 
+    "subresources": [
+        "UC",
+        "BB",
+        "ILL",
+        "MN"
+    ],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/uiuc", 
+        "name": "University of Illinois at Urbana-Champaign"
+    }, 
+    "type": "oai",
+    "endpoint_URL": "/dpla-list-records?endpoint=http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp&metadataPrefix=marc&oaiset="
+}

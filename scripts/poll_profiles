@@ -675,6 +675,45 @@ def process_ia_coll(profile, subr):
             else:
                 time.sleep(1.0)
 
+def process_marc_all(profile, blacklist=None):
+    src_url = profile.get("endpoint_URL")
+    assert src_url.startswith("file:/") # assumes no authority and the non-broken use of //
+    src_dir = src_url[5:]
+
+    collection = {}
+    collection["id"] = "1"
+    collection["title"] = "hathitrust"
+    collection["items"] = []
+
+    limit = 1000
+    for (root, dirs, files) in os.walk(src_dir):
+        for filename in fnmatch.filter(files, "*.xml"):
+            count = 0
+            item_fn = os.path.join(root, filename)
+            print "Processing file: " + item_fn
+            try:
+                with open(item_fn, "r") as f:
+                    content = ARC_PARSE(f)
+            except Exception, e:
+                print >> sys.stderr, "[ERROR]", e.message
+
+            records = content["collection"]["record"]
+            for record in records:
+                count += 1
+                # Set _id
+                if record["controlfield"][0]["tag"] == "001":
+                    record["_id"] = record["controlfield"][0]["#text"]
+                collection["items"].append(record)
+
+                if len(collection["items"]) == limit or \
+                   collection["items"][-1] == records[-1]:
+                    print "Enriching %s of %s" % (count, len(records))
+                    enrich_coll(profile, collection["id"],
+                                json.dumps(collection))
+                    collection["items"] = []
+    print "Complete"
+                    
+            
 
 TYPE_PROCESSORS = {
     ('arc', 'coll'): None,
@@ -692,6 +731,7 @@ TYPE_PROCESSORS = {
     ('nypl', 'all'): process_nypl_all,
     ('ia', 'coll'): process_ia_coll,
     ('ia', 'all'): None,
+    ('marc', 'all'): process_marc_all,
 }
 
 

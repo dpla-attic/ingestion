@@ -110,7 +110,7 @@ def parse_date_or_range(d):
             match = decade_date.match(d)
             a = match.group("year") + "0"
             b = match.group("year") + "9"
-        elif any([len(s) < 4 for s in d.split(delim) if
+        elif any([0 < len(s) < 4 for s in d.split(delim) if
                   len(d.split(delim)) == 2]):
             # ie 1970-90, 1970/90, 1970-9, 1970/9, 9/1979
             match = circa_range.match(d)
@@ -142,6 +142,13 @@ def parse_date_or_range(d):
                     d = "%s-%02d" % (match.group("year"), int(match.group("month")))
                     a = robust_date_parser(d)
                     b = robust_date_parser(d)
+        elif "" in d.split(delim):
+            # ie 1970- or -1970
+            s = d.split(delim)
+            if s[0]:
+                a, b = s[0], None
+            else:
+                a, b = None, s[1]
         else:
             # ie 1970-01-01-1971-01-01, 1970Fall/August, 1970April/May, or
             # wordy date like "mid 11th century AH/AD 17th century (Mughal)"
