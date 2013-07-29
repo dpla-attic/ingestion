@@ -199,15 +199,14 @@ def enrich(body, ctype):
 
     return json.dumps(docs)
 
-@simple_service('POST', 'http://purl.org/la/dp/enrich_storage', 'enrich_storage', 'application/json')
+@simple_service('POST', 'http://purl.org/la/dp/enrich_storage',
+                'enrich_storage', 'application/json')
 def enrich_storage(body, ctype):
-    """
-    Establishes a pipeline of services identified by an ordered list of URIs provided
-    in request header 'Pipeline-Rec'
+    """Establishes a pipeline of services identified by an ordered list of URIs
+       provided in request header 'Pipeline-Rec'
     """
 
     request_headers = copy_headers_to_dict(request.environ)
-    # source_name = request_headers.get('Source')
     rec_enrichments = request_headers.get(u'Pipeline-Rec','').split(',')
 
     data = json.loads(body)
@@ -218,14 +217,4 @@ def enrich_storage(body, ctype):
         doc = json.loads(doc_text)
         docs[doc["_id"]] = doc
 
-    couch_rev_check_recs(docs)
-    couch_docs_text = json.dumps({"docs": docs.values()})
-    if COUCH_DATABASE:
-        resp, content = H.request(join(COUCH_DATABASE, '_bulk_docs'), 'POST',
-            body=couch_docs_text,
-            headers=dict(CT_JSON.items() + COUCH_AUTH_HEADER.items()))
-        logger.debug("Couch bulk update response: "+content)
-        if not str(resp.status).startswith('2'):
-            logger.warn('HTTP error posting to CouchDB: ' + repr((resp, content)))
-
-    return couch_docs_text
+    return json.dumps(docs)
