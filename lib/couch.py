@@ -108,10 +108,17 @@ class Couch(object):
                     # by_provider_name_and_ingestion_sequence view
                     continue
                 view_name = "%s/%s" % (design_doc, view)
-                print >> sys.stderr, "Bulding %s view %s" % (db.name, view_name)
+                print >> sys.stderr, "Bulding %s view %s" % (db.name,
+                                                             view_name)
                 start = time.time()
-                for doc in db.iterview(view_name, batch=self.iterview_batch):
-                    pass
+                try:
+                    for doc in db.iterview(view_name,
+                                           batch=self.iterview_batch):
+                        pass
+                except:
+                    print "View %s not found in database %s" % (view_name,
+                                                                db.name)
+                    
                 build_time = (time.time() - start)/60
                 print >> sys.stderr, "Completed in %s minutes" % build_time
 
