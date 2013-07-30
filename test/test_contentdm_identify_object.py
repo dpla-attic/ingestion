@@ -130,6 +130,38 @@ def test_contentdm_identify_object_bad_url():
         assert str(resp.status).startswith("2")
         assert_same_jsons(INPUT, content)
 
+def test_contentdm_identify_object_usc():
+    """
+    Should add a thumbnail URL made of the source URL.
+    """
+    INPUT = {
+            u"something": "x",
+            u"somethink": "y",
+            u"originalRecord":
+                    {"handle":
+                        ["aaa", "http://some.url/cdm/ref/12345"]
+                    },
+            u"left": "right now!"
+    }
+    EXPECTED = {
+            u"something": "x",
+            u"somethink": "y",
+            u"originalRecord": {
+                "handle":
+                    ["aaa", "http://some.url/cdm/ref/12345"]
+                },
+            u"object": ("http://some.url/utils/getthumbnail/12345"),
+            u"admin": {u"object_status": 0},
+            u"left": "right now!"
+    }
+    url = contentdm_url("False")
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    print_error_log()
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+
+    assert_same_jsons(EXPECTED, result)
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

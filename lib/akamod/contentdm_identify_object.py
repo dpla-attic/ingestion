@@ -14,7 +14,19 @@ PENDING = module_config().get('PENDING')
 def contentdm_identify_object(body, ctype, download="True"):
     """
     Responsible for: adding a field to a document with the URL where we
-    should expect to the find the thumbnail
+    should expect to the find the thumbnail.
+
+    There are two methods of creating the thumbnail URL:
+    1. Replacing "cdm/ref" with "utils/getthumbail" in the handle field
+       Example:
+           handle: http://test.provider/cdm/ref/collection/1/id/1
+           thumbnail: http://test.provider/utils/getthumbnail/collection/1/id/1
+
+    2. Splitting the handle field on "u?" and using the parts to compose the
+       thumbnail URL.
+       Example:
+            handle: http://test.provider/u?/ctm,101
+            thumbnail: http://test.provider/cgi-bin/thumbnail.exe?CISOROOT=/ctm&CISOPTR=101"
     """
 
     LOG_JSON_ON_ERROR = True
@@ -49,31 +61,36 @@ def contentdm_identify_object(body, ctype, download="True"):
         logger.error(msg)
         return body
 
-    p = url.split("u?")
+    if "cdm/ref" in url:
+        object = url.replace("cdm/ref", "utils/getthumbnail")
+    else:
+        p = url.split("u?")
+        if len(p) != 2:
+            logger.error("Bad URL %s. It should have just one 'u?' part." %
+                         url)
+            log_json()
+            return body
 
-    if len(p) != 2:
-        logger.error("Bad URL %s. It should have just one 'u?' part." % url)
-        log_json()
-        return body
+        (base_url, rest) = p
 
-    (base_url, rest) = p
+        if base_url == "" or rest == "":
+            logger.error("Bad URL: %s. There is no 'u?' part." % url)
+            log_json()
+            return body
 
-    if base_url == "" or rest == "":
-        logger.error("Bad URL: %s. There is no 'u?' part." % url)
-        log_json()
-        return body
+        p = rest.split(",")
 
-    p = rest.split(",")
+        if len(p) != 2:
+            logger.error("Bad URL %s. Expected two parts at the end, used " +
+                         "in thumbnail URL for CISOROOT and CISOPTR." % url)
+            log_json()
+            return body
 
-    if len(p) != 2:
-        logger.error("Bad URL %s. Expected two parts at the end, used in " +
-            "thumbnail URL for CISOROOT and CISOPTR." % url)
-        log_json()
-        return body
+        # Thumb url field.
+        object = "%scgi-bin/thumbnail.exe?CISOROOT=%s&CISOPTR=%s" % \
+                 (base_url, p[0], p[1])
 
-    # Thumb url field.
-    data["object"] = "%scgi-bin/thumbnail.exe?CISOROOT=%s&CISOPTR=%s" % \
-        (base_url, p[0], p[1])
+    data["object"] = object
 
     status = IGNORE
     if download == "True":

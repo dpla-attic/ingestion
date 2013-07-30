@@ -32,6 +32,9 @@
         "/dedup_value?prop=sourceResource%2Ftype",
         "/unset_prop?prop=sourceResource%2Fcollection"
     ], 
+    "identify_object": [
+        "/contentdm_identify_object"
+    ],
     "subresources": [
         "p15799coll82",
         "p15799coll117",
