@@ -98,12 +98,17 @@ class Couch(object):
 
         # Build views
         db_design_docs = (self.dpla_db, "all_provider_docs"), \
+                         (self.dashboard_db, "all_provider_docs"), \
                          (self.dashboard_db, "all_ingestion_docs")
         views = ["by_provider_name", "by_provider_name_and_ingestion_sequence"]
         for db, design_doc in db_design_docs:
             for view in views:
+                if db.name == "dashboard" and view == views[1]:
+                    # Dashboard DB does not have a
+                    # by_provider_name_and_ingestion_sequence view
+                    continue
                 view_name = "%s/%s" % (design_doc, view)
-                print >> sys.stderr, "Bulding view " + view_name
+                print >> sys.stderr, "Bulding %s view %s" % (db.name, view_name)
                 start = time.time()
                 for doc in db.iterview(view_name, batch=self.iterview_batch):
                     pass
@@ -133,6 +138,23 @@ class Couch(object):
         view_name = "_all_docs"
         for row in db.iterview(view_name, batch=self.iterview_batch,
                                include_docs=True):
+            yield row["doc"]
+
+    def _query_all_dashboard_provider_docs(self, provider_name):
+        """Fetches all provider docs by provider name. The key for this view
+        is the list [provider_name, doc._id], so we supply "a" as the
+        startkey doc._id and "z" as the endkey doc._id in order to ensure
+        proper sorting.
+        """
+        view_name = "all_provider_docs/by_provider_name"
+        include_docs = True
+        startkey = [provider_name, "a"]
+        endkey = [provider_name, "z"]
+        for row in self.dashboard_db.iterview(view_name,
+                                              batch=self.iterview_batch,
+                                              include_docs=True,
+                                              startkey=startkey,
+                                              endkey=endkey):
             yield row["doc"]
 
     def _query_all_dpla_provider_docs(self, provider_name):
@@ -245,6 +267,49 @@ class Couch(object):
         # TODO: BigCouch v0.4.2 does not currently support the couchdb-python
         # purge implementation. 
         # db.purge(docs)
+
+    def _delete_all_provider_documents(self, provider):
+        """Deletes all of a provider's documents from the DPLA and Dashboard
+           databases.
+        """
+        count = 0
+        delete_docs = []
+        # Delete DPLA docs
+        for doc in self._query_all_dpla_provider_docs(provider):
+            delete_docs.append(doc)
+            count += 1
+
+            if len(delete_docs) == 1000:
+                print "%s DPLA documents deleted" % count
+                self._delete_documents(self.dpla_db, delete_docs)
+                delete_docs = []
+        if delete_docs:
+            print "%s DPLA documents deleted" % count
+            self._delete_documents(self.dpla_db, delete_docs)
+        elif count == 0:
+            print "No DPLA documents found"
+
+        count = 0
+        delete_docs = []
+        # Delete Dashboard docs
+        for doc in self._query_all_provider_ingestion_docs(provider):
+            # TODO: _query_all_dashboard_provider_docs should include
+            # ingestion documents.
+            delete_docs.append(doc)
+            count += 1
+        for doc in self._query_all_dashboard_provider_docs(provider):
+            delete_docs.append(doc)
+            count += 1
+
+            if len(delete_docs) == 1000:
+                print "%s Dashboard documents deleted" % count
+                self._delete_documents(self.dashboard_db, delete_docs)
+                delete_docs = []
+        if delete_docs:
+            print "%s Dashboard documents deleted" % count
+            self._delete_documents(self.dashboard_db, delete_docs)
+        elif count == 0:
+            print "No Dashboard documents found"
 
     def _backup_db(self, provider):
         """Fetches all provider docs from the DPLA database and posts them to
