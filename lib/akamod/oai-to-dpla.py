@@ -81,7 +81,8 @@ CHO_TRANSFORMER = {
     "subject"          : lambda d: {"subject": d.get("subject",None)},
     "title"            : lambda d: {"title": d.get("title",None)},
     "type"             : lambda d: {"type": d.get("type",None)},
-    "format"           : lambda d: {"format": d.get("format",None)}
+    "format"           : lambda d: {"format": d.get("format",None)},
+    "extent"           : lambda d: {"extent": d.get("extent", None)}
 }
 
 AGGREGATION_TRANSFORMER = {
