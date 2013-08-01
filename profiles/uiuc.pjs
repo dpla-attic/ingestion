@@ -1,5 +1,5 @@
 {
-    "list_sets": "/oai.listsets.json?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe",
+    "list_sets": "/oai.listsets.json?endpoint=http://imagesearchnew.library.illinois.edu/oai/oai.php",
     "enrichments_coll": [
         "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe"
     ], 
@@ -29,8 +29,9 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/contentdm_identify_object",
-        "/unset_prop?prop=dataProvider",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True"
+        "/copy_prop?prop=sourceResource%2Frelation&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True&remove=True",
+        "/copy_prop?prop=dataProvider&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True",
+        "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library"
     ], 
     "subresources": [
         "kennedy",
@@ -59,5 +60,5 @@
         "name": "University of Illinois at Urbana-Champaign"
     }, 
     "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe&oaiset="
+    "endpoint_URL": "/dpla-list-records?endpoint=http://imagesearchnew.library.illinois.edu/oai/oai.php&oaiset="
 }
