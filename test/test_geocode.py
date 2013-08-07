@@ -106,3 +106,37 @@ def test_close_multiple_results():
     assert json.loads(content) == EXPECTED
 
 
+@attr(travis_exclude='yes')    
+def test_geocode_coordinate_provided():
+    INPUT = {
+        "id": "12345",
+        "sourceResource": {
+            "spatial": [
+                { 
+                    "name": "42.358631134, -71.0567016602"
+                }
+            ]
+        },
+        "creator": "David"
+    }
+
+    EXPECTED = {
+        "id": "12345",
+        "sourceResource": {
+            "spatial": [
+                {
+                    "state": "Massachusetts",
+                    "country": "United States",
+                    "name": "42.358631134, -71.0567016602",
+                    "coordinates": "42.358631134, -71.0567016602"
+                }
+            ]
+        },
+        "creator": "David"
+    }
+        
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    print content
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED

@@ -160,6 +160,7 @@ MODULES = [
     "dplaingestion.akamod.replace_substring",
     "dplaingestion.akamod.uiuc_cleanup_spatial_name",
     "dplaingestion.akamod.remove_list_values",
+    "dplaingestion.akamod.usc_enrich_location",
     ]
 
 class download_preview:

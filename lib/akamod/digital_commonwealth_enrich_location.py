@@ -4,6 +4,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/digital_commonwealth_enrich_location', 'digital_commonwealth_enrich_location', 'application/json')
 def digital_commonwealth_enrich_location(body, ctype, action="digital_commonwealth_enrich_location", prop="sourceResource/spatial"):
@@ -38,21 +39,6 @@ def digital_commonwealth_enrich_location(body, ctype, action="digital_commonweal
         setprop(data, prop, spatials)
 
     return json.dumps(data)
-
-
-def iterify(iterable): 
-    """
-    Treat iterating over a single item or an interator seamlessly.
-    """
-    if (isinstance(iterable, basestring) \
-        or isinstance(iterable, dict)):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
-
 
 def format_spatial(value): 
     # Normalize lat/lng coordinates

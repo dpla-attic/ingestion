@@ -27,7 +27,8 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
         "\d{1,2}\s*[-/]\s*\d{4}",
         "\d{4}\s*[-/]\s*\d{1,2}",
         "\d{4}s?",
-        "\d{1,2}\s*(?:st|nd|rd|th)\s*century"
+        "\d{1,2}\s*(?:st|nd|rd|th)\s*century",
+        ".*circa.*"
         ]
 
     def cleanup(s):

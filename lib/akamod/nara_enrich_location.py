@@ -4,6 +4,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/nara_enrich_location', 'nara_enrich_location', 'application/json')
 def nara_enrich_location(body, ctype, action="nara_enrich_location", prop="sourceResource/spatial"):
@@ -26,21 +27,6 @@ def nara_enrich_location(body, ctype, action="nara_enrich_location", prop="sourc
         setprop(data, prop, spatials)
 
     return json.dumps(data)
-
-
-def iterify(iterable): 
-    """
-    Treat iterating over a single item or an interator seamlessly.
-    """
-    if (isinstance(iterable, basestring) \
-        or isinstance(iterable, dict)):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
-
 
 SPATIAL_FORMATTERS = [(re.compile("Ala\."), "AL"),
                       (re.compile("Ariz\."), "AZ"),

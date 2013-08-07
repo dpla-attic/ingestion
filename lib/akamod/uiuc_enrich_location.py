@@ -4,6 +4,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/uiuc_enrich_location', 'uiuc_enrich_location', 'application/json')
 def uiuc_enrich_location(body, ctype, action="uiuc_enrich_location", prop="sourceResource/spatial"):
@@ -28,21 +29,6 @@ def uiuc_enrich_location(body, ctype, action="uiuc_enrich_location", prop="sourc
 
     return json.dumps(data)
 
-
-def iterify(iterable): 
-    """
-    Treat iterating over a single item or an interator seamlessly.
-    """
-    if (isinstance(iterable, basestring) \
-        or isinstance(iterable, dict)):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
-
-
 # Strings which are present in the spatial field, which do end up being geocoded, 
 #  but are not locations
 NON_SPATIAL_REGEXES = [re.compile("[0-9]{4}", re.IGNORECASE),
@@ -59,8 +45,6 @@ def is_spatial(spatial):
             return False
 
     return True
-
-
 
 SPATIAL_FORMATTERS = [(re.compile("Africa, (.*)"), "\\1, Africa"), 
                       (re.compile("\(Continent\)"), ""),

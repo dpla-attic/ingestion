@@ -3,6 +3,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/scdl_geocode_regions', 'scdl_geocode_regions', 'application/json')
 def scdl_geocode_regions(body, ctype, action="scdl_geocode_regions", prop="sourceResource/spatial"):
@@ -27,20 +28,6 @@ def scdl_geocode_regions(body, ctype, action="scdl_geocode_regions", prop="sourc
 
     return json.dumps(data)
 
-
-def iterify(iterable): 
-    ''' 
-    Treat iterating over a single item or an interator seamlessly.
-    '''
-    if isinstance(iterable, basestring):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
-
-
 REGIONS = { 
     "Upstate": (34.848270416259766, -82.40010833740234), 
     "Midlands": (33.99882125854492, -81.04537200927734),
@@ -49,10 +36,8 @@ REGIONS = {
     "Pee Dee": (34.19363021850586, -79.76905822753906)
 }
 
-
 def is_region(spatial):
     return (getprop(spatial, "name") in REGIONS)
-
 
 def geocode_region(spatial):
     setprop(spatial, "coordinates", "%s %s" % REGIONS[getprop(spatial, "name")])
@@ -60,4 +45,3 @@ def geocode_region(spatial):
     setprop(spatial, "state", "South Carolina")
     setprop(spatial, "country", "United States")
     return spatial
-

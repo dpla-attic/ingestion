@@ -4,6 +4,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists, delprop
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/mwdl_enrich_location', 'mwdl_enrich_location', 'application/json')
 def mdlenrichlocation(body,ctype,action="mwdl_enrich_location", prop="sourceResource/spatial"):
@@ -32,21 +33,6 @@ def mdlenrichlocation(body,ctype,action="mwdl_enrich_location", prop="sourceReso
 
     return json.dumps(data)
 
-
-def iterify(iterable): 
-    """
-    Treat iterating over a single item or an interator seamlessly.
-    """
-    if (isinstance(iterable, basestring) \
-        or isinstance(iterable, dict)):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
-
-
 REGEX_NON_SPATIALS = [re.compile(r"(north|east|south|west)limit", re.IGNORECASE), 
                       re.compile(r"^[0-9]+\.[0-9]+ -?[0-9]+\.[0-9]+$"),
                       re.compile(r"^[0-9]+\.[0-9]+$")]
@@ -57,7 +43,6 @@ def is_spatial(spatial):
             return False
 
     return True
-
 
 REGEX_REPLACEMENTS = [(re.compile("(.*)\(state\)-(.*)\(county\)-(.*)\(inhabited place\)", re.IGNORECASE), "\\3, \\2, \\1"), 
                       (re.compile("\(state\)", re.IGNORECASE), ""),
