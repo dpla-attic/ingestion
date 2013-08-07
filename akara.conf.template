@@ -175,6 +175,7 @@ MODULES = [
     "dplaingestion.akamod.uiuc_cleanup_spatial_name",
     "dplaingestion.akamod.remove_list_values",
     "dplaingestion.akamod.marc_to_dpla",
+    "dplaingestion.akamod.usc_enrich_location",
     ]
 
 ### Section 3: Other module configuration goes here

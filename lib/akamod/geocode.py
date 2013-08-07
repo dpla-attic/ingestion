@@ -8,6 +8,7 @@ import math
 import re 
 from urllib import urlencode
 from urllib2 import urlopen
+from dplaingestion.utilities import iterify
 
 
 @simple_service('POST', 'http://purl.org/la/dp/geocode', 'geocode', 'application/json')
@@ -35,8 +36,12 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
     else:
         value = getprop(data, prop)
         for v in iterify(value):
-            # Attempt to find this item's lat/lng coordinates
-            result = DplaBingGeocoder(api_key=module_config().get("bing_api_key")).geocode_spatial(v)
+            if coordinate(v["name"]):
+                result = coordinate(v["name"])
+            else:
+                # Attempt to find this item's lat/lng coordinates
+                result = DplaBingGeocoder(api_key=module_config().get("bing_api_key")).geocode_spatial(v)
+
             if (result): 
                 lat, lng = result
                 v[newprop] = "%s, %s" % (lat, lng,)
@@ -69,7 +74,16 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
 
     return json.dumps(data)
 
+def coordinate(value):
+    try:
+        coordinate = map(float, value.split(","))
+    except:
+        return
 
+    if len(coordinate) == 2:
+        return (coordinate[0], coordinate[1])
+    else:
+        return
 
 def haversine(origin, destination):
     ''' 
@@ -87,22 +101,6 @@ def haversine(origin, destination):
     d = radius * c
 
     return d
-
-
-def iterify(iterable): 
-    ''' 
-    Treat iterating over a single item or an interator seamlessly.
-    '''
-    if (isinstance(iterable, basestring) \
-        or isinstance(iterable, dict)):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
-
-
 
 class Address: 
     def __init__(self, spatial): 

@@ -247,5 +247,38 @@ def test_move_date_values_to_date():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
+def test_move_date_values_with_circa():
+    """
+    Should move values containing 'circa'
+    """
+    prop = "sourceResource/spatial"
+    INPUT = {
+        "sourceResource": {
+            "spatial" : [
+                "-118.3948, 30.0232",
+                "circa 1890",
+                " 1780 circa",
+                "Asheville"
+            ]
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "spatial": [
+                "-118.3948, 30.0232",
+                "Asheville"
+            ],
+            "temporal": [
+                "circa 1890",
+                "1780 circa"
+            ]
+        }
+    } 
+ 
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop) 
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
