@@ -94,7 +94,7 @@ def main(argv):
             docs = []
     # Enrich last batch
     if docs:
-        docs = enrich(enriched_docs, args.uri_base, pipeline)
+        enriched_docs = enrich(docs, args.uri_base, pipeline)
         couch.process_and_post_to_dpla(enriched_docs, ingestion_doc_id)
         print "Enriched %s documents" % count
 
