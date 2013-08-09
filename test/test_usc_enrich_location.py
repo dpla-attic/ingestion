@@ -44,7 +44,7 @@ def test_usc_enrich_location_find_coordinates():
     EXPECTED = {
         "sourceResource": {
             "spatial": [
-                {"name": "35.6008, 82.5542"}
+                {"name": "82.5542, 35.6008"}
             ]
         }
     }
