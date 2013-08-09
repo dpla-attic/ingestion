@@ -49,8 +49,7 @@ def find_coordinates(spatial):
                 coordinates = map(float, coordinates)
             except:
                 continue
-            # USC provides coordinates as longitude, latitude
-            return (coordinates[1], coordinates[0])
+            return (coordinates[0], coordinates[1])
 
     return None
 
