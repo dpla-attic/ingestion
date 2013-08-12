@@ -16,6 +16,7 @@ from Queue import Full, Empty, Queue
 from threading import Lock
 import signal
 from dplaingestion.couch import Couch
+import itertools as it
 
 try:
     from collections import OrderedDict, Counter
@@ -136,7 +137,7 @@ def process_arc_all(profile, blacklist=None):
     collections = {}
     # Create temp dir
     cache_dir = create_temp_dir("ingest_nara")
-    print "Walking directory: " + src_dir
+    print >> sys.stderr, "Walking directory: " + src_dir
     for (root, dirs, files) in os.walk(src_dir):
         for filename in fnmatch.filter(files, 'Item_*.xml'):
             item_fn = os.path.join(root, filename)
@@ -332,8 +333,8 @@ def process_edan_all(profile, blacklist=None):
     global collections
     collections = {}
     cache_dir = create_temp_dir("ingest_edan")
-    print "Using cache dir: " + cache_dir
-    print "Walking directory: " + src_dir
+    print >> sys.stderr, "Using cache dir: " + cache_dir
+    print >> sys.stderr, "Walking directory: " + src_dir
 
     def cache_file_name(cache_dir, collection):
         f = os.path.join(cache_dir, "coll_" + normalize_collection_name(collection))
@@ -383,7 +384,7 @@ def process_edan_all(profile, blacklist=None):
     for (root, dirs, files) in os.walk(src_dir):
         for filename in fnmatch.filter(files, '*_DPLA.xml'):
             item_fn = os.path.join(root, filename)
-            print "Processing file: " + item_fn
+            print >> sys.stderr, "Processing file: " + item_fn
             try:
                 item_f = open(item_fn, 'r')
                 xmltodict.parse(item_f, item_depth=3, item_callback=handle_document)
@@ -680,37 +681,74 @@ def process_marc_all(profile, blacklist=None):
     assert src_url.startswith("file:/") # assumes no authority and the non-broken use of //
     src_dir = src_url[5:]
 
-    collection = {}
-    collection["id"] = "1"
-    collection["title"] = "hathitrust"
-    collection["items"] = []
+    def _enrich_hathi(grouped_records):
+        # Prepare XML text for parsing
+        grouped_records = "<group_records>\n<record>\n" + \
+                          "<record>\n".join(grouped_records) + \
+                          "</group_records>"
 
-    limit = 1000
+        try:
+            records = ARC_PARSE(grouped_records)["group_records"]["record"]
+        except Exception, e:
+            print >> sys.stderr, "[ERROR]", e.message
+            return
+
+        collection = {}
+        collection["id"] = "1"
+        collection["title"] = "hathitrust"
+        collection["items"] = []
+
+        for record in records:
+            # Set _id
+            if record["controlfield"][0]["tag"] == "001":
+                record["_id"] = record["controlfield"][0]["#text"]
+            collection["items"].append(record)
+
+        enrich_coll(profile, collection["id"], json.dumps(collection))
+
+    limit = 500
     for (root, dirs, files) in os.walk(src_dir):
-        for filename in fnmatch.filter(files, "*.xml"):
-            count = 0
+        xml_files = fnmatch.filter(files, "*.xml")
+        file_count = 0
+        for filename in xml_files:
+            record_count = 0
+            file_count += 1
             item_fn = os.path.join(root, filename)
             print "Processing file: " + item_fn
-            try:
-                with open(item_fn, "r") as f:
-                    content = ARC_PARSE(f)
-            except Exception, e:
-                print >> sys.stderr, "[ERROR]", e.message
 
-            records = content["collection"]["record"]
-            for record in records:
-                count += 1
-                # Set _id
-                if record["controlfield"][0]["tag"] == "001":
-                    record["_id"] = record["controlfield"][0]["#text"]
-                collection["items"].append(record)
+            p = os.popen("grep -c '<record>' %s" % item_fn, "r")
+            total_records = p.read().split("\n")[0]
 
-                if len(collection["items"]) == limit or \
-                   collection["items"][-1] == records[-1]:
-                    print "Enriching %s of %s" % (count, len(records))
-                    enrich_coll(profile, collection["id"],
-                                json.dumps(collection))
-                    collection["items"] = []
+            grouped_records = []
+            with open(item_fn, "r") as f:
+                for key, group in it.groupby(f, lambda line:
+                                             line.startswith("<record>")):
+                    if not key:
+                        grouped_records.append("".join(list(group)))
+                        if len(grouped_records) == limit:
+                            if record_count == 0:
+                                # First item is not a record
+                                grouped_records = grouped_records[1:]
+                            record_count += limit
+                            print "Enriching %s of %s in file %s of %s" % \
+                                  (record_count, total_records, file_count,
+                                   len(xml_files))
+                            _enrich_hathi(grouped_records)
+                            grouped_records = []
+
+            if grouped_records:
+                if record_count == 0:
+                    # First item is not a record
+                    grouped_records = grouped_records[1:]
+
+                # Stip "</collection>" from last item
+                last_record = grouped_records[-1].split("</collection>")[0]
+                grouped_records[-1] = last_record
+                record_count += len(grouped_records)
+                print "Enriching %s of %s records in file %s of %s" % \
+                      (record_count, total_records, file_count, len(xml_files))
+                _enrich_hathi(grouped_records)
+
     print "Complete"
                     
             
