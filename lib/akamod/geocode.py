@@ -5,21 +5,21 @@ from dplaingestion.selector import getprop, setprop, exists
 from geopy import geocoders, util
 import itertools
 import math
-import re 
+import re
 from urllib import urlencode
 from urllib2 import urlopen
 from dplaingestion.utilities import iterify
 
 
-@simple_service('POST', 'http://purl.org/la/dp/geocode', 'geocode', 'application/json')
+@simple_service('POST', 'http://purl.net/la/dp/geocode', 'geocode', 'application/json')
 def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
     '''
-    Adds geocode data to the record coming in as follows: 
-        1. Attempt to get a lat/lng coordinate from the property. We use Bing to 
-           lookup lat/lng from a string as it is much better than Geonames. 
-        2. For the given lat/lng coordinate, attempt to determine its parent 
-           features (county, state, country). We use Geonames to reverse geocode 
-           the lat/lng point and retrieve the location hierarchy. 
+    Adds geocode data to the record coming in as follows:
+        1. Attempt to get a lat/lng coordinate from the property. We use Bing to
+           lookup lat/lng from a string as it is much better than Geonames.
+        2. For the given lat/lng coordinate, attempt to determine its parent
+           features (county, state, country). We use Geonames to reverse geocode
+           the lat/lng point and retrieve the location hierarchy.
     '''
     # logger.debug("Received: " + body)
 
@@ -30,9 +30,9 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if (not exists(data, prop)): 
+    if (not exists(data, prop)):
         # logger.warn("geocode: COULD NOT FIND %s" % prop)
-        pass 
+        pass
     else:
         logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
@@ -43,32 +43,32 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
                 # Attempt to find this item's lat/lng coordinates
                 result = DplaBingGeocoder(api_key=module_config().get("bing_api_key")).geocode_spatial(v)
 
-            if (result): 
+            if (result):
                 lat, lng = result
                 v[newprop] = "%s, %s" % (lat, lng,)
 
-                # Reverse-geocode this location to find country, state, and county parent places 
-                hierarchy = DplaGeonamesGeocoder().reverse_geocode_hierarchy(lat, lng, ["PCLI",   # Country
-                                                                                        "ADM1",   # State
-                                                                                        "ADM2"])  # County
-                for place in hierarchy: 
+                # Reverse-geocode this location to find country, state, and county parent places
+                hierarchy = DplaGeonamesGeocoder().reverse_geocode_hierarchy(lat, lng, ["PCLI", # Country
+                                                                                        "ADM1", # State
+                                                                                        "ADM2"]) # County
+                for place in hierarchy:
                     fcode = place["fcode"]
-                    if ("PCLI" == place["fcode"]): 
+                    if ("PCLI" == place["fcode"]):
                         v["country"] = place["toponymName"]
                     elif ("ADM1" == place["fcode"]):
                         v["state"] = place["toponymName"]
                     elif ("ADM2" == place["fcode"]):
                         v["county"] = place["toponymName"]
 
-                    # Deterine how close we are to the original coordinates, to see if this is the 
-                    #  place that was geocoded and we should stop adding more specificity (e.g. if 
-                    #  the record specified "South Carolina", we don't want to include the county 
-                    #  that is located at the coordinates of South Carolina. We use increasing 
-                    #  tolerance levels to account for differences between Bing and Geonames 
-                    #  coordinates.
+                    # Deterine how close we are to the original coordinates, to see if this is the
+                    # place that was geocoded and we should stop adding more specificity (e.g. if
+                    # the record specified "South Carolina", we don't want to include the county
+                    # that is located at the coordinates of South Carolina. We use increasing
+                    # tolerance levels to account for differences between Bing and Geonames
+                    # coordinates.
                     d = haversine((lat, lng), (place["lat"], place["lng"]))
-                    if (("PCLI" == place["fcode"] and d < 50)       # Country tolerance (Bing/Geonames 49.9km off) \
-                        or ("ADM1" == place["fcode"] and d < 15)):  # State tolerance 
+                    if (("PCLI" == place["fcode"] and d < 50) # Country tolerance (Bing/Geonames 49.9km off) \
+                        or ("ADM1" == place["fcode"] and d < 15)): # State tolerance
                         break
             else:
                 logger.debug("geocode: No result found for %s" % v)
@@ -87,11 +87,11 @@ def coordinate(value):
         return
 
 def haversine(origin, destination):
-    ''' 
+    '''
     Distance in km between two lat/lng coordinates.
     '''
-    lat1, lon1 = origin
-    lat2, lon2 = destination
+    lat1, lon1 = map(float, origin)
+    lat2, lon2 = map(float, destination)
     radius = 6371 # Radius of the earth in km
 
     dlat = math.radians(lat2-lat1)
@@ -103,23 +103,8 @@ def haversine(origin, destination):
 
     return d
 
-def open_url(url):
-    # Tries 3 times to open a url
-    for i in range(3):
-        logger.debug("Geocode request %s to url %s" % (i, url))
-        try:
-            page = urlopen(url)
-            break
-        except Exception, e:
-            page = None
-            error_msg = "geocode: Could not open url %s, %s" % (url, e)
-    if page is None:
-        logger.error(error_msg)
-
-    return page
-
-class Address: 
-    def __init__(self, spatial): 
+class Address:
+    def __init__(self, spatial):
         self.name = spatial["name"] if ("name" in spatial) else ""
         self.city = spatial["city"] if ("city" in spatial) else ""
         self.county = spatial["county"] if ("county" in spatial) else ""
@@ -128,7 +113,7 @@ class Address:
         self.country = spatial["country"] if ("country" in spatial) else ""
 
     def get_candidates(self):
-        if (self.name): 
+        if (self.name):
             # TODO: Add state if it does not exist already
             yield self._clean(self.name)
 
@@ -143,18 +128,18 @@ class Address:
         if (self.country):
             yield self._clean(self.country)
 
-    def _clean(self, value): 
-        # Remove characters that confuse Bing 
+    def _clean(self, value):
+        # Remove characters that confuse Bing
         if (re.match("[0-9]+\.?[0-9]*[NS].+[0-9]+\.?[0-9]*[EW]", value)):
-            # This looks like a lat/lng, keep the decimal point 
+            # This looks like a lat/lng, keep the decimal point
             return value
 
         return value.translate(dict.fromkeys(map(ord, ".()")))
 
-    def _get_candidate(self, value = ""): 
+    def _get_candidate(self, value = ""):
         searchTokens = []
 
-        if (value): 
+        if (value):
             searchTokens.append(value)
 
         if (self.state):
@@ -163,8 +148,8 @@ class Address:
             country = self.country
 
             # Convert country to 2-character codes
-            # TODO: Move to enrich-location 
-            if ("united states" == country.lower()): 
+            # TODO: Move to enrich-location
+            if ("united states" == country.lower()):
                 country = "US"
 
             searchTokens.append(country)
@@ -173,42 +158,40 @@ class Address:
 
 
 
-class DplaBingGeocoder(geocoders.Bing): 
+class DplaBingGeocoder(geocoders.Bing):
     countryBBoxCache = {}
     resultCache = {}
 
-    def __init__(self, **kwargs): 
+    def __init__(self, **kwargs):
         super(DplaBingGeocoder, self).__init__(**kwargs)
 
-    def geocode_spatial(self, spatial): 
-        if (not self.api_key): 
+    def geocode_spatial(self, spatial):
+        if (not self.api_key):
             logger.warn("No API key set for Bing (use bing_api_key configuration key")
             return None
 
         address = Address(spatial)
         for candidate in address.get_candidates():
-            # See if this address candidate exists in our cache 
-            if (candidate not in DplaBingGeocoder.resultCache): 
+            # See if this address candidate exists in our cache
+            if (candidate not in DplaBingGeocoder.resultCache):
                 # logger.debug("geocode: No result for [%s] in cache, retrieving from Bing" % candidate)
                 results = self._fetch_results(candidate)
-                if results is None:
-                    continue
                 DplaBingGeocoder.resultCache[candidate] = list(results)
                 # logger.info("geocode: Result:")
-                # logger.info("geocode:   spatial: %s" % spatial)
-                # logger.info("geocode:   address: %s" % candidate)
-                # logger.info("geocode:   count: %s" % len(DplaBingGeocoder.resultCache[candidate]))
-                # logger.info("geocode:   result: %s" % DplaBingGeocoder.resultCache[candidate])
+                # logger.info("geocode: spatial: %s" % spatial)
+                # logger.info("geocode: address: %s" % candidate)
+                # logger.info("geocode: count: %s" % len(DplaBingGeocoder.resultCache[candidate]))
+                # logger.info("geocode: result: %s" % DplaBingGeocoder.resultCache[candidate])
 
-            # Require that a single match, or closely grouped matches be returned to avoid bad geocoding results 
+            # Require that a single match, or closely grouped matches be returned to avoid bad geocoding results
             if (1 == len(DplaBingGeocoder.resultCache[candidate]) \
-                or self._are_closely_grouped_results(DplaBingGeocoder.resultCache[candidate])): 
-                result = DplaBingGeocoder.resultCache[candidate][0] 
+                or self._are_closely_grouped_results(DplaBingGeocoder.resultCache[candidate])):
+                result = DplaBingGeocoder.resultCache[candidate][0]
                 coordinate = (result["geocodePoints"][0]["coordinates"][0], result["geocodePoints"][0]["coordinates"][1])
                 valid_result = True
                 
-                # If we have a specified country, perform a sanity check that the returned coordinate is within 
-                #  the country's bounding box
+                # If we have a specified country, perform a sanity check that the returned coordinate is within
+                # the country's bounding box
                 if (address.country and \
                     "countryRegion" in result["address"]):
                     bbox_result = self._is_in_country(coordinate, address.country)
@@ -220,26 +203,26 @@ class DplaBingGeocoder(geocoders.Bing):
                             # logger.debug("geocode: Result [%s] not in the correct country [%s], ignoring" % (result["name"], address.country,))
                             pass
 
-                if (valid_result): 
-                    if ("name" in spatial): 
+                if (valid_result):
+                    if ("name" in spatial):
                         logger.info("geocode: Result: %s => %s (%s)" % (spatial["name"], result["name"], result["point"]["coordinates"],))
-                    else: 
+                    else:
                         logger.info("geocode: Result: %s => %s (%s)" % (spatial, result["name"], result["point"]["coordinates"],))
                     return coordinate
 
         return None
 
-    def _are_closely_grouped_results(self, results): 
+    def _are_closely_grouped_results(self, results):
         """
-        Check to see if all results are within 10km of each other. 
+        Check to see if all results are within 10km of each other.
         """
-        if (0 == len(results)): 
+        if (0 == len(results)):
             return False
 
         TOLERANCE_KM = 10
         coordinates = [(x["geocodePoints"][0]["coordinates"][0], x["geocodePoints"][0]["coordinates"][1]) for x in results]
         for combination in itertools.combinations(coordinates, 2):
-            if (TOLERANCE_KM < haversine(combination[0], combination[1])): 
+            if (TOLERANCE_KM < haversine(combination[0], combination[1])):
                 return False
 
         return True
@@ -248,10 +231,7 @@ class DplaBingGeocoder(geocoders.Bing):
         params = {'q': q.encode("utf8"),
                   'key': self.api_key }
         url = self.url % urlencode(params)
-        page = open_url(url)
-
-        if page is None:
-            return None
+        page = urlopen(url)
 
         if (not isinstance(page, basestring)):
             page = util.decode_page(page);
@@ -261,18 +241,16 @@ class DplaBingGeocoder(geocoders.Bing):
 
     def _get_country_bbox(self, country):
         if (country not in DplaBingGeocoder.countryBBoxCache):
-            country_results = self._fetch_results(country)
-            if country_results is None:
-                return None
-            DplaBingGeocoder.countryBBoxCache[country] = list(country_results)
+            results = list(self._fetch_results(country))
+            DplaBingGeocoder.countryBBoxCache[country] = results
 
-        if (1 == len(DplaBingGeocoder.countryBBoxCache[country])): 
+        if (1 == len(DplaBingGeocoder.countryBBoxCache[country])):
             bbox = DplaBingGeocoder.countryBBoxCache[country][0]["bbox"]
             return (bbox[0], bbox[1]), (bbox[2], bbox[3])
 
         return None
 
-    def _is_in_country(self, coordinate, country): 
+    def _is_in_country(self, coordinate, country):
         bbox = self._get_country_bbox(country)
         if (bbox):
             c1, c2 = bbox
@@ -283,50 +261,43 @@ class DplaBingGeocoder(geocoders.Bing):
         return None
 
 
-class DplaGeonamesGeocoder(object): 
+class DplaGeonamesGeocoder(object):
     resultCache = {}
 
-
-    def reverse_geocode(self, lat, lng): 
-        params = { "lat": lat, 
+    def reverse_geocode(self, lat, lng):
+        params = { "lat": lat,
                    "lng": lng,
-                   "username": module_config().get("geonames_username"), 
+                   "username": module_config().get("geonames_username"),
                    "token": module_config().get("geonames_token") }
-        url = "http://ws.geonames.org/findNearbyJSON?%s" % urlencode(params)
+        url = "http://ws.geonames.net/findNearbyJSON?%s" % urlencode(params)
         if (url not in DplaGeonamesGeocoder.resultCache):
-            page = open_url(url)
-            if page is None:
-                return None
-            result = json.loads(util.decode_page(page))
+            result = json.loads(util.decode_page(urlopen(url)))
             if ("geonames" in result \
-                and len(result["geonames"]) > 0): 
+                and len(result["geonames"]) > 0):
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"][0]
-            else: 
-                logger.error("geocode: Could not reverse geocode (%s, %s)" % (lat, lng,)) 
+            else:
+                logger.error("geocode: Could not reverse geocode (%s, %s)" % (lat, lng,))
                 return None
 
         return DplaGeonamesGeocoder.resultCache[url]
 
 
-    def reverse_geocode_hierarchy(self, lat, lng, fcodes=None): 
+    def reverse_geocode_hierarchy(self, lat, lng, fcodes=None):
         hierarchy = []
 
         geonames_item = self.reverse_geocode(lat, lng)
-        if (geonames_item): 
+        if (geonames_item):
             params = { "geonameId": geonames_item["geonameId"],
-                       "username": module_config().get("geonames_username"), 
+                       "username": module_config().get("geonames_username"),
                        "token": module_config().get("geonames_token") }
-            url = "http://ws.geonames.org/hierarchyJSON?%s" % urlencode(params)
+            url = "http://ws.geonames.net/hierarchyJSON?%s" % urlencode(params)
             if (url not in DplaGeonamesGeocoder.resultCache):
-                page = open_url(url)
-                if page is None:
-                    return []
-                result = json.loads(util.decode_page(page))
+                result = json.loads(util.decode_page(urlopen(url)))
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
                 
-            # Return only the requested fcodes 
-            for place in DplaGeonamesGeocoder.resultCache[url]: 
-                if (("fcode" in  place and place["fcode"] in fcodes) \
+            # Return only the requested fcodes
+            for place in DplaGeonamesGeocoder.resultCache[url]:
+                if (("fcode" in place and place["fcode"] in fcodes) \
                     or fcodes is None):
                     hierarchy.append(place)
                     
