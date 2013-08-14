@@ -34,6 +34,7 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         # logger.warn("geocode: COULD NOT FIND %s" % prop)
         pass 
     else:
+        logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
         for v in iterify(value):
             if coordinate(v["name"]):
@@ -101,6 +102,21 @@ def haversine(origin, destination):
     d = radius * c
 
     return d
+
+def open_url(url):
+    # Tries 3 times to open a url
+    for i in range(3):
+        logger.debug("Geocode request %s to url %s" % (i, url))
+        try:
+            page = urlopen(url)
+            break
+        except Exception, e:
+            page = None
+            error_msg = "geocode: Could not open url %s, %s" % (url, e)
+    if page is None:
+        logger.error(error_msg)
+
+    return page
 
 class Address: 
     def __init__(self, spatial): 
@@ -175,6 +191,8 @@ class DplaBingGeocoder(geocoders.Bing):
             if (candidate not in DplaBingGeocoder.resultCache): 
                 # logger.debug("geocode: No result for [%s] in cache, retrieving from Bing" % candidate)
                 results = self._fetch_results(candidate)
+                if results is None:
+                    continue
                 DplaBingGeocoder.resultCache[candidate] = list(results)
                 # logger.info("geocode: Result:")
                 # logger.info("geocode:   spatial: %s" % spatial)
@@ -230,7 +248,10 @@ class DplaBingGeocoder(geocoders.Bing):
         params = {'q': q.encode("utf8"),
                   'key': self.api_key }
         url = self.url % urlencode(params)
-        page = urlopen(url)
+        page = open_url(url)
+
+        if page is None:
+            return None
 
         if (not isinstance(page, basestring)):
             page = util.decode_page(page);
@@ -240,8 +261,10 @@ class DplaBingGeocoder(geocoders.Bing):
 
     def _get_country_bbox(self, country):
         if (country not in DplaBingGeocoder.countryBBoxCache):
-            results = list(self._fetch_results(country))
-            DplaBingGeocoder.countryBBoxCache[country] = results
+            country_results = self._fetch_results(country)
+            if country_results is None:
+                return None
+            DplaBingGeocoder.countryBBoxCache[country] = list(country_results)
 
         if (1 == len(DplaBingGeocoder.countryBBoxCache[country])): 
             bbox = DplaBingGeocoder.countryBBoxCache[country][0]["bbox"]
@@ -263,6 +286,7 @@ class DplaBingGeocoder(geocoders.Bing):
 class DplaGeonamesGeocoder(object): 
     resultCache = {}
 
+
     def reverse_geocode(self, lat, lng): 
         params = { "lat": lat, 
                    "lng": lng,
@@ -270,7 +294,10 @@ class DplaGeonamesGeocoder(object):
                    "token": module_config().get("geonames_token") }
         url = "http://ws.geonames.org/findNearbyJSON?%s" % urlencode(params)
         if (url not in DplaGeonamesGeocoder.resultCache):
-            result = json.loads(util.decode_page(urlopen(url)))
+            page = open_url(url)
+            if page is None:
+                return None
+            result = json.loads(util.decode_page(page))
             if ("geonames" in result \
                 and len(result["geonames"]) > 0): 
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"][0]
@@ -291,7 +318,10 @@ class DplaGeonamesGeocoder(object):
                        "token": module_config().get("geonames_token") }
             url = "http://ws.geonames.org/hierarchyJSON?%s" % urlencode(params)
             if (url not in DplaGeonamesGeocoder.resultCache):
-                result = json.loads(util.decode_page(urlopen(url)))
+                page = open_url(url)
+                if page is None:
+                    return []
+                result = json.loads(util.decode_page(page))
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
                 
             # Return only the requested fcodes 
