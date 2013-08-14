@@ -40,8 +40,16 @@ def uscenrichlocation(body, ctype, action="usc_enrich_location",
 
     return json.dumps(data)
 
+def is_latitude(coordinate):
+    """Returns True if the coordinate is a valid latitude coordinate, else
+       False
+    """
+    return coordinate <= 90 and coordinate >= -90
+
 def find_coordinates(spatial): 
-    """Find the first spatial value that is a lat/lon coordinate""" 
+    """Find the first spatial value that is a geographic coordinate, flip
+       the coordinates if the order is lon then lat, then return the value
+    """ 
     for sp in iterify(spatial):
         coordinates = sp["name"].split(",")
         if len(coordinates) == 2:
@@ -49,7 +57,10 @@ def find_coordinates(spatial):
                 coordinates = map(float, coordinates)
             except:
                 continue
-            return (coordinates[0], coordinates[1])
+            if is_latitude(coordinates[0]):
+                return (coordinates[0], coordinates[1])
+            else:
+                return (coordinates[1], coordinates[0])
 
     return None
 

@@ -53,6 +53,33 @@ def test_usc_enrich_location_find_coordinates():
     assert resp["status"] == "200"
     assert_same_jsons(EXPECTED, json.loads(content))
 
+def test_usc_enrich_location_find_coordinates_and_flip(): 
+    """Should flip long/lat value, then remove all spatial values except the
+       lat/long coordinate
+    """
+    INPUT = {
+        "sourceResource": {
+            "spatial": [
+                {"name": " 123 "},
+                {"name": "-130.4560,,32.9870"},
+                {"name": "1234"},
+                {"name": "Asheville"},
+                {"name": "92.5542, 35.6008"}
+            ]
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "spatial": [
+                {"name": "35.6008, 92.5542"}
+            ]
+        }
+    }
+
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert resp["status"] == "200"
+    assert_same_jsons(EXPECTED, json.loads(content))
+
 def test_usc_enrich_location_clean():
     """Should remove all 1-3 digit numbers and values containing 's.d', then
        join the remaining values on whitespace
