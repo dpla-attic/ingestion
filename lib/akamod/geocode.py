@@ -11,7 +11,7 @@ from urllib2 import urlopen
 from dplaingestion.utilities import iterify
 
 
-@simple_service('POST', 'http://purl.net/la/dp/geocode', 'geocode', 'application/json')
+@simple_service('POST', 'http://purl.org/la/dp/geocode', 'geocode', 'application/json')
 def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
     '''
     Adds geocode data to the record coming in as follows:
