@@ -3,6 +3,7 @@ import sys
 from server_support import server, H, print_error_log
 from amara.thirdparty import json
 from nose.plugins.attrib import attr
+from dict_differ import assert_same_jsons
 
 @attr(travis_exclude='yes')    
 def test_geocode():
@@ -11,6 +12,7 @@ def test_geocode():
     """
     INPUT = {
         "id": "12345",
+        "_id": "12345",
         "sourceResource": {
             "spatial": [
                 { 
@@ -22,6 +24,7 @@ def test_geocode():
     }
     EXPECTED = {
         "id": "12345",
+        "_id": "12345",
         "sourceResource": {
             "spatial": [
                 {
@@ -37,9 +40,8 @@ def test_geocode():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print content
     assert resp.status == 200
-    assert json.loads(content) == EXPECTED
+    assert_same_jsons(json.loads(content), EXPECTED)
 
 
 @attr(travis_exclude='yes')    
@@ -49,6 +51,7 @@ def test_close_multiple_results():
     """
     INPUT = {
         "id": "12345",
+        "_id": "12345",
         "sourceResource": {
             "spatial": [
                 { 
@@ -69,6 +72,7 @@ def test_close_multiple_results():
     }
     EXPECTED = {
         "id": "12345",
+        "_id": "12345",
         "sourceResource": {
             "spatial": [
                 {
@@ -101,15 +105,15 @@ def test_close_multiple_results():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print content
     assert resp.status == 200
-    assert json.loads(content) == EXPECTED
+    assert_same_jsons(json.loads(content), EXPECTED)
 
 
 @attr(travis_exclude='yes')    
 def test_geocode_coordinate_provided():
     INPUT = {
         "id": "12345",
+        "_id": "12345",
         "sourceResource": {
             "spatial": [
                 { 
@@ -122,6 +126,7 @@ def test_geocode_coordinate_provided():
 
     EXPECTED = {
         "id": "12345",
+        "_id": "12345",
         "sourceResource": {
             "spatial": [
                 {
@@ -137,6 +142,5 @@ def test_geocode_coordinate_provided():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print content
     assert resp.status == 200
-    assert json.loads(content) == EXPECTED
+    assert_same_jsons(json.loads(content), EXPECTED)
