@@ -47,17 +47,26 @@ def unset_prop(body, ctype, prop=None, condition=None, condition_prop=None):
     ctype -- the type of content
     prop -- the prop to unset
     condition -- the condition to be met (uses prop by default) 
-    condition_prop -- the prop to use in the condition
+    condition_prop -- the prop(s) to use in the condition (comma-separated if
+                      multiple props)
     
     """
 
     CONDITIONS = {
-        "is_digit": lambda v: v.isdigit(),
-        "mwdl_exclude": lambda v: v == "collections" or v == "findingAids"
+        "is_digit": lambda v: v[0].isdigit(),
+        "mwdl_exclude": lambda v: (v[0] == "collections" or
+                                   v[0] == "findingAids"),
+        "hathi_exclude": lambda v: ("University of Minnesota" in v[0] and
+                                    v[1] == "image")
     }
 
-    def condition_met(v, condition):
-        return CONDITIONS[condition](v)
+    def condition_met(condition_prop, condition):
+        values = []
+        props = condition_prop.split(",")
+        for p in props:
+            values.append(getprop(data, p, True))
+
+        return CONDITIONS[condition](values)
 
     try:
         data = json.loads(body)
@@ -74,7 +83,9 @@ def unset_prop(body, ctype, prop=None, condition=None, condition_prop=None):
             if not condition_prop:
                 condition_prop = prop
             try:
-                if condition_met(getprop(data, condition_prop, True), condition):
+                if condition_met(condition_prop, condition):
+                    logger.debug("Unsetting prop %s for doc with id %s" % 
+                                 (prop, data["_id"]))
                     delprop(data, prop)
             except KeyError:
                 logger.error("CONDITIONS does not contain %s" % condition)

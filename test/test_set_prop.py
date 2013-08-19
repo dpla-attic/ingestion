@@ -140,6 +140,7 @@ def test_unset_prop1():
     prop = "sourceResource/rights"
 
     INPUT = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
@@ -148,6 +149,7 @@ def test_unset_prop1():
         "key2": "value2"
     }
     EXPECTED = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1"
@@ -167,6 +169,7 @@ def test_unset_prop2():
     condition = "is_digit"
 
     INPUT = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
@@ -175,6 +178,7 @@ def test_unset_prop2():
         "key2": "value2"
     }
     EXPECTED = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1"
@@ -195,6 +199,7 @@ def test_unset_prop3():
     condition = "is_digit"
 
     INPUT = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
@@ -217,6 +222,7 @@ def test_unset_prop4():
     condition = "is_digits"
 
     INPUT = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
@@ -236,6 +242,7 @@ def test_unset_prop5():
     prop = "sourceResource/rights"
 
     INPUT = {
+        "_id": "12345",
         "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
@@ -245,6 +252,77 @@ def test_unset_prop5():
 
     resp,content = _get_server_response(json.dumps(INPUT), action=action,
         prop=prop)
+    assert resp.status == 200
+    assert json.loads(content) == INPUT
+
+def test_unset_prop6():
+    """Should unset prop since conditions are met for multiple condition
+       props"""
+    action = "unset"
+    prop = "_id"
+    condition = "hathi_exclude"
+    condition_prop = "dataProvider%2CsourceResource%2Ftype"
+
+    INPUT = {
+        "_id": "12345",
+        "dataProvider": ["Hathitrust", "University of Minnesota"],
+        "sourceResource": {
+            "type": "image"
+        }
+    }
+    EXPECTED = {
+        "dataProvider": ["Hathitrust", "University of Minnesota"],
+        "sourceResource": {
+            "type": "image"
+        }
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT), action=action,
+        prop=prop, condition=condition, condition_prop=condition_prop)
+    print_error_log()
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+   
+def test_unset_prop7():
+    """Should not unset prop since condition is not met with
+       sourceResource/type"""
+    action = "unset"
+    prop = "_id"
+    condition = "hathi_exclude"
+    condition_prop = "dataProvider%2CsourceResource%2Ftype"
+
+    INPUT = {
+        "_id": "12345",
+        "dataProvider": "University of Minnesota",
+        "sourceResource": {
+            "type": "text"
+        }
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT), action=action,
+        prop=prop, condition=condition, condition_prop=condition_prop)
+    print_error_log()
+    assert resp.status == 200
+    assert json.loads(content) == INPUT
+
+def test_unset_prop8():
+    """Should not unset prop since condition is not met with dataProvider"""
+    action = "unset"
+    prop = "_id"
+    condition = "hathi_exclude"
+    condition_prop = "dataProvider%2CsourceResource%2Ftype"
+
+    INPUT = {
+        "_id": "12345",
+        "dataProvider": "Hathitrust",
+        "sourceResource": {
+            "type": "image"
+        }
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT), action=action,
+        prop=prop, condition=condition, condition_prop=condition_prop)
+    print_error_log()
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
