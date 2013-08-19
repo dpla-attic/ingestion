@@ -13,7 +13,7 @@ _SUBJECT = {
     "subfield": [
         {"code": "a", "#text": "A"},
         {"code": "b", "#text": "B"},
-        {"code": "c", "#text": " C"},
+        {"code": "c", "#text": "C"},
         {"code": "d", "#text": "D"},
         {"code": "e", "#text": "E"},
         {"code": "v", "#text": "V"},
@@ -44,41 +44,33 @@ def test_get_values3():
     values = _get_values(_DICT, codes)
     assert values == ["B", "D"]
 
-def test_get_subject_values1():
-    """Should not prefix any value with double hyphen and should prefix
-       each value with whitespace if value is not the first value or value
-       already starts with whitespace
-    """
-    tag = "611"
+def test_get_subject_values_tag_653():
+    tag = "653"
 
     values = _get_subject_values(_SUBJECT, tag)
-    assert values == ["A", " B", " C", " D", " E", " V", " X", " Y", " Z"]
+    assert values == ["A--B--C--D--E--V--X--Y--Z"]
 
-def test_get_subject_values2():
-    """Should prefix V, X, Y, and Z with double hyphen and should prefix each
-       value with whitespace if value is not first value, value doest not
-       already start with whitespace, or value was prefixed with double hyphen
-    """
-    tag = "600"
+def test_get_subject_values_tags_654_and_655():
+    for tag in ("654", "655"):
+        values = _get_subject_values(_SUBJECT, tag)
+        assert values == ["A--B. C, D. E--V--X--Y--Z"]
+
+def test_get_subject_values_tag_658():
+    tag = "658"
 
     values = _get_subject_values(_SUBJECT, tag)
-    assert values == ["A", " B", " C", " D", " E", "--V", "--X", "--Y", "--Z"]
+    assert values == ["A:B [C]--D. E. V. X. Y. Z"]
 
-def test_get_subject_values3():
-    """Should prefix E, V, X, Y, and Z with double hyphen and should prefix
-       each value with whitespace if value is not first value, value doest not
-       already start with whitespace, or value was prefixed with double hyphen
-    """
+def test_get_subject_values_tag_69x():
+    for tag in range(690, 700):
+        values = _get_subject_values(_SUBJECT, str(tag))
+        assert values == ["A--B--C--D--E--V--X--Y--Z"]
+
+def test_get_subject_values_tag_610():
     tag = "610"
 
     values = _get_subject_values(_SUBJECT, tag)
-    assert values == ["A", " B", " C", " D", "--E", "--V", "--X", "--Y", "--Z"]
-
-def test_get_subject_values4():
-    """Should skip numeric codes"""
-    _SUBJECT["subfield"].append({"code": "2", "#text": "Ignore me"})
-
-    test_get_subject_values1() 
+    assert values == ["A. B. C, D. E--V--X--Y--Z"]
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

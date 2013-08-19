@@ -83,9 +83,12 @@ def create_server_dir(port):
         and ini.has_option("Bing", "ApiKey")): 
         bing_apikey = ini.get("Bing", "ApiKey")
     geonames_username = "notset"
-    if (ini.has_section("Geonames") \
-        and ini.has_option("Geonames", "Username")): 
-        geonames_username = ini.get("Geonames", "Username")
+    geonames_token = "notset"
+    if (ini.has_section("Geonames")):
+        if ini.has_option("Geonames", "Username"): 
+            geonames_username = ini.get("Geonames", "Username")
+        if ini.has_option("Geonames", "Token"): 
+            geonames_token = ini.get("Geonames", "Token")
 
     print thumbs_root
 
@@ -178,6 +181,7 @@ class download_preview:
 class geocode: 
     bing_api_key = '%(bing_apikey)s'
     geonames_username = '%(geonames_username)s'
+    geonames_token = '%(geonames_token)s'
 
 class lookup:
     lookup_mapping = {
@@ -213,7 +217,8 @@ class ia_identify_object(identify_object):
            port = port,
            thumbs_root = thumbs_root,
            bing_apikey = bing_apikey,
-           geonames_username = geonames_username
+           geonames_username = geonames_username,
+           geonames_token = geonames_token
            ))
     f.close()
 

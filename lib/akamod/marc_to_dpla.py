@@ -229,6 +229,17 @@ def _get_values(_dict, codes=None):
 
     return values
 
+def _get_spatial_values(_dict, tag, codes=None):
+    """Removes trailing periods for spatial values from subject tags 650 and
+       651
+    """
+    values = _get_values(_dict, codes)
+    if tag in ("650", "651"):
+        for i in range(len(values)):
+            values[i] = re.sub("\.$", "", values[i])
+
+    return values
+
 def _get_contributor_values(_dict, codes=None):
     """Extracts the appropriate "#text" values from _dict for the
        contributor field. If subfield e is "aut" or "cre", returns an
@@ -250,21 +261,27 @@ def _get_contributor_values(_dict, codes=None):
     return values
 
 def _get_subject_values(_dict, tag):
-    """Extracts the appropriate "#text" values from _dict for the subject
-       field and prefixes the value with two hyphens where appropriate.
+    """Extracts the "#text" values from _dict for the subject field and
+       incrementally joins the values by the tag/code dependent delimiter
     """
-    def _hyphenate(tag, code):
-        return ((tag == "600" and code in ("v", "x", "y", "z")) or
-                (tag == "610" and code not in ("a", "b", "c", "d")))
+    def _delimiters(tag, code):
+        """Returns the appropriate delimiter(s) based on the tag and code"""
+        if tag == "658":
+            if code == "b":
+                return [":"]
+            elif code == "c":
+                return [" [", "]"]
+            elif code == "d":
+                return ["--"]
+        elif ((tag == "653") or
+              (int(tag) in range(690, 700)) or
+              (code == "b" and tag in ("654", "655")) or
+              (code in ("v", "x", "y", "z"))):
+            return ["--"]
+        elif code == "d":
+            return [", "]
 
-    def _startwith_whitespace(values):
-        for i in range(len(values)):
-            if i == 0 or values[i].startswith("--"):
-                continue
-            if not values[i].startswith(" "):
-                values[i] = " " + values[i]
-
-        return values
+        return [". "]
 
     values = []
     for subfield in _get_subfields(_dict):
@@ -274,15 +291,13 @@ def _get_subject_values(_dict, tag):
             continue
 
         if "#text" in subfield:
-            if _hyphenate(tag, code):
-                prefix = "--"
-            else:
-                prefix = ""
-            values.append(prefix + subfield["#text"])
-
-    # values will later be joined on "", but we want values that are not
-    # prefixed with "--" to be separated by whitespace
-    values = _startwith_whitespace(values)
+            values.append(subfield["#text"])
+            delimiters = _delimiters(tag, code)
+            for delim in delimiters:
+                values = [delim.join(values)]
+                if delim != delimiters[-1]:
+                    # Append an empty value for subsequent joins
+                    values.append("")
 
     return values
 
@@ -335,7 +350,7 @@ def all_transform(d, p):
     }
 
     # Mapping dictionaries for use with datafield:
-    # Key are used to check if there is a tag match. If so, the value provides
+    # Keys are used to check if there is a tag match. If so, the value provides
     # a list of (property, code) tuples. In the case where certain tags have
     # prominence over others, the tuples will be of the form
     # (property, index, code). To exclude a code, prefix it with a "!":
@@ -354,8 +369,6 @@ def all_transform(d, p):
         lambda t: t in ("100", "110",
                         "111"):         [("creator", None)],
         lambda t: t == "041":           [("language", "a")],
-        lambda t: t == "650":           [("spatial", "z")],
-        lambda t: t == "651":           [("spatial", "a")],
         lambda t: t == "260":           [("date", "c"), ("publisher", "ab")],
         lambda t: t == "270":           [("stateLocatedIn", "c")],
         lambda t: t == "300":           [("extent", "ac")],
@@ -371,9 +384,14 @@ def all_transform(d, p):
         lambda t: t == "242":           [("title", 1, None)],
         lambda t: t == "245":           [("title", 0, "!c")],
         lambda t: t == "970":           [("type", "a")],
+        lambda t: t == "651":           [("spatial", "a")],
         lambda t: int(t) in set([600, 650, 651] +
                             range(610, 620) +
-                            range(653, 659)):   [("subject", None)],
+                            range(653, 659) +
+                            range(690, 700)):   [("subject", None),
+                                                 ("format", "v"),
+                                                 ("temporal", "y"),
+                                                 ("spatial", "z")],
         lambda t: (760 <= int(t) <= 787):       [("isPartOf", None)],
 
     }
@@ -405,7 +423,7 @@ def all_transform(d, p):
                         else:
                             if values:
                                 data[prop] = values[0]
-            # Handle source_resource_map mathces
+            # Handle source_resource_map matches
             for match, tuples in source_resource_map.iteritems():
                 if match(tag):
                     for tup in tuples:
@@ -417,6 +435,9 @@ def all_transform(d, p):
                             elif prop == "subject":
                                 # Handle values for subject
                                 values = _get_subject_values(_dict, tag)
+                            elif prop == "spatial":
+                                # Handle values for spatial
+                                values = _get_spatial_values(_dict, tag, codes)
                             else:
                                 # Handle values for all other sourceResource
                                 # fields
