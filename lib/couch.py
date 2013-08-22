@@ -250,7 +250,8 @@ class Couch(object):
         ingestion_docs = self._query_all_provider_ingestion_docs(provider_name)
         if len(ingestion_docs):
             # Sort by ingestionSequence
-            sorted(ingestion_docs, key=lambda k: k["ingestionSequence"])
+            ingestion_docs = sorted(ingestion_docs,
+                                    key=lambda k: k["ingestionSequence"])
             last_ingestion_doc = ingestion_docs[-1]
         return last_ingestion_doc
 
