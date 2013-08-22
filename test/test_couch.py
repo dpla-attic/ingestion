@@ -347,3 +347,33 @@ def test_legacy():
     assert len(docs) == 244
     for doc in docs:
         assert doc["ingestionSequence"] == 2
+
+@attr(travis_exclude='yes')
+@with_setup(couch_setup, couch_teardown)
+def test_get_last_ingestion_document():
+    with open(DATA) as f:
+        data = json.load(f)
+
+    couch.ingest(data, PROVIDER, json_content=True)
+    ingestion_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingestion_doc["ingestionSequence"] == 1
+
+    couch.ingest(data, PROVIDER, json_content=True)
+    ingestion_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingestion_doc["ingestionSequence"] == 2
+
+    couch.ingest(data, PROVIDER, json_content=True)
+    ingestion_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingestion_doc["ingestionSequence"] == 3
+
+    couch.ingest(data, PROVIDER, json_content=True)
+    ingestion_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingestion_doc["ingestionSequence"] == 4
+
+    couch.rollback(PROVIDER, 2)
+    ingestion_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingestion_doc["ingestionSequence"] == 4
+
+    couch.ingest(data, PROVIDER, json_content=True)
+    ingestion_doc = couch._get_last_ingestion_doc_for(PROVIDER)
+    assert ingestion_doc["ingestionSequence"] == 5
