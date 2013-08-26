@@ -20,7 +20,9 @@ def test_dedup_value1():
             " this is a SuBject . ",
             "This is another subject (1780).",
             "This is another subject 1780",
-            "   thiS IS anOther subject (1780)"
+            "   thiS IS anOther subject (1780)",
+            "This is another subject 1780]",
+            "{This is another subject 1780}"
         ],
         "spatial": ["North Carolina", "New York"],
         "description": "A description"

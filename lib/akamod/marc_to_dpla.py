@@ -230,13 +230,10 @@ def _get_values(_dict, codes=None):
     return values
 
 def _get_spatial_values(_dict, tag, codes=None):
-    """Removes trailing periods for spatial values from subject tags 650 and
-       651
-    """
+    """Removes trailing periods for spatial values."""
     values = _get_values(_dict, codes)
-    if tag in ("650", "651"):
-        for i in range(len(values)):
-            values[i] = re.sub("\.$", "", values[i])
+    for i in range(len(values)):
+        values[i] = re.sub("\.$", "", values[i])
 
     return values
 
