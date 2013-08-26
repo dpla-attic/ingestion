@@ -32,8 +32,8 @@ def dedup_value(body, ctype, action="dedup_value", prop=None):
         if exists(data, p):
             v = getprop(data, p)
             if isinstance(v, list):
-                # Remove whitespace, periods, parens
-                clone = [re.sub("[ \.\(\)]", "", s).lower() for s in v]
+                # Remove whitespace, periods, parens, brackets
+                clone = [re.sub("[ \.\(\)\[\]\{\}]", "", s).lower() for s in v]
                 # Get index of unique values
                 index = list(set([clone.index(s) for s in list(set(clone))]))
             
