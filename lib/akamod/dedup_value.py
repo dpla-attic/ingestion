@@ -14,12 +14,13 @@ def dedup_value(body, ctype, action="dedup_value", prop=None):
     a) Removing duplicates
     '''
 
-    if prop is None:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        msg = "Prop param is None"
-        logger.error(msg)
-        return msg
+    if prop:
+        try:
+            data = json.loads(body)
+        except:
+            response.code = 500
+            response.add_header('content-type', 'text/plain')
+            return "Unable to parse body as JSON"
 
     try:
         data = json.loads(body)

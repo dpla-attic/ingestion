@@ -1,49 +1,11 @@
 {
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://digitallibrary.usc.edu/oai/oai.php"
-    ], 
     "name": "usc",
-    "list_sets": "/oai.listsets.json?endpoint=http://digitallibrary.usc.edu/oai/oai.php", 
-    "enrichments_rec": [
-        "/select-id", 
-        "/oai-to-dpla",
-        "/unset_prop?prop=sourceResource%2Fdate",
-        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fspatial", 
-        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation", 
-        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat", 
-        "/shred?prop=sourceResource%2Fsubject&delim=%3Cbr%3E",
-        "/cleanup_value",
-        "/move_date_values?prop=sourceResource%2Fspatial&to_prop=sourceResource%2Fdate",
-        "/capitalize_value",
-        "/enrich_earliest_date", 
-        "/enrich-subject", 
-        "/enrich_date",
-        "/enrich-type", 
-        "/enrich-format", 
-        "/contentdm_identify_object", 
-        "/enrich_location", 
-        "/usc_enrich_location",
-        "/geocode",
-        "/cleanup_language",
-        "/enrich_language",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/set_prop?prop=dataProvider&value=University%20of%20Southern%20California%2E%20Libraries",
-        "/remove_list_values?prop=sourceResource%2Ftype&values=item",
-        "/dedup_value?prop=sourceResource%2Ftype",
-        "/unset_prop?prop=sourceResource%2Fcollection"
-    ], 
-    "identify_object": [
-        "/contentdm_identify_object"
-    ],
-    "fix_dates": [
-        "/unset_prop?prop=sourceResource%2Ftemporal",
-        "/copy_prop?prop=originalRecord%2Fcoverage&to_prop=sourceResource%2Fdummy&create=True",
-        "/move_date_values?prop=sourceResource%2Fdummy&to_prop=sourceResource%2Fdate",
-        "/unset_prop?prop=sourceResource%2Fdummy",
-        "/enrich_earliest_date", 
-        "/enrich_date"
-    ],
+    "type": "oai_verbs",
+    "endpoint_url": "http://digitallibrary.usc.edu/oai/oai.php",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/usc", 
+        "name": "University of Southern California. Libraries"
+    }, 
     "subresources": [
         "p15799coll8",
         "p15799coll120",
@@ -85,10 +47,35 @@
         "p15799coll84",
         "p15799coll104"
     ], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/usc", 
-        "name": "University of Southern California. Libraries"
-    }, 
-    "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://digitallibrary.usc.edu/oai/oai.php&oaiset="
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://digitallibrary.usc.edu/oai/oai.php"
+    ], 
+    "enrichments_rec": [
+        "/select-id", 
+        "/oai-to-dpla",
+        "/unset_prop?prop=sourceResource%2Fdate",
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fspatial", 
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation", 
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat", 
+        "/shred?prop=sourceResource%2Fsubject&delim=%3Cbr%3E",
+        "/cleanup_value",
+        "/move_date_values?prop=sourceResource%2Fspatial",
+        "/capitalize_value",
+        "/enrich_earliest_date", 
+        "/enrich-subject", 
+        "/enrich_date",
+        "/enrich-type", 
+        "/enrich-format", 
+        "/contentdm_identify_object", 
+        "/enrich_location", 
+        "/geocode", 
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/set_prop?prop=dataProvider&value=University%20of%20Southern%20California%2E%20Libraries",
+        "/remove_list_values?prop=sourceResource%2Ftype&values=item",
+        "/dedup_value?prop=sourceResource%2Ftype",
+        "/unset_prop?prop=sourceResource%2Fcollection"
+    ]
 }

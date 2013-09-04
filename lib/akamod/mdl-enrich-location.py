@@ -38,7 +38,6 @@ def mdlenrichlocation(body,ctype,action="mdl-enrich-location", prop="sourceResou
         else:
             # Concatenate all values together to form the name field 
             sp["name"] = ", ".join(v)
-            logger.info("mdl-enrich-location: %s => %s" % (fields, sp["name"],))
 
             if (1 == fields): 
                 # If there is only one element present, it is a country 

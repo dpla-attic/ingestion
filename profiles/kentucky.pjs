@@ -1,7 +1,13 @@
 {
+    "name": "kentucky",
+    "type": "oai_verbs",
+    "endpoint_url": "http://kdl.kyvl.org/catalog/oai/", 
+    "subresources": "NotSupported", 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/kdl", 
+        "name": "Kentucky Digital Library"
+    }, 
     "enrichments_coll": [], 
-    "name": "kentucky", 
-    "list_sets": "/oai.listsets.json?endpoint=http://kdl.kyvl.org/catalog/oai/", 
     "enrichments_rec": [
         "/select-id", 
         "/oai-to-dpla", 
@@ -33,12 +39,5 @@
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
 	    "/geocode",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "subresources": [], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/kdl", 
-        "name": "Kentucky Digital Library"
-    }, 
-    "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://kdl.kyvl.org/catalog/oai/&oaiset="
+    ]
 }

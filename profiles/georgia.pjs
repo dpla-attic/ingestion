@@ -1,7 +1,12 @@
 {
-    "list_sets": "/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai",
-    "type": "oai",
     "name": "georgia",
+    "type": "oai_verbs",
+    "endpoint_url": "http://dlg.galileo.usg.edu/cgi/oai",
+    "subresources": ["dpla"],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/georgia", 
+        "name": "Digital Library of Georgia"
+    }, 
     "enrichments_coll": [
         "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://dlg.galileo.usg.edu/cgi/oai"
     ], 
@@ -32,13 +37,5 @@
         "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
         "/georgia_identify_object",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "subresources": [
-        "dpla"
-     ],
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/georgia", 
-        "name": "Digital Library of Georgia"
-    }, 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://dlg.galileo.usg.edu/cgi/oai&oaiset="
+    ]
 }

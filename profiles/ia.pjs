@@ -1,7 +1,32 @@
 {
-    "list_sets": "",
-    "enrichments_coll": [],
     "name": "ia",
+    "type": "ia",
+    "endpoint_url": "http://archive.org/advancedsearch.php?q=collection%3A%22{0}%22&fl%5B%5D=identifier&output=json",
+    "endpoint_url_params": {
+        "page": 1,
+        "rows": 1000
+    },
+    "get_file_url": "http://www.archive.org/download/{0}/{1}",
+    "prefix_files": "{0}_files.xml",
+    "prefix_meta": "{0}_meta.xml",
+    "prefix_dc": "{0}_dc.xml",
+    "shown_at_url": "http://archive.org/details/{0}",
+    "subresources": {
+        "blc": {
+            "title": "Boston Library Consortium"
+        },
+        "clemson": {
+            "title": "LYRASIS members and Sloan Foundation"
+        },
+        "bostonpubliclibrary": {
+            "title": "Boston Public Library"
+        }
+    },
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/internet_archive",
+        "name": "Internet Archive"
+    }, 
+    "enrichments_coll": [],
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/ia-to-dpla",
@@ -20,29 +45,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "subresources": [
-        "blc",
-        "clemson",
-        "bostonpubliclibrary"
-    ],
-    "collection_titles": {
-        "blc": "Boston Library Consortium",
-        "clemson": "LYRASIS members and Sloan Foundation",
-        "bostonpubliclibrary": "Boston Public Library"
-    },
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/internet_archive",
-        "name": "Internet Archive"
-    }, 
-    "type": "ia",
-    "endpoint_URL": "http://archive.org/advancedsearch.php?q=collection%3A%22{0}%22&fl%5B%5D=identifier&output=json",
-    "get_file_URL": "http://www.archive.org/download/{0}/{1}",
-    "prefix_files": "{0}_files.xml",
-    "prefix_meta": "{0}_meta.xml",
-    "prefix_dc": "{0}_dc.xml",
-    "shown_at_URL": "http://archive.org/details/{0}",
-    "removed_enrichments_rec": [
-        "/copy_prop?prop=originalRecord%2Fmetadata%2Fsponsor&to_prop=sourceResource%2Fcollection%2Ftitle"
     ]
 }

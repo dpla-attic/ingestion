@@ -32,25 +32,22 @@ def convert(data, prop):
         delprop(data, prop)
 
 
-@simple_service('POST', 'http://purl.org/la/dp/dc_clean_invalid_dates', 'dc_clean_invalid_dates', 'application/json')
-def dc_clean_invalid_dates(body, ctype, action="cleanup_value", prop="sourceResource/date"):
+@simple_service('POST', 'http://purl.org/la/dp/dc_clean_invalid_dates',
+                'dc_clean_invalid_dates', 'application/json')
+def dc_clean_invalid_dates(body, ctype, action="cleanup_value",
+                           prop="sourceResource/date"):
+    if prop:
+        try:
+            data = json.loads(body)
+        except:
+            response.code = 500
+            response.add_header('content-type', 'text/plain')
+            return "Unable to parse body as JSON"
 
-    if prop is None:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        msg = "Prop param is None"
-        logger.error(msg)
-        return msg
-
-    try:
-        data = json.loads(body)
-    except:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        return "Unable to parse body as JSON"
-
-    for p in prop.split(","):
-        if exists(data, p):
-            convert(data, p)
+        for p in prop.split(","):
+            if exists(data, p):
+                convert(data, p)
+    else:
+        logger.error("Prop param in None in %s" % __name__)
 
     return json.dumps(data)

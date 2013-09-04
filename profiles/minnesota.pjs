@@ -1,9 +1,15 @@
 {
+    "name": "minnesota", 
+    "type": "oai_verbs",
+    "endpoint_url": "http://reflections.mndigital.org/oai/oai2.php",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/mdl", 
+        "name": "Minnesota Digital Library"
+    }, 
+    "subresources": [], 
     "enrichments_coll": [
         "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php"
     ], 
-    "name": "minnesota", 
-    "list_sets": "/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php",
     "enrichments_rec": [
         "/select-id", 
         "/oai-to-dpla", 
@@ -30,12 +36,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "subresources": [], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/mdl", 
-        "name": "Minnesota Digital Library"
-    }, 
-    "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://reflections.mndigital.org/oai/oai2.php&oaiset="
+    ]
 }

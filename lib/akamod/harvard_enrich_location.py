@@ -6,8 +6,10 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
 from dplaingestion.utilities import iterify
 
-@simple_service('POST', 'http://purl.org/la/dp/harvard_enrich_location', 'harvard_enrich_location', 'application/json')
-def harvard_enrich_location(body, ctype, action="harvard_enrich_location", prop="sourceResource/spatial"):
+@simple_service('POST', 'http://purl.org/la/dp/harvard_enrich_location',
+                'harvard_enrich_location', 'application/json')
+def harvard_enrich_location(body, ctype, action="harvard_enrich_location",
+                            prop="sourceResource/spatial"):
     """
     Service that accepts a Harvard JSON document and enriches the "spatial" field by translating 
     any MARC country codes contained within the originalDocument place element into their names, 
@@ -28,7 +30,6 @@ def harvard_enrich_location(body, ctype, action="harvard_enrich_location", prop=
 
         # Add non-country terms 
         for place in iterify(places):
-            logger.info("place: %s" % place)
             placeTerm = getprop(place, "placeTerm", True)
             if (isinstance(placeTerm, basestring)): 
                 name += " " + placeTerm
@@ -45,7 +46,6 @@ def harvard_enrich_location(body, ctype, action="harvard_enrich_location", prop=
                 if (country): 
                     name += ", " + country
 
-        # logger.info("geocode: harvard: Converting name to %s" % name)
         spatial = {"name": re.sub("[\[\]]", "", name.strip(", "))}
         if (country \
             and (2 == len(countryCode) \

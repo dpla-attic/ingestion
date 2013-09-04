@@ -91,7 +91,7 @@ AGGREGATION_TRANSFORMER = {
     "handle"           : is_shown_at_transform,
     "originalRecord"   : lambda d: {"originalRecord": d.get("originalRecord",None)},
     "source"           : lambda d: {"dataProvider": d.get("source",None)},
-
+    "provider"         : lambda d: {"provider": d.get("provider", None)},
     "ingestType"       : lambda d: {"ingestType": d.get("ingestType",None)},
     "ingestDate"       : lambda d: {"ingestDate": d.get("ingestDate",None)}
 }
@@ -128,14 +128,6 @@ def oaitodpla(body,ctype,geoprop=None):
             out['sourceResource'].update(CHO_TRANSFORMER[p](data))
         if p in AGGREGATION_TRANSFORMER:
             out.update(AGGREGATION_TRANSFORMER[p](data))
-
-    # Additional content not from original document
-
-    if 'HTTP_CONTRIBUTOR' in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

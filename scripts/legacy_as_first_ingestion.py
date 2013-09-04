@@ -44,14 +44,15 @@ def main(argv=None, couch=None, provider_name=None):
         print >> sys.stderr, "Error: No documents found for %s" % provider_name
         proceed = False
 
-    def _post(dpla_docs, dashboard_docs, ingest_doc_id):
+    def _post(dpla_docs, dashboard_docs, ingest_doc):
         couch._bulk_post_to(couch.dpla_db, dpla_docs)
         couch._bulk_post_to(couch.dashboard_db, dashboard_docs)
-        couch._update_ingestion_doc_counts(ingest_doc_id,
+        couch._update_ingestion_doc_counts(ingest_doc,
                                            countAdded=len(dashboard_docs))
 
     if proceed:
         ingest_doc_id = couch.create_ingestion_doc_and_backup_db(provider_name)
+        ingest_doc = couch.dashboard_db[ingest_doc_id]
 
         docs = []
         added_docs = []
@@ -70,7 +71,7 @@ def main(argv=None, couch=None, provider_name=None):
             # POST every 1000
             if len(docs) == 1000:
                 print >> sys.stderr, "Processed %s docs" % count
-                _post(docs, added_docs, ingest_doc_id)
+                _post(docs, added_docs, ingest_doc)
                 # Reset
                 docs = []
                 added_docs = []
@@ -78,7 +79,7 @@ def main(argv=None, couch=None, provider_name=None):
         # Last POST
         if docs:
             print >> sys.stderr, "Processed %s docs" % count
-            _post(docs, added_docs, ingest_doc_id)
+            _post(docs, added_docs, ingest_doc)
 
         print >> sys.stderr, "Complete" 
 

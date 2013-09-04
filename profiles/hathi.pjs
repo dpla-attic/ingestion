@@ -26,5 +26,5 @@
         "name": "HathiTrust Digital Library"
     }, 
     "type": "marc", 
-    "endpoint_URL": "file:/home/dpla/data/hathi/"
+    "endpoint_url": "file:/home/dpla/data/hathi/"
 }

@@ -16,24 +16,15 @@ from dplaingestion.selector import getprop, exists
 IGNORE = module_config().get('IGNORE')
 PENDING = module_config().get('PENDING')
 
-HTTP_INTERNAL_SERVER_ERROR = 500
-HTTP_TYPE_JSON = 'application/json'
-HTTP_TYPE_TEXT = 'text/plain'
-HTTP_HEADER_TYPE = 'Content-Type'
-
-
-@simple_service('POST', 'http://purl.org/la/dp/ia_identify_object', 'ia_identify_object', HTTP_TYPE_JSON)
+@simple_service('POST', 'http://purl.org/la/dp/ia_identify_object',
+                'ia_identify_object', 'application/json')
 def ia_identify_object(body, ctype, download="True"):
-
     try:
-        assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
-    except Exception as e:
-        error_text = "Bad JSON: %s: %s" % (e.__class__.__name__, str(e))
-        logger.exception(error_text)
-        response.code = HTTP_INTERNAL_SERVER_ERROR
-        response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
-        return error_text
+    except:
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return "Unable to parse body as JSON"
 
     original_preview_key = "originalRecord/files/gif"
     preview_format = "http://www.archive.org/download/{0}/{1}"

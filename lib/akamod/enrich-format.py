@@ -61,16 +61,15 @@ def enrichformat(body, ctype, action="enrich-format",
         return s
 
     def is_imt(s):
-        logger.debug("Checking: " + s)
         imt_regexes = [re.compile('^' + x + '(/)') for x in IMT_TYPES]
         return any(regex.match(s) for regex in imt_regexes)
 
     try:
         data = json.loads(body)
-    except Exception as e:
+    except:
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return "Unable to parse body as JSON\n" + str(e)
+        return "Unable to parse body as JSON"
 
     imt_values = []
     if exists(data, prop):

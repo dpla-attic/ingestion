@@ -70,7 +70,6 @@ def multi_transform(d, key, props, return_format="str"):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
-    "collection"                    : lambda d, p: {"collection": getprop(d, p)},
     RECORD + "display/creator"      : lambda d, p: {"creator": getprop(d, p)},
     RECORD + "search/creationdate"  : lambda d, p: {"date": getprop(d, p)},
     RECORD + "search/description"   : lambda d, p: {"description": getprop(d, p)},
@@ -92,7 +91,8 @@ AGGREGATION_TRANSFORMER = {
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
     RECORD + "control/recordid"  : lambda d, p: {"isShownAt": URL + getprop(d, p)},
-    LINKS + "thumbnail"          : lambda d, p: {"object": getprop(d, p)}
+    LINKS + "thumbnail"          : lambda d, p: {"object": getprop(d, p)},
+    "provider"                   : lambda d, p: {"provider": getprop(d, p)}
 }
 
 @simple_service("POST", "http://purl.org/la/dp/primo-to-dpla", "primo-to-dpla", "application/ld+json")
@@ -137,13 +137,6 @@ def primotodpla(body,ctype,geoprop=None):
 
     dp_props = ["display/lds03"]
     out.update(multi_transform(data, "dataProvider", dp_props))
-
-    # Additional content not from original document
-    if "HTTP_CONTRIBUTOR" in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ["HTTP_CONTRIBUTOR"]))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ["HTTP_CONTRIBUTOR"]+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

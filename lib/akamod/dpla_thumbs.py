@@ -33,20 +33,17 @@ everything is defined in akara.conf.
 import sys, time
 
 from amara.thirdparty import json
+from amara.lib.iri import join
+from amara.thirdparty import json, httplib2
 
-from akara.services import simple_service
 from akara import logger
 from akara import module_config
+from akara import request, response
+from akara.services import simple_service
+from akara.util import copy_headers_to_dict
 
 from dplaingestion.oai import oaiservice
 from couchdb.client import Server
-
-from akara.services import simple_service
-from akara import request, response
-from akara import module_config, logger
-from akara.util import copy_headers_to_dict
-from amara.thirdparty import json, httplib2
-from amara.lib.iri import join
 from urllib import quote
 import datetime
 import uuid
@@ -74,7 +71,6 @@ LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-thumbs-list-for-downloading
 #
 @simple_service('POST', UPDATE_SERVICE_ID, 'dpla-thumbs-update-doc', 'application/json')
 def update_document(body, ctype):
-    logger.debug(body)
     from StringIO import StringIO
     io = StringIO(body) 
     parsed_doc = json.load(io) 

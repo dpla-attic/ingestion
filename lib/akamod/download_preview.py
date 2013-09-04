@@ -178,9 +178,8 @@ def download_image(url, id, download):
         return res(name, mime, status)
 
     if not conn.getcode() / 100 == 2:
-        msg = "Got %s from url: [%s] for document: [%s]" % \
-            (conn.getcode(), url, id)
-        logger.error(msg)
+        logger.error("Got %s from url: [%s] for document: [%s]" %
+                     (conn.getcode(), url, id))
         return res(name, mime, status)
 
     # Get the thumbnail extension from the URL, needed for storing the
@@ -215,8 +214,7 @@ def download_image(url, id, download):
         local_file = open(fname, 'wb')
         local_file.write(conn.read())
     except Exception as e:
-        msg = e.message
-        logger.error(msg)
+        logger.error(e.message)
         return res(name, mime, status)
     else:
         conn.close()
@@ -253,15 +251,12 @@ def download_preview(body, ctype):
     documents in the repository to download the thumbnails.
     """
 
-    data = {}
     try:
         data = json.loads(body)
-    except Exception as e:
-        msg = "Bad JSON: " + e.args[0]
-        logger.error(msg)
+    except:
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return msg
+        return "Unable to parse body as JSON"
 
     # Check the "admin/object_status" field
     status = None
@@ -271,8 +266,7 @@ def download_preview(body, ctype):
             logger.debug("Status is %s, doing nothing" % status)
             return body
     except KeyError as e:
-        msg = e.args[0]
-        logger.error(msg)
+        logger.error(e.args[0])
         data = set_error(data)
         return json.dumps(data)
 
@@ -281,8 +275,7 @@ def download_preview(body, ctype):
     try:
         url = getprop(data, "object/@id")
     except KeyError as e:
-        msg = e.args[0]
-        logger.error(msg)
+        logger.error(e.args[0])
         data = set_error(data)
         return json.dumps(data)
 
@@ -291,8 +284,7 @@ def download_preview(body, ctype):
     try:
         id = getprop(data, "id")
     except KeyError as e:
-        msg = e.args[0]
-        logger.error(msg)
+        logger.error(e.args[0])
         data = set_error(data)
         return json.dumps(data)
 

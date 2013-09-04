@@ -41,12 +41,10 @@ def lookup(body, ctype, prop="sourceResource/creator"):
     data = {}
     try:
         data = json.loads(body)
-    except Exception as e:
-        msg = "Bad JSON: " + e.args[0]
-        logger.error(msg)
+    except:
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return msg
+        return "Unable to parse body as JSON"
 
     convert(data, prop)
 

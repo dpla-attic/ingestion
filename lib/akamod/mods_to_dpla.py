@@ -412,7 +412,8 @@ AGGREGATION_TRANSFORMER["common"] = {
 
     "id"                         : lambda d, p: ({"id": getprop(d, p),
                                                  "@id": "http://dp.la/api/" +
-                                                 "items/" + getprop(d, p)})
+                                                 "items/" + getprop(d, p)}),
+    "provider"                   : lambda d, p: {"provider": getprop(d, p)}
 }
 
 
@@ -470,13 +471,6 @@ def mods_to_dpla(body, ctype, geoprop=None, provider=None):
     for p in transformer_pipeline:
         if exists(data, p):
             out.update(transformer_pipeline[p](data, p))
-
-    # Additional content not from original document
-    if 'HTTP_CONTRIBUTOR' in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

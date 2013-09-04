@@ -1,4 +1,5 @@
-from akara import module_config, logger, response
+from akara import module_config, response
+from akara import logger
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
@@ -21,8 +22,6 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
            features (county, state, country). We use Geonames to reverse geocode
            the lat/lng point and retrieve the location hierarchy.
     '''
-    # logger.debug("Received: " + body)
-
     try:
         data = json.loads(body)
     except:
@@ -30,9 +29,8 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if (not exists(data, prop)):
-        # logger.warn("geocode: COULD NOT FIND %s" % prop)
-        pass
+    if (not exists(data, prop)): 
+        pass 
     else:
         logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
@@ -71,7 +69,7 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
                         or ("ADM1" == place["fcode"] and d < 15)): # State tolerance
                         break
             else:
-                logger.debug("geocode: No result found for %s" % v)
+                logger.debug("No geocode result found for %s" % v)
 
     return json.dumps(data)
 
@@ -172,16 +170,10 @@ class DplaBingGeocoder(geocoders.Bing):
 
         address = Address(spatial)
         for candidate in address.get_candidates():
-            # See if this address candidate exists in our cache
-            if (candidate not in DplaBingGeocoder.resultCache):
-                # logger.debug("geocode: No result for [%s] in cache, retrieving from Bing" % candidate)
+            # See if this address candidate exists in our cache 
+            if (candidate not in DplaBingGeocoder.resultCache): 
                 results = self._fetch_results(candidate)
                 DplaBingGeocoder.resultCache[candidate] = list(results)
-                # logger.info("geocode: Result:")
-                # logger.info("geocode: spatial: %s" % spatial)
-                # logger.info("geocode: address: %s" % candidate)
-                # logger.info("geocode: count: %s" % len(DplaBingGeocoder.resultCache[candidate]))
-                # logger.info("geocode: result: %s" % DplaBingGeocoder.resultCache[candidate])
 
             # Require that a single match, or closely grouped matches be returned to avoid bad geocoding results
             if (1 == len(DplaBingGeocoder.resultCache[candidate]) \
@@ -200,14 +192,14 @@ class DplaBingGeocoder(geocoders.Bing):
                     if (bbox_result is not None):
                         valid_result = bbox_result
                         if (not valid_result):
-                            # logger.debug("geocode: Result [%s] not in the correct country [%s], ignoring" % (result["name"], address.country,))
+                            logger.debug("Geocode result [%s] not in the correct country [%s], ignoring" % (result["name"], address.country,))
                             pass
 
-                if (valid_result):
-                    if ("name" in spatial):
-                        logger.info("geocode: Result: %s => %s (%s)" % (spatial["name"], result["name"], result["point"]["coordinates"],))
-                    else:
-                        logger.info("geocode: Result: %s => %s (%s)" % (spatial, result["name"], result["point"]["coordinates"],))
+                if (valid_result): 
+                    if ("name" in spatial): 
+                        logger.info("Geocode result: %s => %s (%s)" % (spatial["name"], result["name"], result["point"]["coordinates"],))
+                    else: 
+                        logger.info("Geocode result: %s => %s (%s)" % (spatial, result["name"], result["point"]["coordinates"],))
                     return coordinate
 
         return None
@@ -275,8 +267,8 @@ class DplaGeonamesGeocoder(object):
             if ("geonames" in result \
                 and len(result["geonames"]) > 0):
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"][0]
-            else:
-                logger.error("geocode: Could not reverse geocode (%s, %s)" % (lat, lng,))
+            else: 
+                logger.error("Could not reverse geocode (%s, %s)" % (lat, lng,)) 
                 return None
 
         return DplaGeonamesGeocoder.resultCache[url]

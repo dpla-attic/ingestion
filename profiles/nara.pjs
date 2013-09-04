@@ -1,6 +1,12 @@
 {
-    "enrichments_coll": [], 
     "name": "nara", 
+    "type": "nara",
+    "endpoint_url": "file:/home/dpla/data/nara/ArchivalDescriptions-digital/",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/nara", 
+        "name": "National Archives and Records Administration"
+    }, 
+    "enrichments_coll": [], 
     "enrichments_rec": [
         "/select-id?prop=_id", 
         "/arc-to-dpla", 
@@ -23,16 +29,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=sourceResource%2FhasView&key=rights",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "update_isShownAt": [
-        "/set_prop?prop=isShownAt&value=http%3A%2F%2Fdp%2Ela%2Finfo%2Fnara%2Dcontent%2Dnotification%2F"
-    ],
-    "subresources": [], 
-    "last_checked": "2013-03-09T14:02:39.094687", 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/nara", 
-        "name": "National Archives and Records Administration"
-    }, 
-    "type": "arc", 
-    "endpoint_URL": "file:/home/miguel/nara/ArchivalDescriptions-digital/"
+    ] 
 }

@@ -63,26 +63,22 @@ def capitalize_value(body, ctype, prop=",".join(DEFAULT_PROP), exclude=None):
     Service that accepts a JSON document and capitalizes the prop field of that document
     """
 
-    if prop is None:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        msg = "Prop param is None"
-        logger.error(msg)
-        return msg
+    if prop:
+        try:
+            data = json.loads(body)
+        except:
+            response.code = 500
+            response.add_header('content-type', 'text/plain')
+            return "Unable to parse body as JSON"
 
-    try:
-        data = json.loads(body)
-    except Exception as e:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        return "Unable to parse body as JSON\n" + str(e)
+        prop = prop.split(",")
+        if exclude in prop:
+            prop.remove(exclude)
 
-    prop = prop.split(",")
-    if exclude in prop:
-        prop.remove(exclude)
-
-    for p in prop:
-        if p:
-            capitalize(data, p)
+        for p in prop:
+            if p:
+                capitalize(data, p)
+    else:
+        logger.error("Prop param in None in %s" % __name__)
 
     return json.dumps(data)

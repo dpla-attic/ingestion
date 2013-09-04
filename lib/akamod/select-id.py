@@ -3,7 +3,8 @@ from amara.thirdparty import json
 from amara.lib.iri import is_absolute
 from akara.services import simple_service
 from akara.util import copy_headers_to_dict
-from akara import request, response, logger
+from akara import request, response
+from akara import logger
 from dplaingestion.selector import getprop, setprop, exists
 
 COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
