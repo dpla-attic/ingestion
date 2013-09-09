@@ -28,6 +28,7 @@ import sys
 import argparse
 from amara.thirdparty import json, httplib2
 from dplaingestion.couch import Couch
+import create_ingestion_document
 
 ENRICH = "/enrich_storage"
 H = httplib2.Http()
@@ -78,7 +79,11 @@ def main(argv):
 
     # Create ingestion document
     couch = Couch()
-    ingestion_doc_id = couch.create_ingestion_doc_and_backup_db(provider)
+    ingestion_doc_id = create_ingestion_document.main([None,
+                                                       args.profile_path])
+    ingestion_doc = couch.dashboard_db[ingestion_doc_id]
+    ingestion_doc["poll_storage_process"] = {"status": "running"}
+    couch.dashboard_db.update([ingestion_doc])
 
     # Fetch provider documents
     docs = []
@@ -89,14 +94,22 @@ def main(argv):
         # Enrich in batches of 1000
         if len(docs) == 1000:
             enriched_docs = enrich(docs, args.uri_base, pipeline)
-            couch.process_and_post_to_dpla(enriched_docs, ingestion_doc_id)
+            couch.process_and_post_to_dpla(enriched_docs, ingestion_doc)
             print "Enriched %s documents" % count
             docs = []
     # Enrich last batch
     if docs:
         enriched_docs = enrich(docs, args.uri_base, pipeline)
-        couch.process_and_post_to_dpla(enriched_docs, ingestion_doc_id)
+        couch.process_and_post_to_dpla(enriched_docs, ingestion_doc)
         print "Enriched %s documents" % count
+
+    # Update ingestion document
+    ingestion_doc["fetch_process"] = {"status": "complete"}
+    ingestion_doc["enrich_process"] = {"status": "complete"}
+    ingestion_doc["save_process"] = {"status": "complete"}
+    ingestion_doc["delete_process"] = {"status": "complete"}
+    ingestion_doc["poll_storage_process"]["status"] = "complete"
+    couch.dashboard_db.update([ingestion_doc])
 
 if __name__ == "__main__":
     main(sys.argv)
