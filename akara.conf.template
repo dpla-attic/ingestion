@@ -112,6 +112,7 @@ MODULES = [
     "freemix_akara.oai",
     "dplaingestion.oai",
     "dplaingestion.couch",
+    "dplaingestion.fetcher",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
@@ -176,6 +177,7 @@ MODULES = [
     "dplaingestion.akamod.remove_list_values",
     "dplaingestion.akamod.marc_to_dpla",
     "dplaingestion.akamod.usc_enrich_location",
+    "dplaingestion.akamod.hathi_identify_object",
     ]
 
 ### Section 3: Other module configuration goes here
@@ -242,4 +244,7 @@ class ia_identify_object(identify_object):
     pass
 
 class david_rumsey_identify_object(identify_object):
+    pass
+
+class hathi_identify_object(identify_object):
     pass

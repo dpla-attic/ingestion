@@ -3,7 +3,8 @@ from amara.thirdparty import json
 from amara.lib.iri import is_absolute
 from akara.services import simple_service
 from akara.util import copy_headers_to_dict
-from akara import request, response, logger
+from akara import request, response
+from akara import logger
 from dplaingestion.selector import getprop, setprop, exists
 
 COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
@@ -17,44 +18,42 @@ def selid(body,ctype,prop='descriptiveNonRepeating/record_link', alternative_pro
     '''   
     tmpl="http://collections.si.edu/search/results.htm?q=record_ID%%3A%s&repo=DPLA"
     
-    if not prop:
-        response.code = 500
-        response.add_header('content-type','text/plain')
-        return "No id property has been selected"
+    if prop:
+        try :
+            data = json.loads(body)
+        except:
+            response.code = 500
+            response.add_header('content-type','text/plain')
+            return "Unable to parse body as JSON"
 
-    try :
-        data = json.loads(body)
-    except:
-        response.code = 500
-        response.add_header('content-type','text/plain')
-        return "Unable to parse body as JSON"
+        request_headers = copy_headers_to_dict(request.environ)
+        source_name = request_headers.get('Source')
 
-    request_headers = copy_headers_to_dict(request.environ)
-    source_name = request_headers.get('Source')
+        id = None
 
-    id = None
+        if exists(data, prop) or exists(data, alternative_prop):
+            v = getprop(data,prop, True)
+            if not v:
+                v = getprop(data, alternative_prop)
+                v = tmpl % v
+            if isinstance(v,basestring):
+                id = v
+            else:
+                if v:
+                    for h in v:
+                        if is_absolute(h):
+                            id = h
+                    if not id:
+                        id = v[0]
 
-    if exists(data, prop) or exists(data, alternative_prop):
-        v = getprop(data,prop, True)
-        if not v:
-            v = getprop(data, alternative_prop)
-            v = tmpl % v
-        if isinstance(v,basestring):
-            id = v
-        else:
-            if v:
-                for h in v:
-                    if is_absolute(h):
-                        id = h
-                if not id:
-                    id = v[0]
+        if not id:
+            response.code = 500
+            response.add_header('content-type','text/plain')
+            return "No id property was found"
 
-    if not id:
-        response.code = 500
-        response.add_header('content-type','text/plain')
-        return "No id property was found"
-
-    data[u'_id'] = COUCH_REC_ID_BUILDER(source_name, id)
-    data[u'id']  = hashlib.md5(data[u'_id']).hexdigest()
+        data[u'_id'] = COUCH_REC_ID_BUILDER(source_name, id)
+        data[u'id']  = hashlib.md5(data[u'_id']).hexdigest()
+    else:
+        logger.error("Prop param in None in %s" % __name__)
 
     return json.dumps(data)

@@ -124,7 +124,7 @@ def convert(data, path, name, conv, delnonexisting, path_delim="/"):
     elif isinstance(data, dict):
         if pp not in data:
             # Then just do nothing
-            logger.error("Couldn't find {0} in data.".format(pp))
+            logger.debug("Couldn't find {0} in data.".format(pp))
         else:
             convert(data[pp], pn, name, conv, delnonexisting)
     else:
@@ -142,9 +142,7 @@ def find_conversion_dictionary(mapping_key):
     """
     # Mapping should be in akara.conf
     mapping = module_config().get('lookup_mapping')
-    logger.debug("Looking for mapping using key [%s]" % mapping_key)
     dict_name = mapping[mapping_key].upper()
-    logger.debug("Found substitution dict [%s] for key mapping [%s]" % (dict_name, mapping_key,))
     return globals()[dict_name]
 
 
@@ -346,16 +344,14 @@ def lookup(body, ctype, prop, target, substitution, inverse=None, delnonexisting
     data = {}
     try:
         data = json.loads(body)
-    except Exception as e:
-        msg = "Bad JSON: " + e.args[0]
-        logger.error(msg)
+    except:
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return msg
+        return "Unable to parse body as JSON"
 
     # Check target variable.
     if not target:
-        msg = "There is not provided output field name."
+        msg = "Param target was not provided"
         logger.error(msg)
         response.code = 500
         response.add_header('content-type', 'text/plain')

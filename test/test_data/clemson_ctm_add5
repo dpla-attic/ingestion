@@ -1,6 +1,11 @@
 {
-    "resumption_token": "", 
-    "items": [
+    "provider": "clemson",
+    "collection": "",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/scdl-clemson",
+        "name": "South Carolina Digital Library"
+    },
+    "records": [
         {
             "publisher": [
                 "Special Collections, Clemson University Libraries\n", 
@@ -8136,163 +8141,5 @@
             "setSpec": "ctm", 
             "subject": "Slater Manufacturing Company (Slater, S.C.)--History; JPS Textile Group, Inc.--History\n"
         }
-    ], 
-    "data_profile": {
-        "properties": [
-            {
-                "property": "handle", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Handle"
-            }, 
-            {
-                "tags": [], 
-                "property": "language", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Language"
-            }, 
-            {
-                "property": "format", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Formats"
-            }, 
-            {
-                "property": "relation", 
-                "Enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Relations"
-            }, 
-            {
-                "tags": [
-                    "property:type=url"
-                ], 
-                "property": "id", 
-                "enabled": false, 
-                "types": [
-                    "text"
-                ], 
-                "label": "id"
-            }, 
-            {
-                "property": "date", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=date", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Date"
-            }, 
-            {
-                "property": "datestamp", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=date"
-                ], 
-                "label": "Date stamp"
-            }, 
-            {
-                "tags": [], 
-                "property": "title", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Title"
-            }, 
-            {
-                "tags": [], 
-                "property": "description", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Description"
-            }, 
-            {
-                "property": "subject", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Subject"
-            }, 
-            {
-                "property": "contributor", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Contributor"
-            }, 
-            {
-                "tags": [], 
-                "property": "publisher", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Publisher"
-            }, 
-            {
-                "tags": [], 
-                "property": "source", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Source"
-            }, 
-            {
-                "property": "rights", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Rights"
-            }, 
-            {
-                "property": "coverage", 
-                "enabled": true, 
-                "tags": [
-                    "property:type=text", 
-                    "property:type=shredded_list"
-                ], 
-                "label": "Coverage"
-            }, 
-            {
-                "tags": [], 
-                "property": "label", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Label"
-            }, 
-            {
-                "tags": [], 
-                "property": "type", 
-                "enabled": true, 
-                "types": [
-                    "text"
-                ], 
-                "label": "Document Type"
-            }
-        ]
-    }
-}
+    ]
+} 

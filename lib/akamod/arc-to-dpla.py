@@ -283,7 +283,8 @@ AGGREGATION_TRANSFORMER = {
     "ingestType"            : lambda d: {"ingestType": d.get("ingestType")},
     "ingestDate"            : lambda d: {"ingestDate": d.get("ingestDate")},
     "arc-id-desc"           : is_shown_at_transform,
-    "physical-occurrences"  : data_provider_transform
+    "physical-occurrences"  : data_provider_transform,
+    "provider"              : lambda d: {"provider": d.get("provider")}
 }
 
 @simple_service("POST", "http://purl.org/la/dp/arc-to-dpla", "arc-to-dpla", "application/ld+json")
@@ -324,18 +325,8 @@ def arctodpla(body,ctype,geoprop=None):
     out.update(has_view_transform(data))
     out["sourceResource"].update(transform_state_located_in(data))
 
-    if exists(out, "sourceResource/date"):
-        logger.debug("OUTTYPE: %s"%getprop(out, "sourceResource/date"))
-
     if exists(data, "objects/object"):
         out.update(transform_thumbnail(data))
-
-    # Additional content not from original document
-    if "HTTP_CONTRIBUTOR" in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ["HTTP_CONTRIBUTOR"]))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ["HTTP_CONTRIBUTOR"]+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

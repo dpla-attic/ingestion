@@ -16,29 +16,19 @@ def kentucky_identify_object(body, ctype, download="True"):
     Responsible for: adding a field to a document with the URL where we
     should expect to the find the thumbnail
     """
-
-    LOG_JSON_ON_ERROR = True
-
-    def log_json():
-        if LOG_JSON_ON_ERROR:
-            logger.debug(body)
-
     data = {}
     try:
         data = json.loads(body)
-    except Exception as e:
-        msg = "Bad JSON: " + e.args[0]
-        logger.error(msg)
+    except:
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return msg
+        return "Unable to parse body as JSON"
 
     relation_field = "sourceResource/relation"
     if exists(data, relation_field):
         url = getprop(data, relation_field)
     else:
-        msg = "Field %s does not exist" % relation_field
-        logger.debug(msg)
+        logger.debug("Field %s does not exist" % relation_field)
         return body
 
     base_url, ext = os.path.splitext(url)

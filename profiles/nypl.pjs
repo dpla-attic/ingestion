@@ -1,9 +1,21 @@
 {
-    "list_sets": "http://j2k.repo.nypl.org/api/v1/items/listCollections",
-    "enrichments_coll": [
+    "name": "nypl",
+    "type": "nypl",
+    "endpoint_url": "http://j2k.repo.nypl.org/api/v1/items/{0}",
+    "get_sets_url": "http://j2k.repo.nypl.org/api/v1/items/listCollections",
+    "get_records_url": "http://j2k.repo.nypl.org/api/v1/items/mods/{0}",
+    "endpoint_url_params": {
+        "page": 1,
+        "per_page": 100
+    },
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/nypl",
+        "name": "New York Public Library"
+    }, 
+   "enrichments_coll": [
         "/nypl-coll-title?list_sets=http://j2k.repo.nypl.org/api/v1/items/listCollections"
     ],
-    "name": "nypl",
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=NYPL",
@@ -24,13 +36,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_prop?prop=sourceResource%2Frights&value=No%20Known%20US%20Copyright%20Restrictions",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "subresources": [],
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/nypl",
-        "name": "New York Public Library"
-    }, 
-    "type": "nypl",
-    "endpoint_URL": "http://j2k.repo.nypl.org/api/v1/items/{0}",
-    "get_record_URL": "http://j2k.repo.nypl.org/api/v1/items/mods/{0}"
+    ]
 }

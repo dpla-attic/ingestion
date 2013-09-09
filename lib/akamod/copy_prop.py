@@ -56,8 +56,8 @@ def copyprop(body, ctype, prop=None, to_prop=None, create=False, key=None,
                         if exists(dict, key) or create:
                             setprop(dict, key, val)
                         else:
-                            msg = "Key %s does not exist in %s" % (key, to_prop)
-                            logger.debug(msg)
+                            logger.error("Key %s does not exist in %s" %
+                                         (key, to_prop))
                 else:
                     # Handle case where to_element is a list
                     if isinstance(to_element, list):
@@ -68,8 +68,8 @@ def copyprop(body, ctype, prop=None, to_prop=None, create=False, key=None,
                         setprop(data, to_prop, to_element) 
                     else:
                         # to_prop is dictionary but no key was passed.
-                        msg = "%s is a dictionary but no key was passed" % to_prop
-                        logger.warn(msg)
+                        logger.warn("%s is a dict but no key was passed" %
+                                    to_prop)
                         setprop(data, to_prop, val)
 
             if remove:

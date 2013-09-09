@@ -109,6 +109,7 @@ MODULES = [
     "freemix_akara.oai",
     "dplaingestion.oai",
     "dplaingestion.couch",
+    "dplaingestion.fetcher",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
@@ -120,6 +121,7 @@ MODULES = [
     "dplaingestion.akamod.oai-to-dpla",
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
+    "dplaingestion.akamod.dpla-list-sets",
     "dplaingestion.akamod.contentdm_identify_object",
     "dplaingestion.akamod.download_preview",
     "dplaingestion.akamod.download_test_image",
@@ -164,6 +166,7 @@ MODULES = [
     "dplaingestion.akamod.uiuc_cleanup_spatial_name",
     "dplaingestion.akamod.remove_list_values",
     "dplaingestion.akamod.usc_enrich_location",
+    "dplaingestion.akamod.hathi_identify_object",
     ]
 
 class download_preview:
@@ -212,6 +215,9 @@ class nypl_identify_object(identify_object):
     pass
 
 class ia_identify_object(identify_object):
+    pass
+
+class hathi_identify_object(identify_object):
     pass
 """ % dict(config_root = config_root,
            port = port,

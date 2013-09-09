@@ -62,7 +62,7 @@ def robust_date_parser(d):
             except ValueError:
                 pass
             except Exception as e:
-                logger.error(e)
+                logger.error("Exception %s in %s" % (e, __name__))
 
         if dd:
             ddiso = dd.isoformat()

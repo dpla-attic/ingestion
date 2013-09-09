@@ -29,21 +29,12 @@ def contentdm_identify_object(body, ctype, download="True"):
             thumbnail: http://test.provider/cgi-bin/thumbnail.exe?CISOROOT=/ctm&CISOPTR=101"
     """
 
-    LOG_JSON_ON_ERROR = True
-
-    def log_json():
-        if LOG_JSON_ON_ERROR:
-            logger.debug(body)
-
-    data = {}
     try:
         data = json.loads(body)
-    except Exception as e:
-        msg = "Bad JSON: " + e.args[0]
-        logger.error(msg)
+    except:
         response.code = 500
         response.add_header('content-type', 'text/plain')
-        return msg
+        return "Unable to parse body as JSON"
 
     handle_field = "originalRecord/handle"
     if exists(data, handle_field):
@@ -57,8 +48,7 @@ def contentdm_identify_object(body, ctype, download="True"):
             logger.error("There is no URL in %s." % handle_field)
             return body
     else:
-        msg = "Field %s does not exist" % handle_field
-        logger.error(msg)
+        logger.error("Field %s does not exist" % handle_field)
         return body
 
     if "cdm/ref" in url:

@@ -15,7 +15,7 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
     """
 
     if not prop:
-        logger.error("No prop supplied")
+        logger.error("Prop param is None in %s" % __name__)
         return body
 
     REGSEARCH = [

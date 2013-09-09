@@ -1,10 +1,15 @@
 {
-    "enrichments_coll": [],
     "name": "smithsonian",
-    "list_sets": "",
+    "type": "edan",
+    "endpoint_url": "file:/home/dpla/data/smithsonian/",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/smithsonian",
+        "name": "Smithsonian Institution"
+    },
+    "enrichments_coll": [],
     "enrichments_rec": [
         "/edan_select_id",
-	"/edan_to_dpla", 
+        "/edan_to_dpla", 
         "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
         "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
         "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
@@ -29,16 +34,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_type_from_physical_format",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-   ],
-    "geocode": [
-        "/lookup?prop=sourceResource%2Fspatial%2Fcountry&target=sourceResource%2Fspatial%2Fcountry&substitution=country_alias",
-        "/geocode"
-    ],
-    "subresources": [],
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/smithsonian",
-        "name": "Smithsonian Institution"
-    },
-    "type": "edan",
-    "endpoint_URL": "file:/home/szymon/smithsonian_demo/"
+    ]
 }

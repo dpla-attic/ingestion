@@ -335,7 +335,8 @@ AGGREGATION_TRANSFORMER = {
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
-    "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)}
+    "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
+    "provider"                   : lambda d, p: {"provider": getprop(d, p)}
 }
 
 @simple_service("POST", "http://purl.org/la/dp/oai_mods_to_dpla", "oai_mods_to_dpla", "application/ld+json")
@@ -374,13 +375,6 @@ def oaimodstodpla(body, ctype, geoprop=None):
     out["sourceResource"].update(identifier_transform(data))
     out.update(url_transform(data))
     out.update(data_provider_transform(data))
-
-    # Additional content not from original document
-    if "HTTP_CONTRIBUTOR" in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ["HTTP_CONTRIBUTOR"]))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ["HTTP_CONTRIBUTOR"]+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

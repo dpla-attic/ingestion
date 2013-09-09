@@ -1,9 +1,15 @@
 {
-    "list_sets": "http://localhost:8878/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc",
-    "enrichments_coll": [
-        "http://localhost:8878/oai-set-name?sets_service=http://localhost:8878/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc"
-    ], 
     "name": "harvard-virtual",
+    "type": "oai_verbs",
+    "endpoint_url": "http://vcoai.lib.harvard.edu/vcoai/vc",
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/harvard-virtual",
+        "name": "Harvard Virtual Collection"
+    }, 
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc"
+    ], 
     "enrichments_rec": [
         "http://localhost:8878/select-id",
         "http://localhost:8878/oai-to-dpla",
@@ -16,14 +22,5 @@
         "http://localhost:8878/enrich-format",
         "http://localhost:8878/enrich_location",
         "http://localhost:8878/contentdm_identify_object"
-    ], 
-    "subresources": [
-    ], 
-    "last_checked": "2013-01-18T16:26:40.094739",
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/harvard-virtual",
-        "name": "Harvard Virtual Collection"
-    }, 
-    "type": "oai", 
-    "endpoint_URL": "http://localhost:8878/dpla-list-records?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc&oaiset="
+    ]
 }

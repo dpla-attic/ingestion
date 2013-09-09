@@ -91,13 +91,20 @@ class CouchTest(Couch):
                 content = json.load(f)
         else:
             content = file
-        
-        ingestion_doc_id = self.create_ingestion_doc_and_backup_db(provider)
+
+        uri_base = server()[:-1]
+        ingestion_doc_id = self._create_ingestion_document(provider, uri_base,
+                                                           "profiles/clemson.pjs")
+        ingestion_doc = self.dashboard_db[ingestion_doc_id]
+
         url = server() + "enrich"
-        resp, content = H.request(url, "POST", body=json.dumps(content), headers=headers)
-        docs = json.loads(content)
-        self.process_and_post_to_dpla(docs, ingestion_doc_id)
-        self.process_deleted_docs(ingestion_doc_id)
+        body = json.dumps(content)
+        resp, content = H.request(url, "POST", body=body, headers=headers)
+        data = json.loads(content)
+        docs = data["enriched_records"]
+        self._back_up_data(ingestion_doc)
+        self.process_and_post_to_dpla(docs, ingestion_doc)
+        self.process_deleted_docs(ingestion_doc)
         return ingestion_doc_id
 
 @nottest
@@ -244,14 +251,14 @@ def test_multiple_ingestions():
     data_deleted = copy.deepcopy(data)
     add_later = []
     for i in range(10):
-        add_later.append(data_deleted["items"].pop(2*i))
+        add_later.append(data_deleted["records"].pop(2*i))
 
     data_changed = copy.deepcopy(data_deleted)
     for i in range(5):
-        data_changed["items"][3*i]["title"] = "Changed"
+        data_changed["records"][3*i]["title"] = "Changed"
 
     data_added = copy.deepcopy(data_changed)
-    data_added["items"] += add_later
+    data_added["records"] += add_later
 
     first_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
     dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
@@ -279,7 +286,7 @@ def test_multiple_ingestions():
     assert int(total_dashboard_docs_second) + 11 == int(total_dashboard_docs_third)
     # Fourth ingestion should have extra ingestion doc + 5 changed
     assert int(total_dashboard_docs_third) + 6 == int(total_dashboard_docs_fourth)
-    # Fifth ingesiton should have extra ingestion doc + 10 added
+    # Fifth ingestion should have extra ingestion doc + 10 added
     assert int(total_dashboard_docs_fourth) + 11 == int(total_dashboard_docs_fifth)
     
 
@@ -324,7 +331,7 @@ def test_legacy():
     # Get last Clemson ingestion document
     ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
     assert ingest_doc["ingestionSequence"] == 1
-    assert ingest_doc["countAdded"] == 244
+    assert ingest_doc["countAdded"] == 244 # 243 records plus 1 collection
     assert ingest_doc["countDeleted"] == 0
     assert ingest_doc["countChanged"] == 0
 
@@ -340,7 +347,7 @@ def test_legacy():
     assert ingest_doc["ingestionSequence"] == 2
     assert ingest_doc["countAdded"] == 0
     assert ingest_doc["countDeleted"] == 0
-    assert ingest_doc["countChanged"] == 244
+    assert ingest_doc["countChanged"] == 243 # The collection does not change
 
     # Get all provider documents in database
     docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]

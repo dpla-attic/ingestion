@@ -1,9 +1,22 @@
 {
-    "list_sets": "/oai.listsets.json?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler",
+    "name": "artstor", 
+    "type": "oai_verbs",
+    "endpoint_url": "http://oai.artstor.org/oaicatmuseum/OAIHandler",
+    "subresources": [
+        "DPLAIndiana",
+        "DPLAKress",
+        "DPLAYCBA",
+        "DPLADallas",
+        "DPLAWalters",
+        "DPLAYaleArt"
+    ], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/artstor", 
+        "name": "ARTstor"
+    }, 
     "enrichments_coll": [
         "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler"
     ], 
-    "name": "artstor", 
     "enrichments_rec": [
         "/select-id?prop=id", 
         "/oai-to-dpla", 
@@ -37,19 +50,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_type_from_physical_format",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
-    ], 
-    "subresources": [
-        "DPLAIndiana",
-        "DPLAKress",
-        "DPLAYCBA",
-        "DPLADallas",
-        "DPLAWalters",
-        "DPLAYaleArt"
-    ], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/artstor", 
-        "name": "ARTstor"
-    }, 
-    "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://oai.artstor.org/oaicatmuseum/OAIHandler&oaiset="
+    ]
 }

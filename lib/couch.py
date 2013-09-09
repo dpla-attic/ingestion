@@ -7,6 +7,7 @@ import ConfigParser
 from copy import deepcopy
 from couchdb import Server
 from datetime import datetime
+from dplaingestion.selector import setprop
 from dplaingestion.dict_differ import DictDiffer
 
 class Couch(object):
@@ -121,6 +122,11 @@ class Couch(object):
                     
                 build_time = (time.time() - start)/60
                 print >> sys.stderr, "Completed in %s minutes" % build_time
+
+    def update_ingestion_doc(self, ingestion_doc, **kwargs):
+        for prop, value in kwargs.items():
+            setprop(ingestion_doc, prop, value)
+        self.dashboard_db.save(ingestion_doc)
 
     def _get_doc_ids(self, docs):
         return [doc["id"] for doc in docs]
@@ -255,8 +261,7 @@ class Couch(object):
             last_ingestion_doc = ingestion_docs[-1]
         return last_ingestion_doc
 
-    def _update_ingestion_doc_counts(self, ingestion_doc_id, **kwargs):
-        ingestion_doc = self.dashboard_db.get(ingestion_doc_id)
+    def _update_ingestion_doc_counts(self, ingestion_doc, **kwargs):
         for k, v in kwargs.iteritems():
             if k in ingestion_doc:
                 ingestion_doc[k] += v
@@ -362,6 +367,70 @@ class Couch(object):
         resp = db.update(docs, **options)
         self.logger.debug("%s database response: %s" % (db.name, resp))
 
+    def _create_ingestion_document(self, provider, uri_base, profile_path):
+        """Creates and returns an ingestion document for the provider.
+        """
+
+        ingestion_doc = {
+            "provider": provider,
+            "type": "ingestion",
+            "ingestionSequence": None,
+            "ingestDate": datetime.now().isoformat(),
+            "countAdded": 0,
+            "countChanged": 0,
+            "countDeleted": 0,
+            "uri_base": uri_base,
+            "profile_path": profile_path,
+            "fetch_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "data_dir": None,
+                "error": None
+            },
+            "enrich_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "data_dir": None,
+                "error": None
+            },
+            "save_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None
+            },
+            "delete_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None
+            }
+        }
+        # Set the ingestion sequence
+        latest_ingestion_doc = self._get_last_ingestion_doc_for(provider)
+        if latest_ingestion_doc is None:
+            ingestion_sequence = 1
+        else:
+            ingestion_sequence = 1 + latest_ingestion_doc["ingestionSequence"]
+        ingestion_doc["ingestionSequence"] = ingestion_sequence
+
+        # Save the ingestion document and get its ID
+        ingestion_doc_id = self.dashboard_db.save(ingestion_doc)[0]
+
+        return ingestion_doc_id
+
+    def _back_up_data(self, ingestion_doc):
+        if ingestion_doc["ingestionSequence"] != 1:
+            try:
+                backup_db_name = self._backup_db(ingestion_doc["provider"])
+            except:
+                print >> sys.stderr, "Error backing up data"
+                return -1
+            ingestion_doc["backupDB"] = backup_db_name
+            self.dashboard_db.save(ingestion_doc)
+
     def create_ingestion_doc_and_backup_db(self, provider):
         """Creates the ingestion document and backs up the provider documents
            if this is not the first ingestion, then returns the ingestion
@@ -386,23 +455,26 @@ class Couch(object):
             ingestion_sequence = last_ingestion_doc["ingestionSequence"] + 1
             backup_db_name = self._backup_db(provider)
             ingestion_doc["backupDB"] = backup_db_name
-            self.dashboard_db.save(last_ingestion_doc)
+            self.dashboard_db.save(ingestion_doc)
             
 
         ingestion_doc["ingestionSequence"] = ingestion_sequence
         ingestion_doc_id = self.dashboard_db.save(ingestion_doc)[0]
         return ingestion_doc_id
 
-    def process_deleted_docs(self, ingestion_doc_id):
+    def process_deleted_docs(self, ingestion_doc):
         """Deletes any provider document whose ingestionSequence equals the
            previous ingestion's ingestionSequence, adds the deleted document id
            to the dashboard database, and updates the current ingestion
            document's countDeleted.
+
+           Returns a status (-1 for error, 0 for success) along with the total
+           number of documents deleted.
         """
-        if not self._is_first_ingestion(ingestion_doc_id):
-            curr_ingest_doc = self.dashboard_db[ingestion_doc_id]
-            provider = curr_ingest_doc["provider"]
-            curr_seq = int(curr_ingest_doc["ingestionSequence"])
+        total_deleted = 0
+        if not ingestion_doc["ingestionSequence"] == 1:
+            provider = ingestion_doc["provider"]
+            curr_seq = int(ingestion_doc["ingestionSequence"])
             prev_seq = curr_seq - 1
 
             delete_docs = []
@@ -419,23 +491,42 @@ class Couch(object):
                 # So as not to use too much memory at once, do the bulk posts
                 # and deletions in sets of 1000 documents
                 if len(delete_docs) == 1000:
-                    self._bulk_post_to(self.dashboard_db, dashboard_docs)
+                    try:
+                        self._bulk_post_to(self.dashboard_db, dashboard_docs)
+                    except:
+                        print >> sys.stderr, "Error posting to dashboard db"
+                        return (-1, total_deleted)
                     self._update_ingestion_doc_counts(
-                        ingestion_doc_id, countDeleted=len(delete_docs)
+                        ingestion_doc, countDeleted=len(delete_docs)
                         )
-                    self._delete_documents(self.dpla_db, delete_docs)
+                    try:
+                        self._delete_documents(self.dpla_db, delete_docs)
+                    except:
+                        print >> sys.stderr, "Error deleting from dpla db"
+                        return (-1, total_deleted)
+                    total_deleted += len(delete_docs)
                     delete_docs = []
                     dashboard_docs = []
 
             if delete_docs:
                 # Last bulk post
-                self._bulk_post_to(self.dashboard_db, dashboard_docs)
+                try:
+                    self._bulk_post_to(self.dashboard_db, dashboard_docs)
+                except:
+                    print >> sys.stderr, "Error posting to dashboard db"
+                    return (-1, total_deleted)
                 self._update_ingestion_doc_counts(
-                    ingestion_doc_id, countDeleted=len(delete_docs)
+                    ingestion_doc, countDeleted=len(delete_docs)
                     )
-                self._delete_documents(self.dpla_db, delete_docs)
+                try:
+                    self._delete_documents(self.dpla_db, delete_docs)
+                except:
+                    print >> sys.stderr, "Error deleting from dpla db"
+                    return (-1, total_deleted)
+                total_deleted += len(delete_docs)
+        return (0, total_deleted)
 
-    def process_and_post_to_dpla(self, harvested_docs, ingestion_doc_id):
+    def process_and_post_to_dpla(self, harvested_docs, ingestion_doc):
         """Processes the harvested documents by:
 
         1. Removing unmodified docs from harvested set
@@ -448,8 +539,10 @@ class Couch(object):
         harvested_docs - A dictionary with the doc "_id" as the key and the
                          document to be inserted in CouchDB as the value
         ingestion_doc_id -  The "_id" of the ingestion document
+
+        Returns a tuple (status, error_msg) where status is -1 for an error or
+        0 otherwise
         """
-        ingestion_doc = self.dashboard_db.get(ingestion_doc_id)
         provider = ingestion_doc["provider"]
         ingestion_sequence = ingestion_doc["ingestionSequence"]
 
@@ -485,11 +578,29 @@ class Couch(object):
                                    "provider": provider,
                                    "ingestionSequence": ingestion_sequence})
 
-        self._bulk_post_to(self.dashboard_db, added_docs + changed_docs)
-        self._update_ingestion_doc_counts(ingestion_doc_id,
-                                          countAdded=len(added_docs),
-                                          countChanged=len(changed_docs))
-        self._bulk_post_to(self.dpla_db, harvested_docs.values())
+        
+        status = -1
+        error_msg = None
+        try:
+            self._bulk_post_to(self.dashboard_db, added_docs + changed_docs)
+        except:
+            error_msg = "Error posting to the dashboard database"
+            return (status, error_msg)
+        try:
+            self._update_ingestion_doc_counts(ingestion_doc,
+                                              countAdded=len(added_docs),
+                                              countChanged=len(changed_docs))
+        except:
+            error_msg = "Error updating ingestion document counts"
+            return (status, error_msg)
+        try:
+            self._bulk_post_to(self.dpla_db, harvested_docs.values())
+        except:
+            error_msg = "Error posting to the dpla database"
+            return (status, error_msg)
+
+        status = 0
+        return (status, error_msg)
 
     def rollback(self, provider, ingest_sequence):
         """ Rolls back the provider documents by:

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<archival-description>
+   <arc-id>279493</arc-id>
+   <arc-id-desc>279493</arc-id-desc>
+   <title>Death and Interment Record for David Frazier</title>
+   <title-only>Death and Interment Record for David Frazier</title-only>
+   <sequence-number>70</sequence-number>
+   <created-timestamp>1/20/2013 12:58:18</created-timestamp>
+
+<edited-timestamp>[g_x32_364, g_x2_5829, g_x8_1457, g_x128_91, g_x4_2914, g_x16_728, g_x64_182, b_x1_11659]</edited-timestamp>
+<level-of-desc level-id="NAVI">
+   <lod-display>Item</lod-display>
+</level-of-desc>
+<hierarchy>
+   
+   
+<hierarchy-item hierarchy-item-id="279423">
+<hierarchy-item-lod>Series</hierarchy-item-lod>
+<hierarchy-item-title>Records of Death and Interment at Camp Nelson, KY, 1864 - 1865</hierarchy-item-title>
+<hierarchy-item-inclusive-dates>1864 - 1865</hierarchy-item-inclusive-dates>
+</hierarchy-item>
+<hierarchy-item hierarchy-item-id="421">
+<hierarchy-item-lod>Record Group</hierarchy-item-lod>
+<hierarchy-item-title>Records of the Office of the Quartermaster General, 1774 - 1985</hierarchy-item-title>
+<hierarchy-item-record-group-number>92</hierarchy-item-record-group-number>
+</hierarchy-item>
+</hierarchy>
+<scope-content-note>Rank: Private Regiment: 6 Branch: United States Colored Troops (Regulars) Full Unit Designation: 6th United States Colored Troops (Regulars) Death Date: 11/08/1864 Grave Number: 0803
+</scope-content-note>
+<parent parent-id="279423">
+   <parent-lod>Series</parent-lod>
+   <parent-title>Records of Death and Interment at Camp Nelson, KY, compiled 1864 - 1865</parent-title>
+</parent>
+<parent-control-group parent-control-id="92">
+   <parent-control-lod>Record Group</parent-control-lod>
+   <parent-control-title>Records of the Office of the Quartermaster General, 1774 - 1985</parent-control-title>
+</parent-control-group>
+<general-notes>
+   <general-note>Note that only a portion of this document has been digitized and made available online.</general-note>
+</general-notes>
+<creators>
+   <creator creator-id="1106488" creator-record-type="ORG" num="1" standard="Y" summary="true">
+      <creator-display>War Department. Military Division of the Tennessee. Department of Tennessee. Post of Chattanooga, Tennessee. Quartermaster.	 (1865 - 1866)</creator-display>
+      <creator-type>Most Recent</creator-type>
+   </creator>
+</creators>
+<variant-control-numbers>
+   <variant-control-number mlr="false" num="1">
+      <variant-number>NRCA-92-QMG003-76</variant-number>
+      <variant-number-desc>NRCA-92-QMG003-76</variant-number-desc>
+      <variant-type>NAIL Control Number</variant-type>
+   </variant-control-number>
+</variant-control-numbers>
+<objects>
+   <object num="1">
+      <mime-type>image/gif</mime-type>
+      <file-size>110079</file-size>
+      <file-url>http://media.nara.gov/media/images/32/1/32-0070a.gif</file-url>
+      <thumbnail-url>http://media.nara.gov/media/images/32/1/32-0070t.gif</thumbnail-url>
+      <object-sequence-number>1</object-sequence-number>
+   </object>
+</objects>
+<general-records-types>
+   <general-records-type num="1">
+      <general-records-type-id>4237052</general-records-type-id>
+      <general-records-type-desc>Textual Records</general-records-type-desc>
+   </general-records-type>
+</general-records-types>
+<subject-references>
+   <subject-reference num="1" standard="Y" subject-id="4174599" subject-type="SRT">
+      <display-name>death records</display-name>
+   </subject-reference>
+   <subject-reference num="2" standard="Y" subject-id="3602474" subject-type="PER">
+      <display-name>Frazier, David</display-name>
+   </subject-reference>
+</subject-references>
+<access-restriction>
+   <restriction-status>Unrestricted</restriction-status>
+   <specific-access-restrictions/>
+</access-restriction>
+<use-restriction>
+   <use-status>Unrestricted</use-status>
+   <specific-use-restrictions/>
+</use-restriction>
+<physical-occurrences>
+<physical-occurrence>
+   <copy-status>Preservation-Reproduction-Reference</copy-status>
+<reference-units>
+   <reference-unit num="1" summary="true">
+      <ref-id>18</ref-id>
+      <name>National Archives at Atlanta</name>
+      <address1>5780 Jonesboro Road</address1>
+      <city>Morrow</city>
+      <state>GA</state>
+      <postcode>30260</postcode>
+      <mailcode>RE-AT</mailcode>
+      <phone>770-968-2100</phone>
+      <fax>770-968-2547</fax>
+      <email>atlanta.archives@nara.gov</email>
+   </reference-unit>
+</reference-units>
+<media-occurrences>
+   <media-occurrence num="1">
+      <media-type>Paper</media-type>
+   </media-occurrence>
+</media-occurrences>
+</physical-occurrence>
+</physical-occurrences>
+<indexable-dates>
+<date-range>[g_x16_116, g_x4_466, g_x64_29, g_x128_14, g_x32_58, g_x8_233, b_x2_932]</date-range>
+</indexable-dates>
+</archival-description>

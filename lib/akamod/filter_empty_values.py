@@ -20,12 +20,6 @@ from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, PATH_DELIM
 
 
-HTTP_INTERNAL_SERVER_ERROR = 500
-HTTP_TYPE_JSON = 'application/json'
-HTTP_TYPE_TEXT = 'text/plain'
-HTTP_HEADER_TYPE = 'Content-Type'
-
-
 def filter_empty_leaves(d, ignore_keys=tuple()):
     """
     Makes one iteration and removes found empty leaves from dictionary tree; (Empty leaf = key without value;)
@@ -130,7 +124,8 @@ def test_filtering():
     filtered = filter_dict(copy.deepcopy(source), filter_empty_leaves)
     assert expected == filtered, "Expected dictionary does not equal to filtered"
 
-@simple_service('POST', 'http://purl.org/la/dp/filter_empty_values', 'filter_empty_values', HTTP_TYPE_JSON)
+@simple_service('POST', 'http://purl.org/la/dp/filter_empty_values',
+                'filter_empty_values', 'application/json')
 def filter_empty_values_endpoint(body, ctype, ignore_key="originalRecord"):
     """
     Cleans empty leaves of given json tree;
@@ -138,20 +133,18 @@ def filter_empty_values_endpoint(body, ctype, ignore_key="originalRecord"):
      ignore_key - comma separated list of keys that should be ignored while traversing the tree;
     """
     try:
-        assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
-    except Exception as e:
-        error_text = "Bad JSON: %s: %s" % (e.__class__.__name__, str(e))
-        logger.exception(error_text)
-        response.code = HTTP_INTERNAL_SERVER_ERROR
-        response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
-        return error_text
+    except:
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return "Unable to parse body as JSON"
 
     ignore_keys = [k.strip() for k in ignore_key.split(",") if k]
     data = filter_dict(data, filter_empty_leaves, ignore_keys)
     return json.dumps(data)
 
-@simple_service('POST', 'http://purl.org/la/dp/filter_fields', 'filter_fields', HTTP_TYPE_JSON)
+@simple_service('POST', 'http://purl.org/la/dp/filter_fields', 'filter_fields',
+                'application/json')
 def filter_fields_endpoint(body, ctype, keys):
     """
     Cleans elements of json with given keys if corresponding value is empty;
@@ -159,20 +152,18 @@ def filter_fields_endpoint(body, ctype, keys):
      keys - comma separated list of top-level keys that should be checked for emptiness in json tree;
     """
     try:
-        assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
-    except Exception as e:
-        error_text = "Bad JSON: %s: %s" % (e.__class__.__name__, str(e))
-        logger.exception(error_text)
-        response.code = HTTP_INTERNAL_SERVER_ERROR
-        response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
-        return error_text
+    except:
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return "Unable to parse body as JSON"
 
     check_keys = [k.strip() for k in keys.split(",") if k]
     data = filter_dict(data, filter_fields, check_keys)
     return json.dumps(data)
 
-@simple_service('POST', 'http://purl.org/la/dp/filter_paths', 'filter_paths', HTTP_TYPE_JSON)
+@simple_service('POST', 'http://purl.org/la/dp/filter_paths', 'filter_paths',
+                'application/json')
 def filter_paths_endpoint(body, ctype, paths):
     """
     Cleans elements of json with given xpath-like path if corresponding value is empty;
@@ -180,18 +171,13 @@ def filter_paths_endpoint(body, ctype, paths):
      paths - comma separated list of json paths that should be checked for emptiness in json tree;
     """
     try:
-        assert ctype.lower() == HTTP_TYPE_JSON, "%s is not %s" % (HTTP_HEADER_TYPE, HTTP_TYPE_JSON)
         data = json.loads(body)
-    except Exception as e:
-        error_text = "Bad JSON: %s: %s" % (e.__class__.__name__, str(e))
-        logger.exception(error_text)
-        response.code = HTTP_INTERNAL_SERVER_ERROR
-        response.add_header(HTTP_HEADER_TYPE, HTTP_TYPE_TEXT)
-        return error_text
+    except:
+        response.code = 500
+        response.add_header('content-type', 'text/plain')
+        return "Unable to parse body as JSON"
 
     check_paths = [k.strip() for k in paths.split(",") if k]
     for path in check_paths:
         data = filter_path(data, path)
     return json.dumps(data)
-
-

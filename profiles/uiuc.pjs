@@ -1,9 +1,36 @@
 {
-    "list_sets": "/oai.listsets.json?endpoint=http://imagesearchnew.library.illinois.edu/oai/oai.php",
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://imagesearch.library.illinois.edu/cgi-bin/oai.exe"
-    ], 
     "name": "uiuc", 
+    "type": "oai_verbs",
+    "endpoint_url": "http://imagesearchnew.library.illinois.edu/oai/oai.php",
+    "subresources": [
+        "kennedy",
+        "olin",
+        "cartoons",
+        "wwposters",
+        "maps",
+        "exlibris",
+        "africanmaps",
+        "motley",
+        "actors",
+        "cubuilding",
+        "tdc",
+        "chicago",
+        "sousa",
+        "bronze",
+        "ALA",
+        "reston",
+        "koopman",
+        "blueprints",
+        "cannon",
+        "sanborn"
+    ], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/uiuc",
+        "name": "University of Illinois at Urbana-Champaign"
+    },
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://imagesearchnew.library.illinois.edu/oai/oai.php"
+    ], 
     "enrichments_rec": [
         "/select-id",
         "/oai-to-dpla",
@@ -32,33 +59,5 @@
         "/copy_prop?prop=sourceResource%2Frelation&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True&remove=True",
         "/copy_prop?prop=dataProvider&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True",
         "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library"
-    ], 
-    "subresources": [
-        "kennedy",
-        "olin",
-        "cartoons",
-        "wwposters",
-        "maps",
-        "exlibris",
-        "africanmaps",
-        "motley",
-        "actors",
-        "cubuilding",
-        "tdc",
-        "chicago",
-        "sousa",
-        "bronze",
-        "ALA",
-        "reston",
-        "koopman",
-        "blueprints",
-        "cannon",
-        "sanborn"
-    ], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/uiuc",
-        "name": "University of Illinois at Urbana-Champaign"
-    }, 
-    "type": "oai", 
-    "endpoint_URL": "/dpla-list-records?endpoint=http://imagesearchnew.library.illinois.edu/oai/oai.php&oaiset="
+    ]
 }
