@@ -95,10 +95,11 @@ def hathi_identify_object(body, ctype, download="True"):
         if "(OC" in id:
             oclc_id = re.sub("\(OCo?LC\)(oc[mn]?)?", "", id).strip()
         elif "ISBN:" in id and isbn is None:
-            temp = id.replace("ISBN:", "").strip()
-            if temp:
-                isbn = temp
-
+            for part in id.split(" "):
+                if part.isdigit():
+                    isbn = part
+                    break
+            
     if oclc_id is None:
         logger.debug("Field sourceResource/identifier does not contain " +
                      "OCLC for %s" % data["_id"])
