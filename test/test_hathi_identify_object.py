@@ -242,6 +242,15 @@ def test_thumbnail_url_prefix_UC1_UCAL():
     assert resp.status == 200
     assert json.loads(content).get("object") in thumbnail_urls
 
+def test_thumbnail_url_with_ISBN():
+    hathi_record = hathi_records["isbn"]
+    thumbnail_url = "http://bks6.books.google.com/books?id=rVhdAAAAMAAJ&printsec=frontcover&img=1&zoom=5"
+    thumbnail_urls = [thumbnail_url, thumbnail_url + "&edge=curl"]
+
+    resp, content = _get_server_response(json.dumps(hathi_record))
+    assert resp.status == 200
+    assert json.loads(content).get("object") in thumbnail_urls
+
 @nottest
 def test_thumbnail_url_prefix_UC1_UCSB():
     # TODO: Find UCSB record (barcode part of full hathitrust ID should have

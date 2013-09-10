@@ -11775,5 +11775,569 @@
        ],
        "@id": "http://dp.la/api/items/00674aa487e56be182438c7c31eec443",
        "id": "00674aa487e56be182438c7c31eec443"
+    },
+    "isbn": {
+       "_id": "hathitrust--000443495",
+       "_rev": "2-b1a44f74c4eb79d0388e87f993500e1b",
+       "dataProvider": [
+           "University of Michigan"
+       ],
+       "sourceResource": {
+           "publisher": [
+               "Madrid : Atlas"
+           ],
+           "description": [
+               "Precedido de un estudio sobre el dialecto hispano-mozárabe por D. Francisco Javier Simonet\"--Original t.p.",
+               "Bibliography: p. [ccxix]-ccxxxii.",
+               "Mode of access: Internet."
+           ],
+           "language": [
+               {
+                   "name": "Spanish",
+                   "iso639_3": "spa"
+               }
+           ],
+           "title": [
+               "Glosario de voces ibericas y latinas usadas entre los mozarabes /"
+           ],
+           "format": [
+               "Electronic resource",
+               "Language material"
+           ],
+           "creator": [
+               "Simonet, Francisco Javier, 1829-1897"
+           ],
+           "extent": [
+               "2 v. (ccxxxvi, 628 p.) ; 27 cm."
+           ],
+           "date": {
+               "begin": "1982",
+               "end": "1982",
+               "displayDate": "1982"
+           },
+           "specType": "Book",
+           "identifier": [
+               "ISBN: 8436305477 (set)",
+               "(RLIN)MIUG87-B14913",
+               "(CaOTULAS)160231943",
+               "(OCoLC)ocm13230493",
+               "Hathi: 000443495"
+           ],
+           "type": "text",
+           "subject": [
+               {
+                   "name": "Aljamía--Dictionaries"
+               },
+               {
+                   "name": "Spanish language--Foreign words and phrases--Arabic"
+               },
+               {
+                   "name": "Arabic language--Foreign words and phrases"
+               }
+           ]
+       },
+       "ingestDate": "2013-08-27T22:57:28.968132",
+       "originalRecord": {
+           "controlfield": [
+               {
+                   "#text": "000443495",
+                   "tag": "001"
+               },
+               {
+                   "#text": "MiU",
+                   "tag": "003"
+               },
+               {
+                   "#text": "19880718000000.0",
+                   "tag": "005"
+               },
+               {
+                   "#text": "m^^^^^^^^d^^^^^^^^",
+                   "tag": "006"
+               },
+               {
+                   "#text": "cr^bn^---auaua",
+                   "tag": "007"
+               },
+               {
+                   "#text": "880718r19821888sp^^^^^^^bd^^^00010^spa^d",
+                   "tag": "008"
+               }
+           ],
+           "_id": "000443495",
+           "leader": "^^^^^nam^a22002651a^4500",
+           "datafield": [
+               {
+                   "subfield": {
+                       "#text": "8436305477 (set)",
+                       "code": "a"
+                   },
+                   "tag": "020",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "(RLIN)MIUG87-B14913",
+                       "code": "a"
+                   },
+                   "tag": "035",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "(CaOTULAS)160231943",
+                       "code": "a"
+                   },
+                   "tag": "035",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "(OCoLC)ocm13230493",
+                       "code": "a"
+                   },
+                   "tag": "035",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "MnU",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "MnU",
+                           "code": "c"
+                       },
+                       {
+                           "#text": "CtY",
+                           "code": "d"
+                       }
+                   ],
+                   "tag": "040",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Simonet, Francisco Javier,",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "1829-1897.",
+                           "code": "d"
+                       }
+                   ],
+                   "tag": "100",
+                   "ind1": "1",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Glosario de voces ibericas y latinas usadas entre los mozarabes /",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "por Francisco Javier Simonet.",
+                           "code": "c"
+                       }
+                   ],
+                   "tag": "245",
+                   "ind1": "1",
+                   "ind2": "0"
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Madrid :",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "Atlas,",
+                           "code": "b"
+                       },
+                       {
+                           "#text": "1982.",
+                           "code": "c"
+                       }
+                   ],
+                   "tag": "260",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "2 v. (ccxxxvi, 628 p.) ;",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "27 cm.",
+                           "code": "c"
+                       }
+                   ],
+                   "tag": "300",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "\"Precedido de un estudio sobre el dialecto hispano-mozárabe por D. Francisco Javier Simonet\"--Original t.p.",
+                       "code": "a"
+                   },
+                   "tag": "500",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "Bibliography: p. [ccxix]-ccxxxii.",
+                       "code": "a"
+                   },
+                   "tag": "504",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Reprint. Originally published:",
+                           "code": "p"
+                       },
+                       {
+                           "#text": "Madrid : Establecimiento Tipográfico de Fortanet, 1888.",
+                           "code": "c"
+                       }
+                   ],
+                   "tag": "534",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "Mode of access: Internet.",
+                       "code": "a"
+                   },
+                   "tag": "538",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Aljamía",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "Dictionaries.",
+                           "code": "x"
+                       }
+                   ],
+                   "tag": "650",
+                   "ind1": " ",
+                   "ind2": "0"
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Spanish language",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "Foreign words and phrases",
+                           "code": "x"
+                       },
+                       {
+                           "#text": "Arabic.",
+                           "code": "x"
+                       }
+                   ],
+                   "tag": "650",
+                   "ind1": " ",
+                   "ind2": "0"
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "Arabic language",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "Foreign words and phrases.",
+                           "code": "x"
+                       }
+                   ],
+                   "tag": "650",
+                   "ind1": " ",
+                   "ind2": "0"
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "MiU",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "HATCH",
+                           "code": "b"
+                       },
+                       {
+                           "#text": "GRAD",
+                           "code": "c"
+                       },
+                       {
+                           "#text": "860.4 S6 1982",
+                           "code": "h"
+                       }
+                   ],
+                   "tag": "852",
+                   "ind1": "1",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "MiU",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "HATCH",
+                           "code": "b"
+                       },
+                       {
+                           "#text": "GRAD",
+                           "code": "c"
+                       },
+                       {
+                           "#text": "860.4 S6 1982",
+                           "code": "h"
+                       }
+                   ],
+                   "tag": "852",
+                   "ind1": "1",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "BK",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "Book",
+                           "code": "b"
+                       }
+                   ],
+                   "tag": "970",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "DI",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "Dictionaries",
+                           "code": "b"
+                       }
+                   ],
+                   "tag": "970",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "MiU",
+                       "code": "a"
+                   },
+                   "tag": "971",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "20040625",
+                       "code": "c"
+                   },
+                   "tag": "972",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": {
+                       "#text": "20040625",
+                       "code": "c"
+                   },
+                   "tag": "972",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "HT",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "avail_ht",
+                           "code": "b"
+                       }
+                   ],
+                   "tag": "973",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "HA",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "avail_ht_fulltext",
+                           "code": "b"
+                       }
+                   ],
+                   "tag": "973",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "AO",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "avail_online",
+                           "code": "b"
+                       }
+                   ],
+                   "tag": "973",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "AC",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "avail_circ",
+                           "code": "b"
+                       }
+                   ],
+                   "tag": "973",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "mdp.39015001108334",
+                           "code": "u"
+                       },
+                       {
+                           "#text": "pdus",
+                           "code": "r"
+                       },
+                       {
+                           "#text": "20110828",
+                           "code": "d"
+                       }
+                   ],
+                   "tag": "974",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "MAC",
+                           "code": "c"
+                       },
+                       {
+                           "#text": "9118",
+                           "code": "s"
+                       }
+                   ],
+                   "tag": "998",
+                   "ind1": " ",
+                   "ind2": " "
+               },
+               {
+                   "subfield": [
+                       {
+                           "#text": "MDP",
+                           "code": "a"
+                       },
+                       {
+                           "#text": "20",
+                           "code": "b"
+                       },
+                       {
+                           "#text": "20081013",
+                           "code": "c"
+                       },
+                       {
+                           "#text": "MIU01",
+                           "code": "l"
+                       },
+                       {
+                           "#text": "0000",
+                           "code": "h"
+                       }
+                   ],
+                   "tag": "999",
+                   "ind1": " ",
+                   "ind2": " "
+               }
+           ]
+       },
+       "ingestionSequence": 2,
+       "isShownAt": "http://catalog.hathitrust.org/Record/000443495",
+       "provider": {
+           "@id": "http://dp.la/api/contributor/hathitrust",
+           "name": "HathiTrust"
+       },
+       "@context": {
+           "begin": {
+               "@id": "dpla:dateRangeStart",
+               "@type": "xsd:date"
+           },
+           "@vocab": "http://purl.org/dc/terms/",
+           "hasView": "edm:hasView",
+           "name": "xsd:string",
+           "object": "edm:object",
+           "dpla": "http://dp.la/terms/",
+           "collection": "dpla:aggregation",
+           "edm": "http://www.europeana.eu/schemas/edm/",
+           "end": {
+               "@id": "dpla:dateRangeEnd",
+               "@type": "xsd:date"
+           },
+           "state": "dpla:state",
+           "aggregatedDigitalResource": "dpla:aggregatedDigitalResource",
+           "coordinates": "dpla:coordinates",
+           "isShownAt": "edm:isShownAt",
+           "stateLocatedIn": "dpla:stateLocatedIn",
+           "sourceResource": "edm:sourceResource",
+           "dataProvider": "edm:dataProvider",
+           "originalRecord": "dpla:originalRecord",
+           "provider": "edm:provider",
+           "LCSH": "http://id.loc.gov/authorities/subjects"
+       },
+       "ingestType": "item",
+       "@id": "http://dp.la/api/items/acd5e1b389876f78e7657f957fb9d4d1",
+       "id": "acd5e1b389876f78e7657f957fb9d4d1"
     }
 }
