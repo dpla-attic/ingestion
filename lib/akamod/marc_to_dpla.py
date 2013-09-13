@@ -104,6 +104,15 @@ def provider_transform(values):
 
     return {"provider": provider} if provider else {}
 
+def dataprovider_transform_uiuc(values):
+    data = {}
+    data["dataProvider"] = values[0]
+    data["provider"] = {}
+    data["provider"]["@id"] = "http://dp.la/api/contributor/uiuc"
+    data["provider"]["name"] = values[0]
+
+    return data
+
 def dataprovider_transform_hathi(values):
     providers = {
         "bc": "Boston College",
@@ -355,8 +364,10 @@ def all_transform(d, p):
     # _get_values). 
     data_map = {
         lambda t: t == "856":           [("isShownAt", "u")],
+        # Hathi
         lambda t: t == "973":           [("provider", "ab")],
         lambda t: t == "974":           [("dataProvider", "u")],
+        # UIUC
         lambda t: t == "852":           [("dataProvider", "a")]
     }
     source_resource_map = {
@@ -408,17 +419,17 @@ def all_transform(d, p):
                     for tup in tuples:
                         prop, codes = tup
                         values = _get_values(_dict, codes)
-                        if prop == "provider":
-                            data.update(provider_transform(values))
-                        elif prop == "dataProvider":
-                            if tag == "974" and PROVIDER == "hathitrust":
-                                dp = dataprovider_transform_hathi(values)
-                                data.update(dp)
-                            elif tag == "852" and PROVIDER == "uiuc":
-                                if values:
-                                    data["dataProvider"] = values[0]
-                        else:
-                            if values:
+                        if values:
+                            if prop == "provider":
+                                data.update(provider_transform(values))
+                            elif prop == "dataProvider":
+                                if tag == "974" and PROVIDER == "hathitrust":
+                                    dp = dataprovider_transform_hathi(values)
+                                    data.update(dp)
+                                elif tag == "852" and PROVIDER == "uiuc":
+                                    dp = dataprovider_transform_uiuc(values)
+                                    data.update(dp)
+                            else:
                                 data[prop] = values[0]
             # Handle source_resource_map matches
             for match, tuples in source_resource_map.iteritems():
@@ -439,30 +450,32 @@ def all_transform(d, p):
                                 # Handle values for all other sourceResource
                                 # fields
                                 values = _get_values(_dict, codes)
-                            if prop == "identifier":
-                                # Handle identifier labeling
-                                label = None
-                                if tag == "020":
-                                    label = "ISBN:"
-                                elif tag == "022":
-                                    label = "ISSN:"
-                                elif tag == "050":
-                                    label = "LC call number:"
-                                if label:
-                                    # Insert label as first value item as
-                                    # values will be joined
-                                    values.insert(0, label)
-                            values = _join_sourceresource_values(prop, values)
-                            if prop == "type":
-                                data["sourceResource"].update(
-                                    datafield_type_transform(values)
-                                )
-                            else:
-                                data["sourceResource"][prop].extend(values)
+                            if values:
+                                if prop == "identifier":
+                                    # Handle identifier labeling
+                                    label = None
+                                    if tag == "020":
+                                        label = "ISBN:"
+                                    elif tag == "022":
+                                        label = "ISSN:"
+                                    elif tag == "050":
+                                        label = "LC call number:"
+                                    if label:
+                                        # Insert label as first value item as
+                                        # values will be joined
+                                        values.insert(0, label)
+                                values = _join_sourceresource_values(prop, values)
+                                if prop == "type":
+                                    data["sourceResource"].update(
+                                        datafield_type_transform(values)
+                                    )
+                                else:
+                                    data["sourceResource"][prop].extend(values)
                         elif len(tup) == 3:
                             prop, index, codes = tup
                             values = _get_values(_dict, codes)
-                            data["sourceResource"][prop][index] = values 
+                            if values:
+                                data["sourceResource"][prop][index] = values 
             if tag == "662":
                 # Test: Log document with 662 (spatial)
                 logger.debug("Document has 662: %s" % d["_id"])
@@ -526,14 +539,16 @@ def all_transform(d, p):
         del data["sourceResource"][key]
 
     # Handle Hathi isShownAt
-    is_shown_at = None
-    for id in _as_list(getprop(data, "sourceResource/identifier")):
-        if id.startswith("Hathi: "):
-            id = id.split("Hathi: ")[-1]
-            is_shown_at = "http://catalog.hathitrust.org/Record/%s" % id
-            break
-    if is_shown_at:
-        setprop(data, "isShownAt", is_shown_at)
+    identifiers = getprop(data, "sourceResource/identifier")
+    if identifiers:
+        is_shown_at = None
+        for id in _as_list(identifiers):
+            if id.startswith("Hathi: "):
+                id = id.split("Hathi: ")[-1]
+                is_shown_at = "http://catalog.hathitrust.org/Record/%s" % id
+                break
+        if is_shown_at:
+            setprop(data, "isShownAt", is_shown_at)
 
     return data
 

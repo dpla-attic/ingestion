@@ -696,9 +696,10 @@ def test_reversed_date_range():
 
 def test_only_begin_or_end_date():
     """Should handle ranges with only begin or end date"""
-    INPUT = [{"date": "1970-"}, {"date": "-1970"}]
+    INPUT = [{"date": "1970-"}, {"date": "-1970"}, {"date": "19750-"}]
     EXPECTED = [{"date": {"begin": "1970", "end": None, "displayDate": "1970-"}},
-                {"date": {"begin": None, "end": "1970", "displayDate": "-1970"}}]
+                {"date": {"begin": None, "end": "1970", "displayDate": "-1970"}},
+                {"date": {"begin": None, "end": None, "displayDate": "19750-"}}]
 
     url = server() + "enrich_earliest_date?prop=date"
 
