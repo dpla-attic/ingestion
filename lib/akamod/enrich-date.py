@@ -145,10 +145,12 @@ def parse_date_or_range(d):
         elif "" in d.split(delim):
             # ie 1970- or -1970
             s = d.split(delim)
-            if s[0]:
+            if len(s[0]) == 4:
                 a, b = s[0], None
-            else:
+            elif len(s[1]) == 4:
                 a, b = None, s[1]
+            else:
+                a, b = None, None
         else:
             # ie 1970-01-01-1971-01-01, 1970Fall/August, 1970April/May, or
             # wordy date like "mid 11th century AH/AD 17th century (Mughal)"
