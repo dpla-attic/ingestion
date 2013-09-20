@@ -238,8 +238,8 @@ class OAIVerbsFetcher(Fetcher):
                     resumption_token = content.get("resumption_token")
                     if (resumption_token is not None and
                         len(resumption_token) > 0):
-                        # Override the parameters with the resumption token
-                        params = {"resumption_token": resumption_token}
+                        # Add resumption token
+                        params["resumption_token"] = resumption_token
                     else:
                         request_more = False
 

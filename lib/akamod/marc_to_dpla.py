@@ -426,7 +426,7 @@ def all_transform(d, p):
                                 if tag == "974" and PROVIDER == "hathitrust":
                                     dp = dataprovider_transform_hathi(values)
                                     data.update(dp)
-                                elif tag == "852" and PROVIDER == "uiuc":
+                                elif tag == "852" and PROVIDER == "uiuc_book":
                                     dp = dataprovider_transform_uiuc(values)
                                     data.update(dp)
                             else:
@@ -649,7 +649,8 @@ def marc_to_dpla(body, ctype, geoprop=None):
     global GEOPROP
     global PROVIDER
     GEOPROP = geoprop
-    PROVIDER = getprop(data, "_id").split("--")[0]
+
+    PROVIDER = data.get("_id", "").split("--")[0]
 
     out = {
         "@context": CONTEXT,
