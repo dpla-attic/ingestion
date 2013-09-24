@@ -40,7 +40,7 @@ def main(argv):
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
     except:
-        print "Error updating ingestion document " + ingestion_document_id
+        print "Error updating ingestion document " + ingestion_doc["id"]
         return -1
 
     # Back up provider data
@@ -91,7 +91,7 @@ def main(argv):
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
     except:
-        print "Error updating ingestion document " + ingestion_document_id
+        print "Error updating ingestion document " + ingestion_doc["id"]
         return -1
 
     return 0 if status == "complete" else -1
