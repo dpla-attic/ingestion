@@ -58,14 +58,12 @@ def contentdm_identify_object(body, ctype, download="True"):
         if len(p) != 2:
             logger.error("Bad URL %s. It should have just one 'u?' part." %
                          url)
-            log_json()
             return body
 
         (base_url, rest) = p
 
         if base_url == "" or rest == "":
             logger.error("Bad URL: %s. There is no 'u?' part." % url)
-            log_json()
             return body
 
         p = rest.split(",")
@@ -73,7 +71,6 @@ def contentdm_identify_object(body, ctype, download="True"):
         if len(p) != 2:
             logger.error("Bad URL %s. Expected two parts at the end, used " +
                          "in thumbnail URL for CISOROOT and CISOPTR." % url)
-            log_json()
             return body
 
         # Thumb url field.
