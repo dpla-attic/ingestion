@@ -294,7 +294,7 @@ class Couch(object):
             delete_docs.append(doc)
             count += 1
 
-            if len(delete_docs) == 1000:
+            if len(delete_docs) == self.iterview_batch:
                 print "%s DPLA documents deleted" % count
                 self._delete_documents(self.dpla_db, delete_docs)
                 delete_docs = []
@@ -316,7 +316,7 @@ class Couch(object):
             delete_docs.append(doc)
             count += 1
 
-            if len(delete_docs) == 1000:
+            if len(delete_docs) == self.iterview_batch:
                 print "%s Dashboard documents deleted" % count
                 self._delete_documents(self.dashboard_db, delete_docs)
                 delete_docs = []
@@ -347,7 +347,7 @@ class Couch(object):
                 del doc["_rev"]
             provider_docs.append(doc)
             # Bulk post every 1000
-            if len(provider_docs) == 1000:
+            if len(provider_docs) == self.iterview_batch:
                 self._bulk_post_to(backup_db, provider_docs)
                 provider_docs = []
                 print >> sys.stderr, "Backed up %s documents" % count
@@ -490,7 +490,7 @@ class Couch(object):
 
                 # So as not to use too much memory at once, do the bulk posts
                 # and deletions in sets of 1000 documents
-                if len(delete_docs) == 1000:
+                if len(delete_docs) == self.iterview_batch:
                     try:
                         self._bulk_post_to(self.dashboard_db, dashboard_docs)
                     except:
@@ -626,7 +626,7 @@ class Couch(object):
                 delete_docs.append(doc)
                 count += 1
                 # Delete in sets of 1000 so as not to use too much memory
-                if len(delete_docs) == 1000:
+                if len(delete_docs) == self.iterview_batch:
                     print "%s documents deleted" % count
                     self._delete_documents(self.dpla_db, delete_docs)
                     delete_docs = []
@@ -644,7 +644,7 @@ class Couch(object):
                 if "_rev" in doc:
                     del doc["_rev"]
                 docs.append(doc)
-                if len(docs) == 1000:
+                if len(docs) == self.iterview_batch:
                     print "%s documents rolled back" % count
                     self._bulk_post_to(self.dpla_db, docs)
                     docs = []
