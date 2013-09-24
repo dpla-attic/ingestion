@@ -10,18 +10,19 @@ without arguments.
 To use listing all source names there have to be loaded script
 couchdb_views/export_database.js.
 
-For accessing the Rackspace, you need to set two environment variables:
-    RACKSPACE_CDN_USERNAME
-    RACKSPACE_CDN_API_KEY
+For accessing the Couch database the following variables are read from the
+CouchDb section of the akara.ini file:
+    Url
+    Username
+    Password
+
+For accessing the Rackspace the following variables are read from the
+Rackspace section of the akara.ini file:
+    Username
+    ApiKey
+    ContainerName
 """
-
-# Production container.
-RS_CONTAINER_NAME = "DPLA"
-
-# Use this for tests only
-#RS_CONTAINER_NAME = "test"
-
-
+import ConfigParser
 try:
     import cloudfiles
 except:
@@ -36,32 +37,48 @@ pip install -r requrements.txt
     print msg
     exit(1)
 
+def set_global_variables():
+    # Set the Rackspace and Database variables as global
+    global RS_USERNAME
+    global RS_APIKEY
+    global RS_CONTAINER_NAME
+    global DB_URL
+    global DB_USERNAME
+    global DB_PASSWORD
 
-def get_rackspace_username_api_key():
-    """Gets the username and api key from environment variables.
+    config_file = "akara.ini"
+    config = ConfigParser.ConfigParser()
+    config.readfp(open(config_file))
+    RS_USERNAME = config.get("Rackspace", "Username")
+    RS_APIKEY = config.get("Rackspace", "ApiKey")
+    RS_CONTAINER_NAME = config.get("Rackspace", "ContainerName")
+    DB_URL = config.get("CouchDb", "Url")
+    DB_USERNAME = config.get("CouchDb", "Username")
+    DB_PASSWORD = config.get("CouchDb", "Password")
 
-    The variables should be:
-        RACKSPACE_CDN_USERNAME
-        RACKSPACE_CDN_API_KEY
-
-    Returns:
-        Tuple: (username, api_key)
-
-    """
-    import os
-    username_env_name = "RACKSPACE_CDN_USERNAME"
-    cdn_api_key = "RACKSPACE_CDN_API_KEY"
-
-    if not username_env_name in os.environ:
-        print "There is no %s environment variable." % username_env_name
+    if not RS_USERNAME:
+        print "There is no Rackspace Username in the configuration file"
         exit(1)
 
-    if not cdn_api_key in os.environ:
-        print "There is no %s environment variable." % cdn_api_key
+    if not RS_APIKEY:
+        print "There is no Rackspace ApiKey in the configuration file"
         exit(1)
 
-    return os.environ[username_env_name], os.environ[cdn_api_key]
+    if not RS_CONTAINER_NAME:
+        print "There is no Rackspace Container in the configuration file"
+        exit(1)
 
+    if not DB_URL:
+        print "There is no CouchDb Url in the configuration file"
+        exit(1)
+
+    if not DB_USERNAME:
+        print "There is no CouchDb Username in the configuration file"
+        exit(1)
+
+    if not DB_PASSWORD:
+        print "There is no CouchDb Password in the configuration file"
+        exit(1)
 
 def send_file_to_rackspace(arguments):
     """Sends the created file to the Rackspace CDN.
@@ -104,11 +121,8 @@ def get_rackspace_connection():
 
     Returns:
         new Rackspace connection
-
-    The usrname, api_keys are taken from the config file.
     """
-    username, api_key = get_rackspace_username_api_key()
-    return cloudfiles.get_connection(username, api_key)
+    return cloudfiles.get_connection(RS_USERNAME, RS_APIKEY)
 
 
 def get_rackspace_container(connection=None):
@@ -178,37 +192,60 @@ def download_source_data(arguments):
     The function uses couchdb bulk API for downloading the documents.
     The source name is taken from arguments["source"].
 
+    The file name is set to <arguments["source"]>.gz
+
     Then it uploads the file to Rackspace CDN if required.
     """
     s = arguments["source"]
     startkey = s + "--"
     endkey = s + '--\u9999'
 
-    url = url_join(
-        arguments["url"],
+    db_url = url_join(
+        DB_URL,
         '/_all_docs?include_docs=true&startkey="%s"&endkey="%s"' %
         (startkey, endkey)
     )
 
-    resp = open_connection(url, arguments)
+    resp = open_db_connection(db_url)
+
+    # Set the file name
+    arguments["file"] = s + ".gz"
 
     store_result_into_file(resp, arguments)
     send_file_to_rackspace(arguments)
 
 
-def print_all_sources(arguments):
-    """Prints all source names.
+def download_each_source_data(arguments):
+    """Gets a list of all sources in the Couch database and downloads each
+       source's data.
+
+       Arguments:
+           arguments - dictionary returned by the validate_arguments function
+
+       The function uses the get_all_sources function and extracts the list of
+       sources in the database then passes each source to the
+       download_source_data function.
+    """
+    data = get_all_sources()
+
+    for row in data["rows"]:
+        arguments["source"] = row["key"]
+        download_source_data(arguments)
+
+
+def get_all_sources():
+    """Gets all source names.
 
     This function uses javascript couchdb function which you can find
     in file: couchdb_views/export_database.js.
 
-    Arguments:
-        arguments - dictionary returned by the validate_arguments function
+    Returns:
+        A dictionary containing the rows from the Couch view
     """
 
     import json as j
-    url = url_join(
-        arguments["url"],
+    db_url = url_join(
+        DB_URL,
         "_design/export_database/_view/all_source_names?group=true"
     )
     msg_404 = """
@@ -217,11 +254,23 @@ Couldn't call the url: %s.
 This can be caused by not working couchdb, bad couchdb url, or missing couchdb
 function which you should load before running this script option.
 The file to be loaded can be found at couchdb_views/export_database.js
-""" % url
+""" % db_url
 
-    resp = open_connection(url, arguments, msg_404)
+    resp = open_db_connection(db_url, msg_404)
     data = resp.read()
     d = j.loads(data)
+
+    return d
+
+
+def print_all_sources(arguments):
+    """Prints all source names.
+
+    Arguments:
+        arguments - dictionary returned by the validate_arguments function
+    """
+
+    data = get_all_sources()
 
     print "%(key)s  --  %(value)s" % \
         {
@@ -229,7 +278,7 @@ The file to be loaded can be found at couchdb_views/export_database.js
          "value": "Count"
         }
 
-    for row in d["rows"]:
+    for row in data["rows"]:
         print "%(key)s  --  %(value)s" % row
 
 
@@ -246,20 +295,26 @@ def url_join(*args):
     return "/".join(map(lambda x: str(x).rstrip("/"), args))
 
 
-def open_connection(url, arguments, msg_on_error=None):
-    """Opens connection to the provided url.
+def open_db_connection(db_url, msg_on_error=None):
+    """Opens an authenticated connection to the provided db_url.
 
     Arguments:
-        arguments - dictionary returned by the validate_arguments function
+        arguments - the database url
 
     Returns:
         opened connection ready for reading data.
     """
+    import base64
     import urllib2 as u
-    print "Calling URL " + url
-    opener = u.build_opener()
+    print "Calling URL " + db_url
+
+    req = u.Request(db_url)
+    base64string = base64.encodestring('%s:%s' %
+                                       (DB_USERNAME, DB_PASSWORD))[:-1]
+    authheader =  "Basic %s" % base64string
+    req.add_header("Authorization", authheader)
     try:
-        return opener.open(url)
+        return u.urlopen(req)
     except Exception as e:
         print e
         if msg_on_error:
@@ -355,7 +410,7 @@ def remove_rackspace_file(arguments):
 
 
 def download_all_database(arguments):
-    """Downloads data from couchdb database and stores it in a file.
+    """Downloads data from couchdb database and stores it in the file dpla.gz
 
     Arguments:
         arguments - dictionary returned by the validate_arguments function
@@ -364,8 +419,12 @@ def download_all_database(arguments):
         Nothing
     """
     from gzip import GzipFile as zipf
-    url = url_join(arguments["url"], "_all_docs?include_docs=true")
-    response = open_connection(url, arguments)
+
+    db_url = url_join(DB_URL, "_all_docs?include_docs=true")
+    response = open_db_connection(db_url)
+
+    # Set file name
+    arguments["file"] = "dpla.gz"
 
     store_result_into_file(response, arguments)
     send_file_to_rackspace(arguments)
@@ -405,17 +464,21 @@ Script for downloading the couchdb database into compressed files.
 
 Usage:
 
-  Exporting whole database into one compressed file:
+  Exporting whole database into a compressed file dpla.gz:
 
-    export_database all <database_url> <output_file> <upload>
+    export_database all <upload>
 
-  Exporting all data for given source:
+  Exporting all data for given source into a compressed file <source_name>.gz:
 
-    export_database source <source_name> <database_url> <output_file> <upload>
+    export_database source <source_name> <upload>
+
+  Exporting all sources data into individual compressed files <source_name>.gz:
+
+    export_database each_source <upload>
 
   Listing all sources:
 
-    export_database list <database_url>
+    export_database list
 
   Listing Rackspace CDN Container information:
 
@@ -427,10 +490,6 @@ Usage:
 
   Arguments:
 
-    database_url - couchdb url, this url needs to contain username and password
-                   if needed. The url format is:
-                        - http://couchdburl:1234/
-                        - http://username:password@couchdburl:1234/
     output_file  - name of the file for storing the database
                  - the file extension should be ".gz"
     upload       - string "upload" if the file should be uploaded to Rackspace
@@ -452,50 +511,38 @@ def validate_arguments():
     operation = argv[1]
     res["operation"] = operation
 
-    if operation == "all":
+    if operation == "all" or operation == "each_source":
 
-        if not len(argv) in [4, 5]:
+        if not len(argv) in [2, 3]:
             print_usage()
-
-        res["url"]      = argv[2]
-        res["file"]     = argv[3]
 
         res["upload"]   = False
 
-        if len(argv) == 5:
-            if argv[4] == "upload":
+        if len(argv) == 3:
+            if argv[2] == "upload":
                 res["upload"] = True
             else:
                 print_usage()
-
-        if not res["file"].endswith(".gz"):
-            print "The file name has to end with '.gz'"
-            exit(1)
 
         return res
 
     elif operation == "list":
 
-        if len(argv) != 3:
+        if len(argv) != 2:
             print_usage()
-
-        res["url"]      = argv[2]
 
         return res
 
     elif operation == "source":
 
-        if not len(argv) in [5, 6]:
+        if not len(argv) in [3, 4]:
             print_usage()
 
         res["source"]   = argv[2]
-        res["url"]      = argv[3]
-        res["file"]     = argv[4]
-
         res["upload"]   = False
 
-        if len(argv) == 6:
-            if argv[5] == "upload":
+        if len(argv) == 4:
+            if argv[3] == "upload":
                 res["upload"] = True
             else:
                 print_usage()
@@ -538,11 +585,14 @@ def get_action_dispatcher():
         "source": download_source_data,
         "rsinfo": print_rackspace_info,
         "remove": remove_rackspace_file,
+        "each_source":   download_each_source_data,
     }
     return res
 
 
 if __name__ == "__main__":
+
+    set_global_variables()
 
     arguments = validate_arguments()
     operation = arguments["operation"]
