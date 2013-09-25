@@ -106,7 +106,7 @@ def provider_transform(values):
 
 def dataprovider_transform_uiuc(values):
     data = {}
-    data["dataProvider"] = values[0] + ", University Libraries"
+    data["dataProvider"] = values[0] + ", University Library"
     data["provider"] = {}
     data["provider"]["@id"] = "http://dp.la/api/contributor/uiuc"
     data["provider"]["name"] = values[0]
