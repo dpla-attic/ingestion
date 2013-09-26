@@ -883,7 +883,7 @@ class EDANFetcher(FileFetcher):
 
 def create_fetcher(profile_path, uri_base):
     fetcher_types = {
-        "ia": lambda p, u: IAFetcher(p, u),
+        'ia': lambda p, u: IAFetcher(p, u),
         'uva': lambda p, u: UVAFetcher(p, u),
         'mwdl': lambda p, u: MWDLFetcher(p, u),
         'nypl': lambda p, u: NYPLFetcher(p, u),
