@@ -192,24 +192,24 @@ def download_source_data(arguments):
     The function uses couchdb bulk API for downloading the documents.
     The source name is taken from arguments["source"].
 
-    The file name is set to <arguments["source"]>.gz
+    The file name is set to <source>.gz where <source> is the lower case
+    arguments["source"] string with whitespace replaced by underscores.
 
     Then it uploads the file to Rackspace CDN if required.
     """
+    import urllib
     s = arguments["source"]
-    startkey = s + "--"
-    endkey = s + '--\u9999'
 
     db_url = url_join(
         DB_URL,
-        '/_all_docs?include_docs=true&startkey="%s"&endkey="%s"' %
-        (startkey, endkey)
+        ('_design/export_database/_view/all_source_docs?include_docs=true&' +
+          urllib.urlencode({"startkey": '"%s"' % s, "endkey": '"%s"' % s}))
     )
 
     resp = open_db_connection(db_url)
 
     # Set the file name
-    arguments["file"] = s + ".gz"
+    arguments["file"] = s.lower().replace(" ", "_") + ".gz"
 
     store_result_into_file(resp, arguments)
     send_file_to_rackspace(arguments)
