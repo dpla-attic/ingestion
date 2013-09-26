@@ -1,34 +1,25 @@
 {
-    "name": "harvard",
+    "name": "bpl",
     "type": "oai_verbs",
     "metadata_prefix": "mods",
-    "endpoint_url": "http://vcoai.lib.harvard.edu/vcoai/vc",
-    "subresources": [
-        "dag",
-        "lap",
-        "crimes",
-        "scarlet",
-        "manuscripts"
-    ], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/harvard",
-        "name": "Harvard Library"
-    },
+    "endpoint_url": "http://fedora.digitalcommonwealth.org/oaiprovider/",
     "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc"
-    ],
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://fedora.digitalcommonwealth.org/oaiprovider/"
+    ], 
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/digital-commonwealth",
+        "name": "Digital Commonwealth"
+    }, 
+    "enrichments_coll": [],
     "enrichments_rec": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_mods_to_dpla?provider=HARVARD",
-        "/set_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",
+        "/oai_mods_to_dpla?provider=BPL",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
         "/cleanup_value",
-        "/move_date_values?prop=sourceResource%2Fsubject",
-        "/move_date_values?prop=sourceResource%2Fspatial",
-        "/shred?prop=sourceResource%2Fspatial&delim=--",
         "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich-subject",
@@ -37,12 +28,13 @@
         "/enrich-format",
         "/harvard_enrich_location",
         "/enrich_location",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/geocode",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/geocode?prop=sourceResource%2FstateLocatedIn",
         "/cleanup_language",
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+        "/set_prop?prop=provider%2Fname&value=Digital%20Commonwealth"
     ]
 }

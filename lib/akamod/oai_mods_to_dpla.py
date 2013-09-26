@@ -7,8 +7,8 @@ from functools import partial
 import base64
 import sys
 import re
-from copy import deepcopy
-from dplaingestion.selector import getprop, exists
+from dplaingestion.selector import setprop, getprop, exists
+from dplaingestion.utilities import iterify, remove_mods_prefix
 
 GEOPROP = None
 MODS = "metadata/mods/"
@@ -48,6 +48,7 @@ CONTEXT = {
    }
 }
 
+# Common transforms
 def name_from_name_part(name_part):
     type_exceptions = ("affiliation", "displayForm", "description", "role")
 
@@ -128,6 +129,9 @@ def subject_and_spatial_transform(d, p):
             if c and c not in val["spatial"]:
                 val["spatial"].append(c)
 
+        if "temporal" in s:
+            logger.debug("TEMPORAL: %s" % s["temporal"])
+
         val["subject"].append("--".join(subject))
 
     if not val["subject"]:
@@ -137,7 +141,69 @@ def subject_and_spatial_transform(d, p):
 
     return val
 
-def origin_info_transform(d, p):
+def title_transform(d, p, unsupported_types=[], unsupported_subelements=[]):
+    title = None
+
+    v = getprop(d, p)
+    for t in (v if isinstance(v, list) else [v]):
+        if "type" in t and t["type"] in unsupported_types:
+            continue
+
+        title = t["title"]
+        if "nonSort" in t and "nonSort" not in unsupported_subelements:
+            title = t["nonSort"] + title
+        if "subTitle" in t and "subTitle" not in unsupported_subelements:
+            title = title + ": " + t["subTitle"]
+        if "partNumber" in t and "partNumber" not in unsupported_subelements:
+            part = t["partNumber"]
+            if not isinstance(part, list):
+                part = [part]
+            part = ", ".join(part)
+            title = title + ". " + part + "."
+        if "partName" in t and "partName" not in unsupported_subelements:
+            title = title + ". " + t["partName"]
+
+    title = re.sub("\.\.", "\.", title)
+    title = re.sub(",,", ",", title)
+
+    return {"title": title} if title else {}
+
+def format_transform(d, p, authority_condition=None):
+    format = []
+    v = getprop(d, p)
+    for s in (v if isinstance(v, list) else [v]):
+        if isinstance(s, basestring):
+            format.append(s)
+        else:
+            if authority_condition is not None:
+                if "authority" in s and (s["authority"] == "marc" or
+                                         s["authority"] == ""):
+                    format.append(s["#text"])
+            else:
+                format.append(s["#text"])
+    format = filter(None, format)
+
+    return {"format": format} if format else {}
+
+def description_transform(d, p):
+    desc = getprop(d, p)
+    if not isinstance(desc, basestring):
+        desc = desc["#text"] if "#text" in desc else None
+
+    return {"description": desc} if desc else {}
+
+def type_transform(d, p):
+    type = []
+    for s in iterify(getprop(d, p)):
+        if "#text" in s:
+            type.append(s["#text"])
+        else:
+            type.append(s)
+
+    return {"type": type} if type else {}
+ 
+# Harvard transforms
+def origin_info_transform_harvard(d, p):
     val = {}
     v = getprop(d, p)
 
@@ -192,7 +258,7 @@ def origin_info_transform(d, p):
 
     return val
 
-def language_transform(d, p):
+def language_transform_harvard(d, p):
     language = []
     v = getprop(d, p)
     for s in (v if isinstance(v, list) else [v]):
@@ -201,7 +267,7 @@ def language_transform(d, p):
 
     return {"language": language} if language else {}
 
-def is_part_of_transform(d, p):
+def is_part_of_transform_harvard(d, p):
     ipo = []
     v = getprop(d, p)
     for s in (v if isinstance(v, list) else[v]):
@@ -213,55 +279,15 @@ def is_part_of_transform(d, p):
 
     return {"isPartOf": ipo} if ipo else {}
 
-def title_transform(d, p):
-    title = None
+def title_transform_harvard(d, p):
+    return title_transform(d, p,
+                           unsupported_types=["alternative"],
+                           unsupported_subelements=[])
 
-    v = getprop(d, p)
-    for t in (v if isinstance(v, list) else [v]):
-        if "type" in t and t["type"] == "alternative":
-            continue
+def format_transform_harvard(d, p):
+    return format_transform(d, p, authority_condition=True)
 
-        title = t["title"]
-        if "nonSort" in t:
-            title = t["nonSort"] + title
-        if "subTitle" in t:
-            title = title + ": " + t["subTitle"]
-        if "partNumber" in t:
-            part = t["partNumber"]
-            if not isinstance(part, list):
-                part = [part]
-            part = ", ".join(part)
-            title = title + ". " + part + "."
-        if "partName" in t:
-            title = title + ". " + t["partName"]
-
-    title = re.sub("\.\.", "\.", title)
-    title = re.sub(",,", ",", title)
-
-    return {"title": title} if title else {}
-
-def format_transform(d, p):
-    format = []
-    v = getprop(d, p)
-    for s in (v if isinstance(v, list) else [v]):
-        if isinstance(s, basestring):
-            format.append(s)
-        else:
-            if "authority" in s and (s["authority"] == "marc" or
-                                     s["authority"] == ""):
-                format.append(s["#text"])
-    format = filter(None, format)
-
-    return {"format": format} if format else {}
-
-def description_transform(d, p):
-    desc = getprop(d, p)
-    if not isinstance(desc, basestring):
-        desc = desc["#text"] if "#text" in desc else None
-
-    return {"description": desc} if desc else {}
-    
-def url_transform(d):
+def url_transform_harvard(d):
     iho = {}
     p = MODS + "location"
     if exists(d, p):
@@ -283,7 +309,7 @@ def url_transform(d):
 
     return iho
 
-def data_provider_transform(d):
+def data_provider_transform_harvard(d):
     dp = None
     set = getprop(d, "header/setSpec", True)
 
@@ -300,7 +326,7 @@ def data_provider_transform(d):
 
     return {"dataProvider": dp} if dp else {}
 
-def identifier_transform(d):
+def identifier_transform_harvard(d):
     id = []
     obj = getprop(d, MODS + "identifier", True)
     if obj and "type" in obj and obj["type"] == "Object Number":
@@ -314,33 +340,208 @@ def identifier_transform(d):
     
     return {"identifier" : "; ".join(id)} if id else {}
 
-# Structure mapping the original top level property to a function returning a single
-# item dict representing the new property and its value
-CHO_TRANSFORMER = {
-    "collection"                                         : lambda d, p: {"collection": getprop(d, p)},
-    MODS + "note"                                        : description_transform,
-    MODS + "name"                                        : creator_and_contributor_transform,
-    MODS + "genre"                                       : format_transform,
-    MODS + "relatedItem"                                 : is_part_of_transform,
-    MODS + "subject"                                     : subject_and_spatial_transform,
-    MODS + "titleInfo"                                   : title_transform,
-    MODS + "typeOfResource"                              : lambda d, p: {"type": getprop(d, p)},
-    MODS + "originInfo"                                  : origin_info_transform,
-    MODS + "language/languageTerm"                       : language_transform,
-    MODS + "physicalDescription/extent"                  : lambda d, p: {"extent": getprop(d, p)}
+# BPL transforms
+def origin_info_transform_bpl(d, p):
+    origin_info = getprop(d, p)
+
+    # date
+    date = [] 
+    for key in ["dateCreated", "dateIssued", "dateOther", "copyrightDate"]:
+        _dict = getprop(origin_info, key, True)
+        if _dict is not None:
+            start_date = None
+            end_date = None
+            for item in iterify(_dict):
+                if isinstance(item, basestring):
+                    date.append(item)
+                elif item.get("encoding") == "w3cdtf":
+                    text = item.get("#text")
+                    if item.get("point") == "start":
+                        start_date = text
+                    elif item.get("point") == "end":
+                        end_date = text
+                    else:
+                        date.append(text)
+            if start_date is not None and end_date is not None:
+                date.append("%s-%s" %(start_date, end_date))
+
+    # publisher
+    publisher = []
+    if "publisher" in origin_info:
+        publisher.append(origin_info["publisher"])
+    if "place" in origin_info:
+        for p in iterify(origin_info["place"]):
+            if getprop(p, "placeTerm/type", True) == "text":
+                publisher.append(getprop(p, "placeTerm/#text", True))
+
+    val = {}
+    if date:
+        val["date"] = date
+    if publisher:
+        val["publisher"] = publisher
+
+    return val
+
+def language_transform_bpl(d, p):
+    language = []
+    v = getprop(d, p)
+    for s in iterify(v):
+        if s.get("type") == "text" and s.get("authority") == "iso639-2b" and \
+           s.get("authorityURI") == "http://id.loc.gov/vocabulary/iso639-2":
+            language.append(s.get("#text"))
+
+    return {"language": language} if language else {}
+
+def is_part_of_transform_bpl(d, p):
+    ipo = []
+    v = getprop(d, p)
+    host = None
+    series = None
+    for s in iterify(v):
+        title = getprop(s, "titleInfo/title", True)
+        if title is not None:
+            if s.get("type") == "host":
+                host = title
+            if s.get("type") == "series":
+                series = title
+
+        if host:
+            val = host
+            if series:
+                val += ". " + series
+            ipo.append(val)
+
+    ipo = ipo[0] if len(ipo) == 1 else ipo
+
+    return {"isPartOf": ipo} if ipo else {}
+
+def title_transform_bpl(d, p):
+    return title_transform(d, p,
+                           unsupported_types=[],
+                           unsupported_subelements=["partNumber", "partName"])
+
+def format_transform_bpl(d, p):
+    return format_transform(d, p, authority_condition=False)
+   
+def identifier_transform_bpl(d, p):
+    identifier = []
+    types = ["local-accession", "local-other", "local-call", "local-barcode",
+             "isbn", "ismn", "isrc", "issn", "issue-number", "lccn",
+             "matrix-number", "music-plate", "music-publisher", "sici",
+             "videorecording-identifier"]
+    for item in iterify(getprop(d, p)):
+        type = item.get("type")
+        if type in types:
+            type = " ".join(type.split("-"))
+            identifier.append("%s: %s" % (type.capitalize(),
+                                          item.get("#text")))
+        else:
+            logger.debug("Identifier type qualifier %s not in types for %s" %
+                         (type, d["_id"]))
+
+    return {"identifier": identifier} if identifier else {}
+
+def rights_transform_bpl(d, p):
+    rights = []
+    for s in iterify(getprop(d, p)):
+        rights.append(s.get("#text"))
+
+    rights = ". ".join(rights).replace("..", ".")
+
+    return {"rights": rights} if rights else {}
+
+def location_transform_bpl(d, p): 
+    def _get_media_type(d):
+        pd = iterify(getprop(d, "physicalDescription", True))
+        for _dict in filter(None, pd): 
+            try:
+                return getprop(_dict, "internetMediaType")
+            except KeyError:
+                pass
+
+        return None
+
+    location = iterify(getprop(d, p)) 
+    format = _get_media_type(d)
+    phys_location = None
+    sub_location = None
+    out = {}
+    try:
+        for _dict in location:
+            if "url" in _dict:
+                for url_dict in _dict["url"]:
+                    if url_dict and "access" in url_dict:
+                        if url_dict["access"] == "object in context" and \
+                           url_dict.get("usage") == "primary":
+                            out["isShownAt"] = url_dict.get("#text")
+                        elif url_dict["access"] == "preview":
+                            out["object"] = url_dict.get("#text")
+                        elif url_dict["access"] == "raw object":
+                            out["hasView"] = {"@id:": url_dict.get("#text"),
+                                              "format": format}
+            if phys_location is None:
+                phys_location = getprop(_dict, "physicalLocation", True)
+            if sub_location is None:
+                sub_location = getprop(_dict, "holdingSimple/" +
+                                       "copyInformation/subLocation", True)
+        if phys_location is not None:
+            out["dataProvider"] = phys_location
+            if sub_location is not None:
+                out["dataProvider"] += ". " + sub_location
+    except Exception as e:
+        logger.error(e)
+    finally:
+        return out
+
+CHO_TRANSFORMER = {}
+AGGREGATION_TRANSFORMER = {}
+
+CHO_TRANSFORMER["BPL"] = {
+    MODS + "genre"                     : format_transform_bpl,
+    MODS + "titleInfo"                 : title_transform_bpl,
+    MODS + "identifier"                : identifier_transform_bpl,
+    MODS + "originInfo"                : origin_info_transform_bpl,
+    MODS + "language/languageTerm"     : language_transform_bpl,
+    MODS + "relatedItem"               : is_part_of_transform_bpl,
+    MODS + "accessCondition"           : rights_transform_bpl
 }
 
-AGGREGATION_TRANSFORMER = {
-    "id"                         : lambda d, p: {"id": getprop(d, p), "@id" : "http://dp.la/api/items/"+getprop(d, p)},
-    "_id"                        : lambda d, p: {"_id": getprop(d, p)},
-    "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
-    "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
-    "originalRecord"             : lambda d, p: {"originalRecord": getprop(d, p)},
-    "provider"                   : lambda d, p: {"provider": getprop(d, p)}
+CHO_TRANSFORMER["HARVARD"] = {
+    MODS + "genre"                     : format_transform_harvard,
+    MODS + "relatedItem"               : is_part_of_transform_harvard,
+    MODS + "titleInfo"                 : title_transform_harvard,
+    MODS + "originInfo"                : origin_info_transform_harvard,
+    MODS + "language/languageTerm"     : language_transform_harvard
 }
 
-@simple_service("POST", "http://purl.org/la/dp/oai_mods_to_dpla", "oai_mods_to_dpla", "application/ld+json")
-def oaimodstodpla(body, ctype, geoprop=None):
+CHO_TRANSFORMER["common"] = {
+    "collection"                       : lambda d, p: {"collection":
+                                                       getprop(d, p)},
+    MODS + "note"                      : description_transform,
+    MODS + "name"                      : creator_and_contributor_transform,
+    MODS + "subject"                   : subject_and_spatial_transform,
+    MODS + "typeOfResource"            : type_transform,
+    MODS + "physicalDescription/extent": lambda d, p: {"extent": getprop(d, p)}
+}
+
+AGGREGATION_TRANSFORMER["BPL"] = {
+    MODS + "location": location_transform_bpl
+}
+
+AGGREGATION_TRANSFORMER["common"] = {
+    "id"            : lambda d, p: {"id": getprop(d, p),
+                                    "@id": "http://dp.la/api/items/" + 
+                                           getprop(d, p)},
+    "_id"           : lambda d, p: {"_id": getprop(d, p)},
+    "provider"      : lambda d, p: {"provider": getprop(d, p)},
+    "ingestType"    : lambda d, p: {"ingestType": getprop(d, p)},
+    "ingestDate"    : lambda d, p: {"ingestDate": getprop(d, p)},
+    "originalRecord": lambda d, p: {"originalRecord": getprop(d, p)},
+}
+
+@simple_service("POST", "http://purl.org/la/dp/oai_mods_to_dpla",
+                "oai_mods_to_dpla", "application/ld+json")
+def oaimodstodpla(body, ctype, geoprop=None, provider=None):
     """
     Convert output of JSON-ified OAI MODS format into the DPLA JSON-LD format.
 
@@ -362,19 +563,38 @@ def oaimodstodpla(body, ctype, geoprop=None):
         "sourceResource": {}
     }
 
+    if provider == "BPL":
+        data = remove_mods_prefix(data)
+
     # Apply all transformation rules from original document
-    for p in CHO_TRANSFORMER:
+    transformer_pipeline = {}
+    transformer_pipeline.update(CHO_TRANSFORMER.get(provider, {}),
+                                **CHO_TRANSFORMER["common"])
+    for p in transformer_pipeline:
         if exists(data, p):
-            out["sourceResource"].update(CHO_TRANSFORMER[p](data, p))
-    for p in AGGREGATION_TRANSFORMER:
+            out["sourceResource"].update(transformer_pipeline[p](data, p))
+    transformer_pipeline = {}
+    transformer_pipeline.update(AGGREGATION_TRANSFORMER.get(provider, {}),
+                                **AGGREGATION_TRANSFORMER["common"])
+    for p in transformer_pipeline:
         if exists(data, p):
-            out.update(AGGREGATION_TRANSFORMER[p](data, p))
+            out.update(transformer_pipeline[p](data, p))
 
     # Apply transformations that are dependent on more than one
     # original document field
-    out["sourceResource"].update(identifier_transform(data))
-    out.update(url_transform(data))
-    out.update(data_provider_transform(data))
+    if provider == "HARVARD":
+        out["sourceResource"].update(identifier_transform_harvard(data))
+        out.update(url_transform_harvard(data))
+        out.update(data_provider_transform_harvard(data))
+
+    # Join dataProvider with isPartOf for BPL
+    if provider == "BPL":
+        try:
+            ipo = getprop(out, "dataProvider") + ". " + \
+                  getprop(out, "sourceResource/isPartOf")
+            setprop(out, "sourceResource/isPartOf", ipo.replace("..", "."))
+        except:
+            pass
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

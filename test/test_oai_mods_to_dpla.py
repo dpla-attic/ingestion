@@ -10,9 +10,9 @@ from nose.tools import nottest
 from urllib import quote
 
 
-URL = server() + "oai_mods_to_dpla"
-def _get_server_response(body):
-    return H.request(URL, "POST", body=body)
+def _get_server_response(body, provider):
+    url = server() + "oai_mods_to_dpla?provider=" + provider
+    return H.request(url, "POST", body=body)
 
 def test_subject_and_spatial_transform():
     INPUT = {
@@ -84,7 +84,7 @@ def test_subject_and_spatial_transform():
         ]
     }
 
-    resp, content = _get_server_response(json.dumps(INPUT))
+    resp, content = _get_server_response(json.dumps(INPUT), provider="HARVARD")
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"]) 
 
@@ -130,7 +130,7 @@ def test_origin_info_transform():
         "publisher": "[United States: s.n., 1832]"
     }
 
-    resp, content = _get_server_response(json.dumps(INPUT))
+    resp, content = _get_server_response(json.dumps(INPUT), provider="HARVARD")
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"]) 
 
@@ -146,7 +146,7 @@ def test_description_transform1():
         "description": "A description"
     }
 
-    resp, content = _get_server_response(json.dumps(INPUT))
+    resp, content = _get_server_response(json.dumps(INPUT), provider="HARVARD")
     print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"])
@@ -165,7 +165,7 @@ def test_description_transform2():
         "description": "A description"
     }
 
-    resp, content = _get_server_response(json.dumps(INPUT))
+    resp, content = _get_server_response(json.dumps(INPUT), provider="HARVARD")
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content)["sourceResource"])
 

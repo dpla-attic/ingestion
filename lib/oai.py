@@ -18,6 +18,7 @@ from amara.lib import U
 from amara.pushtree import pushtree
 from amara.thirdparty import httplib2
 from akara import logger
+from dplaingestion.utilities import iterify
 import xmltodict
 
 OAI_NAMESPACE = u"http://www.openarchives.org/OAI/2.0/"
@@ -169,7 +170,8 @@ class oaiservice(object):
         if metadataPrefix == "mods" or metadataPrefix == "marc":
             xml_content = XML_PARSE(content)
             records = []
-            for record in xml_content["OAI-PMH"]["ListRecords"]["record"]:
+            list_records = xml_content["OAI-PMH"]["ListRecords"]["record"]
+            for record in iterify(list_records):
                 id = record["header"]["identifier"]
                 if "null" not in id:
                     records.append((id, record))

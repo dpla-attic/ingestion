@@ -16,6 +16,7 @@ from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.fetcher import create_fetcher
 from dplaingestion.selector import getprop
+from dplaingestion.utilities import iterify
 
 def create_fetch_dir(provider):
     return tempfile.mkdtemp("_" + provider)
@@ -57,7 +58,7 @@ def main(argv):
     total_fetched_records = 0
     for response in fetcher.fetch_all_data():
         if response["error"]:
-            error_msg.extend(response["error"])
+            error_msg.extend(iterify(response["error"]))
             print response["error"]
         else:
             # Write records to file
