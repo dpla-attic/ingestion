@@ -177,6 +177,8 @@ class oaiservice(object):
                     records.append((id, record))
             if "resumptionToken" in xml_content["OAI-PMH"]["ListRecords"]:
                 resumption_token = xml_content["OAI-PMH"]["ListRecords"]["resumptionToken"]
+                if isinstance(resumption_token, dict):
+                    resumption_token = resumption_token.get("#text", "")
             else:
                 resumption_token = ''
         else:
