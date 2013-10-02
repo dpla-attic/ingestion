@@ -426,8 +426,12 @@ def download_all_database(arguments):
     # Set file name
     arguments["file"] = "dpla.gz"
 
-    store_result_into_file(response, arguments)
-    send_file_to_rackspace(arguments)
+    status = store_result_into_file(response, arguments)
+    if status == 0:
+        send_file_to_rackspace(arguments)
+    else:
+        print "Did not send file %s to the Rackspace container" \
+              % arguments["file"]
 
 
 def store_result_into_file(result, arguments):
@@ -446,13 +450,19 @@ def store_result_into_file(result, arguments):
     block_size = 10 * 1024 * 1024
     with zipf(arguments["file"], "w") as zf:
         while True:
-            buffer = result.read(block_size)
-            if not buffer:
-                break
+            try:
+                buffer = result.read(block_size)
+                if not buffer:
+                    break
+            except Exception, e:
+                print "Error reading from result: %s" % e
+                return -1
             downloaded_size += len(buffer)
             zf.write(buffer)
             status = "Downloaded " + convert_bytes(downloaded_size)
             print status
+
+    return 0
 
 
 def print_usage():
