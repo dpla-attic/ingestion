@@ -47,7 +47,7 @@ def main(argv):
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
     except:
         logger.error("Error updating ingestion doc %s in %s" %
-                     (ingestion_doc["id"], __name__))
+                     (ingestion_doc["_id"], __name__))
         return -1
 
     error_msg = []
@@ -88,7 +88,7 @@ def main(argv):
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
     except:
         logger.error("Error updating ingestion doc %s in %s" %
-                     (ingestion_doc["id"], __name__))
+                     (ingestion_doc["_id"], __name__))
         return -1
 
     return 0 if status == "complete" else -1

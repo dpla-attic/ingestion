@@ -44,7 +44,7 @@ def main(argv):
        getprop(latest_ingestion_doc, "delete_process/status") != "complete":
         error_msg = "Error, last ingestion did not complete. Review " + \
                     "dashboard document %s for errors." % \
-                    latest_ingestion_doc["id"]
+                    latest_ingestion_doc["_id"]
         logger.error(error_msg)
         print error_msg
         return None

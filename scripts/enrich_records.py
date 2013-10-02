@@ -58,7 +58,7 @@ def main(argv):
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
     except:
-        print "Error updating ingestion document " + ingestion_doc["id"]
+        print "Error updating ingestion document " + ingestion_doc["_id"]
         return -1
 
     # Set the headers sent with the enrich request
@@ -119,7 +119,7 @@ def main(argv):
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
     except:
-        print "Error updating ingestion document " + ingestion_doc["id"]
+        print "Error updating ingestion document " + ingestion_doc["_id"]
         return -1
 
     return 0 if status == "complete" else -1
