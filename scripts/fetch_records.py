@@ -75,7 +75,7 @@ def main(argv):
         os.rmdir(fetch_dir)
         # Error if fetch_dir was empty
         status = "error"
-        error_msg = "Error, no records fetched"
+        error_msg.append("Error, no records fetched")
         logger.error(error_msg)
     except:
         status = "complete"
