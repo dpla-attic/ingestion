@@ -756,9 +756,6 @@ class FileFetcher(Fetcher):
                                 self.collections[id]["records"].append(record)
                             else:
                                 pass
-                                #response["error"].append("Records without " +
-                                #                         "collection found " +
-                                #                         "in %s" % filepath)
                         else:
                            response["error"].append("Did not retrieve " +
                                                     "record from file " +
@@ -834,15 +831,38 @@ class EDANFetcher(FileFetcher):
         self.file_filter = "*_DPLA.xml"
         super(EDANFetcher, self).__init__(profile, uri_base)
 
+    def parse(self, doc_list):
+        parsed_docs = xmltodict.parse("<docs>" + "".join(doc_list) + "</docs>")
+        return parsed_docs["docs"]["doc"]
+
     def extract_xml_content(self, filepath):
         error = None
-        file = open(filepath, "r")
-        try:
-            content = xmltodict.parse(file)
-        except:
-            error = "Error parsing content from file %s" % filepath
+        # First <doc> is not on its own line so let's get it there
+        cmd = "grep -rl '><doc>' %s | xargs sed -i 's/><doc>/>\\n<doc>/g'" % \
+              filepath
+        os.system(cmd)
 
-        return error, content
+        # Read in every 1000 docs
+        docs = []
+        with open(filepath, "r") as f:
+            while True:
+                try:
+                    line = f.readline()
+                    if not line:
+                        break
+                    if line.startswith("<doc>"):
+                        docs.append(line)
+                    if len(docs) == 1000:
+                        yield error, self.parse(docs)
+                        docs = []
+                except Exception, e:
+                    error = "Error parsing content from file %s: %s" % \
+                            (filepath, e)
+                    yield error, None
+                    break
+        # Last yield
+        if docs and error is None:
+            yield error, self.parse(docs)
 
     def extract_collection_and_record(self, file_path):
         def _normalize_collection_name(name):
@@ -852,34 +872,35 @@ class EDANFetcher(FileFetcher):
 
         error, collection, record = None, None, None
 
-        error, content = self.extract_xml_content(file_path)
-        if error is None:
-            for record in getprop(content, "response/result/doc"):
-                try:
-                    record["_id"] = \
-                        record["descriptiveNonRepeating"]["record_ID"]
-                except:
-                    error = 'Could not find "record_ID" in file %s' % file_path
-                    yield error, collection, record
-                    continue
+        for error, content in self.extract_xml_content(file_path):
+            if error is None:
+                for record in content:
+                    try:
+                        record["_id"] = \
+                            record["descriptiveNonRepeating"]["record_ID"]
+                    except:
+                        error = 'Could not find "record_ID" in file %s' % \
+                                file_path
+                        yield error, collection, record
+                        continue
 
-                if not "setName" in record["freetext"]:
-                    yield error, collection, record
-                    continue
-                    
-                setname = getprop(record, "freetext/setName")
-                for s in iterify(setname):
-                    if "#text" in s:
-                        collection = {
-                            "id": _normalize_collection_name(s["#text"]),
-                            "title": s["#text"]
-                        }
-                        break
+                    if not "setName" in record["freetext"]:
+                        yield error, collection, record
+                        continue
+                        
+                    setname = getprop(record, "freetext/setName")
+                    for s in iterify(setname):
+                        if "#text" in s:
+                            collection = {
+                                "id": _normalize_collection_name(s["#text"]),
+                                "title": s["#text"]
+                            }
+                            break
 
+                    yield error, collection, record
+                    collection = None
+            else:
                 yield error, collection, record
-                collection = None
-        else:
-            yield error, collection, record
 
 def create_fetcher(profile_path, uri_base):
     fetcher_types = {
