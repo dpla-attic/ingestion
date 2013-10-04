@@ -4,6 +4,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.utilities import iterify
 
 REGEXPS = ('\.',''), ('\(',''), ('\)',''), ('-',''), (',','')
 
@@ -26,56 +27,14 @@ def enrichlocation(body,ctype,action="enrich_location", prop="sourceResource/spa
         return "Unable to parse body as JSON"
 
     if exists(data,prop):
-        v = getprop(data,prop)
+        v = iterify(getprop(data,prop))
 
-        # If prior provider-specific location enrichment occured,
-        # v[0] will be a dictrionary
-        if isinstance(v[0], dict):
-            for k in v[0].keys():
-                v[0][k] = remove_space_around_semicolons(v[0][k])
-
-            """
-            if 'state' in v[0]:
-                # Handle case where a previous provider-specific location
-                # enrichment set the state field
-                isostate = get_isostate(v[0]['state'])
-                # It may be the case that the 'state' field does not contain a
-                # State name
-                if isostate[0]:
-                    v[0]['iso3166-2'] = isostate[0]
-                    v[0]['state'] = isostate[1]
-                else:
-                    # We may want to keep whatever non-State value was placed in
-                    # state
-                    v[0]['name'] = v[0]['state']
-                    # Remove bogus state
-                    del v[0]['state']
+        for i in range(len(v)):
+            if isinstance(v[i], dict):
+                for k in v[i].keys():
+                    v[i][k] = remove_space_around_semicolons(v[i][k])
             else:
-                # Handle case where a previous provider-specific location
-                # enrichment did not set the state field
-                for val in v[0].values():
-                    isostate = get_isostate(val)
-                    if isostate[0]:
-                        v[0]['iso3166-2'] = isostate[0]
-                        v[0]['state'] = isostate[1]
-                        break
-            """
-        else:
-            # Handle the case where no previous provider-specific location
-            # enrichment occured. Convert spatial from list of strings to
-            # dictionary.
-            sp = []
-            for s in (v if not isinstance(v, basestring) else [v]):
-                d= {}
-                d['name'] = remove_space_around_semicolons(s)
-                """
-                isostate = get_isostate(d['name'], abbrev="Yes")
-                if isostate[0]:
-                    d['iso3166-2'] = isostate[0]
-                    d['state'] = isostate[1]
-                """
-                sp.append(d)
-            v = sp
+                v[i] = {"name": remove_space_around_semicolons(v[i])}
 
         # If any of the spatial fields contain semi-colons, we need to create
         # multiple dictionaries.
