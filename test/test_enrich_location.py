@@ -336,6 +336,42 @@ def test_removing_bracket():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
+def test_enrich_list_of_dictionaries_and_strings():
+    """Should handle list of dictionaries and strings"""
+    INPUT = {
+        "id": "12345",
+        "sourceResource": {"spatial": [
+            {
+                "country": "United States",
+                "county": "Buncombe",
+                "state": "North Carolina"
+            },
+            "Rushmore, Mount",
+            "Mount Rushmore National Memorial"
+        ]}
+    }
+    EXPECTED = {
+        "id": "12345",
+        "sourceResource": {"spatial": [
+            {
+                "country": "United States",
+                "county": "Buncombe",
+                "state": "North Carolina"
+            },
+            {
+                "name": "Rushmore, Mount"
+            },
+            {
+                "name": "Mount Rushmore National Memorial"
+            }
+        ]}
+    }
+
+    url = server() + "enrich_location"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

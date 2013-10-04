@@ -35,6 +35,9 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
         for v in iterify(value):
+            if "name" not in v:
+                continue
+
             if coordinate(v["name"]):
                 result = coordinate(v["name"])
             else:

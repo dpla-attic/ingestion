@@ -80,7 +80,9 @@ def test_subject_and_spatial_transform():
         ],
         "spatial": [
             "Rhode Island",
-            "United States"
+            {
+                "country": "United States"
+            }
         ]
     }
 

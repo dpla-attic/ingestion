@@ -103,7 +103,7 @@ def subject_and_spatial_transform(d, p):
     val["spatial"] = []
 
     v = getprop(d, p)
-    for s in (v if isinstance(v, list) else [v]):
+    for s in (iterify(v)):
         subject = []
         if "name" in s:
             subject.append(name_from_name_part(getprop(s, "name/namePart")))
@@ -115,19 +115,27 @@ def subject_and_spatial_transform(d, p):
                     subject.append(t)
 
         if "geographic" in s:
-            for g in (s["geographic"] if isinstance(s["geographic"], list) else
-                      [s["geographic"]]):
+            for g in iterify(s["geographic"]):
                 if g not in subject:
                     subject.append(g)
                 if g not in val["spatial"]:
                     val["spatial"].append(g)
 
         if "hierarchicalGeographic" in s:
-            c = getprop(s, "hierarchicalGeographic/country", True)
-            if c and c not in subject:
-                subject.append(c)
-            if c and c not in val["spatial"]:
-                val["spatial"].append(c)
+            for h in iterify(s["hierarchicalGeographic"]):
+                if isinstance(h, dict):
+                    for k in h.keys():
+                        if k not in ["city", "county", "state", "country",
+                                     "coordinates"]:
+                            del h[k]
+                    if h not in val["spatial"]:
+                        val["spatial"].append(h)
+                    if "country" in h:
+                        subject.append(h["country"])
+
+        coords = getprop(s, "cartographics/coordinates", True)
+        if coords and coords not in val["spatial"]:
+            val["spatial"].append(coords)
 
         if "temporal" in s:
             logger.debug("TEMPORAL: %s" % s["temporal"])
@@ -184,13 +192,6 @@ def format_transform(d, p, authority_condition=None):
     format = filter(None, format)
 
     return {"format": format} if format else {}
-
-def description_transform(d, p):
-    desc = getprop(d, p)
-    if not isinstance(desc, basestring):
-        desc = desc["#text"] if "#text" in desc else None
-
-    return {"description": desc} if desc else {}
 
 def type_transform(d, p):
     type = []
@@ -339,6 +340,13 @@ def identifier_transform_harvard(d):
     id = filter(None, id)
     
     return {"identifier" : "; ".join(id)} if id else {}
+
+def description_transform_harvard(d, p):
+    desc = getprop(d, p)
+    if not isinstance(desc, basestring):
+        desc = desc["#text"] if "#text" in desc else None
+
+    return {"description": desc} if desc else {}
 
 # BPL transforms
 def origin_info_transform_bpl(d, p):
@@ -493,10 +501,27 @@ def location_transform_bpl(d, p):
     finally:
         return out
 
+def description_transform_bpl(d, p):
+    desc = []
+    desc_props = [MODS + "abstract", MODS + "note"]
+    for desc_prop in desc_props:
+        v = getprop(d, desc_prop, True)
+        if isinstance(v, list):
+            desc.extend(v)
+        elif isinstance(v, dict):
+            desc.append(v.get("#text"))
+        else:
+            desc.append(v)
+    desc = filter(None, desc)
+
+    return {"description": desc} if desc else {}
+
 CHO_TRANSFORMER = {}
 AGGREGATION_TRANSFORMER = {}
 
 CHO_TRANSFORMER["BPL"] = {
+    MODS + "abstract"                  : description_transform_bpl,
+    MODS + "note"                      : description_transform_bpl,
     MODS + "genre"                     : format_transform_bpl,
     MODS + "titleInfo"                 : title_transform_bpl,
     MODS + "identifier"                : identifier_transform_bpl,
@@ -507,6 +532,7 @@ CHO_TRANSFORMER["BPL"] = {
 }
 
 CHO_TRANSFORMER["HARVARD"] = {
+    MODS + "note"                      : description_transform_harvard,
     MODS + "genre"                     : format_transform_harvard,
     MODS + "relatedItem"               : is_part_of_transform_harvard,
     MODS + "titleInfo"                 : title_transform_harvard,
@@ -517,7 +543,6 @@ CHO_TRANSFORMER["HARVARD"] = {
 CHO_TRANSFORMER["common"] = {
     "collection"                       : lambda d, p: {"collection":
                                                        getprop(d, p)},
-    MODS + "note"                      : description_transform,
     MODS + "name"                      : creator_and_contributor_transform,
     MODS + "subject"                   : subject_and_spatial_transform,
     MODS + "typeOfResource"            : type_transform,
