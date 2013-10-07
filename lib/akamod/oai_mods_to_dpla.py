@@ -506,12 +506,12 @@ def description_transform_bpl(d, p):
     desc_props = [MODS + "abstract", MODS + "note"]
     for desc_prop in desc_props:
         v = getprop(d, desc_prop, True)
-        if isinstance(v, list):
-            desc.extend(v)
-        elif isinstance(v, dict):
-            desc.append(v.get("#text"))
-        else:
-            desc.append(v)
+        if v is not None:
+            for s in iterify(v):
+                if isinstance(s, dict):
+                    desc.append(s.get("#text"))
+                else:
+                    desc.append(s)
     desc = filter(None, desc)
 
     return {"description": desc} if desc else {}
