@@ -3,7 +3,7 @@ from akara import request, response
 from akara.services import simple_service
 from amara.thirdparty import json
 import base64
-
+from dplaingestion.utilities import iterify
 from dplaingestion.selector import getprop as selector_getprop, exists
 
 
@@ -38,18 +38,21 @@ CONTEXT = {
     }
 }
 
-def _as_list(v):
-    return v if isinstance(v, (list, tuple)) else [v]
-
 # UVA specific transforms
 def subject_transform_uva(d, p):
+    def _join_on_double_hyphen(subject_list):
+        if any(["--" in s for s in subject_list]):
+            return subject_list
+        else:
+            return ["--".join(subject_list)]
+
     subject = []
-    for _dict in _as_list(getprop(d, p)):
+    for _dict in iterify(getprop(d, p)):
         # Extract subject from both "topic" and "name" fields
         if "topic" in _dict:
             topic = _dict["topic"]
             if isinstance(topic, list):
-                subject += topic
+                subject.extend(_join_on_double_hyphen(topic))
             else:
                 subject.append(topic)
         if "name" in _dict:
@@ -75,9 +78,9 @@ def subject_transform_uva(d, p):
 def creator_transform_uva(d, p):
     personal_creator = []
     corporate_creator = []
-    for s in _as_list(getprop(d, p)):
+    for s in iterify(getprop(d, p)):
         creator = [None, None, None]
-        for name in _as_list(s.get("namePart")):
+        for name in iterify(s.get("namePart")):
             if isinstance(name, basestring):
                     creator[0] = name
             elif isinstance(name, dict):
@@ -107,7 +110,7 @@ def creator_transform_uva(d, p):
 
 def title_transform_uva(d, p):
     title = []
-    for s in _as_list(getprop(d, p)):
+    for s in iterify(getprop(d, p)):
         if isinstance(s, basestring):
             title.append(s)
         elif isinstance(s, dict):
@@ -126,7 +129,7 @@ def date_transform_uva(d, p):
     if not exists(d, date_prop):
         date_prop = p + "/dateCreated"
 
-    for s in _as_list(getprop(d, date_prop)):
+    for s in iterify(getprop(d, date_prop)):
         if isinstance(s, basestring):
             date.append(s)
         elif isinstance(s, dict):
@@ -138,7 +141,7 @@ def date_transform_uva(d, p):
 
 def identifier_transform_uva(d, p):
     identifier = []
-    for s in _as_list(getprop(d, p)):
+    for s in iterify(getprop(d, p)):
         if isinstance(s, dict) and s.get("type") == "uri":
             identifier.append(s.get("#text"))
     identifier = "-".join(filter(None, identifier))
@@ -152,14 +155,14 @@ def provider_transform_uva(d, p):
 
 def location_transform_uva(d, p):
     def _get_media_type(d):
-        pd = _as_list(getprop(d, "physicalDescription"))
+        pd = iterify(getprop(d, "physicalDescription"))
         for _dict in pd:
             try:
                 return selector_getprop(_dict, "internetMediaType")
             except KeyError:
                 pass
 
-    location = _as_list(getprop(d, p))
+    location = iterify(getprop(d, p))
     format = _get_media_type(d)
     out = {}
     try:
@@ -183,7 +186,7 @@ def location_transform_uva(d, p):
 def spatial_transform_uva(d):
     spatial = []
     if "subject" in d:
-        for s in _as_list(getprop(d, "subject")):
+        for s in iterify(getprop(d, "subject")):
             if "hierarchicalGeographic" in s:
                 spatial = s["hierarchicalGeographic"]
                 spatial["name"] = spatial.get("city") + ", " + \
@@ -191,9 +194,11 @@ def spatial_transform_uva(d):
                 spatial = [spatial]
 
     if not spatial and exists(d, "originInfo/place"):
-        for s in _as_list(getprop(d, "originInfo/place")):
+        for s in iterify(getprop(d, "originInfo/place")):
             if "placeTerm" in s:
-                spatial.append(s["placeTerm"]["#text"])
+                for place in iterify(s["placeTerm"]):
+                    if "type" in place and place["type"] != "code":
+                        spatial.append(place["#text"])
 
     return {"spatial": spatial} if spatial else {}
 
@@ -206,7 +211,7 @@ def multi_field_transforms_uva(d, p):
 # NYPL specific transforms
 def spatial_transform_nypl(d, p):
     spatial = []
-    for s in _as_list(getprop(d, p)):
+    for s in iterify(getprop(d, p)):
         if (isinstance(s, dict) and exists(s, "geographic/authority") and
             getprop(s, "geographic/authority") == "naf"):
             spatial.append(getprop(s, "geographic/#text"))
@@ -216,7 +221,7 @@ def spatial_transform_nypl(d, p):
 
 def title_transform_nypl(d, p):
     title = []
-    for s in _as_list(getprop(d, p)):
+    for s in iterify(getprop(d, p)):
         if (isinstance(s, dict) and s.get("usage") == "primary"
             and s.get("supplied") == "no"):
             title.append(s.get("title"))
@@ -225,7 +230,7 @@ def title_transform_nypl(d, p):
     return {"title": title[-1]} if title else {}
 
 def identifier_transform_nypl(d, p):
-    identifier = [s.get("#text") for s in _as_list(getprop(d, p)) if
+    identifier = [s.get("#text") for s in iterify(getprop(d, p)) if
                   isinstance(s, dict) and s.get("type") in
                   ("local_bnumber", "uuid")]
     idenfitier = filter(None, identifier)
@@ -248,7 +253,7 @@ def creator_transform_nypl(d, p):
                      "lithographer", "lyricist", "musical director",
                      "performer", "project director", "singer", "storyteller",
                      "surveyor", "technical director", "woodcutter"))
-    names = _as_list(getprop(d, p))
+    names = iterify(getprop(d, p))
     out = {}
     for creator_dict in names:
         if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
@@ -265,7 +270,7 @@ def creator_transform_nypl(d, p):
 
 def date_transform_nypl(d, p):
     def _date_created(d, p):
-        date_created_list = _as_list(getprop(d, p))
+        date_created_list = iterify(getprop(d, p))
         keyDate, startDate, endDate = None, None, None
         for _dict in date_created_list:
             if not isinstance(_dict, dict):
@@ -290,7 +295,7 @@ def date_transform_nypl(d, p):
 
 # MODS transforms (applies to both UVA and NYPL)
 def description_transform(d, p):
-    description = [s.get("#text") for s in _as_list(getprop(d, p))
+    description = [s.get("#text") for s in iterify(getprop(d, p))
                    if isinstance(s, dict) and "type" in s and
                    s.get("type") == "content"]
     description = filter(None, description)
@@ -322,7 +327,7 @@ def is_shown_at_transform(d, p):
     return {"isShownAt": is_shown_at} if is_shown_at else {}
 
 def physical_description_transform(d, p):
-    pd = _as_list(getprop(d, p))
+    pd = iterify(getprop(d, p))
     out = {}
     for _dict in pd:
         note = getprop(_dict, "note")
@@ -334,7 +339,10 @@ def physical_description_transform(d, p):
                     elif sub_dict["displayLabel"] == "condition":
                         out["description"] = sub_dict.get("#text")
         if "form" in _dict:
-            out["format"] = getprop(_dict, "form/#text")
+            for form in iterify(_dict["form"]):
+                if "#text" in form:
+                    out["format"] = form["#text"]
+                    break
     return out
 
 def language_transform(d, p):
@@ -449,7 +457,7 @@ def mods_to_dpla(body, ctype, geoprop=None, provider=None):
             if new_key != key:
                 d[new_key] = d[key]
                 del d[key]
-                for item in _as_list(d[new_key]):
+                for item in iterify(d[new_key]):
                     if isinstance(item, dict):
                         _remove_mods_colon(item)
         return d

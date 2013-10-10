@@ -258,7 +258,7 @@ class AbsoluteURLFetcher(Fetcher):
     def extract_content(self, content, url):
         """Calls extract_xml_content by default but can be overriden in
            child classes
-        """
+e       """
         return self.extract_xml_content(content, url)
 
     def extract_xml_content(self, content, url):
@@ -650,6 +650,15 @@ class UVAFetcher(AbsoluteURLFetcher):
                 if _id_dict["type"] == "uri":
                     item["_id"] = _id_dict["#text"]
                     records.append(item)
+            if "_id" not in item:
+                # Handle localtion url
+                for _loc_dict in iterify(item[key_prefix + "location"]):
+                    if "url" in _loc_dict:
+                        for url in _loc_dict["url"]:
+                            if ("usage" in url and
+                                url["usage"] == "primary display"):
+                                item["_id"] = url.get("#text")
+                                records.append(item)
 
         if not records:
             error = "Error, no records found in content from URL %s" % url
