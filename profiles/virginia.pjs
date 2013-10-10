@@ -3,6 +3,9 @@
     "type": "uva",
     "endpoint_url": "http://fedoraproxy.lib.virginia.edu/fedora/objects/uva-lib%3A{0}/methods/uva-lib%3AmetsSDef/getMETS",
     "subresources": {
+        "628506": {
+            "title": "The Jackson Davis Collection of African American Photographs"
+        },
         "744806": {
             "title": "Negatives from the Charlottesville photographic studio plus an index volume ca. 1890-1938. Holsinger Studio Collection."
         },
@@ -18,7 +21,6 @@
     "enrichments_rec": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=UVA",
-        "/set_prop?prop=sourceResource%2Fspatial%2FcurrentLocation&value=Virginia&condition_prop=sourceResource%2Fspatial",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",
         "/cleanup_value",
         "/capitalize_value",
@@ -31,6 +33,7 @@
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3", 
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Virginia"
     ]
 }
