@@ -89,6 +89,8 @@ def test_absolute_url_fetcher_nypl():
         assert getprop(response, "data/records") is not None
         break
 
+# Exclude since request to endpoint URL from Travis are returning 404
+@attr(travis_exclude='yes')
 def test_absolute_url_fetcher_uva1():
     profile_path = "profiles/virginia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base)

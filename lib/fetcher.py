@@ -258,7 +258,7 @@ class AbsoluteURLFetcher(Fetcher):
     def extract_content(self, content, url):
         """Calls extract_xml_content by default but can be overriden in
            child classes
-e       """
+        """
         return self.extract_xml_content(content, url)
 
     def extract_xml_content(self, content, url):
