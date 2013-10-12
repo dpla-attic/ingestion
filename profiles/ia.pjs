@@ -4,7 +4,7 @@
     "endpoint_url": "http://archive.org/advancedsearch.php?q=collection%3A%22{0}%22&fl%5B%5D=identifier&output=json",
     "endpoint_url_params": {
         "page": 1,
-        "rows": 1000
+        "rows": 100
     },
     "get_file_url": "http://www.archive.org/download/{0}/{1}",
     "prefix_files": "{0}_files.xml",

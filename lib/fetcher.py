@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import fnmatch
+import urllib2
 import xmltodict
 from urllib import urlencode
 from amara.thirdparty import json
@@ -398,8 +399,37 @@ class IAFetcher(AbsoluteURLFetcher):
 
         return error, content
 
+    def extract_xml_content(self, content, url):
+        error = None
+        try:
+            content = xmltodict.parse(content,
+                                      xml_attribs=True,
+                                      attr_prefix='',
+                                      force_cdata=False,
+                                      ignore_whitespace_cdata=True)
+        except:
+            error = "Error parsing content from URL %s" % url
+
+        return error, content
+
+    def fetch_url(self, url):
+        error = None
+        content = None
+        response = None
+        try:
+            response = urllib2.urlopen(url, timeout=10)
+            if response.getcode() == 200:
+                content = response.read()
+        except:
+            error = "Error requesting content from URL %s" % url
+
+        if response:
+            response.close()
+
+        return error, content
+
     def request_then_extract_xml(self, url):
-        error, content = self.request_content_from(url)
+        error, content = self.fetch_url(url)
         try:
             error, content = self.extract_xml_content(content, url)
         except:
@@ -408,7 +438,7 @@ class IAFetcher(AbsoluteURLFetcher):
         return error, content
 
     def request_records(self, content):
-        self.fetch_pool = Pool(processes=3)
+        self.fetch_pool = Pool(processes=10)
 
         total_records = int(content["numFound"])
         read_records = int(content["start"])
@@ -416,50 +446,47 @@ class IAFetcher(AbsoluteURLFetcher):
         request_more = (total_records - read_records) > expected_records
         self.endpoint_url_params["page"] += 1
 
-        self.count = 0
+        ids = [doc["identifier"] for doc in content["docs"]]
         for doc in content["docs"]:
             id = doc["identifier"]
-            self.fetch_pool.apply_async(self.fetch_record, [id])
+            self.fetch_pool.apply_async(self.fetch_record, [id],
+                                        callback=self.queue_fetch_response)
         self.fetch_pool.close()
         self.fetch_pool.join()
 
+        count = 0
         records = []
-        while (self.count != expected_records):
+        while (count != expected_records):
             try:
-                records.append(self.queue.get(block=False))
+                record = (self.queue.get(block=False))
+                count += 1
+                if isinstance(record, basestring):
+                    self.errors.append(record)
+                else:
+                    records.append(record)
             except:
                 pass
 
-            if len(records) == 10:
-                # Yield every 10 records
-                if request_more:
-                    print "Fetched %s of %s" % (read_records +
-                                                expected_records,
-                                                total_records)
-                else:
-                    print "Fetched %s of %s" % (total_records, total_records)
+            if count%100 == 0:
+                # Yield every 100 records
                 yield self.errors, records, request_more
                 self.errors = []
                 records = []
+                print "Fetched %s of %s" % (read_records + count,
+                                            total_records)
 
         # Last yield
-        if request_more:
-            print "Fetched %s of %s" % (read_records + expected_records,
-                                        total_records)
-        else:
-            print "Fetched %s of %s" % (total_records, total_records)
-        yield self.errors, records, request_more
-            
+        if records:
+            yield self.errors, records, request_more
+            print "Fetched %s of %s" % (read_records + count, total_records)
+
     def fetch_record(self, id):
-        """Fetchers a record and places it in the queue"""
+        """Fetches a record and places it in the queue"""
         file_url = self.get_file_url.format(id,
                                             self.prefix_files.format(id))
-
         error, content = self.request_then_extract_xml(file_url)
         if error is not None:
-            self.errors.append(error)
-            self.count += 1
-            return None
+            return error
 
         files_content = content["files"]
         record_data = {
@@ -488,10 +515,8 @@ class IAFetcher(AbsoluteURLFetcher):
                 record_data["marc"] = name
 
         if record_data["meta"] is None:
-            errors.append("Document %s meta data is absent" % id)
-            self.count += 1
-            return None
-
+            error = "Document %s meta data is absent" % id
+            return error
         record = {
             "files": record_data,
             "_id":  id
@@ -500,9 +525,7 @@ class IAFetcher(AbsoluteURLFetcher):
         meta_url = self.get_file_url.format(id, record_data["meta"])
         error, content = self.request_then_extract_xml(meta_url)
         if error is not None:
-            self.count += 1
-            self.errors.append(error)
-            return None
+            return error
         record.update(content)
 
         if record_data["marc"]:
@@ -511,13 +534,16 @@ class IAFetcher(AbsoluteURLFetcher):
                        )
             error, content = self.request_then_extract_xml(marc_url)
             if error is not None:
-                self.count += 1
-                errors.append(error)
-                return None
+                return error
             record.update(content)
 
-        self.queue.put(record, block=False)
-        self.count += 1
+        return record
+
+    def queue_fetch_response(self, response): 
+        try:
+            self.queue.put(response, block=False)
+        except Exception, e:
+            print "Error: %s" % e
 
 class MWDLFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base):
