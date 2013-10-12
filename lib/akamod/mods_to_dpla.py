@@ -189,8 +189,11 @@ def spatial_transform_uva(d):
         for s in iterify(getprop(d, "subject")):
             if "hierarchicalGeographic" in s:
                 spatial = s["hierarchicalGeographic"]
-                spatial["name"] = spatial.get("city") + ", " + \
-                                  spatial.get("country")
+                spatial["name"] = ", ".join(filter(None,
+                                                   [spatial.get("city"),
+                                                    spatial.get("county"),
+                                                    spatial.get("state"),
+                                                    spatial.get("country")]))
                 spatial = [spatial]
 
     if not spatial and exists(d, "originInfo/place"):

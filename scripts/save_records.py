@@ -8,6 +8,7 @@ Usage:
 import os
 import sys
 import argparse
+import ConfigParser
 from akara import logger
 from datetime import datetime
 from amara.thirdparty import json
@@ -25,6 +26,10 @@ def define_arguments():
 def main(argv):
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
+
+    config = ConfigParser.ConfigParser()
+    config.readfp(open("akara.ini"))
+    batch_size = int(config.get("CouchDb", "IterviewBatch"))
 
     couch = Couch()
     ingestion_doc = couch.dashboard_db[args.ingestion_document_id]
@@ -59,22 +64,33 @@ def main(argv):
     error_msg = None
     enrich_dir = getprop(ingestion_doc, "enrich_process/data_dir")
     total_saved_documents = 0
+    docs = {}
     for file in os.listdir(enrich_dir):
         filename = os.path.join(enrich_dir, file)
         with open(filename, "r") as f:
             try:
-                data = json.loads(f.read())
+                docs.update(json.loads(f.read()))
             except:
                 error_msg = "Error loading " + filename
                 break
 
-        # Save
-        resp, error_msg = couch.process_and_post_to_dpla(data, ingestion_doc)
-        if resp == -1:
-            break
-        else:
-            total_saved_documents += len(data)
-            print "Saved documents from file " + filename
+        # Save only when the number of docs exceeds the batch size
+        if len(docs) > batch_size:
+            resp, error_msg = couch.process_and_post_to_dpla(docs,
+                                                             ingestion_doc)
+            if resp == -1:
+                break
+            else:
+                total_saved_documents += len(docs)
+                print "Saved %s documents" % total_saved_documents
+                docs = {}
+    # Last save
+    if docs:
+        resp, error_msg = couch.process_and_post_to_dpla(docs,
+                                                         ingestion_doc)
+        if resp != -1:
+            total_saved_documents += len(docs)
+            print "Saved %s documents" % total_saved_documents
 
     logger.info("Total documents saved: %s (*includes duplicate collections)" %
                 total_saved_documents)
