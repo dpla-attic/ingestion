@@ -444,6 +444,8 @@ class IAFetcher(AbsoluteURLFetcher):
         read_records = int(content["start"])
         expected_records = self.endpoint_url_params["rows"]
         request_more = (total_records - read_records) > expected_records
+        if not request_more:
+            expected_records = total_records - read_records
         self.endpoint_url_params["page"] += 1
 
         ids = [doc["identifier"] for doc in content["docs"]]
