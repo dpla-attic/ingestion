@@ -31,7 +31,7 @@ def test_geocode():
                     "name": "Boston, MA",
                     "state": "Massachusetts",
                     "country": "United States",
-                    "coordinates": "42.358631134, -71.0567016602"
+                    "coordinates": "42.3586616516, -71.0567398071"
                 }
             ]
         },
@@ -89,14 +89,13 @@ def test_close_multiple_results():
                     "coordinates": "37.7771186829, -122.419639587"
                 }, 
                 {
-                    "county": "New York County", 
-                    "country": "United States", 
-                    "state": "New York", "name": 
-                    "New York, NY", 
-                    "coordinates": "40.7145500183, -74.0071182251"
+                    "name": "New York, NY" 
                 },
                 { 
-                    "name": "Georgia"
+                    "name": "Georgia",
+                    "state": "Georgia",
+                    "country": "United States",
+                    "coordinates": "32.6376190186, -83.4289627075"
                 }
             ]
         },
