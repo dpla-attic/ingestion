@@ -13,17 +13,17 @@ def iterify(iterable):
 
     return iterable
 
-def remove_mods_prefix(data):
-    """Removes the prefix "mods:" from keys in a dictionary"""
+def remove_key_prefix(data, prefix):
+    """Removes the prefix from keys in a dictionary"""
     for key in data.keys():
         if not key == "originalRecord":
-            new_key = key.replace("mods:", "")
+            new_key = key.replace(prefix, "")
             if new_key != key:
                 data[new_key] = data[key]
                 del data[key]
             for item in iterify(data[new_key]):
                 if isinstance(item, dict):
-                    remove_mods_prefix(item)
+                    remove_key_prefix(item, prefix)
 
     return data
 

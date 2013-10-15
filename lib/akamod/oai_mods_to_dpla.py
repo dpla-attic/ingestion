@@ -8,7 +8,7 @@ import base64
 import sys
 import re
 from dplaingestion.selector import setprop, getprop, exists
-from dplaingestion.utilities import iterify, remove_mods_prefix
+from dplaingestion.utilities import iterify, remove_key_prefix
 
 GEOPROP = None
 MODS = "metadata/mods/"
@@ -589,7 +589,7 @@ def oaimodstodpla(body, ctype, geoprop=None, provider=None):
     }
 
     if provider == "BPL":
-        data = remove_mods_prefix(data)
+        data = remove_key_prefix(data, "mods:")
 
     # Apply all transformation rules from original document
     transformer_pipeline = {}

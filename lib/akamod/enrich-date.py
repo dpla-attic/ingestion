@@ -218,7 +218,7 @@ def test_parse_date_or_range():
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
 def clean_date(d):
-    regex = [("to", "-"), ("[\?\(\)]|\s|ca\.?", "")]
+    regex = [("to", "-"), ("[\?\(\)]|\s|ca\.?|~|x", "")]
     if not "circa" in d and not "century" in d:
         regex.append(("c\.?", ""))
     for p, r in regex:

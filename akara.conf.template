@@ -178,6 +178,8 @@ MODULES = [
     "dplaingestion.akamod.marc_to_dpla",
     "dplaingestion.akamod.usc_enrich_location",
     "dplaingestion.akamod.hathi_identify_object",
+    "dplaingestion.akamod.oai_untl_to_dpla",
+    "dplaingestion.akamod.texas_enrich_location"
     ]
 
 ### Section 3: Other module configuration goes here

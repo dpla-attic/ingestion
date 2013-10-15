@@ -3,7 +3,7 @@ from akara import request, response
 from akara.services import simple_service
 from amara.thirdparty import json
 import base64
-from dplaingestion.utilities import iterify
+from dplaingestion.utilities import iterify, remove_key_prefix
 from dplaingestion.selector import getprop as selector_getprop, exists
 
 
@@ -454,20 +454,9 @@ def mods_to_dpla(body, ctype, geoprop=None, provider=None):
         "sourceResource" : {}
     }
 
-    def _remove_mods_colon(d):
-        for key in d.keys():
-            new_key = key.replace("mods:", "")
-            if new_key != key:
-                d[new_key] = d[key]
-                del d[key]
-                for item in iterify(d[new_key]):
-                    if isinstance(item, dict):
-                        _remove_mods_colon(item)
-        return d
-
     if provider == "UVA":
         # Remove "mods:" prefix in keys
-        _remove_mods_colon(data)
+        data = remove_key_prefix(data, "mods:")
 
     # Apply all transformation rules from original document
     transformer_pipeline = {}

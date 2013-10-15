@@ -20,6 +20,7 @@ from amara.thirdparty import httplib2
 from akara import logger
 from dplaingestion.utilities import iterify
 import xmltodict
+from dplaingestion.selector import getprop
 
 OAI_NAMESPACE = u"http://www.openarchives.org/OAI/2.0/"
 
@@ -155,6 +156,8 @@ class oaiservice(object):
         '''
         List records. Use either the resumption token or set id.
         '''
+        error = None
+
         if resumption_token:
             params = {'verb' : 'ListRecords', 'resumptionToken': resumption_token}
         else:
@@ -167,20 +170,20 @@ class oaiservice(object):
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
 
-        if metadataPrefix == "mods" or metadataPrefix == "marc":
+        resumption_token = ''
+        if metadataPrefix in ["mods", "marc", "untl"]:
             xml_content = XML_PARSE(content)
             records = []
-            list_records = xml_content["OAI-PMH"]["ListRecords"]["record"]
-            for record in iterify(list_records):
-                id = record["header"]["identifier"]
-                if "null" not in id:
-                    records.append((id, record))
-            if "resumptionToken" in xml_content["OAI-PMH"]["ListRecords"]:
-                resumption_token = xml_content["OAI-PMH"]["ListRecords"]["resumptionToken"]
-                if isinstance(resumption_token, dict):
-                    resumption_token = resumption_token.get("#text", "")
-            else:
-                resumption_token = ''
+            error = getprop(xml_content, "OAI-PMH/error/#text", True)
+            if error is None:
+                for record in xml_content["OAI-PMH"]["ListRecords"]["record"]:
+                    id = record["header"]["identifier"]
+                    if "null" not in id:
+                        records.append((id, record))
+                if "resumptionToken" in xml_content["OAI-PMH"]["ListRecords"]:
+                    resumption_token = xml_content["OAI-PMH"]["ListRecords"]["resumptionToken"]
+                    if isinstance(resumption_token, dict):
+                        resumption_token = resumption_token.get("#text", "")
         else:
             doc = bindery.parse(url, model=LISTRECORDS_MODELS[metadataPrefix])
             records, first_id = metadata_dict(generate_metadata(doc),
@@ -191,10 +194,9 @@ class oaiservice(object):
                     props[k] = [ U(item) for item in v ]
             if (doc.OAI_PMH.ListRecords is not None) and (doc.OAI_PMH.ListRecords.resumptionToken is not None):
                 resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken)
-            else:
-                resumption_token = ''
 
-        return {'records' : records, 'resumption_token' : resumption_token}
+        return {'records': records, 'resumption_token': resumption_token,
+                'error': error}
 
 #
 OAI_LISTSETS_XML = """<?xml version="1.0" encoding="UTF-8"?>
