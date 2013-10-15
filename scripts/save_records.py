@@ -7,6 +7,7 @@ Usage:
 """
 import os
 import sys
+import shutil
 import argparse
 import ConfigParser
 from akara import logger
@@ -14,6 +15,7 @@ from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
+from dplaingestion.utilities import make_tarfile
 
 def define_arguments():
     """Defines command line arguments for the current script"""
@@ -109,6 +111,10 @@ def main(argv):
     except:
         print "Error updating ingestion document " + ingestion_doc["_id"]
         return -1
+
+    # Compress enrich dir, then delete
+    make_tarfile(enrich_dir)
+    shutil.rmtree(enrich_dir)
 
     return 0 if status == "complete" else -1
 
