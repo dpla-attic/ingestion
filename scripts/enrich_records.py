@@ -15,6 +15,7 @@ Usage:
 """
 import os
 import sys
+import shutil
 import tempfile
 import argparse
 from akara import logger
@@ -23,6 +24,7 @@ from amara.thirdparty import json
 from amara.thirdparty import httplib2
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
+from dplaingestion.utilities import make_tarfile
 
 H = httplib2.Http('/tmp/.pollcache')
 H.force_exception_as_status_code = True
@@ -121,6 +123,10 @@ def main(argv):
     except:
         print "Error updating ingestion document " + ingestion_doc["_id"]
         return -1
+
+    # Compress fetch directory, then delete
+    make_tarfile(fetch_dir)
+    shutil.rmtree(fetch_dir)
 
     return 0 if status == "complete" else -1
 

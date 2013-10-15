@@ -1,4 +1,6 @@
 # Utility methods 
+import os
+import tarfile
 
 def iterify(iterable):
     """Treat iterating over a single item or an iterator seamlessly"""
@@ -24,3 +26,7 @@ def remove_mods_prefix(data):
                     remove_mods_prefix(item)
 
     return data
+
+def make_tarfile(source_dir):
+    with tarfile.open(source_dir + ".tar.gz", "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
