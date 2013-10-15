@@ -554,8 +554,8 @@ class Couch(object):
 
             # Add the revision and find the fields changed for harvested
             # documents that were ingested in a prior ingestion
-            if hid in self.dpla_db:
-                db_doc = self.dpla_db.get(hid)
+            db_doc = self.dpla_db.get(hid)
+            if db_doc:
                 harvested_docs[hid]["_rev"] = db_doc["_rev"]
 
                 db_doc = self._prep_for_diff(db_doc)

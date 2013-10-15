@@ -1,0 +1,32 @@
+{
+    "name": "texas",
+    "type": "oai_verbs",
+    "metadata_prefix": "untl",
+    "endpoint_url": "http://texashistory.unt.edu/oai/",
+    "subresources": [], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/the_portal_to_texas_history",
+        "name": "The Portal to Texas History"
+    },
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://texashistory.unt.edu/oai/"
+    ],
+    "enrichments_rec": [
+        "/select-id?prop=header%2Fidentifier",
+        "/oai_untl_to_dpla",
+        "/shred?prop=sourceResource%2Fsubject&delim=%20-%20",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/texas_enrich_location",
+        "/geocode",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True"
+    ]
+}

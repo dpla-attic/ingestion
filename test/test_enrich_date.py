@@ -708,5 +708,19 @@ def test_only_begin_or_end_date():
         assert str(resp.status).startswith("2")
         assert_same_jsons(EXPECTED[i], content)
 
+def test_enrich_dates_with_tildes_and_x():
+    """Should remove tildes and x characters from dates"""
+    INPUT = [{"date": "1946-10x"}, {"date": "1946-10~"}]
+    EXPECTED = [{"date": {"begin": "1946-10", "end": "1946-10", "displayDate": "1946-10x"}},
+                {"date": {"begin": "1946-10", "end": "1946-10", "displayDate": "1946-10~"}}]
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    for i in range(len(INPUT)):
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT[i]))
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(EXPECTED[i], content)
+
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

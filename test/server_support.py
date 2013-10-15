@@ -167,6 +167,7 @@ MODULES = [
     "dplaingestion.akamod.remove_list_values",
     "dplaingestion.akamod.usc_enrich_location",
     "dplaingestion.akamod.hathi_identify_object",
+    "dplaingestion.akamod.texas_enrich_location",
     ]
 
 class download_preview:

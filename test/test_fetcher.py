@@ -89,8 +89,6 @@ def test_absolute_url_fetcher_nypl():
         assert getprop(response, "data/records") is not None
         break
 
-# Exclude since request to endpoint URL from Travis are returning 404
-@attr(travis_exclude='yes')
 def test_absolute_url_fetcher_uva1():
     profile_path = "profiles/virginia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base)
@@ -138,9 +136,6 @@ def test_absolute_url_fetcher_mwdl():
 def test_all_oai_verb_fetchers():
     for profile in os.listdir("profiles"):
         if profile.endswith(".pjs"):
-            # TODO: Remove this once UIUC book feed is working
-            if profile == "uiuc_book.pjs":
-                continue
             profile_path = "profiles/" + profile
             with open(profile_path, "r") as f:
                 prof = json.loads(f.read())
