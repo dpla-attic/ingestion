@@ -549,7 +549,6 @@ class IAFetcher(AbsoluteURLFetcher):
 
 class MWDLFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base):
-        self.count = 0
         super(MWDLFetcher, self).__init__(profile, uri_base)
 
     def mwdl_extract_records(self, content):
@@ -572,9 +571,10 @@ class MWDLFetcher(AbsoluteURLFetcher):
         request_more = True
         error, total_records, records = self.mwdl_extract_records(content)
         self.endpoint_url_params["indx"] += len(records)
-        self.count += self.endpoint_url_params["indx"]
-        if self.count >= total_records:
-            request_more = False
+        print "Fetched %s of %s" % (self.endpoint_url_params["indx"],
+                                    total_records)
+        request_more = (int(total_records) >=
+                        int(self.endpoint_url_params["indx"]))
 
         yield error, records, request_more
 
