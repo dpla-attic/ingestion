@@ -23,6 +23,7 @@
         "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich-subject",
+        "/georgia_set_spec_type",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
