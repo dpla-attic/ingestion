@@ -40,6 +40,8 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/replace_substring?prop=isShownAt&old=%3A81%2F&new=%2F",
         "/replace_substring?prop=object&old=%3A81%2F&new=%2F",
-        "/lookup?prop=sourceResource%2Fformat&target=sourceResource%2Fformat&substitution=scdl_fix_format"
+        "/lookup?prop=sourceResource%2Fformat&target=sourceResource%2Fformat&substitution=scdl_fix_format",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=South%20Carolina",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
     ]
 }
