@@ -423,26 +423,28 @@ def subject_transform(d, p):
     return {"subject": " - ".join(subject)} if subject else {}
 
 def date_transform(d, p):
-    date = []
-    for s in iterify(getprop(d, p)):
-        if "qualifier" in s and s["qualifier"] == "creation":
-            date.append(s.get("#text"))
+    """
+    Use the first instance of untl:date where the qualifier == "creation"
+    otherwhise use the first instance of untl:date where
+    qualifier != "digitized" or qualifier != "embargoUntil"
+    """
+    date = None
 
-    # Get dates from coverage
-    coverage = getprop(d, META + "coverage", True)
-    if coverage is not None:
-        start = None
-        end = None
-        for s in iterify(coverage):
-            if not isinstance(s, basestring):
-                qualifier = s.get("qualifier")
-                text = s.get("#text")
-                if qualifier == "sDate":
-                    start = text
-                elif qualifier == "eDate":
-                    end = text
-        if start is not None and end is not None:
-            date.append("%s-%s" % (start, end))
+    creation_date = None
+    non_digitized_embargo_until_date = None
+    for s in iterify(getprop(d, p)):
+        if "qualifier" in s:
+            if s["qualifier"] == "creation":
+                creation_date = s.get("#text")
+                break
+            elif s["qualifier"] not in ["digitized", "embargoUntil"] and \
+                 non_digitized_embargo_until_date is None:
+                non_digitized_embargo_until_date = s.get("#text")
+
+    if creation_date is not None:
+        date = creation_date
+    else:
+        date = non_digitized_embargo_until_date
 
     return {"date": date} if date else {}
 
