@@ -548,7 +548,7 @@ class Couch(object):
 
         added_docs = []
         changed_docs = []
-        duplicate_collection_doc_ids = []
+        duplicate_doc_ids = []
         for hid in harvested_docs:
             # Add ingestonSequence to harvested document
             harvested_docs[hid]["ingestionSequence"] = ingestion_sequence
@@ -557,6 +557,11 @@ class Couch(object):
             # documents that were ingested in a prior ingestion
             db_doc = self.dpla_db.get(hid)
             if db_doc:
+                if db_doc.get("ingestionSequence") == ingestion_sequence:
+                    # Remove duplicate documents
+                    duplicate_doc_ids.append(hid)
+                    continue
+
                 harvested_docs[hid]["_rev"] = db_doc["_rev"]
 
                 db_doc = self._prep_for_diff(db_doc)
@@ -572,7 +577,8 @@ class Couch(object):
                                          "provider": provider,
                                          "ingestionSequence": ingestion_sequence})
                 else:
-                    if harvested_doc.get("ingestType") == "collection":
+                    if harvested_doc.get("ingestType") == "collection" and \
+                       harvested_doc.get("ingestionSequence") == ingestion_sequence:
                         # Append duplicate collection ids for removal
                         duplicate_collection_doc_ids.append(hid)
                 
@@ -584,9 +590,8 @@ class Couch(object):
                                    "provider": provider,
                                    "ingestionSequence": ingestion_sequence})
 
-        # Remove unchanged collection documents so that they don't get saved
-        # multiple times
-        for id in duplicate_collection_doc_ids:
+        # Remove duplicate documents to prevent multiple saves
+        for id in duplicate_doc_ids:
                 del harvested_docs[id]
         
         status = -1
