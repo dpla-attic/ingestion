@@ -158,9 +158,10 @@ class OAIVerbsFetcher(Fetcher):
         list_records_url = self.uri_base + "/dpla-list-records?endpoint=" + url
 
         # Add set params, if any
-        set_params = self.set_params.get(params.get("oaiset"))
-        if set_params:
-            params.update(set_params)
+        if self.set_params:
+            set_params = self.set_params.get(params.get("oaiset"))
+            if set_params:
+                params.update(set_params)
 
         error, content = self.request_content_from(list_records_url, params)
         if error is None:
