@@ -70,6 +70,7 @@ class Fetcher(object):
             else:
                 url += "?" + urlencode(params)
 
+        print "Requesting %s" % url
         for i in range(attempts):
             resp, content = self.http_handle.request(url)
             # Break if 2xx response status
@@ -443,10 +444,17 @@ class IAFetcher(AbsoluteURLFetcher):
         total_records = int(content["numFound"])
         read_records = int(content["start"])
         expected_records = self.endpoint_url_params["rows"]
-        request_more = (total_records - read_records) > expected_records
+
+        total_pages = total_records/expected_records + 1
+        request_more =  total_pages != self.endpoint_url_params["page"]
         if not request_more:
+            # Since we are at the last page the expected_records will not
+            # be equal to self.endpoint_url_params["rows"]
             expected_records = total_records - read_records
-        self.endpoint_url_params["page"] += 1
+            # Reset the page for the next colleciton
+            self.endpoint_url_params["page"] = 1
+        else:
+            self.endpoint_url_params["page"] += 1
 
         ids = [doc["identifier"] for doc in content["docs"]]
         for doc in content["docs"]:
