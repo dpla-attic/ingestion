@@ -49,6 +49,7 @@ class Fetcher(object):
         self.uri_base = uri_base
         self.provider = profile.get("name")
         self.blacklist = profile.get("blacklist")
+        self.set_params = profile.get("set_params")
         self.contributor = profile.get("contributor")
         self.subresources = profile.get("subresources")
         self.endpoint_url = profile.get("endpoint_url")
@@ -155,6 +156,11 @@ class OAIVerbsFetcher(Fetcher):
         """
         records_content = {}
         list_records_url = self.uri_base + "/dpla-list-records?endpoint=" + url
+
+        # Add set params, if any
+        set_params = self.set_params.get(params.get("oaiset"))
+        if set_params:
+            params.update(set_params)
 
         error, content = self.request_content_from(list_records_url, params)
         if error is None:
