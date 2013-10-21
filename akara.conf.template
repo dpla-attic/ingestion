@@ -181,6 +181,7 @@ MODULES = [
     "dplaingestion.akamod.oai_untl_to_dpla",
     "dplaingestion.akamod.texas_enrich_location",
     "dplaingestion.akamod.georgia_set_spec_type",
+    "dplaingestion.akamod.usc_set_dataprovider",
     ]
 
 ### Section 3: Other module configuration goes here
