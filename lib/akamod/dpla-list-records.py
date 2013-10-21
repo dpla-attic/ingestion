@@ -43,7 +43,8 @@ from dplaingestion.oai import oaiservice
 LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-list-records'
 
 @simple_service('GET', LISTRECORDS_SERVICE_ID, 'dpla-list-records', 'application/json')
-def listrecords(endpoint, oaiset=None, resumption_token=None, metadataPrefix="oai_dc", limit=1000):
+def listrecords(endpoint, oaiset=None, resumption_token=None,
+                metadataPrefix="oai_dc", frm=None, until=None, limit=1000):
     """
     e.g.:
 
@@ -52,7 +53,10 @@ def listrecords(endpoint, oaiset=None, resumption_token=None, metadataPrefix="oa
     limit = int(limit)
 
     remote = oaiservice(endpoint, logger)
-    list_records_result = remote.list_records(set=oaiset, resumption_token=resumption_token, metadataPrefix=metadataPrefix)
+    list_records_result = remote.list_records(set=oaiset,
+                                              resumption_token=resumption_token,
+                                              metadataPrefix=metadataPrefix,
+                                              frm=frm, until=until)
 
     records = list_records_result['records'][:limit]
     resumption_token = list_records_result['resumption_token'] if 'resumption_token' in list_records_result else ''

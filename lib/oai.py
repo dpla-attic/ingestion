@@ -152,16 +152,28 @@ class oaiservice(object):
 
         resource = resources[first_id]
 
-    def list_records(self, set="", resumption_token="", metadataPrefix=""):
+    def list_records(self, set="", resumption_token="", metadataPrefix="",
+                     frm=None, until=None):
         '''
         List records. Use either the resumption token or set id.
         '''
         error = None
 
+        params = {
+                    'set': set,
+                    'verb' : 'ListRecords',
+                    'metadataPrefix': metadataPrefix
+        }
+        if frm:
+            params["from"] = frm
+        if until:
+            params["until"] = until
+
+        # Override params if we have a resumption_token
         if resumption_token:
             params = {'verb' : 'ListRecords', 'resumptionToken': resumption_token}
-        else:
-            params = {'verb' : 'ListRecords', 'metadataPrefix': metadataPrefix, 'set': set}
+        
+
         qstr = urllib.urlencode(params)
         url = self.root + '?' + qstr
         self.logger.debug('OAI request URL: {0}'.format(url))
