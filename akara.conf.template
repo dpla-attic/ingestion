@@ -182,6 +182,7 @@ MODULES = [
     "dplaingestion.akamod.texas_enrich_location",
     "dplaingestion.akamod.georgia_set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
+    "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
     ]
 
 ### Section 3: Other module configuration goes here

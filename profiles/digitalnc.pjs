@@ -1,0 +1,32 @@
+{
+    "name": "digitalnc",
+    "type": "oai_verbs",
+    "metadata_prefix": "MODS",
+    "endpoint_url": "http://brevard.lib.unc.edu:8080/repox/OAIHandler",
+    "enrichments_coll": [
+        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://brevard.lib.unc.edu:8080/repox/OAIHandler"
+    ], 
+    "subresources": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/digitalnc",
+        "name": "North Carolina Digital Heritage Center"
+    }, 
+    "enrichments_rec": [
+        "/select-id?prop=header%2Fidentifier",
+        "/oai_mods_to_dpla_digitalnc",
+        "/shred?prop=sourceResource%2Fdate&delim=%2C",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=North%20Carolina",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+    ]
+}
