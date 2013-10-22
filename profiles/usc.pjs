@@ -73,7 +73,7 @@
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/set_prop?prop=dataProvider&value=University%20of%20Southern%20California%2E%20Libraries",
+        "/usc_set_dataprovider",
         "/remove_list_values?prop=sourceResource%2Ftype&values=item",
         "/dedup_value?prop=sourceResource%2Ftype",
         "/unset_prop?prop=sourceResource%2Fcollection"

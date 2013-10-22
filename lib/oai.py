@@ -183,7 +183,7 @@ class oaiservice(object):
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
 
         resumption_token = ''
-        if metadataPrefix in ["mods", "marc", "untl"]:
+        if metadataPrefix.lower() in ["mods", "marc", "untl"]:
             xml_content = XML_PARSE(content)
             records = []
             error = getprop(xml_content, "OAI-PMH/error/#text", True)

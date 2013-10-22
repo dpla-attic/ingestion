@@ -83,7 +83,7 @@ class Fetcher(object):
         if not resp["status"].startswith("2"):
             error = "Error ('%s') resolving URL %s" % (resp["status"], url)
         elif not len(content) > 2:
-            error = "No sets received from URL %s" %  url
+            error = "Length of content is no > 2 for URL %s" %  url
 
         return error, content
 
