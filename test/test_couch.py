@@ -71,7 +71,8 @@ class CouchTest(Couch):
         del self.server[TEST_DASHBOARD_DB]
         self.dpla_db = self.server.create(TEST_DPLA_DB)
         self.dashboard_db = self.server.create(TEST_DASHBOARD_DB)
-        self._sync_views()
+        self._sync_views("dpla")
+        self._sync_views("dashboard")
 
     def _setup(self):
         self._delete_all_test_backups()
@@ -115,7 +116,8 @@ def couch_setup():
                       dashboard_db_name=TEST_DASHBOARD_DB,
                       views_directory=VIEWS_DIRECTORY,
                       iterview_batch=ITERVIEW_BATCH)
-    couch._sync_views()
+    couch._sync_views("dpla")
+    couch._sync_views("dashboard")
     couch._sync_test_views()
 
 @nottest

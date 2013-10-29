@@ -75,53 +75,47 @@ class Couch(object):
             db = self.server[name]
         return db
 
-    def _sync_views(self):
-        """Fetches views from the views_directory and saves/updates them
-           in the appropriate database, then builds the views neded for
-           ingestion.
+    def _sync_views(self, db_name):
+        """Fetches design documents from the views_directory, saves/updates
+           them in the appropriate database, then build the views. 
         """
+        build_views_from_file = ["dpla_db_all_provider_docs.js",
+                                 "dashboard_db_all_provider_docs.js",
+                                 "dashboard_db_all_ingestion_docs.js"]
+        if db_name == "dpla":
+            db = self.dpla_db
+        elif db_name == "dashboard":
+            db = self.dashboard_db
+
+        # Save the design documents from the views_directory
         for file in os.listdir(self.views_directory):
-            if file.startswith("dpla_db"):
-                db = self.dpla_db
-            elif file.startswith("dashboard_db"):
-                db = self.dashboard_db
-            else:
-                continue
+            if file.startswith(db_name):
+                fname = os.path.join(self.views_directory, file)
+                with open(fname, "r") as f:
+                    design_doc = json.load(f)
+                prev_design_doc = db.get(design_doc["_id"])
+                if prev_design_doc:
+                    design_doc["_rev"] = prev_design_doc["_rev"]
+                # Save thew design document
+                db[design_doc["_id"]] = design_doc
 
-            fname = os.path.join(self.views_directory, file)
-            with open(fname, "r") as f:
-                view = json.load(f)
-            previous_view = db.get(view["_id"])
-            if previous_view:
-                view["_rev"] = previous_view["_rev"]
-            # Save thew view
-            db[view["_id"]] = view
+                # Build views
+                if file in build_views_from_file:
+                    design_doc_name = design_doc["_id"].split("_design/")[-1]
+                    for view in design_doc["views"]:
+                        view_path = "%s/%s" % (design_doc_name, view)
+                        print >> sys.stderr, "Building %s" % view_path
+                        start = time.time()
+                        try:
+                            for doc in db.iterview(view_path,
+                                                   batch=self.iterview_batch):
+                                pass
+                        except Exception, e:
+                            print "Error building view %s in database %s: %s" % \
+                                  (view_path, db.name, e)
+                        build_time = (time.time() - start)/60
 
-        # Build views
-        db_design_docs = (self.dpla_db, "all_provider_docs"), \
-                         (self.dashboard_db, "all_provider_docs"), \
-                         (self.dashboard_db, "all_ingestion_docs")
-        views = ["by_provider_name", "by_provider_name_and_ingestion_sequence"]
-        for db, design_doc in db_design_docs:
-            for view in views:
-                if db.name == "dashboard" and view == views[1]:
-                    # Dashboard DB does not have a
-                    # by_provider_name_and_ingestion_sequence view
-                    continue
-                view_name = "%s/%s" % (design_doc, view)
-                print >> sys.stderr, "Bulding %s view %s" % (db.name,
-                                                             view_name)
-                start = time.time()
-                try:
-                    for doc in db.iterview(view_name,
-                                           batch=self.iterview_batch):
-                        pass
-                except:
-                    print "View %s not found in database %s" % (view_name,
-                                                                db.name)
-                    
-                build_time = (time.time() - start)/60
-                print >> sys.stderr, "Completed in %s minutes" % build_time
+                        print >> sys.stderr, "Completed in %s minutes" % build_time
 
     def update_ingestion_doc(self, ingestion_doc, **kwargs):
         for prop, value in kwargs.items():
