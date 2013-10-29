@@ -31,7 +31,7 @@ def main(argv):
 
     config = ConfigParser.ConfigParser()
     config.readfp(open("akara.ini"))
-    batch_size = int(config.get("CouchDb", "IterviewBatch"))
+    batch_size = int(config.get("CouchDb", "BatchSize"))
 
     couch = Couch()
     ingestion_doc = couch.dashboard_db[args.ingestion_document_id]
@@ -71,13 +71,13 @@ def main(argv):
         filename = os.path.join(enrich_dir, file)
         with open(filename, "r") as f:
             try:
-                docs.update(json.loads(f.read()))
+                file_docs = json.loads(f.read())
             except:
                 error_msg = "Error loading " + filename
                 break
 
-        # Save only when the number of docs exceeds the batch size
-        if len(docs) > batch_size:
+        # Save when docs is about to exceed the batch size
+        if len(docs) + len(file_docs) > batch_size:
             resp, error_msg = couch.process_and_post_to_dpla(docs,
                                                              ingestion_doc)
             if resp == -1:
@@ -85,7 +85,10 @@ def main(argv):
             else:
                 total_saved_documents += len(docs)
                 print "Saved %s documents" % total_saved_documents
-                docs = {}
+                docs = file_docs
+        else:
+            docs.update(file_docs)
+
     # Last save
     if docs:
         resp, error_msg = couch.process_and_post_to_dpla(docs,

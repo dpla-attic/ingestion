@@ -5,6 +5,7 @@ import time
 import fnmatch
 import urllib2
 import xmltodict
+import ConfigParser
 from urllib import urlencode
 from amara.thirdparty import json
 from amara.thirdparty import httplib2
@@ -56,6 +57,11 @@ class Fetcher(object):
         self.collection_titles = profile.get("collection_titles")
         self.http_handle = httplib2.Http('/tmp/.pollcache')
         self.http_handle.force_exception_as_status_code = True
+
+        # Set batch_size
+        config = ConfigParser.ConfigParser()
+        config.readfp(open("akara.ini"))
+        self.batch_size = config.get("CouchDb", "BatchSize")
 
     def remove_blacklisted_subresources(self):
         if self.blacklist:
@@ -387,7 +393,7 @@ class IAFetcher(AbsoluteURLFetcher):
         self.prefix_dc = profile.get("prefix_dc")
         self.shown_at_url = profile.get("shown_at_url")
         self.fetch_pool = None
-        self.queue = Queue(maxsize=self.endpoint_url_params["rows"])
+        self.queue = Queue(maxsize=self.batch_size)
         self.file_url_reqs = 0
         self.file_meta_reqs = 0
         self.file_marc_reqs = 0
@@ -484,8 +490,8 @@ class IAFetcher(AbsoluteURLFetcher):
             except:
                 pass
 
-            if count%100 == 0:
-                # Yield every 100 records
+            if count % self.batch_size== 0:
+                # Yield every self.batch_size records
                 yield self.errors, records, request_more
                 self.errors = []
                 records = []
@@ -815,7 +821,7 @@ class FileFetcher(Fetcher):
 
                         # Let's not let self.collections get too big
                         if sum([len(v["records"]) for v in
-                               self.collections.values()]) > 1000:
+                               self.collections.values()]) > self.batch_size:
                             # Yield collection with most records
                             ids = sorted(self.collections,
                                          key=lambda k: len(self.collections[k]))
@@ -894,7 +900,7 @@ class EDANFetcher(FileFetcher):
               filepath
         os.system(cmd)
 
-        # Read in every 1000 docs
+        # Read in every self.batch_size docs
         docs = []
         with open(filepath, "r") as f:
             while True:
@@ -904,7 +910,7 @@ class EDANFetcher(FileFetcher):
                         break
                     if line.startswith("<doc>"):
                         docs.append(line)
-                    if len(docs) == 1000:
+                    if len(docs) == self.batch_size:
                         yield error, self.parse(docs)
                         docs = []
                 except Exception, e:

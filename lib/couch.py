@@ -32,7 +32,7 @@ class Couch(object):
             dashboard_db_name: The name of the Dashboard database.
             views_directory: The path where the view JavaScript files
                              are located.
-            iterview_batch: The batch size to use with iterview
+            batch_size: The batch size to use with iterview
         """
         if not kwargs:
             config = ConfigParser.ConfigParser()
@@ -41,20 +41,20 @@ class Couch(object):
             dpla_db_name = config.get("CouchDb", "DPLADatabase")
             dashboard_db_name = config.get("CouchDb", "DashboardDatabase")
             views_directory = config.get("CouchDb", "ViewsDirectory")
-            iterview_batch = config.get("CouchDb", "IterviewBatch")
+            batch_size = config.get("CouchDb", "BatchSize")
         else:
             server_url = kwargs.get("server_url")
             dpla_db_name = kwargs.get("dpla_db_name")
             dashboard_db_name = kwargs.get("dashboard_db_name")
             views_directory = kwargs.get("views_directory")
-            iterview_batch = kwargs.get("iterview_batch")
+            batch_size = kwargs.get("batch_size")
 
         self.server_url = server_url
         self.server = Server(server_url)
         self.dpla_db = self._get_db(dpla_db_name)
         self.dashboard_db = self._get_db(dashboard_db_name)
         self.views_directory = views_directory
-        self.iterview_batch = int(iterview_batch)
+        self.batch_size = int(batch_size)
 
         self.logger = logging.getLogger("couch")
         handler = logging.FileHandler("logs/couch.log")
@@ -108,14 +108,15 @@ class Couch(object):
                         start = time.time()
                         try:
                             for doc in db.iterview(view_path,
-                                                   batch=self.iterview_batch):
+                                                   batch=self.batch_size):
                                 pass
                         except Exception, e:
-                            print "Error building view %s in database %s: %s" % \
-                                  (view_path, db.name, e)
+                            print "Error building %s view %s: %s" % \
+                                  (db.name, view_path, e)
                         build_time = (time.time() - start)/60
 
-                        print >> sys.stderr, "Completed in %s minutes" % build_time
+                        print >> sys.stderr, "Completed in %s minutes" % \
+                                             build_time
 
     def update_ingestion_doc(self, ingestion_doc, **kwargs):
         for prop, value in kwargs.items():
@@ -143,7 +144,7 @@ class Couch(object):
 
     def _query_all_docs(self, db):
         view_name = "_all_docs"
-        for row in db.iterview(view_name, batch=self.iterview_batch,
+        for row in db.iterview(view_name, batch=self.batch_size,
                                include_docs=True):
             yield row["doc"]
 
@@ -158,7 +159,7 @@ class Couch(object):
         startkey = [provider_name, "a"]
         endkey = [provider_name, "z"]
         for row in self.dashboard_db.iterview(view_name,
-                                              batch=self.iterview_batch,
+                                              batch=self.batch_size,
                                               include_docs=True,
                                               startkey=startkey,
                                               endkey=endkey):
@@ -174,7 +175,7 @@ class Couch(object):
         include_docs = True
         startkey = [provider_name, "a"]
         endkey = [provider_name, "z"]
-        for row in self.dpla_db.iterview(view_name, batch=self.iterview_batch,
+        for row in self.dpla_db.iterview(view_name, batch=self.batch_size,
                                          include_docs=True, startkey=startkey,
                                          endkey=endkey):
             yield row["doc"]
@@ -191,7 +192,7 @@ class Couch(object):
         include_docs = True
         startkey = [provider_name, ingestion_sequence, "a"]
         endkey = [provider_name, ingestion_sequence, "z"]
-        for row in self.dpla_db.iterview(view_name, batch=self.iterview_batch,
+        for row in self.dpla_db.iterview(view_name, batch=self.batch_size,
                                          include_docs=True, startkey=startkey,
                                          endkey=endkey):
             yield row["doc"]
@@ -288,7 +289,7 @@ class Couch(object):
             delete_docs.append(doc)
             count += 1
 
-            if len(delete_docs) == self.iterview_batch:
+            if len(delete_docs) == self.batch_size:
                 print "%s DPLA documents deleted" % count
                 self._delete_documents(self.dpla_db, delete_docs)
                 delete_docs = []
@@ -310,7 +311,7 @@ class Couch(object):
             delete_docs.append(doc)
             count += 1
 
-            if len(delete_docs) == self.iterview_batch:
+            if len(delete_docs) == self.batch_size:
                 print "%s Dashboard documents deleted" % count
                 self._delete_documents(self.dashboard_db, delete_docs)
                 delete_docs = []
@@ -340,8 +341,8 @@ class Couch(object):
             if "_rev" in doc:
                 del doc["_rev"]
             provider_docs.append(doc)
-            # Bulk post every 1000
-            if len(provider_docs) == self.iterview_batch:
+            # Bulk post every batch_size documents
+            if len(provider_docs) == self.batch_size:
                 self._bulk_post_to(backup_db, provider_docs)
                 provider_docs = []
                 print >> sys.stderr, "Backed up %s documents" % count
@@ -483,8 +484,8 @@ class Couch(object):
                                        "ingestionSequence": curr_seq})
 
                 # So as not to use too much memory at once, do the bulk posts
-                # and deletions in sets of 1000 documents
-                if len(delete_docs) == self.iterview_batch:
+                # and deletions in batches of batch_size
+                if len(delete_docs) == self.batch_size:
                     try:
                         self._bulk_post_to(self.dashboard_db, dashboard_docs)
                     except:
@@ -634,8 +635,9 @@ class Couch(object):
             for doc in self._query_all_dpla_provider_docs(provider):
                 delete_docs.append(doc)
                 count += 1
-                # Delete in sets of 1000 so as not to use too much memory
-                if len(delete_docs) == self.iterview_batch:
+                # Delete in batches of batch_size so as not to use too much
+                # memory
+                if len(delete_docs) == self.batch_size:
                     print "%s documents deleted" % count
                     self._delete_documents(self.dpla_db, delete_docs)
                     delete_docs = []
@@ -653,7 +655,7 @@ class Couch(object):
                 if "_rev" in doc:
                     del doc["_rev"]
                 docs.append(doc)
-                if len(docs) == self.iterview_batch:
+                if len(docs) == self.batch_size:
                     print "%s documents rolled back" % count
                     self._bulk_post_to(self.dpla_db, docs)
                     docs = []
