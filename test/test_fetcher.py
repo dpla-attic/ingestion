@@ -133,6 +133,8 @@ def test_absolute_url_fetcher_mwdl():
         assert getprop(response, "data/records") is not None
         break
 
+# Exclude since certain feeds are restricted
+@attr(travis_exclude='yes')
 def test_all_oai_verb_fetchers():
     for profile in os.listdir("profiles"):
         if profile.endswith(".pjs"):
