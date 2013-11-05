@@ -2,15 +2,13 @@
     "name": "scdl-charleston", 
     "type": "oai_verbs",
     "endpoint_url": "http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe",
-    "subresources": [], 
+    "sets": [], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-charleston", 
         "name": "South Carolina Digital Library"
     }, 
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe"
-    ], 
-    "enrichments_rec": [
+    "enrichments_coll": [],
+    "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",

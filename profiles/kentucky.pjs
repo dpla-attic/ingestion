@@ -2,13 +2,13 @@
     "name": "kentucky",
     "type": "oai_verbs",
     "endpoint_url": "http://kdl.kyvl.org/catalog/oai/", 
-    "subresources": "NotSupported", 
+    "sets": "NotSupported", 
     "contributor": {
         "@id": "http://dp.la/api/contributor/kdl", 
         "name": "Kentucky Digital Library"
     }, 
     "enrichments_coll": [], 
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla", 
         "/unset_prop?prop=collection",

@@ -2,17 +2,15 @@
     "name": "bhl", 
     "type": "oai_verbs",
     "endpoint_url": "http://www.biodiversitylibrary.org/oai",
-    "subresources": [
+    "sets": [
         "item"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/bhl",
         "name": "Biodiversity Heritage Library"
     }, 
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://www.biodiversitylibrary.org/oai"
-    ], 
-    "enrichments_rec": [
+    "enrichments_coll": [], 
+    "enrichments_item": [
         "/select-id",
         "/oai-to-dpla",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",

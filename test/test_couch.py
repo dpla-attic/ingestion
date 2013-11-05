@@ -14,9 +14,8 @@ H = httplib2.Http()
 headers = {
     "Content-Type": "application/json",
     "Pipeline-Coll": u"/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe",
-    "Pipeline-Rec": u"/select-id,/oai-to-dpla",
-    "Source": u"clemson",
-    "Contributor": base64.b64encode(json.dumps({u"@id": "http://dp.la/api/contributor/scdl-clemson", u"name": "South Carolina Digital Library"}))
+    "Pipeline-Item": u"/select-id,/oai-to-dpla",
+    "Source": u"clemson"
 }
 
 DATA_PATH = "test/test_data/"
@@ -24,7 +23,6 @@ DATA = DATA_PATH + "clemson_ctm"
 DATA_ADDED = DATA_PATH + "clemson_ctm_add5"
 DATA_CHANGED = DATA_PATH + "clemson_ctm_change3"
 DATA_DELETED = DATA_PATH + "clemson_ctm_delete10"
-DATA_LEGACY = DATA_PATH + "clemson_ctm_legacy"
 
 PROVIDER = "clemson"
 
@@ -253,14 +251,14 @@ def test_multiple_ingestions():
     data_deleted = copy.deepcopy(data)
     add_later = []
     for i in range(10):
-        add_later.append(data_deleted["records"].pop(2*i))
+        add_later.append(data_deleted.pop(2*i))
 
     data_changed = copy.deepcopy(data_deleted)
     for i in range(5):
-        data_changed["records"][3*i]["title"] = "Changed"
+        data_changed[3*i]["title"] = "Changed"
 
     data_added = copy.deepcopy(data_changed)
-    data_added["records"] += add_later
+    data_added += add_later
 
     first_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
     dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
@@ -291,8 +289,7 @@ def test_multiple_ingestions():
     # Fifth ingestion should have extra ingestion doc + 10 added
     assert int(total_dashboard_docs_fourth) + 11 == int(total_dashboard_docs_fifth)
     
-
-    assert couch.dashboard_db.get(first_ingestion_doc_id)["countAdded"] == 244
+    assert couch.dashboard_db.get(first_ingestion_doc_id)["countAdded"] == 243
     assert couch.dashboard_db.get(first_ingestion_doc_id)["countChanged"] == 0
     assert couch.dashboard_db.get(first_ingestion_doc_id)["countDeleted"] == 0
 
@@ -300,7 +297,6 @@ def test_multiple_ingestions():
     assert couch.dashboard_db.get(second_ingestion_doc_id)["countChanged"] == 0
     assert couch.dashboard_db.get(second_ingestion_doc_id)["countDeleted"] == 0
     
-
     assert couch.dashboard_db.get(third_ingestion_doc_id)["countAdded"] == 0
     assert couch.dashboard_db.get(third_ingestion_doc_id)["countChanged"] == 0
     assert couch.dashboard_db.get(third_ingestion_doc_id)["countDeleted"] == 10
@@ -312,50 +308,6 @@ def test_multiple_ingestions():
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["countAdded"] == 10
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["countChanged"] == 0
     assert couch.dashboard_db.get(fifth_ingestion_doc_id)["countDeleted"] == 0
-
-@attr(travis_exclude='yes')
-@with_setup(couch_setup, couch_teardown)
-def test_legacy():
-    # Ingest legacy data. Records will not have an "ingestionSequence" field
-    with open(DATA_LEGACY) as f:
-        data = f.readlines()
-    content = json.loads("".join(data))
-    docs = [c["doc"] for c in content]
-    # The test legacy documents contain revision so we pass new_edits=False
-    # to avoid collision errors
-    couch._bulk_post_to(couch.dpla_db, docs, new_edits=False)
-
-    # Run legacy_as_first_ingestion script
-    sys.path.append(os.path.join(os.getcwd(), "scripts"))
-    from legacy_as_first_ingestion import main
-    main(couch=couch, provider_name=PROVIDER)
-
-    # Get last Clemson ingestion document
-    ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
-    assert ingest_doc["ingestionSequence"] == 1
-    assert ingest_doc["countAdded"] == 244 # 243 records plus 1 collection
-    assert ingest_doc["countDeleted"] == 0
-    assert ingest_doc["countChanged"] == 0
-
-    # Get all provider documents in database
-    docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]
-    assert len(docs) == 244
-    for doc in docs:
-        assert doc["ingestionSequence"] == 1
-
-    # Ingest to override data
-    couch.ingest(DATA, PROVIDER)
-    ingest_doc = couch._get_last_ingestion_doc_for(PROVIDER)
-    assert ingest_doc["ingestionSequence"] == 2
-    assert ingest_doc["countAdded"] == 0
-    assert ingest_doc["countDeleted"] == 0
-    assert ingest_doc["countChanged"] == 243 # The collection does not change
-
-    # Get all provider documents in database
-    docs = [doc for doc in couch._query_all_dpla_provider_docs(PROVIDER)]
-    assert len(docs) == 244
-    for doc in docs:
-        assert doc["ingestionSequence"] == 2
 
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)

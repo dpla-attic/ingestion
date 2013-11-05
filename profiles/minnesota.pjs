@@ -6,11 +6,9 @@
         "@id": "http://dp.la/api/contributor/mdl", 
         "name": "Minnesota Digital Library"
     }, 
-    "subresources": [], 
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://reflections.mndigital.org/oai/oai2.php"
-    ], 
-    "enrichments_rec": [
+    "sets": [], 
+    "enrichments_coll": [], 
+    "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",

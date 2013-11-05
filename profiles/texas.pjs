@@ -3,15 +3,13 @@
     "type": "oai_verbs",
     "metadata_prefix": "untl",
     "endpoint_url": "http://texashistory.unt.edu/oai/",
-    "subresources": [], 
+    "sets": [], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/the_portal_to_texas_history",
         "name": "The Portal to Texas History"
     },
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://texashistory.unt.edu/oai/"
-    ],
-    "enrichments_rec": [
+    "enrichments_coll": [],
+    "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/oai_untl_to_dpla",
         "/shred?prop=sourceResource%2Fsubject&delim=%20-%20",

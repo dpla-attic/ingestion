@@ -3,7 +3,7 @@
     "type": "oai_verbs",
     "metadata_prefix": "marc",
     "endpoint_url": "http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp",
-    "subresources": [
+    "sets": [
         "UC",
         "ILL",
         "MN"
@@ -12,10 +12,8 @@
         "@id": "http://dp.la/api/contributor/uiuc", 
         "name": "University of Illinois at Urbana-Champaign"
     }, 
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp"
-    ], 
-    "enrichments_rec": [
+    "enrichments_coll": [], 
+    "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/marc_to_dpla",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fspatial",

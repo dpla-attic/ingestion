@@ -77,6 +77,7 @@ def main(argv):
                 break
 
         # Save when docs is about to exceed the batch size
+        print >> sys.stderr, "Read file %s" % filename
         if len(docs) + len(file_docs) > batch_size:
             resp, error_msg = couch.process_and_post_to_dpla(docs,
                                                              ingestion_doc)

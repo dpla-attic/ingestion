@@ -51,22 +51,23 @@ def main(argv):
         return -1
 
     error_msg = []
+    config_file = "akara.ini"
     fetcher = create_fetcher(ingestion_doc["profile_path"],
-                             ingestion_doc["uri_base"])
+                             ingestion_doc["uri_base"], config_file)
 
     print "Fetching records for " + fetcher.provider
     total_fetched_records = 0
     for response in fetcher.fetch_all_data():
-        if response["error"]:
-            error_msg.extend(iterify(response["error"]))
-            print response["error"]
-        else:
+        if response["errors"]:
+            error_msg.extend(iterify(response["errors"]))
+            print response["errors"]
+        if response["records"]:
             # Write records to file
             filename = os.path.join(fetch_dir, str(uuid.uuid4()))
             with open(filename, "w") as f:
-                f.write(json.dumps(response["data"]))
-            print "Records written to " + filename
-            total_fetched_records += len(getprop(response, "data/records"))
+                f.write(json.dumps(response["records"]))
+            total_fetched_records += len(response["records"])
+            print "%s records fetched" % total_fetched_records
 
     logger.info("Total records fetched: %s" % total_fetched_records)
 

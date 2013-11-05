@@ -571,11 +571,6 @@ class Couch(object):
                                          "fieldsChanged": fields_changed,
                                          "provider": provider,
                                          "ingestionSequence": ingestion_sequence})
-                else:
-                    if harvested_doc.get("ingestType") == "collection" and \
-                       harvested_doc.get("ingestionSequence") == ingestion_sequence:
-                        # Append duplicate collection ids for removal
-                        duplicate_collection_doc_ids.append(hid)
                 
             # New document not previousely ingested
             else:
@@ -587,7 +582,7 @@ class Couch(object):
 
         # Remove duplicate documents to prevent multiple saves
         for id in duplicate_doc_ids:
-                del harvested_docs[id]
+            del harvested_docs[id]
         
         status = -1
         error_msg = None

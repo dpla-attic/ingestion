@@ -1,13 +1,13 @@
 {
     "name": "smithsonian",
     "type": "edan",
-    "endpoint_url": "file:/home/dpla/data/smithsonian/",
+    "endpoint_url": "file:/home/miguel/tmp/smithsonian/",
     "contributor": {
         "@id": "http://dp.la/api/contributor/smithsonian",
         "name": "Smithsonian Institution"
     },
     "enrichments_coll": [],
-    "enrichments_rec": [
+    "enrichments_item": [
         "/edan_select_id",
         "/edan_to_dpla", 
         "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",

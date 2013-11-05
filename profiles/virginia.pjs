@@ -2,7 +2,7 @@
     "name": "virginia",
     "type": "uva",
     "endpoint_url": "http://fedoraproxy.lib.virginia.edu/fedora/objects/uva-lib%3A{0}/methods/uva-lib%3AmetsSDef/getMETS",
-    "subresources": {
+    "collections": {
         "628506": {
             "title": "The Jackson Davis Collection of African American Photographs"
         },
@@ -18,7 +18,7 @@
         "name": "University of Virginia Library"
     }, 
     "enrichments_coll": [],
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=UVA",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",

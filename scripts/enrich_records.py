@@ -4,8 +4,6 @@ Script to enrich data from JSON files
 
 Expected JSON structure:
 {
-    "provider": <The provider name>,
-    "contributor": <A dictionary containing the contributor @id and name>,
     "records": <A list of records>,
     "collection": <An empty string or a dictionary>
 }
@@ -68,16 +66,20 @@ def main(argv):
         profile = json.loads(f.read())
     headers = {
         "Source": ingestion_doc["provider"],
-        "Collection": "",
         "Content-Type": "application/json",
-        "Pipeline-Rec": ",".join(profile["enrichments_rec"]),
+        "Pipeline-Item": ",".join(profile["enrichments_item"]),
         "Pipeline-Coll": ",".join(profile["enrichments_coll"])
     }
 
     error_msg = None
     fetch_dir = getprop(ingestion_doc, "fetch_process/data_dir")
-    
-    total_enriched_records = 0
+
+    # Countes for logger info
+    total_items = 0
+    total_colls = 0
+    enriched_items = 0
+    enriched_colls = 0
+
     for filename in os.listdir(fetch_dir):
         filepath = os.path.join(fetch_dir, filename)
         with open(filepath, "r") as f:
@@ -100,13 +102,21 @@ def main(argv):
 
         data = json.loads(content)
         enriched_records = data["enriched_records"]
-        total_enriched_records += data["enriched_records_count"]
+
+        # Update counts
+        total_items += data["item_count"]
+        total_colls += data["coll_count"]
+        enriched_items += data["enriched_item_count"]
+        enriched_colls += data["enriched_coll_count"]
 
         # Write enriched data to file
         with open(os.path.join(enrich_dir, filename), "w") as f:
             f.write(json.dumps(enriched_records))
 
-    logger.info("Total records enriched: %s" % total_enriched_records)
+    logger.info("Item records enriched: %s of %s" % (enriched_items,
+                                                     total_items))
+    logger.info("Collection records enriched: %s of %s" % (enriched_colls,
+                                                           total_colls))
 
     # Update ingestion document
     if error_msg is not None:

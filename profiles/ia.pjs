@@ -11,7 +11,7 @@
     "prefix_meta": "{0}_meta.xml",
     "prefix_dc": "{0}_dc.xml",
     "shown_at_url": "http://archive.org/details/{0}",
-    "subresources": {
+    "collections": {
         "statelibrarynorthcarolina": {
             "title": "State Library of North Carolina, Government & Heritage Library Collection"
         },
@@ -30,7 +30,7 @@
         "name": "Internet Archive"
     }, 
     "enrichments_coll": [],
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id",
         "/ia-to-dpla",
         "/cleanup_value",

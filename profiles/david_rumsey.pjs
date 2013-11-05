@@ -2,7 +2,7 @@
     "name": "david_rumsey",
     "type": "oai_verbs",
     "endpoint_url": "http://www.davidrumsey.com/luna/servlet/oai",
-    "subresources": [],
+    "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/david_rumsey", 
         "name": "David Rumsey"
@@ -11,7 +11,7 @@
         "/set_prop?prop=title&value=David%20Rumsey%20Map%20Collection",
         "/set_prop?prop=description&value=The%20historical%20map%20collection%20has%20over%2038%2C000%20maps%20and%20images%20online%2E%20The%20collection%20focuses%20on%20rare%2018th%20and%2019th%20century%20North%20American%20and%20South%20American%20maps%20and%20other%20cartographic%20materials%2E%20Historic%20maps%20of%20the%20World%2C%20Europe%2C%20Asia%2C%20and%20Africa%20are%20also%20represented%2E"
     ], 
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
