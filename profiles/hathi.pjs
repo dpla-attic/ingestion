@@ -1,7 +1,7 @@
 {
     "enrichments_coll": [], 
     "name": "hathitrust", 
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id",
         "/marc_to_dpla",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fspatial",
@@ -21,7 +21,7 @@
         "/unset_prop?prop=_id&condition=hathi_exclude&condition_prop=dataProvider%2CsourceResource%2Ftype",
         "/hathi_identify_object"
     ], 
-    "subresources": [], 
+    "sets": [], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/hathitrust", 
         "name": "HathiTrust Digital Library"

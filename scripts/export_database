@@ -500,8 +500,7 @@ Usage:
 
   Arguments:
 
-    output_file  - name of the file for storing the database
-                 - the file extension should be ".gz"
+    source_name  - the contributor.name value taken from the provider's profile
     upload       - string "upload" if the file should be uploaded to Rackspace
                  - nothing if the files shouldn't be uploaded to Rackspace
     filename     - file name to remove from Rackspace CDN

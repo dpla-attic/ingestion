@@ -3,15 +3,13 @@
     "type": "oai_verbs",
     "metadata_prefix": "MODS",
     "endpoint_url": "http://brevard.lib.unc.edu:8080/repox/OAIHandler",
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://brevard.lib.unc.edu:8080/repox/OAIHandler"
-    ], 
-    "subresources": [],
+    "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/digitalnc",
         "name": "North Carolina Digital Heritage Center"
     }, 
-    "enrichments_rec": [
+    "enrichments_coll": [], 
+    "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/oai_mods_to_dpla_digitalnc",
         "/shred?prop=sourceResource%2Fdate&delim=%2C",

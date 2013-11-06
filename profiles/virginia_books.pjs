@@ -2,7 +2,7 @@
     "name": "virginia_books",
     "type": "uva",
     "endpoint_url": "http://fedora-prod02.lib.virginia.edu:8080/fedora/objects/uva-lib%3A{0}/methods/uva-lib%3AmetsSDef/getMETS",
-    "subresources": {
+    "collections": {
         "2190487": {
             "title": "DPLA Collection Record for UVA Digital Library Text Collections"
         }
@@ -12,7 +12,7 @@
         "name": "University of Virginia Library"
     }, 
     "enrichments_coll": [],
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=UVA",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",

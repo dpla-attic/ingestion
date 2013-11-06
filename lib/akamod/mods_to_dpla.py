@@ -211,6 +211,25 @@ def multi_field_transforms_uva(d, p):
 
     return out
 
+def physical_description_transform_uva(d, p):
+    pd = iterify(getprop(d, p))
+    out = {}
+    for _dict in pd:
+        note = getprop(_dict, "note")
+        if note:
+            for sub_dict in note:
+                if isinstance(sub_dict, dict) and "displayLabel" in sub_dict:
+                    if sub_dict["displayLabel"] == "size inches":
+                        out["extent"] = sub_dict.get("#text")
+                    elif sub_dict["displayLabel"] == "condition":
+                        out["description"] = sub_dict.get("#text")
+        if "form" in _dict:
+            for form in iterify(_dict["form"]):
+                if "#text" in form:
+                    out["format"] = form["#text"]
+                    break
+    return out
+
 # NYPL specific transforms
 def spatial_transform_nypl(d, p):
     spatial = []
@@ -223,14 +242,14 @@ def spatial_transform_nypl(d, p):
     return {"spatial": spatial} if spatial else {}
 
 def title_transform_nypl(d, p):
-    title = []
-    for s in iterify(getprop(d, p)):
-        if (isinstance(s, dict) and s.get("usage") == "primary"
-            and s.get("supplied") == "no"):
-            title.append(s.get("title"))
-    title = filter(None, title)
-
-    return {"title": title[-1]} if title else {}
+    title_info = iterify(getprop(d, p))
+    # Title is in the last titleInfo element
+    try:
+        title = title_info[-1].get("title")
+    except:
+        logger.error("Error setting sourceResource.title for %s" % d["_id"])
+    
+    return {"title": title} if title else {}
 
 def identifier_transform_nypl(d, p):
     identifier = [s.get("#text") for s in iterify(getprop(d, p)) if
@@ -296,16 +315,31 @@ def date_transform_nypl(d, p):
             return _date_created(d, p + "/" + field)
     return {}
 
-# MODS transforms (applies to both UVA and NYPL)
-def description_transform(d, p):
-    description = [s.get("#text") for s in iterify(getprop(d, p))
-                   if isinstance(s, dict) and "type" in s and
-                   s.get("type") == "content"]
-    description = filter(None, description)
+def description_transform_nypl(d, p):
+    note = getprop(d, "note")
+    abstract = getprop(d, "abstract")
 
-    return {"description": description} if description else {}
+    # Extract note values first
+    if note is not None:
+        desc = []
+        for s in iterify(note):
+            if "#text" in s:
+                desc.append(s["#text"])
+            else:
+                desc.append(s)
 
-def is_shown_at_transform(d, p):
+    # Override note values if abstract exists
+    if abstract is not None:
+        desc = []
+        for s in iterify(abstract):
+            if "#text" in s:
+                desc.append(s["#text"])
+            else:
+                desc.append(s)
+
+    return {"description": desc} if desc else {}
+
+def is_shown_at_transform_nypl(d, p):
     is_shown_at = None
     collection_title = getprop(d, p + "/title")
 
@@ -329,25 +363,15 @@ def is_shown_at_transform(d, p):
 
     return {"isShownAt": is_shown_at} if is_shown_at else {}
 
-def physical_description_transform(d, p):
-    pd = iterify(getprop(d, p))
-    out = {}
-    for _dict in pd:
-        note = getprop(_dict, "note")
-        if note:
-            for sub_dict in note:
-                if isinstance(sub_dict, dict) and "displayLabel" in sub_dict:
-                    if sub_dict["displayLabel"] == "size inches":
-                        out["extent"] = sub_dict.get("#text")
-                    elif sub_dict["displayLabel"] == "condition":
-                        out["description"] = sub_dict.get("#text")
-        if "form" in _dict:
-            for form in iterify(_dict["form"]):
-                if "#text" in form:
-                    out["format"] = form["#text"]
-                    break
-    return out
+def collection_transform_nypl(d, p):
+    collection = getprop(d, p)
+    title_info = getprop(d, "titleInfo")
+    if title_info is not None:
+        collection["title"] = iterify(title_info)[0].get("title")
 
+    return {"collection": collection}
+
+# MODS transforms (applies to both UVA and NYPL)
 def language_transform(d, p):
     language = []
     v = getprop(d, p)
@@ -367,7 +391,7 @@ CHO_TRANSFORMER["UVA"] = {
     "titleInfo"             : title_transform_uva,
     "identifier"            : identifier_transform_uva,
     "originInfo"            : date_transform_uva,
-    "physicalDescription"   : physical_description_transform,
+    "physicalDescription"   : physical_description_transform_uva,
     "language/languageTerm" : language_transform,
     "collection"            : lambda d, p: {"collection": getprop(d, p)},
     "originInfo/publisher"  : lambda d, p: {"publisher": getprop(d, p)},
@@ -375,10 +399,6 @@ CHO_TRANSFORMER["UVA"] = {
     "accessCondition"       : lambda d, p: {"rights": [s["#text"] for s in
                                                        getprop(d, p) if "#text"
                                                        in s]},
-
-    # Must run after physical_description_transform to override
-    # description field
-    "note"                  : description_transform,
 
     # Run multi-field dependent transforms. Using the "_id" as the key
     # guarantees that multi_field_transforms will run since all records
@@ -398,22 +418,20 @@ CHO_TRANSFORMER["NYPL"] = {
     "titleInfo"                     : title_transform_nypl,
     "originInfo"                    : date_transform_nypl,
     "identifier"                    : identifier_transform_nypl,
-    "physicalDescription"           : physical_description_transform,
-    "typeOfResource"                : lambda d, p: {"type": getprop(d, p)},
+    "typeOfResource/#text"          : lambda d, p: {"type": getprop(d, p)},
     "relatedItem/titleInfo/title"   : lambda d, p: {"isPartOf": getprop(d, p)},
+    "collection"                    : collection_transform_nypl,
+    "note"                          : description_transform_nypl,
+    "abstract"                      : description_transform_nypl
+}
 
-    "collection"                    : lambda d, p: ({"collection":
-                                                    getprop(d, p)}),
-
-    # Must run after physical_description_handler to override
-    # description field
-    "note": description_transform
+AGGREGATION_TRANSFORMER["NYPL"] = {
+    "collection": is_shown_at_transform_nypl,
 }
 
 # Common TRANSFORMERs
 CHO_TRANSFORMER["common"] = {}
 AGGREGATION_TRANSFORMER["common"] = {
-    "collection"                 : is_shown_at_transform, 
     "_id"                        : lambda d, p: {"_id": getprop(d, p)},
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},

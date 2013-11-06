@@ -8,7 +8,7 @@
         "page": 1,
         "per_page": 100
     },
-    "subresources": [],
+    "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/nypl",
         "name": "New York Public Library"
@@ -16,7 +16,7 @@
    "enrichments_coll": [
         "/nypl-coll-title?list_sets=http://j2k.repo.nypl.org/api/v1/items/listCollections"
     ],
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=NYPL",
         "/nypl_identify_object",
@@ -35,6 +35,8 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_prop?prop=sourceResource%2Frights&value=No%20Known%20US%20Copyright%20Restrictions",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=New%20York",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
     ]
 }

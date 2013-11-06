@@ -2,9 +2,11 @@ import os
 import re
 import sys
 import time
+import hashlib
 import fnmatch
 import urllib2
 import xmltodict
+import ConfigParser
 from urllib import urlencode
 from amara.thirdparty import json
 from amara.thirdparty import httplib2
@@ -19,22 +21,10 @@ except:
 from dplaingestion.selector import exists
 from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
+from dplaingestion.utilities import iterify, couch_id_builder
 
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
-
-def iterify(iterable):
-    '''
-    Treat iterating over a single item or an interator seamlessly.
-    '''
-    if (isinstance(iterable, basestring) \
-        or isinstance(iterable, dict)):
-        iterable = [iterable]
-    try:
-        iter(iterable)
-    except TypeError:
-        iterable = [iterable]
-    return iterable
 
 XML_PARSE = lambda doc: xmltodict.parse(doc, xml_attribs=True, attr_prefix='',
                                         force_cdata=False,
@@ -44,24 +34,37 @@ class Fetcher(object):
     """The base class for all fetchers.
        Includes attributes and methods that are common to all types.
     """
-    def __init__(self, profile, uri_base):
+    def __init__(self, profile, uri_base, config_file):
         """Set common attributes"""
+        self.config_file = config_file
         self.uri_base = uri_base
+        self.sets = profile.get("sets")
         self.provider = profile.get("name")
         self.blacklist = profile.get("blacklist")
         self.set_params = profile.get("set_params")
         self.contributor = profile.get("contributor")
-        self.subresources = profile.get("subresources")
+        self.collections = profile.get("collections", {})
         self.endpoint_url = profile.get("endpoint_url")
         self.collection_titles = profile.get("collection_titles")
         self.http_handle = httplib2.Http('/tmp/.pollcache')
         self.http_handle.force_exception_as_status_code = True
 
-    def remove_blacklisted_subresources(self):
+        # Set batch_size
+        config = ConfigParser.ConfigParser()
+        config.readfp(open(self.config_file))
+        self.batch_size = int(config.get("CouchDb", "BatchSize"))
+
+        # Set response
+        self.response = {"errors": [], "records": []}
+
+    def reset_response(self):
+        self.response = {"errors": [], "records": []}
+
+    def remove_blacklisted_sets(self):
         if self.blacklist:
             for set in self.blacklist:
-                if set in self.subresources:
-                    del self.subresources[set]
+                if set in self.sets:
+                    del self.sets[set]
 
     def request_content_from(self, url, params={}, attempts=3):
         error, content = None, None
@@ -71,7 +74,6 @@ class Fetcher(object):
             else:
                 url += "?" + urlencode(params)
 
-        print "Requesting %s" % url
         for i in range(attempts):
             resp, content = self.http_handle.request(url)
             # Break if 2xx response status
@@ -87,63 +89,66 @@ class Fetcher(object):
 
         return error, content
 
+    def create_collection_records(self):
+        if self.collections:
+            for set_spec in self.collections.keys():
+                _id = couch_id_builder(self.provider, set_spec)
+                id = hashlib.md5(_id).hexdigest()
+                at_id = "http://dp.la/api/collections/" + id
+    
+                self.collections[set_spec]["id"] = id
+                self.collections[set_spec]["_id"] = _id
+                self.collections[set_spec]["@id"] = at_id
+                self.collections[set_spec]["ingestType"] = "collection"
+
+    def add_provider_to_item_records(self, item_records):
+        for item_record in item_records:
+            item_record["provider"] = self.contributor
+
 class OAIVerbsFetcher(Fetcher):
-    def __init__(self, profile, uri_base):
+    def __init__(self, profile, uri_base, config_file):
         self.metadata_prefix = profile.get("metadata_prefix")
-        super(OAIVerbsFetcher, self).__init__(profile, uri_base)
-
-    def set_subresources(self):
-        """Sets self.subresources
-
-           Returns the error, else None
-        """
-        if self.subresources == "NotSupported":
-            self.subresources = {"": None}
-        else:
-            # Fetch all sets
-            error, sets = self.list_sets()
-            if error is not None:
-                self.subresources = {}
-                return error
-            elif sets:
-                if not self.subresources:
-                    self.subresources = sets
-                    self.remove_blacklisted_subresources()
-                else:
-                    for set in sets.keys():
-                        if set not in self.subresources:
-                            del sets[set]
-                    self.subresources = sets
+        super(OAIVerbsFetcher, self).__init__(profile, uri_base, config_file)
 
     def list_sets(self):
-        """Requests all sets via the ListSets verb
-
-           Returns an (error, sets) tuple where error is None if the
-           request succeeds, the requested content is not empty and is
-           parseable, and sets is a dictionary with setSpec as keys and
-           a dictionary with keys title and description as the values.
-        """
-        sets = {}
+        """Requests all sets via the ListSets verb"""
+        list_set_content = None
         list_sets_url = self.uri_base + "/oai.listsets.json?endpoint=" + \
                         self.endpoint_url
 
         error, content = self.request_content_from(list_sets_url)
         if error is None:
             try:
-                list_sets_content = json.loads(content)
-            except ValueError:
-                error = "Error decoding content from URL %s" % list_sets_url
-                return error, subresources
+                list_set_content = json.loads(content)
+            except:
+                error = "Error parsing content from URL %s" % list_sets_url
 
-            for s in list_sets_content:
-                spec = s["setSpec"]
-                sets[spec] = {"id": spec}
-                sets[spec]["title"] = s["setName"]
-                if "setDescription" in s:
-                    sets[spec]["description"] = s["setDescription"]
+        return error, list_set_content
+ 
+    def fetch_sets(self):
+        """Fetches all sets
 
-            if not sets:
-                error = "No sets received from URL %s" % list_sets_url
+           Returns an (error, sets) tuple
+        """
+        error = None
+        sets = {}
+
+        if self.sets == "NotSupported":
+            sets = {"": None}
+        else:
+            error, list_sets_content = self.list_sets()
+            if error is None:
+                for s in list_sets_content:
+                    set_spec = s["setSpec"]
+                    sets[set_spec] = {
+                        "title": s["setName"]
+                    }
+                    if "description" in s:
+                        sets[set_spec]["description"] = s["description"].strip()
+
+                if not sets:
+                    error = "No sets received with ListSets request to %s" % \
+                            self.endpoint_url
 
         return error, sets
 
@@ -177,49 +182,65 @@ class OAIVerbsFetcher(Fetcher):
 
         return error, records_content
 
+    def add_collection_to_item_records(self, item_records):
+        for item_record in item_records:
+            collections = []
+            for set_spec in iterify(item_record.get("setSpec")):
+                collection = self.collections.get(set_spec)
+                if collection:
+                    collections.append(collection)
+            if collections:
+                item_record["collection"] = collection
+
+    def set_collections(self):
+        if not self.collections:
+            error, sets = self.fetch_sets()
+            if error is not None:
+                self.response["errors"].append(error)
+            elif sets:
+                if self.sets:
+                    # Remove any sets that are not in self.sets
+                    for set in sets.keys():
+                        if set not in self.sets:
+                            del sets[set]
+                if self.blacklist:
+                    # Remove any sets that are blacklisted
+                    for set in sets.keys():
+                        if set in self.blacklist:
+                            del sets[set]
+                self.collections = sets
+
     def fetch_all_data(self):
-        """A generator to yield batches of records along with the collection,
-           if any, the provider, and any errors encountered along the way. The
-           reponse dictionary has the following structure:
-
-            response = {
-                "error": <Any error encountered>,
-                "data": {
-                    "provider": <The provider>,
-                    "contributor": <The contributor>,
-                    "records": <The batch of records fetched>,
-                    "collection": {
-                        "title": <The collection title, if any>,
-                        "description": <The collection description, if any>
-                    }
-                }
-            }
+        """A generator to yield batches of records fetched, and any errors
+           encountered in the process, via the self.response dicitonary.
         """
-        response = {
-            "error": None,
-            "data": {
-                "provider": self.provider,
-                "contributor": self.contributor,
-                "records": None,
-                "collection": None
-            }
-        }
+        # Set self.collections
+        self.set_collections()
 
-        # Set the subresources
-        response["error"] = self.set_subresources()
-        if response["error"] is not None:
-            yield response
+        # Create records of ingestType "collection"
+        if self.collections and any(self.collections.values()):
+            self.create_collection_records()
+            self.response["records"].extend([v.copy() for v in
+                                             self.collections.values()])
+            if len(self.response["records"]) >= self.batch_size:
+                yield self.response
+                self.reset_response()
+            # Now that self.collections.values has been added to the
+            # response, let's remove the "_id" and "ingesType" fields since
+            # we'll be using the values for each item record's collection
+            # field
+            for k, v in self.collections.items():
+                for prop in ["_id", "ingestType"]:
+                    del v[prop]
 
-        # Fetch all records for each subresource
-        for subresource in self.subresources.keys():
-            print "Fetching records for subresource " + subresource
+        # Fetch all records for each set
+        for set in self.collections.keys():
+            print "Fetching records for set " + set
 
-            # Set response["data"]["collection"] and initial params
+            # Set initial params
             params = {}
-            if not subresource == "":
-                params["oaiset"] = subresource
-                setprop(response, "data/collection",
-                        self.subresources[subresource])
+            if not set == "":
+                params["oaiset"] = set
         
             request_more = True
             resumption_token = ""
@@ -229,21 +250,20 @@ class OAIVerbsFetcher(Fetcher):
             if self.metadata_prefix is not None:
                 params["metadataPrefix"] = self.metadata_prefix
 
-            # Flag to remove subresource if no records fetched
-            remove_subresource = True
-
             # Request records until a resumption token is not received
             while request_more:
                 # Send request
-                response["error"], content = self.list_records(url, params)
+                error, content = self.list_records(url, params)
 
-                if response["error"] is not None:
-                    # Stop requesting from this subresource
+                if error is not None:
+                    # Stop requesting from this set
                     request_more = False
+                    self.response["errors"].append(error)
                 else:
+                    self.add_provider_to_item_records(content["items"])
+                    self.add_collection_to_item_records(content["items"])
+                    self.response["records"].extend(content["items"])
                     # Get resumption token
-                    remove_subresource = False
-                    setprop(response, "data/records", content["items"])
                     resumption_token = content.get("resumption_token")
                     if (resumption_token is not None and
                         len(resumption_token) > 0):
@@ -252,17 +272,20 @@ class OAIVerbsFetcher(Fetcher):
                     else:
                         request_more = False
 
-                yield response
+                if len(self.response["records"]) >= self.batch_size:
+                    yield self.response
+                    self.reset_response()
 
-            if remove_subresource:
-                del self.subresources[subresource]
+        # Last yield
+        if self.response["errors"] or self.response["records"]:
+            yield self.response
 
 class AbsoluteURLFetcher(Fetcher):
-    def __init__(self, profile, uri_base):
+    def __init__(self, profile, uri_base, config_file):
         self.get_sets_url = profile.get("get_sets_url")
         self.get_records_url = profile.get("get_records_url")
         self.endpoint_url_params = profile.get("endpoint_url_params")
-        super(AbsoluteURLFetcher, self).__init__(profile, uri_base)
+        super(AbsoluteURLFetcher, self).__init__(profile, uri_base, config_file)
 
     def extract_content(self, content, url):
         """Calls extract_xml_content by default but can be overriden in
@@ -279,118 +302,119 @@ class AbsoluteURLFetcher(Fetcher):
 
         return error, content
 
-    def set_subresources(self):
-        """Sets self.subresources
-           Overriden in child classes
+    def fetch_sets(self):
+        """Fetches all sets
 
-           Returns the error, else None
+           Returns an (error, sets) tuple
         """
-        if isinstance(self.subresources, dict):
-            subresources = {}
-            for k, v in self.subresources.items():
-                subresources[k] = {
-                    "id": k,
-                    "title": v.get("title"),
-                    "description": v.get("description")
-                }
-            self.subresources = subresources
-        elif self.subresources == "NotSupported":
-            self.subresources = {"": None}
-        else:
-            self.subresources = {}
-            error = "If subresources are not supported then the " + \
-                    "subresources field in the profile must be set to " + \
-                    "\"NotSupported\""
-            return error
+        error = None
+        sets = {}
+
+        if self.sets == "NotSupported":
+            sets = {"": None}
+
+        return error, sets
+
+    def set_collections(self):
+        if not self.collections:
+            error, sets = self.fetch_sets()
+            if error is not None:
+                self.response["errors"].append(error)
+            elif sets:
+                self.collections = sets
 
     def request_records(self):
         # Implemented in child classes
         pass
 
+    def add_collection_to_item_records(self, set, records):
+        collection = self.collections.get(set)
+        if collection:
+            for record in records:
+                record["collection"] = collection
+
     def fetch_all_data(self):
-        """A generator to yield batches of records along with the collection,
-           if any, the provider, and any errors encountered along the way. The
-           reponse dictionary has the following structure:
-
-            response = {
-                "error": <Any error encountered>,
-                "data": {
-                    "provider": <The provider>,
-                    "contributor": <The contributor>,
-                    "records": <The batch of records fetched>,
-                    "collection": {
-                        "title": <The collection title, if any>,
-                        "description": <The collection description, if any>
-                    }
-                }
-            }
+        """A generator to yield batches of records fetched, and any errors
+           encountered in the process, via the self.response dicitonary.
         """
-        response = {
-            "error": None,
-            "data": {
-                "provider": self.provider,
-                "contributor": self.contributor,
-                "records": None,
-                "collection": None
-            }
-        }
 
-        # Set the subresources
-        response["error"] = self.set_subresources()
-        if response["error"] is not None:
-            yield response
+        # Set self.collections
+        self.set_collections()
+        if not self.collections:
+            self.response["errors"] = "If sets are not supported then the " + \
+                                     "sets field in the profile must be set " \
+                                     "to \"NotSupported\""
+            yield self.response
 
-        # Request records for each subresource
-        for subresource in self.subresources.keys():
-            print "Fetching records for subresource " + subresource
+        # Create records of ingestType "collection"
+        if self.collections and any(self.collections.values()):
+            self.create_collection_records()
+            self.response["records"].extend([v.copy() for v in
+                                             self.collections.values()])
+            if len(self.response["records"]) >= self.batch_size:
+                yield self.response
+                self.reset_response()
+            # Now that self.collections.values has been added to the
+            # response, let's remove the "_id" and "ingesType" fields since
+            # we'll be using the values for each item record's collection
+            # field
+            for k, v in self.collections.items():
+                for prop in ["_id", "ingestType"]:
+                    del v[prop]
 
-            # Set response["data"]["collection"]
-            if not subresource == "":
-                setprop(response, "data/collection",
-                        self.subresources[subresource])
+        # Request records for each set
+        for set in self.collections.keys():
+            print "Fetching records for set " + set
 
             request_more = True
-            if subresource:
-                url = self.endpoint_url.format(subresource)
+            if set:
+                url = self.endpoint_url.format(set)
             else:
                 url = self.endpoint_url
             params = self.endpoint_url_params
 
             while request_more:
-                response["error"], content = self.request_content_from(
+                error, content = self.request_content_from(
                     url, self.endpoint_url_params
                     )
 
-                if response["error"] is not None:
-                    # Stop requesting from this subresource
+                if error is not None:
+                    # Stop requesting from this set
                     request_more = False
-                    yield response
+                    self.response["errors"].append(error)
                     continue
 
-                response["error"], content = self.extract_content(content, url)
-                if response["error"] is not None:
+                error, content = self.extract_content(content, url)
+                if error is not None:
                     request_more = False
-                    yield response
+                    self.response["errors"].extend(iterify(error))
                 else:
-                    for response["error"], response["data"]["records"], \
-                        request_more in self.request_records(content):
-                        yield response
+                    for error, records, request_more in \
+                        self.request_records(content):
+                        if error is not None:
+                            self.response["errors"].extend(iterify(error))
+                        self.add_provider_to_item_records(records)
+                        self.add_collection_to_item_records(set, records)
+                        self.response["records"].extend(records)
+                        if len(self.response["records"]) >= self.batch_size:
+                            yield self.response
+                            self.reset_response()
+
+        # Last yield
+        if self.response["errors"] or self.response["records"]:
+            yield self.response
 
 class IAFetcher(AbsoluteURLFetcher):
-    def __init__(self, profile, uri_base):
-        super(IAFetcher, self).__init__(profile, uri_base)
+    def __init__(self, profile, uri_base, config_file):
+        super(IAFetcher, self).__init__(profile, uri_base, config_file)
         self.count = 0
-        self.errors = []
         self.get_file_url = profile.get("get_file_url")
         self.prefix_files = profile.get("prefix_files")
         self.prefix_meta = profile.get("prefix_meta")
         self.prefix_dc = profile.get("prefix_dc")
         self.shown_at_url = profile.get("shown_at_url")
         self.fetch_pool = None
-        self.queue = Queue(maxsize=self.endpoint_url_params["rows"])
-        self.file_url_reqs = 0
-        self.file_meta_reqs = 0
-        self.file_marc_reqs = 0
+        self.queue = Queue(maxsize=self.batch_size)
 
     def extract_content(self, content, url):
         error = None
@@ -472,29 +496,30 @@ class IAFetcher(AbsoluteURLFetcher):
         self.fetch_pool.join()
 
         count = 0
+        errors = []
         records = []
         while (count != expected_records):
             try:
                 record = (self.queue.get(block=False))
                 count += 1
                 if isinstance(record, basestring):
-                    self.errors.append(record)
+                    errors.append(record)
                 else:
                     records.append(record)
             except:
                 pass
 
-            if count%100 == 0:
-                # Yield every 100 records
-                yield self.errors, records, request_more
-                self.errors = []
+            if count % self.batch_size == 0:
+                # Yield every self.batch_size records
+                yield errors, records, request_more
+                errors = []
                 records = []
                 print "Fetched %s of %s" % (read_records + count,
                                             total_records)
 
         # Last yield
         if records:
-            yield self.errors, records, request_more
+            yield errors, records, request_more
             print "Fetched %s of %s" % (read_records + count, total_records)
 
     def fetch_record(self, id):
@@ -563,8 +588,8 @@ class IAFetcher(AbsoluteURLFetcher):
             print "Error: %s" % e
 
 class MWDLFetcher(AbsoluteURLFetcher):
-    def __init__(self, profile, uri_base):
-        super(MWDLFetcher, self).__init__(profile, uri_base)
+    def __init__(self, profile, uri_base, config_file):
+        super(MWDLFetcher, self).__init__(profile, uri_base, config_file)
 
     def mwdl_extract_records(self, content):
         error = None
@@ -594,40 +619,39 @@ class MWDLFetcher(AbsoluteURLFetcher):
         yield error, records, request_more
 
 class NYPLFetcher(AbsoluteURLFetcher):
-    def __init__(self, profile, uri_base):
-        super(NYPLFetcher, self).__init__(profile, uri_base)
+    def __init__(self, profile, uri_base, config_file):
+        super(NYPLFetcher, self).__init__(profile, uri_base, config_file)
 
-    def set_subresources(self):
-        """Sets self.subresources
+    def fetch_sets(self):
+        """Fetches all sets
 
-           Returns the error, else None
+           Returns an (error, sets) tuple
         """
-        self.subresources = {}
+        error = None
+        sets = {}
 
         url = self.get_sets_url
         error, content = self.request_content_from(url)
         if error is not None:
-            return error
+            return error, sets
 
         error, content = self.extract_content(content, url)
         if error is not None:
-            return error
+            return error, sets
 
-        subresources = {}
         for item in content["response"]:
             if item == "collection":
                 for coll in content["response"][item]:
                     if "uuid" in coll:
-                        subresources[coll["uuid"]] = {
+                        sets[coll["uuid"]] = {
                             "id": coll["uuid"],
                             "title": coll["title"]
                         }
 
-        if not subresources:
-            error = "Error, no subresources from URL %s" % url
-            return error
+        if not sets:
+            error = "Error, no sets from URL %s" % url
 
-        self.subresources = subresources
+        return error, sets
 
     def extract_content(self, content, url):
         error = None
@@ -653,9 +677,17 @@ class NYPLFetcher(AbsoluteURLFetcher):
         total_pages = getprop(content, "request/totalPages")
         current_page = getprop(content, "request/page")
         request_more = total_pages != current_page
+        if not request_more:
+            # Reset the page for the next collection
+            self.endpoint_url_params["page"] = 1
 
         records = []
-        for item in getprop(content, "response/capture"):
+        items = getprop(content, "response/capture")
+        count = 0
+        for item in items:
+            count += 1
+            print "Fetching %s of %s records from page %s of %s" % \
+                  (count, len(items), current_page, total_pages)
             record_url = self.get_records_url.format(item["uuid"])
             error, content = self.request_content_from(record_url)
             if error is None:
@@ -675,8 +707,8 @@ class NYPLFetcher(AbsoluteURLFetcher):
         yield error, records, request_more
 
 class UVAFetcher(AbsoluteURLFetcher):
-    def __init__(self, profile, uri_base):
-        super(UVAFetcher, self).__init__(profile, uri_base)
+    def __init__(self, profile, uri_base, config_file):
+        super(UVAFetcher, self).__init__(profile, uri_base, config_file)
 
     def uva_extract_records(self, content, url):
         error = None
@@ -737,9 +769,9 @@ class UVAFetcher(AbsoluteURLFetcher):
             yield error, records, request_more
 
 class FileFetcher(Fetcher):
-    def __init__(self, profile, uri_base):
+    def __init__(self, profile, uri_base, config_file):
         self.collections = {}
-        super(FileFetcher, self).__init__(profile, uri_base)
+        super(FileFetcher, self).__init__(profile, uri_base, config_file)
 
     def extract_xml_content(self, filepath):
         error = None
@@ -751,110 +783,88 @@ class FileFetcher(Fetcher):
 
         return error, content
 
-    def extract_collection_and_record(self, filepath):
+    def extract_records(self, filepath):
         # Implemented in child classes
-        error = "Function extract_collection_and_record is not implemented"
-        collection, record = None, None
+        error = "Function extract_records is not implemented"
+        records = []
 
-        yield error, collection, record
+        yield error, records
+
+    def add_provider_to_item_records(self, item_records):
+        for record in item_records:
+            if record.get("ingestType") != "collection":
+                record["provider"] = self.contributor
+
+    def create_collection_record(self, hid, title):
+        if hid not in self.collections:
+            _id = couch_id_builder(self.provider, hid)
+            id = hashlib.md5(_id).hexdigest()
+            at_id = "http://dp.la/api/collections/" + id
+
+            self.collections[hid] = {
+                "id": id,
+                "_id": _id,
+                "@id": at_id,
+                "title": title,
+                "ingestType": "collection"
+            }
 
     def fetch_all_data(self):
-        """A generator to yield batches of records along with the collection,
-           if any, the provider, and any errors encountered along the way. The
-           reponse dictionary has the following structure:
-
-            response = {
-                "error": <Any error encountered>,
-                "data": {
-                    "provider": <The provider>,
-                    "contributor": <The contributor>,
-                    "records": <The batch of records fetched>,
-                    "collection": {
-                        "title": <The collection title, if any>,
-                        "description": <The collection description, if any>
-                    }
-                }
-            }
+        """A generator to yield batches of records fetched, and any errors
+           encountered in the process, via the self.response dicitonary.
         """
-        response = {
-            "error": [],
-            "data": {
-                "provider": self.provider,
-                "contributor": self.contributor,
-                "records": None,
-                "collection": None
-            }
-        }
-
         # The endpoint URL is actually a file path and should have the form:
         # file:/path/to/files/
         if self.endpoint_url.startswith("file:/"):
             path = self.endpoint_url[5:]
+            dir_count = 0
             for (root, dirs, files) in os.walk(path):
+                dir_count += 1
+                filtered_files = fnmatch.filter(files, self.file_filter)
+                total_dirs = len(dirs)
+                total_files = len(files)
+                file_count = 0
                 for filename in fnmatch.filter(files, self.file_filter):
+                    file_count += 1
+                    print ("Fetching from %s (file %s of %s) in dir %s of %s" %
+                           (filename, file_count, total_files, dir_count,
+                            total_dirs))
                     filepath = os.path.join(root, filename)
-                    for (error, collection, record) in \
-                        self.extract_collection_and_record(filepath):
-                        if error is not None:
-                           response["error"].append(error)
-                        elif record is not None:
-                            if collection is not None:
-                                id = collection["id"]
-                                if id not in self.collections:
-                                    self.collections[id] = {
-                                        "title": collection["title"],
-                                        "records": []
-                                    }
-                                self.collections[id]["records"].append(record)
-                            else:
-                                pass
-                        else:
-                           response["error"].append("Did not retrieve " +
-                                                    "record from file " +
-                                                    "%s" % filepath)
-
-                        # Let's not let self.collections get too big
-                        if sum([len(v["records"]) for v in
-                               self.collections.values()]) > 1000:
-                            # Yield collection with most records
-                            ids = sorted(self.collections,
-                                         key=lambda k: len(self.collections[k]))
-                            coll = {
-                                "id": ids[-1],
-                                "title": self.collections[ids[-1]]["title"]
-                            }
-                            coll_records = self.collections[ids[-1]]["records"]
-                            setprop(response, "data/collection", coll)
-                            setprop(response, "data/records", coll_records)
-                            del self.collections[ids[-1]]
-
-                            yield response
-                            response["error"] = []
-
-            if self.collections:
-                for id in self.collections:
-                    coll = {
-                        "id": id,
-                        "title": self.collections[id]["title"]
-                    }
-                    coll_records = self.collections[id]["records"]
-                    setprop(response, "data/collection", coll)
-                    setprop(response, "data/records", coll_records)
-
-                    yield response
-            else:
-                yield response
+                    for errors, records in self.extract_records(filepath):
+                        self.response["errors"].extend(errors)
+                        self.add_provider_to_item_records(records)
+                        self.response["records"].extend(records)
+                        # Yield when response["records"] reaches
+                        # self.batch_size
+                        if len(self.response["records"]) >= self.batch_size:
+                            yield self.response
+                            self.reset_response()
+            # Last yield
+            if self.response["errors"] or self.response["records"]:
+                yield self.response
         else:
-            response["error"] = 'The endpoint URL must start with "file:/"'
-            yield response
+            self.response["error"] = 'The endpoint URL must start with "file:/"'
+            yield self.response
+
+        # Yield the collection records
+        if self.collections:
+            self.reset_response()
+            self.response["records"] = self.collections.values()
+            yield self.response
 
 class NARAFetcher(FileFetcher):
-    def __init__(self, profile, uri_base):
+    def __init__(self, profile, uri_base, config_file):
         self.file_filter = "Item_*.xml"
-        super(NARAFetcher, self).__init__(profile, uri_base)
+        super(NARAFetcher, self).__init__(profile, uri_base, config_file)
 
-    def extract_collection_and_record(self, file_path):
-        error, collection, record = None, None, None
+    def add_collection_to_item_record(self, hid, item_record):
+        item_record["collection"] = dict(self.collections[hid])
+        for prop in ["_id", "ingestType"]:
+            del item_record["collection"][prop]
+
+    def extract_records(self, file_path):
+        errors = []
+        records = []
 
         error, content = self.extract_xml_content(file_path)
         if error is None:
@@ -864,24 +874,39 @@ class NARAFetcher(FileFetcher):
                 record["_id"] = record["arc-id"]
 
                 hier_items = getprop(record, "hierarchy/hierarchy-item")
-                for hi in iterify(hier_items):
-                    htype = hi["hierarchy-item-lod"]
-                    # Record Group mapped to collection
-                    if htype.lower() == "record group":
-                        collection = {
-                            "id": hi["hierarchy-item-id"],
-                            "title": hi["hierarchy-item-title"]
-                        }
+                # Keep records whose "hierarchy-item-lod" is "record group"
+                for hitem in iterify(hier_items):
+                    if hitem["hierarchy-item-lod"].lower() == "record group":
+                        hid = hitem["hierarchy-item-id"]
+                        title = hitem["hierarchy-item-title"]
+                        self.create_collection_record(hid, title)
+                        self.add_collection_to_item_record(hid, record)
+                        # Append record
+                        records.append(record)
                         break
+                if not records:
+                    errors.append("Record does not have a hierarchy-item-lod" +
+                                  " of 'record group' in file %s" % file_path)
             except:
-                error = 'Could not find "arc_id" in file %s' % file_path
+                errors.append("Could not find 'arc_id' in file %s" % file_path)
+        else:
+            errors.append(error)
 
-        yield error, collection, record
+        yield errors, records
 
 class EDANFetcher(FileFetcher):
-    def __init__(self, profile, uri_base):
+    def __init__(self, profile, uri_base, config_file):
         self.file_filter = "*_DPLA.xml"
-        super(EDANFetcher, self).__init__(profile, uri_base)
+        super(EDANFetcher, self).__init__(profile, uri_base, config_file)
+
+    def add_collection_to_item_record(self, hid, item_record):
+        if "collection" not in item_record:
+            item_record["collection"] = []
+        collection = dict(self.collections[hid])
+        for prop in ["_id", "ingestType"]:
+            del collection[prop]
+
+        item_record["collection"].append(collection)
 
     def parse(self, doc_list):
         parsed_docs = xmltodict.parse("<docs>" + "".join(doc_list) + "</docs>")
@@ -894,7 +919,7 @@ class EDANFetcher(FileFetcher):
               filepath
         os.system(cmd)
 
-        # Read in every 1000 docs
+        # Read in batches of self.batch_size
         docs = []
         with open(filepath, "r") as f:
             while True:
@@ -904,7 +929,7 @@ class EDANFetcher(FileFetcher):
                         break
                     if line.startswith("<doc>"):
                         docs.append(line)
-                    if len(docs) == 1000:
+                    if len(docs) == self.batch_size:
                         yield error, self.parse(docs)
                         docs = []
                 except Exception, e:
@@ -916,13 +941,14 @@ class EDANFetcher(FileFetcher):
         if docs and error is None:
             yield error, self.parse(docs)
 
-    def extract_collection_and_record(self, file_path):
-        def _normalize_collection_name(name):
-            """Removes bad characters from collection names"""
-            norm = re.sub(r'[^\w\[\]]+', r'_', name)
+    def extract_records(self, file_path):
+        def _normalize_collection_title(title):
+            """Removes bad characters from collection titles"""
+            norm = re.sub(r'[^\w\[\]]+', r'_', title)
             return norm.lower()
 
-        error, collection, record = None, None, None
+        errors = []
+        records = []
 
         for error, content in self.extract_xml_content(file_path):
             if error is None:
@@ -931,44 +957,42 @@ class EDANFetcher(FileFetcher):
                         record["_id"] = \
                             record["descriptiveNonRepeating"]["record_ID"]
                     except:
-                        error = 'Could not find "record_ID" in file %s' % \
-                                file_path
-                        yield error, collection, record
+                        # Exclude records with no record_ID
                         continue
 
-                    if not "setName" in record["freetext"]:
-                        yield error, collection, record
+                    set_names = record["freetext"].get("setName")
+                    if set_names is None:
+                        # Exclude records with no setName
                         continue
-                        
-                    setname = getprop(record, "freetext/setName")
-                    for s in iterify(setname):
-                        if "#text" in s:
-                            collection = {
-                                "id": _normalize_collection_name(s["#text"]),
-                                "title": s["#text"]
-                            }
-                            break
+                    else:
+                        for set in iterify(set_names):
+                            title = set["#text"]
+                            hid = _normalize_collection_title(title)
+                            self.create_collection_record(hid, title)
+                            self.add_collection_to_item_record(hid, record)
 
-                    yield error, collection, record
-                    collection = None
+                    records.append(record)
             else:
-                yield error, collection, record
+                errors.append(error)
 
-def create_fetcher(profile_path, uri_base):
+            yield errors, records
+            errors = []
+            records = []
+
+def create_fetcher(profile_path, uri_base, config_file):
     fetcher_types = {
-        'ia': lambda p, u: IAFetcher(p, u),
-        'uva': lambda p, u: UVAFetcher(p, u),
-        'mwdl': lambda p, u: MWDLFetcher(p, u),
-        'nypl': lambda p, u: NYPLFetcher(p, u),
-        'nara': lambda p, u: NARAFetcher(p, u),
-        'edan': lambda p, u: EDANFetcher(p, u),
-        'oai_verbs': lambda p, u: OAIVerbsFetcher(p, u),
+        'ia': lambda p, u, c: IAFetcher(p, u, c),
+        'uva': lambda p, u, c: UVAFetcher(p, u, c),
+        'mwdl': lambda p, u, c: MWDLFetcher(p, u, c),
+        'nypl': lambda p, u, c: NYPLFetcher(p, u, c),
+        'nara': lambda p, u, c: NARAFetcher(p, u, c),
+        'edan': lambda p, u, c: EDANFetcher(p, u, c),
+        'oai_verbs': lambda p, u, c: OAIVerbsFetcher(p, u, c),
     }
-
 
     with open(profile_path, "r") as f:
         profile = json.load(f)
     type = profile.get("type")
-    fetcher = fetcher_types.get(type)(profile, uri_base)
+    fetcher = fetcher_types.get(type)(profile, uri_base, config_file)
 
     return fetcher

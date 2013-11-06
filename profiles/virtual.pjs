@@ -2,25 +2,23 @@
     "name": "harvard-virtual",
     "type": "oai_verbs",
     "endpoint_url": "http://vcoai.lib.harvard.edu/vcoai/vc",
-    "subresources": [],
+    "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/harvard-virtual",
         "name": "Harvard Virtual Collection"
     }, 
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc"
-    ], 
-    "enrichments_rec": [
-        "http://localhost:8878/select-id",
-        "http://localhost:8878/oai-to-dpla",
-        "http://localhost:8878/move_dates_to_temporal?prop=subject",
-        "http://localhost:8878/move_dates_to_temporal?prop=spatial",
-        "http://localhost:8878/shred?prop=subject%2Ctype&delim=%3b",
-        "http://localhost:8878/enrich-date",
-        "http://localhost:8878/enrich-subject",
-        "http://localhost:8878/enrich-type",
-        "http://localhost:8878/enrich-format",
-        "http://localhost:8878/enrich_location",
-        "http://localhost:8878/contentdm_identify_object"
+    "enrichments_coll": [], 
+    "enrichments_item": [
+        "/select-id",
+        "/oai-to-dpla",
+        "/move_dates_to_temporal?prop=subject",
+        "/move_dates_to_temporal?prop=spatial",
+        "/shred?prop=subject%2Ctype&delim=%3b",
+        "/enrich-date",
+        "/enrich-subject",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/contentdm_identify_object"
     ]
 }

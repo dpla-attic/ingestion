@@ -6,13 +6,13 @@
         "indx": 0,
         "bulkSize": 1000
     },
-    "subresources": "NotSupported",
+    "sets": "NotSupported",
     "contributor": {
         "@id": "http://dp.la/api/contributor/mwdl", 
         "name": "Mountain West Digital Library"
     }, 
     "enrichments_coll": [], 
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id", 
         "/primo-to-dpla",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",

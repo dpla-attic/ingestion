@@ -2,7 +2,7 @@
     "name": "uiuc", 
     "type": "oai_verbs",
     "endpoint_url": "http://imagesearchnew.library.illinois.edu/oai/oai.php",
-    "subresources": [
+    "sets": [
         "kennedy",
         "olin",
         "cartoons",
@@ -28,10 +28,8 @@
         "@id": "http://dp.la/api/contributor/uiuc",
         "name": "University of Illinois at Urbana-Champaign"
     },
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://imagesearchnew.library.illinois.edu/oai/oai.php"
-    ], 
-    "enrichments_rec": [
+    "enrichments_coll": [], 
+    "enrichments_item": [
         "/select-id",
         "/oai-to-dpla",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",

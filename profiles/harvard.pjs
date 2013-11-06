@@ -3,7 +3,7 @@
     "type": "oai_verbs",
     "metadata_prefix": "mods",
     "endpoint_url": "http://vcoai.lib.harvard.edu/vcoai/vc",
-    "subresources": [
+    "sets": [
         "dag",
         "lap",
         "crimes",
@@ -14,10 +14,8 @@
         "@id": "http://dp.la/api/contributor/harvard",
         "name": "Harvard Library"
     },
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://vcoai.lib.harvard.edu/vcoai/vc"
-    ],
-    "enrichments_rec": [
+    "enrichments_coll": [],
+    "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/oai_mods_to_dpla?provider=HARVARD",
         "/set_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",

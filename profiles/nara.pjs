@@ -7,7 +7,7 @@
         "name": "National Archives and Records Administration"
     }, 
     "enrichments_coll": [], 
-    "enrichments_rec": [
+    "enrichments_item": [
         "/select-id?prop=_id", 
         "/arc-to-dpla", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate", 

@@ -6,7 +6,7 @@
         "@id": "http://dp.la/api/contributor/usc", 
         "name": "University of Southern California. Libraries"
     }, 
-    "subresources": [
+    "sets": [
         "p15799coll8",
         "p15799coll120",
         "p15799coll170",
@@ -47,10 +47,8 @@
         "p15799coll84",
         "p15799coll104"
     ], 
-    "enrichments_coll": [
-        "/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://digitallibrary.usc.edu/oai/oai.php"
-    ], 
-    "enrichments_rec": [
+    "enrichments_coll": [], 
+    "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla",
         "/unset_prop?prop=sourceResource%2Fdate",
