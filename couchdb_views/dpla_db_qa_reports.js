@@ -86,13 +86,6 @@
            "map": "function(doc) { v = doc.sourceResource.spatial; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('name' in v[i]) {emit(v[i].name,1)};}}}",
            "reduce": "_count"
        },
-       "state_located_in_state": {
-           "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('state' in v[i]) {emit(doc['id'], v[i].state)};}}}"
-       },
-       "state_located_in_state_count": {
-           "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('state' in v[i]) {emit(v[i].state,1)};}}}",
-           "reduce": "_count"
-       },
        "state_located_in_name": {
            "map": "function(doc) { v = doc.sourceResource.stateLocatedIn; if (vt) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {if ('name' in v[i]) {emit(doc['id'], v[i].name)};}}}"
        },

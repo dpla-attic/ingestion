@@ -678,11 +678,16 @@ class NYPLFetcher(AbsoluteURLFetcher):
         current_page = getprop(content, "request/page")
         request_more = total_pages != current_page
         if not request_more:
-            # Reset page
+            # Reset the page for the next collection
             self.endpoint_url_params["page"] = 1
 
         records = []
-        for item in getprop(content, "response/capture"):
+        items = getprop(content, "response/capture")
+        count = 0
+        for item in items:
+            count += 1
+            print "Fetching %s of %s records from page %s of %s" % \
+                  (count, len(items), current_page, total_pages)
             record_url = self.get_records_url.format(item["uuid"])
             error, content = self.request_content_from(record_url)
             if error is None:
