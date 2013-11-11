@@ -80,7 +80,10 @@ def main(argv):
     enriched_items = 0
     enriched_colls = 0
 
-    for filename in os.listdir(fetch_dir):
+    file_count = 0
+    files = os.listdir(fetch_dir)
+    for filename in files:
+        file_count += 1
         filepath = os.path.join(fetch_dir, filename)
         with open(filepath, "r") as f:
             try:
@@ -90,7 +93,8 @@ def main(argv):
                 break
 
         # Enrich
-        print "Enriching file " + filepath
+        print "Enriching file %s (%s of %s)" % (filepath, file_count,
+                                                len(files))
         enrich_path = ingestion_doc["uri_base"] + "/enrich"
         resp, content = H.request(enrich_path, "POST", body=json.dumps(data),
                                   headers=headers)

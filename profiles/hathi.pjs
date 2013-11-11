@@ -1,6 +1,12 @@
 {
-    "enrichments_coll": [], 
     "name": "hathitrust", 
+    "type": "hathi",
+    "endpoint_url": "file:/home/dpla/data/hathi/",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/hathitrust", 
+        "name": "HathiTrust Digital Library"
+    }, 
+    "enrichments_coll": [], 
     "enrichments_item": [
         "/select-id?prop=_id",
         "/marc_to_dpla",
@@ -20,15 +26,5 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/unset_prop?prop=_id&condition=hathi_exclude&condition_prop=dataProvider%2CsourceResource%2Ftype",
         "/hathi_identify_object"
-    ], 
-    "sets": [], 
-    "contributor": {
-        "@id": "http://dp.la/api/contributor/hathitrust", 
-        "name": "HathiTrust Digital Library"
-    }, 
-    "thumbnails": [
-        "/hathi_identify_object"
-    ],
-    "type": "marc", 
-    "endpoint_url": "file:/home/dpla/data/hathi/"
+    ]
 }

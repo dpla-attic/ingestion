@@ -14,9 +14,6 @@ from dplaingestion.selector import getprop as selector_getprop, setprop, exists
 def getprop(d, p):
     return selector_getprop(d, p, True)
 
-# Global variable to be used for provider-specific mapping
-PROVIDER = None
-
 CONTEXT = {
     "@vocab": "http://purl.org/dc/terms/",
     "dpla": "http://dp.la/terms/",
@@ -91,8 +88,10 @@ def datafield_type_transform(values):
     type = []
     for v in values:
         if v in types:
-            spec_type.append(types[v][0])
-            type.append(types[v][1])
+            if v[0] not in spec_type:
+                spec_type.append(types[v][0])
+            if v[1] not in type:
+                type.append(types[v][1])
 
     return {"type": type, "specType": spec_type} if type else {}
 
@@ -240,9 +239,7 @@ def _get_values(_dict, codes=None):
 
 def _get_spatial_values(_dict, tag, codes=None):
     """Removes trailing periods for spatial values."""
-    values = _get_values(_dict, codes)
-    for i in range(len(values)):
-        values[i] = re.sub("\.$", "", values[i])
+    values = [re.sub("\.$", "", v) for v in _get_values(_dict, codes)]
 
     return values
 
@@ -315,13 +312,16 @@ def _join_sourceresource_values(prop, values):
     for prop_list, delim in join_props:
         if prop in prop_list:
             if delim == ". ":
-                # Remove any existing periods at end of values
-                for i in range(len(values)):
-                    if values[i].endswith(delim[0]):
-                        values[i] = values[i][:-1]
-                values[-1] += delim[0]
+                # Remove any existing periods at end of values, except
+                # for last value
+                values = [re.sub("\.$", "", v) for v in values]
+                values[-1] += "."
             if values:
                 values = [delim.join(values)]
+
+    # Remove any double periods (excluding those in ellipsis)
+    values = [re.sub("(?<!\.)\.{2}(?!\.)", ".", v) for v in values]
+
     return values
 
 def all_transform(d, p):
@@ -382,7 +382,8 @@ def all_transform(d, p):
         lambda t: t == "300":           [("extent", "ac")],
         lambda t: t in ("337", "338"):  [("format", "a")],
         lambda t: t == "340":           [("format", "a"), ("extent", "b")],
-        lambda t: t.startswith("5"):    [("description", "a")],
+        lambda t: (t != "538" and
+                   t.startswith("5")):  [("description", "a")],
         lambda t: t in ("506", "540"):  [("rights", None)],
         lambda t: t == "648":           [("temporal", None)],
         lambda t: t in ("700", "710",
@@ -393,7 +394,7 @@ def all_transform(d, p):
         lambda t: t == "245":           [("title", 0, "!c")],
         lambda t: t == "970":           [("type", "a")],
         lambda t: t == "651":           [("spatial", "a")],
-        lambda t: int(t) in set([600, 650, 651] +
+        lambda t: int(t) in set([600, 630, 650, 651] +
                             range(610, 620) +
                             range(653, 659) +
                             range(690, 700)):   [("subject", None),
@@ -464,7 +465,8 @@ def all_transform(d, p):
                                         # Insert label as first value item as
                                         # values will be joined
                                         values.insert(0, label)
-                                values = _join_sourceresource_values(prop, values)
+                                values = _join_sourceresource_values(prop,
+                                                                     values)
                                 if prop == "type":
                                     data["sourceResource"].update(
                                         datafield_type_transform(values)
@@ -475,6 +477,12 @@ def all_transform(d, p):
                             prop, index, codes = tup
                             values = _get_values(_dict, codes)
                             if values:
+                                s = data["sourceResource"][prop][index]
+                                if s:
+                                    # There may be multiple tag values (ie, two
+                                    # 245a values), so we join them there.
+                                    s.extend(values)
+                                    values = [" ".join(s)]
                                 data["sourceResource"][prop][index] = values 
             if tag == "662":
                 # Test: Log document with 662 (spatial)
@@ -485,9 +493,7 @@ def all_transform(d, p):
     # Handle sourceResource/title
     title = filter(None, data["sourceResource"]["title"])
     if title:
-        for i in range(len(title)):
-            title[i] = " ".join(title[i])
-        data["sourceResource"]["title"] = title
+        data["sourceResource"]["title"] = [" ".join(t) for t in title]
     else:
         del data["sourceResource"]["title"]
 
