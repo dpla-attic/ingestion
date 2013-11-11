@@ -103,8 +103,9 @@ class Fetcher(object):
                 self.collections[set_spec]["ingestType"] = "collection"
 
     def add_provider_to_item_records(self, item_records):
-        for item_record in item_records:
-            item_record["provider"] = self.contributor
+        if item_records:
+            for item_record in item_records:
+                item_record["provider"] = self.contributor
 
 class OAIVerbsFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):
@@ -792,9 +793,10 @@ class FileFetcher(Fetcher):
         yield error, records
 
     def add_provider_to_item_records(self, item_records):
-        for record in item_records:
-            if record.get("ingestType") != "collection":
-                record["provider"] = self.contributor
+        if item_records:
+            for record in item_records:
+                if record.get("ingestType") != "collection":
+                    record["provider"] = self.contributor
 
     def create_collection_record(self, hid, title):
         if hid not in self.collections:
