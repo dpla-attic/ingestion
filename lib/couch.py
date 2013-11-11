@@ -87,36 +87,37 @@ class Couch(object):
         elif db_name == "dashboard":
             db = self.dashboard_db
 
-        # Save the design documents from the views_directory
         for file in os.listdir(self.views_directory):
             if file.startswith(db_name):
                 fname = os.path.join(self.views_directory, file)
                 with open(fname, "r") as f:
                     design_doc = json.load(f)
-                prev_design_doc = db.get(design_doc["_id"])
-                if prev_design_doc:
-                    design_doc["_rev"] = prev_design_doc["_rev"]
-                # Save thew design document
-                db[design_doc["_id"]] = design_doc
+
+                # Check if the design doc has changed
+                prev_design_doc = db.get(design_doc["_id"], {})
+                prev_revision = prev_design_doc.pop("_rev", None)
+                diff = DictDiffer(design_doc, prev_design_doc)
+                if diff.differences():
+                    # Save thew design document
+                    if prev_revision:
+                        design_doc["_rev"] = prev_revision
+                    db[design_doc["_id"]] = design_doc
 
                 # Build views
                 if file in build_views_from_file:
                     design_doc_name = design_doc["_id"].split("_design/")[-1]
                     for view in design_doc["views"]:
                         view_path = "%s/%s" % (design_doc_name, view)
-                        print >> sys.stderr, "Building %s" % view_path
                         start = time.time()
                         try:
-                            for doc in db.iterview(view_path,
-                                                   batch=self.batch_size):
+                            for doc in db.view(view_path, limit=0):
                                 pass
+                            self.logger.debug("Built %s view %s in %s seconds"
+                                              % (db.name, view_path,
+                                                 time.time() - start))
                         except Exception, e:
-                            print "Error building %s view %s: %s" % \
-                                  (db.name, view_path, e)
-                        build_time = (time.time() - start)/60
-
-                        print >> sys.stderr, "Completed in %s minutes" % \
-                                             build_time
+                            self.logger.error("Error building %s view %s: %s" %
+                                              (db.name, view_path, e))
 
     def update_ingestion_doc(self, ingestion_doc, **kwargs):
         for prop, value in kwargs.items():
@@ -266,7 +267,7 @@ class Couch(object):
         self.dashboard_db.save(ingestion_doc)
 
     def _delete_documents(self, db, docs):
-        """Fetches the documents givent the document ids, updates each
+        """Fetches the documents given the document ids, updates each
            document to be deleted with "_deleted: True" so that the delete
            propagates to the river, then removes the document from db via
            db.purge()
@@ -277,6 +278,9 @@ class Couch(object):
         # TODO: BigCouch v0.4.2 does not currently support the couchdb-python
         # purge implementation. 
         # db.purge(docs)
+
+        # Rebuild the database views
+        self._sync_views(db.name)
 
     def _delete_all_provider_documents(self, provider):
         """Deletes all of a provider's documents from the DPLA and Dashboard
@@ -360,6 +364,8 @@ class Couch(object):
 
     def _bulk_post_to(self, db, docs, **options):
         resp = db.update(docs, **options)
+        # Rebuild database views
+        self._sync_views(db.name)
         self.logger.debug("%s database response: %s" % (db.name, resp))
 
     def _create_ingestion_document(self, provider, uri_base, profile_path):
