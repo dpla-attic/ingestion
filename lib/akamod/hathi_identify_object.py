@@ -79,38 +79,40 @@ def hathi_identify_object(body, ctype, download="True"):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
+    id = getprop(data, "_id", True)
+    if id is None:
+        logger.error("Record has no _id field")
+        return body
 
     identifiers = getprop(data, "sourceResource/identifier", True)
     if identifiers is None:
-        logger.debug("Record %s has no sourceResource/identifier field" %
-                     data["_id"])
-        return json.dumps(data)
+        logger.debug("Record %s has no sourceResource/identifier field" % id)
+        return body
 
-    hathi_id = data["_id"].split("--")[-1]
+    hathi_id = id.split("--")[-1]
     oclc_id = None
     isbn = None
 
     # Get OCLC and ISBN
-    for id in iterify(identifiers):
-        if "(OC" in id:
-            oclc_id = re.sub("\(OCo?LC\)(oc[mn]?)?", "", id).strip()
-        elif "ISBN:" in id and isbn is None:
-            for part in id.split(" "):
+    for ident in iterify(identifiers):
+        if "(OC" in ident:
+            oclc_id = re.sub("\(OCo?LC\)(oc[mn]?)?", "", ident).strip()
+        elif "ISBN:" in ident and isbn is None:
+            for part in ident.split(" "):
                 if part.isdigit():
                     isbn = part
                     break
             
     if oclc_id is None:
         logger.debug("Field sourceResource/identifier does not contain " +
-                     "OCLC for %s" % data["_id"])
-        return json.dumps(data)
+                     "OCLC for %s" % id)
+        return body
 
     # Get Google prefix from namespace
     datafield = getprop(data, "originalRecord/datafield", True)
     if datafield is None:
-        logger.error("Record %s has no originalRecord/datafield" %
-                     data["_id"])
-        return json.dumps(data)
+        logger.debug("Record %s has no originalRecord/datafield" % id)
+        return body
     ns = []
     for field in datafield:
         if field.get("tag") == "974":
@@ -127,9 +129,9 @@ def hathi_identify_object(body, ctype, download="True"):
             google_prefix = NS_GOOGLE_PREFIX[namespace]
             break
     if google_prefix is None:
-        logger.error("No Google prefix mappend to any namespace in %s for %s" %
-                     (ns, data["_id"]))
-        return json.dumps(data)
+        logger.debug("No Google prefix mappend to any namespace in %s for %s" %
+                     (ns, id))
+        return body
 
     if google_prefix == "UCAL":
         google_prefix = _get_UCAL_prefix(barcode)
@@ -149,27 +151,26 @@ def hathi_identify_object(body, ctype, download="True"):
     try:
         s = urllib2.urlopen(req).read()
     except:
-        logger.error("Unable to open/read %s for %s" % (url, data["_id"]))
-        return json.dumps(data)
+        logger.error("Unable to open/read %s for %s" % (url, id))
+        return body
     s = s.replace("var _GBSBookInfo = ", "").replace(";", "")
     try:
         j = json.loads(s)
     except:
         logger.error("Unable to parse content from %s as JSON for %s" %
-                     (url, data["_id"]))
+                     (url, id))
+        return body
     if not j:
         logger.error("Resp from %s returned empty _GBSBookInfo for %s" %
-                     (url, data["_id"]))
-        return json.dumps(data)
+                     (url, id))
+        return body
 
-    logger.debug("Google URL for %s: %s" % (data["_id"], url))
-    logger.debug("Response: %s" % j)
     thumbnail_url = getprop(j, "OCLC:%s/thumbnail_url" % oclc_id, True)
     if thumbnail_url is None:
         msg = ("Resp from %s does not contain 'OCLC:%s/thumbnail_url' for %s" %
-               (url, oclc_id, data["_id"]))
+               (url, oclc_id, id))
         logger.error(msg)
-        return json.dumps(data)
+        return body
 
     data["object"] = thumbnail_url
 

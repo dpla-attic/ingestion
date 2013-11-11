@@ -7,6 +7,7 @@ import fnmatch
 import urllib2
 import xmltodict
 import ConfigParser
+import itertools as it
 from urllib import urlencode
 from amara.thirdparty import json
 from amara.thirdparty import httplib2
@@ -102,8 +103,9 @@ class Fetcher(object):
                 self.collections[set_spec]["ingestType"] = "collection"
 
     def add_provider_to_item_records(self, item_records):
-        for item_record in item_records:
-            item_record["provider"] = self.contributor
+        if item_records:
+            for item_record in item_records:
+                item_record["provider"] = self.contributor
 
 class OAIVerbsFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):
@@ -791,9 +793,10 @@ class FileFetcher(Fetcher):
         yield error, records
 
     def add_provider_to_item_records(self, item_records):
-        for record in item_records:
-            if record.get("ingestType") != "collection":
-                record["provider"] = self.contributor
+        if item_records:
+            for record in item_records:
+                if record.get("ingestType") != "collection":
+                    record["provider"] = self.contributor
 
     def create_collection_record(self, hid, title):
         if hid not in self.collections:
@@ -817,18 +820,14 @@ class FileFetcher(Fetcher):
         # file:/path/to/files/
         if self.endpoint_url.startswith("file:/"):
             path = self.endpoint_url[5:]
-            dir_count = 0
             for (root, dirs, files) in os.walk(path):
-                dir_count += 1
                 filtered_files = fnmatch.filter(files, self.file_filter)
-                total_dirs = len(dirs)
                 total_files = len(files)
                 file_count = 0
                 for filename in fnmatch.filter(files, self.file_filter):
                     file_count += 1
-                    print ("Fetching from %s (file %s of %s) in dir %s of %s" %
-                           (filename, file_count, total_files, dir_count,
-                            total_dirs))
+                    print ("Fetching from %s (file %s of %s)" %
+                           (filename, file_count, total_files))
                     filepath = os.path.join(root, filename)
                     for errors, records in self.extract_records(filepath):
                         self.response["errors"].extend(errors)
@@ -843,7 +842,8 @@ class FileFetcher(Fetcher):
             if self.response["errors"] or self.response["records"]:
                 yield self.response
         else:
-            self.response["error"] = 'The endpoint URL must start with "file:/"'
+            self.response["error"] = "The endpoint URL must start with " + \
+                                     '"file:/"'
             yield self.response
 
         # Yield the collection records
@@ -979,6 +979,76 @@ class EDANFetcher(FileFetcher):
             errors = []
             records = []
 
+class HathiFetcher(FileFetcher):
+    def __init__(self, profile, uri_base, config_file):
+        self.file_filter = "*.xml"
+        super(HathiFetcher, self).__init__(profile, uri_base, config_file)
+
+    def parse(self, grouped_records, file):
+        error = None
+        try:
+            parsed_xml = XML_PARSE("<group_records>\n<record>\n" + \
+                                   "<record>\n".join(grouped_records) + \
+                                   "</group_records>")
+            parsed_docs = parsed_xml["group_records"]["record"]
+        except Exception, e:
+            error = "Error parsing grouped records from file %s: %s" % \
+                    (file, e)
+            parsed_docs = None
+
+        return error, parsed_docs
+
+    def extract_xml_content(self, filepath):
+        error = None
+
+        # Read in every self.batch_size docs
+        grouped_records = []
+        with open(filepath, "r") as f:
+            first_group = True
+            for key, group in it.groupby(f, lambda line:
+                                         line.startswith("<record>")):
+                if not key:
+                    try:
+                        grouped_records.append("".join(list(group)))
+                        if first_group:
+                            # First item is not a record
+                            grouped_records = grouped_records[1:]
+                            first_group = False
+                        if len(grouped_records) == self.batch_size:
+                            error, parsed_docs = self.parse(grouped_records,
+                                                            filepath)
+                            yield error, parsed_docs
+                            grouped_records = []
+                    except Exception, e:
+                        error = "Error grouping records from file %s: %s" % \
+                                (filepath, e)
+                        yield error, None
+                        break
+        # Last yield
+        if grouped_records:
+            if first_group:
+                # First item is not a record
+                grouped_records = grouped_records[1:]
+            # Strip "</collection>" from last item
+            last_record = grouped_records[-1].split("</collection>")[0]
+            grouped_records[-1] = last_record
+            error, parsed_docs = self.parse(grouped_records, filepath)
+            yield error, parsed_docs
+
+    def extract_records(self, file_path):
+        errors = []
+
+        for error, records in self.extract_xml_content(file_path):
+            if error is None:
+                for record in records:
+                    if record["controlfield"][0]["tag"] == "001":
+                        record["_id"] = record["controlfield"][0]["#text"]
+            else:
+                errors.append(error)
+
+            yield errors, records
+            errors = []
+
 def create_fetcher(profile_path, uri_base, config_file):
     fetcher_types = {
         'ia': lambda p, u, c: IAFetcher(p, u, c),
@@ -987,6 +1057,7 @@ def create_fetcher(profile_path, uri_base, config_file):
         'nypl': lambda p, u, c: NYPLFetcher(p, u, c),
         'nara': lambda p, u, c: NARAFetcher(p, u, c),
         'edan': lambda p, u, c: EDANFetcher(p, u, c),
+        'hathi': lambda p, u, c: HathiFetcher(p, u, c),
         'oai_verbs': lambda p, u, c: OAIVerbsFetcher(p, u, c),
     }
 

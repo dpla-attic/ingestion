@@ -78,15 +78,15 @@ def main(argv):
 
         # Save when docs is about to exceed the batch size
         print >> sys.stderr, "Read file %s" % filename
-        if len(docs) + len(file_docs) > batch_size:
+        if docs and len(docs) + len(file_docs) > batch_size:
             resp, error_msg = couch.process_and_post_to_dpla(docs,
                                                              ingestion_doc)
             if resp == -1:
                 break
-            else:
-                total_saved_documents += len(docs)
-                print "Saved %s documents" % total_saved_documents
-                docs = file_docs
+
+            total_saved_documents += len(docs)
+            print "Saved %s documents" % total_saved_documents
+            docs = file_docs
         else:
             docs.update(file_docs)
 

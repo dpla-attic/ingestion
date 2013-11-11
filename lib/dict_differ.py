@@ -52,3 +52,6 @@ class DictDiffer(object):
     def changed(self):
         return list(set(o for o in list(self.intersect) if
                     self.past_dict[o] != self.current_dict[o]))
+
+    def differences(self):
+        return self.added() + self.removed() + self.changed()
