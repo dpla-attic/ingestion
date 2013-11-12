@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 """
-Script to remove previous ingestion document after a reingestion
+Script to remove a provider's dashboard item-level documents whose ingestion
+sequence is not in the last three ingestions.
 
 Usage:
-    $ python remove_deleted_documents.py ingestion_document_id
+    $ python dashboard_cleanup.py ingestion_document_id
 """
 import os
 import sys
@@ -28,14 +29,14 @@ def main(argv):
 
     couch = Couch()
     ingestion_doc = couch.dashboard_db[args.ingestion_document_id]
-    if getprop(ingestion_doc, "save_process/status") != "complete":
-        print "Error, save process did not complete"
+    if getprop(ingestion_doc, "delete_process/status") != "complete":
+        print "Error, delete process did not complete"
         return -1
 
     # Update ingestion document
     kwargs = {
-        "delete_process/status": "running",
-        "delete_process/start_time": datetime.now().isoformat()
+        "dashboard_cleanup_process/status": "running",
+        "dashboard_cleanup_process/start_time": datetime.now().isoformat()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -43,23 +44,20 @@ def main(argv):
         print "Error updating ingestion document " + ingestion_doc["_id"]
         return -1
 
-    resp, total_deleted = couch.process_deleted_docs(ingestion_doc)
+    resp, total_deleted = couch.dashboard_cleanup(ingestion_doc)
     if resp == -1:
         status = "error"
         error_msg = "Error deleting documents; only %s deleted" % total_deleted
     else:
         status = "complete"
         error_msg = None
-
-    msg = "Total documents deleted: %s" % total_deleted
-    print msg
-    logger.info(msg)
+    print "Total dashboard documents deleted: %s" % total_deleted
 
     # Update ingestion document
     kwargs = {
-        "delete_process/status": status,
-        "delete_process/error": error_msg,
-        "delete_process/end_time": datetime.now().isoformat()
+        "dashboard_cleanup_process/status": status,
+        "dashboard_cleanup_process/error": error_msg,
+        "dashboard_cleanup_process/end_time": datetime.now().isoformat()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
