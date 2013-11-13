@@ -47,7 +47,9 @@
         "p15799coll84",
         "p15799coll104"
     ], 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla",
@@ -74,6 +76,7 @@
         "/usc_set_dataprovider",
         "/remove_list_values?prop=sourceResource%2Ftype&values=item",
         "/dedup_value?prop=sourceResource%2Ftype",
-        "/unset_prop?prop=sourceResource%2Fcollection"
+        "/unset_prop?prop=sourceResource%2Fcollection",
+        "/compare_with_schema"
     ]
 }

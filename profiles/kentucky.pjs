@@ -7,7 +7,9 @@
         "@id": "http://dp.la/api/contributor/kdl", 
         "name": "Kentucky Digital Library"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla", 
@@ -38,6 +40,7 @@
         "/unset_prop?prop=sourceResource%2Fpublisher",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
 	    "/geocode",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/compare_with_schema"
     ]
 }

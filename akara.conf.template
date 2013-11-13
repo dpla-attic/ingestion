@@ -117,7 +117,7 @@ MODULES = [
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
     "dplaingestion.akamod.enrich-format",
-    "dplaingestion.akamod.enrich-date",
+    "dplaingestion.akamod.enrich_date",
     "dplaingestion.akamod.select-id",
     "dplaingestion.akamod.shred",
     "dplaingestion.akamod.geocode",
@@ -183,6 +183,7 @@ MODULES = [
     "dplaingestion.akamod.georgia_set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
     "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
+    "dplaingestion.akamod.compare_with_schema",
     ]
 
 ### Section 3: Other module configuration goes here

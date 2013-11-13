@@ -28,7 +28,9 @@
         "@id": "http://dp.la/api/contributor/uiuc",
         "name": "University of Illinois at Urbana-Champaign"
     },
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id",
         "/oai-to-dpla",
@@ -56,6 +58,7 @@
         "/contentdm_identify_object",
         "/copy_prop?prop=sourceResource%2Frelation&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True&remove=True",
         "/copy_prop?prop=dataProvider&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True",
-        "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library"
+        "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library",
+        "/compare_with_schema"
     ]
 }

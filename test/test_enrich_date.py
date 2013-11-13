@@ -1,6 +1,6 @@
 from amara.thirdparty import json
 from nose.tools import nottest
-
+from dplaingestion.akamod.enrich_date import check_date_format
 from server_support import server, H, print_error_log
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 import sys
@@ -721,6 +721,41 @@ def test_enrich_dates_with_tildes_and_x():
         assert str(resp.status).startswith("2")
         assert_same_jsons(EXPECTED[i], content)
 
+def test_invalid_begin_dates():
+    """Should set invalid begin dates to None"""
+    INPUT = {
+                "_id": "12345",
+                "date": [
+                    {"begin": "20130-11-12", "end": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"begin": "2013-110-12", "end": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"begin": "20130-11-120", "end": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"begin": "20130-11-a", "end": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"begin": "20130-11-", "end": "2013-11-12", "displaDate": "2013-11-12"}
+                ]
+            }
+    EXPECTED = {"begin": None, "end": "2013-11-12", "displaDate": "2013-11-12"}
+
+    check_date_format(INPUT, "date")
+    for date in INPUT["date"]:
+        assert date == EXPECTED
+
+def test_invalid_end_dates():
+    """Should set invalid end dates to None"""
+    INPUT = {
+                "_id": "12345",
+                "date": [
+                    {"end": "20130-11-12", "begin": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"end": "2013-110-12", "begin": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"end": "20130-11-120", "begin": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"end": "20130-11-a", "begin": "2013-11-12", "displaDate": "2013-11-12"},
+                    {"end": "20130-11-", "begin": "2013-11-12", "displaDate": "2013-11-12"}
+                ]
+            }
+    EXPECTED = {"end": None, "begin": "2013-11-12", "displaDate": "2013-11-12"}
+
+    check_date_format(INPUT, "date")
+    for date in INPUT["date"]:
+        assert date == EXPECTED
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")

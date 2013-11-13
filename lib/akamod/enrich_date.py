@@ -1,6 +1,6 @@
 import re
 import timelib
-
+import datetime
 from akara import logger
 from akara import response
 from akara.services import simple_service
@@ -8,6 +8,7 @@ from amara.thirdparty import json
 from dateutil.parser import parse as dateutil_parse
 from zen import dateparser
 from dplaingestion.selector import getprop, setprop, delprop, exists
+from dplaingestion.utilities import iterify
 
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
@@ -269,6 +270,32 @@ def convert_dates(data, prop, earliest):
         if exists(data, p):
             delprop(data, p)
 
+def check_date_format(data, prop):
+    """Checks that the begin and end dates are in the proper format"""
+    date = getprop(data, prop, True)
+    if date:
+        for d in iterify(date):
+            for k, v in d.items():
+                if k != "displayDate":
+                    try:
+                        ymd = [int(s) for s in v.split("-")]
+                    except:
+                        err = "Invalid date.%s: non-integer in %s for %s" % \
+                              (k, v, data.get("_id"))
+                        logger.error(err)
+                        setprop(d, k, None)
+                        continue
+
+                    year = ymd[0]
+                    month = ymd[1] if len(ymd) > 1 else 1
+                    day = ymd[2] if len(ymd) > 2 else 1
+                    try:
+                        datetime.datetime(year=year, month=month, day=day)
+                    except ValueError, e:
+                        logger.error("Invalid date.%s: %s for %s" %
+                                     (k, e, data.get("_id")))
+                        setprop(d, k, None)
+
 @simple_service('POST', 'http://purl.org/la/dp/enrich_earliest_date', 'enrich_earliest_date', HTTP_TYPE_JSON)
 def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="sourceResource/date"):
     """
@@ -277,6 +304,7 @@ def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="sourc
 
     a) Looks in the list of fields specified by the 'prop' parameter
     b) Extracts all dates, and sets the created date to the earliest date
+    c) Checks the format of the date
     """
     try :
         data = json.loads(body)
@@ -286,6 +314,7 @@ def enrich_earliest_date(body, ctype, action="enrich_earliest_date", prop="sourc
         return "Unable to parse body as JSON"
 
     convert_dates(data, prop, True)
+    check_date_format(data, prop)
     return json.dumps(data)
 
 
@@ -297,6 +326,7 @@ def enrich_date(body, ctype, action="enrich_date", prop="sourceResource/temporal
 
     a) Looks in the list of fields specified by the 'prop' parameter
     b) Extracts all dates
+    c) Checks the format of the date
     """
     try :
         data = json.loads(body)
@@ -306,4 +336,5 @@ def enrich_date(body, ctype, action="enrich_date", prop="sourceResource/temporal
         return "Unable to parse body as JSON"
 
     convert_dates(data, prop, False)
+    check_date_format(data, prop)
     return json.dumps(data)
