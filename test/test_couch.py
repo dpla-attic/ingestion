@@ -72,15 +72,6 @@ class CouchTest(Couch):
         self._sync_views("dpla")
         self._sync_views("dashboard")
 
-    def _setup(self):
-        self._delete_all_test_backups()
-        self._recreate_test_databases()
-        self._sync_test_views()
-
-    def _teardown(self):
-        self._delete_all_test_backups()
-        self._delete_test_datbases()
-
     def get_provider_backups(self):
         return [db for db in self.server if db.startswith(PROVIDER + "_")]
 
@@ -104,6 +95,8 @@ class CouchTest(Couch):
         self._back_up_data(ingestion_doc)
         self.process_and_post_to_dpla(docs, ingestion_doc)
         self.process_deleted_docs(ingestion_doc)
+        resp, total_deleted = self.dashboard_cleanup(ingestion_doc)
+        print >> sys.stderr, "Dashboard cleanup, deleted %s" % total_deleted
         return ingestion_doc_id
 
 @nottest
@@ -260,35 +253,89 @@ def test_multiple_ingestions():
     data_added = copy.deepcopy(data_changed)
     data_added += add_later
 
+    # Verify only item-level documents for the most recent three ingestions
+    # exist in the dashboard database
     first_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
-    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
-    total_dashboard_docs_first = len(dashboard_db_docs)
+    dashboard_docs = [doc for doc in
+                      couch._query_records_by_ingestion_sequence_include_status(1)]
+    first_ingestion_dashboard_items = len(dashboard_docs)
+    ingestions = len([doc for doc in couch._query_all_provider_ingestion_docs(PROVIDER)])
+    # Exclude design docs
+    total_dashboard_records = len([doc for doc in
+                                   couch._query_all_docs(couch.dashboard_db) if
+                                   doc.get("type")])
 
-    second_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
-    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
-    total_dashboard_docs_second = len(dashboard_db_docs)
-
-    third_ingestion_doc_id = couch.ingest(data_deleted, PROVIDER, json_content=True)
-    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
-    total_dashboard_docs_third = len(dashboard_db_docs)
-
-    fourth_ingestion_doc_id = couch.ingest(data_changed, PROVIDER, json_content=True)
-    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
-    total_dashboard_docs_fourth = len(dashboard_db_docs)
-
-    fifth_ingestion_doc_id = couch.ingest(data_added, PROVIDER, json_content=True)
-    dashboard_db_docs = [doc for doc in couch._query_all_docs(couch.dashboard_db)]
-    total_dashboard_docs_fifth = len(dashboard_db_docs)
-
-    # Second ingestion should have an extra ingestion doc
-    assert int(total_dashboard_docs_first) + 1 == int(total_dashboard_docs_second)
-    # Third ingestion should have extra ingestion doc + 10 deleted
-    assert int(total_dashboard_docs_second) + 11 == int(total_dashboard_docs_third)
-    # Fourth ingestion should have extra ingestion doc + 5 changed
-    assert int(total_dashboard_docs_third) + 6 == int(total_dashboard_docs_fourth)
-    # Fifth ingestion should have extra ingestion doc + 10 added
-    assert int(total_dashboard_docs_fourth) + 11 == int(total_dashboard_docs_fifth)
+    assert total_dashboard_records == first_ingestion_dashboard_items + \
+                                      ingestions
     
+    # Verify only item-level documents for the most recent three ingestions
+    # exist in the dashboard database
+    second_ingestion_doc_id = couch.ingest(data, PROVIDER, json_content=True)
+    dashboard_docs = [doc for doc in
+                      couch._query_records_by_ingestion_sequence_include_status(2)]
+    second_ingestion_dashboard_items = len(dashboard_docs)
+    ingestions = len([doc for doc in couch._query_all_provider_ingestion_docs(PROVIDER)])
+    # Exclude design docs
+    total_dashboard_records = len([doc for doc in
+                                   couch._query_all_docs(couch.dashboard_db) if
+                                   doc.get("type")])
+
+    assert total_dashboard_records == first_ingestion_dashboard_items + \
+                                      second_ingestion_dashboard_items + \
+                                      ingestions
+
+    # Verify only item-level documents for the most recent three ingestions
+    # exist in the dashboard database
+    third_ingestion_doc_id = couch.ingest(data_deleted, PROVIDER, json_content=True)
+    dashboard_docs = [doc for doc in
+                      couch._query_records_by_ingestion_sequence_include_status(3)]
+    third_ingestion_dashboard_items = len(dashboard_docs)
+    ingestions = len([doc for doc in couch._query_all_provider_ingestion_docs(PROVIDER)])
+    # Exclude design docs
+    total_dashboard_records = len([doc for doc in
+                                   couch._query_all_docs(couch.dashboard_db) if
+                                   doc.get("type")])
+
+    assert total_dashboard_records == first_ingestion_dashboard_items + \
+                                      second_ingestion_dashboard_items + \
+                                      third_ingestion_dashboard_items + \
+                                      ingestions
+
+    # Verify only item-level documents for the most recent three ingestions
+    # exist in the dashboard database
+    fourth_ingestion_doc_id = couch.ingest(data_changed, PROVIDER, json_content=True)
+    dashboard_docs = [doc for doc in
+                      couch._query_records_by_ingestion_sequence_include_status(4)]
+    fourth_ingestion_dashboard_items = len(dashboard_docs)
+    ingestions = len([doc for doc in couch._query_all_provider_ingestion_docs(PROVIDER)])
+    # Exclude design docs
+    total_dashboard_records = len([doc for doc in
+                                   couch._query_all_docs(couch.dashboard_db) if
+                                   doc.get("type")])
+
+    assert total_dashboard_records == second_ingestion_dashboard_items + \
+                                      third_ingestion_dashboard_items + \
+                                      fourth_ingestion_dashboard_items + \
+                                      ingestions
+
+    # Verify only item-level documents for the most recent three ingestions
+    # exist in the dashboard database
+    fifth_ingestion_doc_id = couch.ingest(data_added, PROVIDER, json_content=True)
+    dashboard_docs = [doc for doc in
+                      couch._query_records_by_ingestion_sequence_include_status(5)]
+    fifth_ingestion_dashboard_items = len(dashboard_docs)
+    ingestions = len([doc for doc in couch._query_all_provider_ingestion_docs(PROVIDER)])
+    # Exclude design docs
+    total_dashboard_records = len([doc for doc in
+                                   couch._query_all_docs(couch.dashboard_db) if
+                                   doc.get("type")])
+
+    assert total_dashboard_records == third_ingestion_dashboard_items + \
+                                      fourth_ingestion_dashboard_items + \
+                                      fifth_ingestion_dashboard_items + \
+                                      ingestions
+
+    # Verify count fields for each ingestion document
     assert couch.dashboard_db.get(first_ingestion_doc_id)["countAdded"] == 243
     assert couch.dashboard_db.get(first_ingestion_doc_id)["countChanged"] == 0
     assert couch.dashboard_db.get(first_ingestion_doc_id)["countDeleted"] == 0

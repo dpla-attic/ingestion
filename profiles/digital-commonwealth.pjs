@@ -7,7 +7,9 @@
         "@id": "http://dp.la/api/contributor/digital-commonwealth",
         "name": "Digital Commonwealth"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id",
         "/oai-to-dpla",
@@ -41,6 +43,7 @@
         "/unset_prop?prop=sourceResource%2Frelation",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/compare_with_schema"
     ]
 }

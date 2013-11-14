@@ -20,7 +20,6 @@ class Couch(object):
 
     def __init__(self, config_file="akara.ini", **kwargs):
         """
-
         Default Args:
             config_file: The configuration file that includes the Couch server
                          url, dpla and dashboard database names, the views
@@ -149,55 +148,59 @@ class Couch(object):
                                include_docs=True):
             yield row["doc"]
 
-    def _query_all_dashboard_provider_docs(self, provider_name):
+    def _query_all_provider_docs(self, db, provider_name):
         """Fetches all provider docs by provider name. The key for this view
-        is the list [provider_name, doc._id], so we supply "a" as the
-        startkey doc._id and "z" as the endkey doc._id in order to ensure
-        proper sorting.
+           is the list [provider_name, doc._id], so we supply "0" as the
+           startkey doc._id and "Z" as the endkey doc._id in order to ensure
+           proper sorting. See collation sequence here:
+           https://wiki.apache.org/couchdb/View_collation
         """
         view_name = "all_provider_docs/by_provider_name"
-        include_docs = True
-        startkey = [provider_name, "a"]
-        endkey = [provider_name, "z"]
-        for row in self.dashboard_db.iterview(view_name,
-                                              batch=self.batch_size,
-                                              include_docs=True,
-                                              startkey=startkey,
-                                              endkey=endkey):
+        for row in db.iterview(view_name,
+                               batch=self.batch_size,
+                               include_docs=True,
+                               startkey=[provider_name, "0"],
+                               endkey=[provider_name, "Z"]):
+            yield row["doc"]
+
+    def _query_all_prov_docs_by_ingest_seq(self, db, provider_name,
+                                           ingestion_sequence):
+        """Fetches all provider docs by provider name and ingestion sequence.
+           The key for this view is the list [provider_name,
+           ingestion_sequence, doc._id], so we supply "0" as the startkey
+           doc._id and "Z" as the endkey doc._id in order to ensure proper
+           sorting. See collation sequence here:
+           https://wiki.apache.org/couchdb/View_collation
+        """
+        view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
+        startkey = [provider_name, ingestion_sequence, "0"]
+        endkey = [provider_name, ingestion_sequence, "Z"]
+        for row in db.iterview(view_name,
+                               batch=self.batch_size,
+                               include_docs=True,
+                               startkey=startkey,
+                               endkey=endkey):
             yield row["doc"]
 
     def _query_all_dpla_provider_docs(self, provider_name):
-        """Fetches all provider docs by provider name. The key for this view
-           is the list [provider_name, doc._id], so we supply "a" as the
-           startkey doc._id and "z" as the endkey doc._id in order to ensure
-           proper sorting.
-        """
-        view_name = "all_provider_docs/by_provider_name"
-        include_docs = True
-        startkey = [provider_name, "a"]
-        endkey = [provider_name, "z"]
-        for row in self.dpla_db.iterview(view_name, batch=self.batch_size,
-                                         include_docs=True, startkey=startkey,
-                                         endkey=endkey):
-            yield row["doc"]
+        return self._query_all_provider_docs(self.dpla_db, provider_name)
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
                                                 ingestion_sequence):
-        """Fetches all provider docs by provider name and ingestion sequence.
-           The key for this view is the list [provider_name,
-           ingestion_sequence, doc._id], so we supply "a" as the startkey
-           doc._id and "z" as the endkey doc._id in order to ensure proper
-           sorting.
-        """
-        view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
-        include_docs = True
-        startkey = [provider_name, ingestion_sequence, "a"]
-        endkey = [provider_name, ingestion_sequence, "z"]
-        for row in self.dpla_db.iterview(view_name, batch=self.batch_size,
-                                         include_docs=True, startkey=startkey,
-                                         endkey=endkey):
-            yield row["doc"]
+        return self._query_all_prov_docs_by_ingest_seq(self.dpla_db,
+                                                      provider_name,
+                                                      ingestion_sequence)
+ 
+    def _query_all_dashboard_provider_docs(self, provider_name):
+        return self._query_all_provider_docs(self.dashboard_db,
+                                                provider_name)
 
+    def _query_all_dashboard_prov_docs_by_ingest_seq(self, provider_name,
+                                                     ingestion_sequence):
+        return self._query_all_prov_docs_by_ingest_seq(self.dashboard_db,
+                                                      provider_name,
+                                                      ingestion_sequence)
+ 
     def _query_all_provider_ingestion_docs(self, provider_name):
         view = self.dashboard_db.view("all_ingestion_docs/by_provider_name",
                                       include_docs=True, key=provider_name)
@@ -407,7 +410,13 @@ class Couch(object):
                 "start_time": None,
                 "end_time": None,
                 "error": None
-            }
+            },
+            "dashboard_cleanup_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None
+            },
         }
         # Set the ingestion sequence
         latest_ingestion_doc = self._get_last_ingestion_doc_for(provider)
@@ -525,6 +534,56 @@ class Couch(object):
                     print >> sys.stderr, "Error deleting from dpla db"
                     return (-1, total_deleted)
                 total_deleted += len(delete_docs)
+        return (0, total_deleted)
+
+    def dashboard_cleanup(self, ingestion_doc):
+        """Deletes a provider's dashboard item-level documents whose ingestion
+           sequence is not in the last three ingestions.
+
+           Returns a status (-1 for error, 0 for success) along with the total
+           number of documents deleted.
+        """
+        total_deleted = 0
+        curr_seq = int(ingestion_doc["ingestionSequence"])
+        if curr_seq <= 3:
+            msg = "Current ingestion sequence %s <= 3. " % curr_seq
+            msg += "No dashboard documents will be deleted."
+            print >> sys.stderr, msg
+            return (0, total_deleted)
+        else:
+            provider = ingestion_doc["provider"]
+            seq_to_delete = range(1, curr_seq-2)
+
+            delete_docs = []
+            for seq in seq_to_delete:
+                for doc in self._query_all_dashboard_prov_docs_by_ingest_seq(
+                                                              provider, seq
+                                                              ):
+                    if not doc.get("type") == "ingestion":
+                        delete_docs.append(doc)
+
+                    # So as not to use too much memory at once, do the bulk
+                    # posts and deletions in batches of batch_size
+                    if len(delete_docs) == self.batch_size:
+                        try:
+                            self._delete_documents(self.dashboard_db,
+                                                   delete_docs)
+                        except:
+                            print >> sys.stderr, "Error deleting from " + \
+                                                 "dashboard db"
+                            return (-1, total_deleted)
+                        total_deleted += len(delete_docs)
+                        delete_docs = []
+
+            if delete_docs:
+                # Last bulk post
+                try:
+                    self._delete_documents(self.dashboard_db, delete_docs)
+                except:
+                    print >> sys.stderr, "Error deleting from dashboard db"
+                    return (-1, total_deleted)
+                total_deleted += len(delete_docs)
+
         return (0, total_deleted)
 
     def process_and_post_to_dpla(self, harvested_docs, ingestion_doc):

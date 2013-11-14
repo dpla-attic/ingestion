@@ -8,7 +8,9 @@
         "@id": "http://dp.la/api/contributor/digital-commonwealth",
         "name": "Digital Commonwealth"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/oai_mods_to_dpla?provider=BPL",
@@ -31,6 +33,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_prop?prop=provider%2Fname&value=Digital%20Commonwealth",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/compare_with_schema"
     ]
 }

@@ -7,7 +7,9 @@
         "@id": "http://dp.la/api/contributor/harvard-virtual",
         "name": "Harvard Virtual Collection"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id",
         "/oai-to-dpla",
@@ -19,6 +21,7 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
-        "/contentdm_identify_object"
+        "/contentdm_identify_object",
+        "/compare_with_schema"
     ]
 }

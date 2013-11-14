@@ -7,7 +7,9 @@
         "@id": "http://dp.la/api/contributor/georgia", 
         "name": "Digital Library of Georgia"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id",
         "/oai-to-dpla",
@@ -35,6 +37,7 @@
         "/unset_prop?prop=dataProvider",
         "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider&create=True&remove=True",
         "/georgia_identify_object",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/compare_with_schema"
     ]
 }

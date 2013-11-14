@@ -7,7 +7,9 @@
         "@id": "http://dp.la/api/contributor/scdl-clemson", 
         "name": "South Carolina Digital Library"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id", 
         "/oai-to-dpla", 
@@ -38,6 +40,7 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/lookup?prop=sourceResource%2Fformat&target=sourceResource%2Fformat&substitution=scdl_fix_format",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=South%20Carolina",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/compare_with_schema"
     ]
 }

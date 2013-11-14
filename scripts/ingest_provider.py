@@ -12,6 +12,7 @@ import fetch_records
 import enrich_records
 import save_records
 import remove_deleted_records
+import dashboard_cleanup
 from amara.thirdparty import json
 
 def define_arguments():
@@ -50,7 +51,12 @@ def main(argv):
 
         resp = remove_deleted_records.main([None, ingestion_doc_id]) 
         if not resp == 0:
-            print "Error saving records..."
+            print "Error deleting records"
+            continue
+
+        resp = dashboard_cleanup.main([None, ingestion_doc_id])
+        if not resp == 0:
+            print "Error cleaning up dashboard"
             continue
 
         print "Ingestion complete!"

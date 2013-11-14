@@ -14,7 +14,8 @@
         "name": "New York Public Library"
     }, 
    "enrichments_coll": [
-        "/nypl-coll-title?list_sets=http://j2k.repo.nypl.org/api/v1/items/listCollections"
+        "/nypl-coll-title?list_sets=http://j2k.repo.nypl.org/api/v1/items/listCollections",
+        "/compare_with_schema"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
@@ -37,6 +38,7 @@
         "/set_prop?prop=sourceResource%2Frights&value=No%20Known%20US%20Copyright%20Restrictions",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=New%20York",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/compare_with_schema"
     ]
 }

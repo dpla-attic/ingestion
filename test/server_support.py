@@ -114,7 +114,7 @@ MODULES = [
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
     "dplaingestion.akamod.enrich-format",
-    "dplaingestion.akamod.enrich-date",
+    "dplaingestion.akamod.enrich_date",
     "dplaingestion.akamod.select-id",
     "dplaingestion.akamod.shred",
     "dplaingestion.akamod.geocode",
@@ -169,7 +169,8 @@ MODULES = [
     "dplaingestion.akamod.hathi_identify_object",
     "dplaingestion.akamod.texas_enrich_location",
     "dplaingestion.akamod.georgia_set_spec_type",
-    "dplaingestion.akamod.usc_set_dataprovider"
+    "dplaingestion.akamod.usc_set_dataprovider",
+    "dplaingestion.akamod.compare_with_schema",
     ]
 
 class download_preview:

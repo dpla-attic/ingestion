@@ -8,7 +8,9 @@
         "@id": "http://dp.la/api/contributor/digitalnc",
         "name": "North Carolina Digital Heritage Center"
     }, 
-    "enrichments_coll": [], 
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/oai_mods_to_dpla_digitalnc",
@@ -25,6 +27,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=North%20Carolina",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/compare_with_schema"
     ]
 }

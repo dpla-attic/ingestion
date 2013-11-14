@@ -17,7 +17,9 @@
         "@id": "http://dp.la/api/contributor/virginia",
         "name": "University of Virginia Library"
     }, 
-    "enrichments_coll": [],
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ],
     "enrichments_item": [
         "/select-id?prop=_id",
         "/mods-to-dpla?provider=UVA",
@@ -35,6 +37,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Virginia",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/compare_with_schema"
     ]
 }
