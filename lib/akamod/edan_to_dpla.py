@@ -288,13 +288,13 @@ def transform_spatial(d):
     elif result:
         ret = {"spatial": result}
 
-    # Also add currentLocation
+    # Also add stateLocatedIn
     l = list(set(location_states))
     if len(l) == 1:
         l = l[0]
 
     if l:
-        ret.update({"currentLocation": l}) 
+        ret.update({"stateLocatedIn": l}) 
 
     return ret
 
