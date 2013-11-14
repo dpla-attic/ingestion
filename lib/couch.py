@@ -150,29 +150,31 @@ class Couch(object):
 
     def _query_all_provider_docs(self, db, provider_name):
         """Fetches all provider docs by provider name. The key for this view
-           is the list [provider_name, doc._id], so we supply "a" as the
-           startkey doc._id and "z" as the endkey doc._id in order to ensure
-           proper sorting.
+           is the list [provider_name, doc._id], so we supply "0" as the
+           startkey doc._id and "Z" as the endkey doc._id in order to ensure
+           proper sorting. See collation sequence here:
+           https://wiki.apache.org/couchdb/View_collation
         """
         view_name = "all_provider_docs/by_provider_name"
         for row in db.iterview(view_name,
                                batch=self.batch_size,
                                include_docs=True,
-                               startkey=[provider_name, "a"],
-                               endkey=[provider_name, "z"]):
+                               startkey=[provider_name, "0"],
+                               endkey=[provider_name, "Z"]):
             yield row["doc"]
 
     def _query_all_prov_docs_by_ingest_seq(self, db, provider_name,
                                            ingestion_sequence):
         """Fetches all provider docs by provider name and ingestion sequence.
            The key for this view is the list [provider_name,
-           ingestion_sequence, doc._id], so we supply "a" as the startkey
-           doc._id and "z" as the endkey doc._id in order to ensure proper
-           sorting.
+           ingestion_sequence, doc._id], so we supply "0" as the startkey
+           doc._id and "Z" as the endkey doc._id in order to ensure proper
+           sorting. See collation sequence here:
+           https://wiki.apache.org/couchdb/View_collation
         """
         view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
-        startkey = [provider_name, ingestion_sequence, "a"]
-        endkey = [provider_name, ingestion_sequence, "z"]
+        startkey = [provider_name, ingestion_sequence, "0"]
+        endkey = [provider_name, ingestion_sequence, "Z"]
         for row in db.iterview(view_name,
                                batch=self.batch_size,
                                include_docs=True,
