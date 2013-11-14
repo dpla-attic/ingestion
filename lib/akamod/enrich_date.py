@@ -276,7 +276,7 @@ def check_date_format(data, prop):
     if date:
         for d in iterify(date):
             for k, v in d.items():
-                if k != "displayDate":
+                if v and k != "displayDate":
                     try:
                         ymd = [int(s) for s in v.split("-")]
                     except:
