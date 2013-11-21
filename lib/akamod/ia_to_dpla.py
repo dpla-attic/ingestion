@@ -187,13 +187,6 @@ def ia_to_dpla(body, ctype, geoprop=None):
         elif exists(data, p):
             out.update(AGGREGATION_TRANSFORMER[p](data, p))
 
-    # Additional content not from original document
-    if 'HTTP_CONTRIBUTOR' in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
-
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)
 
