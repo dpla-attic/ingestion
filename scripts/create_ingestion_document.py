@@ -52,7 +52,9 @@ def main(argv):
     ingestion_document_id = couch._create_ingestion_document(provider,
                                                              uri_base,
                                                              args.profile_path)
-    logger.debug("Ingestion document %s created." % ingestion_document_id)
+    msg = "Ingestion document %s created." % ingestion_document_id
+    logger.debug(msg)
+    print msg
 
     return ingestion_document_id
 

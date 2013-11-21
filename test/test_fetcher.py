@@ -20,12 +20,12 @@ def getprop(obj, path):
 # Remove trailing forward slash
 uri_base = server()[:-1]
 
-scdl_blacklist = ["ctm", "cfb", "spg", "jfb", "jbt", "pre", "dnc", "scp",
-                  "swl", "weg", "ghs", "wsb", "mbe", "gcj", "cwp", "nev",
-                  "hfp", "big"]
-scdl_all_sets = ["gmb", "ctm", "cfb", "spg", "jfb", "jbt", "pre",
-                 "dnc", "scp", "swl", "weg", "ghs", "wsb", "mbe",
-                 "gcj", "cwp", "nev", "hfp", "big", "dae"]
+scdl_blacklist = ["ctm", "spg", "jfb", "jbt", "pre", "dnc", "scp", "swl",
+                  "weg", "ghs", "wsb", "mbe", "gcj", "cwp", "nev", "hfp",
+                  "big"]
+scdl_all_sets = ["gmb", "ctm", "spg", "jfb", "jbt", "pre", "dnc", "scp", "swl",
+                 "weg", "ghs", "wsb", "mbe", "gcj", "cwp", "nev", "hfp", "big",
+                 "dae"]
 
 # Test config file
 config_file = "test/test_data/test.conf"

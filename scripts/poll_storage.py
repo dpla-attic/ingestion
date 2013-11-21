@@ -37,12 +37,10 @@ H.force_exception_to_status_code = True
 def define_arguments():
     """Defines command line arguments for the current script"""
     parser = argparse.ArgumentParser()
-    uri_help = "The base URI for the server hosting the enrichment pipeline"
     profile_help = "The path to the profile to be processed"
     pipeline_help = "Either the name of an enrichment pipeline in the " + \
                     "profile that contains the list of enrichments to be " + \
                     "run or a comma-separated enrichments string"
-    parser.add_argument("uri_base", help=uri_help)
     parser.add_argument("profile_path", help=profile_help)
     parser.add_argument("pipeline", help=pipeline_help, type=str)
     return parser
@@ -50,7 +48,7 @@ def define_arguments():
 def enrich(docs, uri_base, pipeline):
     headers = {
         "Content-Type": "application/json",
-        "Pipeline-Rec": pipeline
+        "Pipeline-Item": pipeline
     }
 
     resp, content = H.request(uri_base + ENRICH, "POST",
@@ -99,7 +97,7 @@ def main(argv):
             docs = []
     # Enrich last batch
     if docs:
-        enriched_docs = enrich(docs, args.uri_base, pipeline)
+        enriched_docs = enrich(docs, ingestion_doc["uri_base"], pipeline)
         couch.process_and_post_to_dpla(enriched_docs, ingestion_doc)
         print "Enriched %s documents" % count
 

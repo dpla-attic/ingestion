@@ -8,7 +8,7 @@ CT_JSON = {"Content-Type": "application/json"}
 H = httplib2.Http()
 
 def _get_server_response(body, action="set", prop=None, value=None,
-                         condition_prop=None, condition=None):
+                         condition_prop=None, condition=None, _dict=None):
     url = server() + "%s_prop?prop=%s" % (action, prop)
     if value:
         url = "%s&value=%s" % (url, value)
@@ -16,6 +16,9 @@ def _get_server_response(body, action="set", prop=None, value=None,
         url = "%s&condition_prop=%s" % (url, condition_prop)
     if condition:
         url = "%s&condition=%s" % (url, condition)
+    if _dict:
+        url = "%s&_dict=%s" % (url, _dict)
+    print >> sys.stderr, url
     return H.request(url, "POST", body=body, headers=CT_JSON)
 
 def test_set_prop1():
@@ -131,6 +134,28 @@ def test_set_prop5():
 
     resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
         value=value, condition_prop="sourceResource")
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_set_prop6():
+    """Should parse value as JSON before setting the prop"""
+    prop = "provider"
+    value = "%7B%22%40id%22%3A%22http%3A%2F%2Fdp.la%2Fapi%2Fcontributor%2F" + \
+            "scdl-clemson%22%2C%22name%22%3A%22South%20Carolina%20Digital%" + \
+            "20Library%22%7D"
+    INPUT = {
+        "key1": "value1"
+    }
+    EXPECTED = {
+        "key1": "value1",
+        "provider": {
+            "@id": "http://dp.la/api/contributor/scdl-clemson",
+            "name": "South Carolina Digital Library"
+        }
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+                                        value=value, _dict=True)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 

@@ -124,6 +124,7 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord": lambda d, p: {"originalRecord": getprop(d, p)},
     "ingestType": lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate": lambda d, p: {"ingestDate": getprop(d, p)},
+    "provider": lambda d, p: {"provider": getprop(d, p)},
 
     # META
     "metadata/contributor": lambda d, p: {"dataProvider": getprop(d, p)},

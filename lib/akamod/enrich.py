@@ -109,13 +109,13 @@ def enrich_storage(body, ctype):
     """
 
     request_headers = copy_headers_to_dict(request.environ)
-    rec_enrichments = request_headers.get(u"Pipeline-Rec","").split(",")
+    rec_enrichments = request_headers.get(u"Pipeline-Item","").split(",")
 
     data = json.loads(body)
 
     docs = {}
     for record in data:
-        doc_text = pipe(record, ctype, rec_enrichments, "HTTP_PIPELINE_REC")
+        doc_text = pipe(record, ctype, rec_enrichments, "HTTP_PIPELINE_ITEM")
         doc = json.loads(doc_text)
         docs[doc["_id"]] = doc
 
