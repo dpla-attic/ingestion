@@ -29,6 +29,7 @@ import argparse
 from amara.thirdparty import json, httplib2
 from dplaingestion.couch import Couch
 import create_ingestion_document
+import dashboard_cleanup
 
 ENRICH = "/enrich_storage"
 H = httplib2.Http()
@@ -89,9 +90,9 @@ def main(argv):
     for doc in couch._query_all_dpla_provider_docs(provider):
         docs.append(doc)
         count += 1
-        # Enrich in batches of 1000
-        if len(docs) == 1000:
-            enriched_docs = enrich(docs, args.uri_base, pipeline)
+        # Enrich in batches of batch_size
+        if len(docs) == couch.batch_size:
+            enriched_docs = enrich(docs, ingestion_doc["uri_base"], pipeline)
             couch.process_and_post_to_dpla(enriched_docs, ingestion_doc)
             print "Enriched %s documents" % count
             docs = []
@@ -108,6 +109,11 @@ def main(argv):
     ingestion_doc["delete_process"] = {"status": "complete"}
     ingestion_doc["poll_storage_process"]["status"] = "complete"
     couch.dashboard_db.update([ingestion_doc])
+
+    # Run dashboard cleanup
+    resp = dashboard_cleanup.main([None, ingestion_doc_id])
+    if not resp == 0:
+        print "Error cleaning up dashboard"
 
 if __name__ == "__main__":
     main(sys.argv)
