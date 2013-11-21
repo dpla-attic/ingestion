@@ -7,7 +7,7 @@ from dplaingestion.selector import getprop, setprop, delprop, exists
 @simple_service('POST', 'http://purl.org/la/dp/set_prop', 'set_prop',
     'application/json')
 def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
-             condition_value=None):
+             condition_value=None, _dict=None):
     """Sets the value of prop.
 
     Keyword arguments:
@@ -29,6 +29,12 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
     if not value:
         logger.error("No value was supplied to set_prop.")
     else:
+        if _dict:
+            try:
+                value = json.loads(value)
+            except Exception, e:
+                logger.error("Unable to parse set_prop value: %s" % e)
+
         # If there is no condition_prop, set the prop, creating it if it does
         #not exist. If there is a condition_prop, only set the prop if the
         # condition_prop exists.

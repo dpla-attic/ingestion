@@ -51,5 +51,8 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/compare_with_schema"
+    ],
+    "set_provider": [
+        "/set_prop?prop=provider&_dict=True&value=%7B%22%40id%22%3A%22http%3A%2F%2Fdp.la%2Fapi%2Fcontributor%2Finternet_archive%22%2C%22name%22%3A%22Internet%20Archive%22%7D"
     ]
 }

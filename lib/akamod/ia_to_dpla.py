@@ -124,6 +124,7 @@ AGGREGATION_TRANSFORMER = {
     "originalRecord": lambda d, p: {"originalRecord": getprop(d, p)},
     "ingestType": lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate": lambda d, p: {"ingestDate": getprop(d, p)},
+    "provider": lambda d, p: {"provider": getprop(d, p)},
 
     # META
     "metadata/contributor": lambda d, p: {"dataProvider": getprop(d, p)},
@@ -185,13 +186,6 @@ def ia_to_dpla(body, ctype, geoprop=None):
             out.update(multi_path_processor(data, p, AGGREGATION_TRANSFORMER))
         elif exists(data, p):
             out.update(AGGREGATION_TRANSFORMER[p](data, p))
-
-    # Additional content not from original document
-    if 'HTTP_CONTRIBUTOR' in request.environ:
-        try:
-            out["provider"] = json.loads(base64.b64decode(request.environ['HTTP_CONTRIBUTOR']))
-        except Exception as e:
-            logger.debug("Unable to decode Contributor header value: "+request.environ['HTTP_CONTRIBUTOR']+"---"+repr(e))
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

@@ -22,6 +22,9 @@ def define_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("ingestion_document_id", 
                         help="The ID of the ingestion document")
+    parser.add_argument("--no-backup", dest="backup", action="store_false",
+                        help="skip the backup process")
+    parser.set_defaults(backup=True)
 
     return parser
 
@@ -51,17 +54,18 @@ def main(argv):
         return -1
 
     # Back up provider data
-    resp = couch._back_up_data(ingestion_doc)
+    if args.backup:
+        resp = couch._back_up_data(ingestion_doc)
 
-    if resp == -1:
-        # Fatal error, do not continue with save process
-        kwargs = {
-            "save_process/status": "error",
-            "save_process/end_time": datetime.now().isoformat(),
-            "save_process/error": "Error backing up DPLA records"
-        }
-        couch.update_ingestion_doc(ingestion_doc, **kwargs)
-        return resp
+        if resp == -1:
+            # Fatal error, do not continue with save process
+            kwargs = {
+                "save_process/status": "error",
+                "save_process/end_time": datetime.now().isoformat(),
+                "save_process/error": "Error backing up DPLA records"
+            }
+            couch.update_ingestion_doc(ingestion_doc, **kwargs)
+            return resp
 
     error_msg = None
     enrich_dir = getprop(ingestion_doc, "enrich_process/data_dir")
