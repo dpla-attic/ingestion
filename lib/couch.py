@@ -390,20 +390,28 @@ class Couch(object):
                 "start_time": None,
                 "end_time": None,
                 "data_dir": None,
-                "error": None
+                "error": None,
+                "total_items": None,
+                "total_collections": None 
             },
             "enrich_process": {
                 "status": None,
                 "start_time": None,
                 "end_time": None,
                 "data_dir": None,
-                "error": None
+                "error": None,
+                "total_items": None,
+                "total_collections": None,
+                "missing_id": None,
+                "missing_source_resource": None
             },
             "save_process": {
                 "status": None,
                 "start_time": None,
                 "end_time": None,
-                "error": None
+                "error": None,
+                "total_items": None,
+                "total_collections": None
             },
             "delete_process": {
                 "status": None,
@@ -417,7 +425,19 @@ class Couch(object):
                 "end_time": None,
                 "error": None
             },
+            "poll_storage_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None,
+                "total_enriched": None,
+                "total_items": None,
+                "total_collections": None,
+                "missing_id": None,
+                "missing_source_resource": None
+            }
         }
+
         # Set the ingestion sequence
         latest_ingestion_doc = self._get_last_ingestion_doc_for(provider)
         if latest_ingestion_doc is None:

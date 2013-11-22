@@ -2,11 +2,7 @@
 """
 Script to enrich data from JSON files
 
-Expected JSON structure:
-{
-    "records": <A list of records>,
-    "collection": <An empty string or a dictionary>
-}
+Expected JSON structure: Array of objects
 
 Usage:
     $ python enrich_records.py ingestion_document_id
@@ -53,7 +49,13 @@ def main(argv):
     kwargs = {
         "enrich_process/status": "running",
         "enrich_process/data_dir": enrich_dir,
-        "enrich_process/start_time": datetime.now().isoformat()
+        "enrich_process/start_time": datetime.now().isoformat(),
+        "enrich_process/end_time": None,
+        "enrich_process/error": None,
+        "enrich_process/total_items": None,
+        "enrich_process/total_collections": None,
+        "enrich_process/missing_id": None,
+        "enrich_process/missing_source_resource": None
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -74,11 +76,11 @@ def main(argv):
     error_msg = None
     fetch_dir = getprop(ingestion_doc, "fetch_process/data_dir")
 
-    # Countes for logger info
-    total_items = 0
-    total_colls = 0
+    # Counts for logger info
     enriched_items = 0
     enriched_colls = 0
+    missing_id = 0
+    missing_source_resource = 0
 
     file_count = 0
     files = os.listdir(fetch_dir)
@@ -108,19 +110,19 @@ def main(argv):
         enriched_records = data["enriched_records"]
 
         # Update counts
-        total_items += data["item_count"]
-        total_colls += data["coll_count"]
         enriched_items += data["enriched_item_count"]
         enriched_colls += data["enriched_coll_count"]
+        missing_id += data["missing_id_count"]
+        missing_source_resource += data["missing_source_resource_count"]
 
         # Write enriched data to file
         with open(os.path.join(enrich_dir, filename), "w") as f:
             f.write(json.dumps(enriched_records))
 
-    logger.info("Item records enriched: %s of %s" % (enriched_items,
-                                                     total_items))
-    logger.info("Collection records enriched: %s of %s" % (enriched_colls,
-                                                           total_colls))
+    print "Enriched items: %s" % enriched_items
+    print "Enriched collections: %s" % enriched_colls
+    print "Missing ID: %s" % missing_id
+    print "Missing sourceResource: %s" % missing_source_resource
 
     # Update ingestion document
     if error_msg is not None:
@@ -130,7 +132,11 @@ def main(argv):
     kwargs = {
         "enrich_process/status": status,
         "enrich_process/error": error_msg,
-        "enrich_process/end_time": datetime.now().isoformat()
+        "enrich_process/end_time": datetime.now().isoformat(),
+        "enrich_process/total_items": enriched_items,
+        "enrich_process/total_collections": enriched_colls,
+        "enrich_process/missing_id": missing_id,
+        "enrich_process/missing_source_resource": missing_source_resource
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)

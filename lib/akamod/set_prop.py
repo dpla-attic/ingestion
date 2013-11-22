@@ -16,6 +16,8 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
     prop -- the prop to set
     value -- the value to set prop to
     condition_prop -- (optional) the field that must exist to set the prop
+    condition_value -- (optional, if condition_prop set) the value that
+                       condition_prop must have to set the prop
     
     """
 
@@ -35,10 +37,21 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
             except Exception, e:
                 logger.error("Unable to parse set_prop value: %s" % e)
 
-        # If there is no condition_prop, set the prop, creating it if it does
-        #not exist. If there is a condition_prop, only set the prop if the
-        # condition_prop exists.
-        if not condition_prop or exists(data, condition_prop):
+        def _set_prop():
+            """Returns true if
+
+               1. The condition_prop is not set OR
+               2. The condition_prop is set and exists and the condition_value
+                  is None OR
+               3. The condition_prop is set and exists, the condition_value is
+                  set, and the value of condition_prop equals condition_value
+            """
+            return (not condition_prop or
+                    (exists(data, condition_prop) and
+                     (not condition_value or
+                      getprop(data, condition_prop) == condition_value)))
+
+        if _set_prop():
             setprop(data, prop, value)
 
     return json.dumps(data)
