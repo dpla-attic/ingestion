@@ -144,11 +144,11 @@ def parse_date_or_range(d):
                     a = robust_date_parser(d)
                     b = robust_date_parser(d)
         elif "" in d.split(delim):
-            # ie 1970- or -1970
+            # ie 1970- or -1970 (but not 19uu- nor -19uu)
             s = d.split(delim)
-            if len(s[0]) == 4:
+            if len(s[0]) == 4 and "u" not in s[0]:
                 a, b = s[0], None
-            elif len(s[1]) == 4:
+            elif len(s[1]) == 4 and "u" not in s[1]:
                 a, b = None, s[1]
             else:
                 a, b = None, None
@@ -197,8 +197,7 @@ def parse_date_or_range(d):
 
 def remove_brackets_and_strip(d):
     """Removed brackets from the date (range)."""
-    return re.sub(r"(^\s*\[\s*|\s*\]\s*$)", '', d).strip()
-
+    return d.replace("[", "").replace("]", "").strip()
 
 def test_parse_date_or_range():
     DATE_TESTS = {

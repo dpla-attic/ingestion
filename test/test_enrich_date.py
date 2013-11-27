@@ -757,5 +757,29 @@ def test_invalid_end_dates():
     for date in INPUT["date"]:
         assert date == EXPECTED
 
+def test_enrich_dates_square_brackets():
+    """Should remove square brackets"""
+    INPUT = {"date": "[199?]-"}
+    EXPECTED = {"date": {"begin": "1990", "end": "1999", "displayDate": "199?-"}}
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    assert_same_jsons(EXPECTED, content)
+
+def test_enrich_dates_range_with_u():
+    """Should not set begin and/or end if 'u' characters in date"""
+    INPUT = [{"date": "18uu-"}, {"date": "-18uu"}, {"date": "18uu-199uu"}]
+    EXPECTED = {"date": {"begin": None, "end": None}}
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    for i in range(len(INPUT)):
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT[i]))
+        assert str(resp.status).startswith("2")
+        EXPECTED["date"]["displayDate"] = INPUT[i]["date"]
+        assert_same_jsons(EXPECTED, content)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
