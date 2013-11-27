@@ -9,6 +9,7 @@ import xmltodict
 import ConfigParser
 import itertools as it
 from urllib import urlencode
+from datetime import datetime
 from amara.thirdparty import json
 from amara.thirdparty import httplib2
 from amara.lib.iri import is_absolute
@@ -287,7 +288,9 @@ class AbsoluteURLFetcher(Fetcher):
         self.get_sets_url = profile.get("get_sets_url")
         self.get_records_url = profile.get("get_records_url")
         self.endpoint_url_params = profile.get("endpoint_url_params")
-        super(AbsoluteURLFetcher, self).__init__(profile, uri_base, config_file)
+        self.retry = []
+        super(AbsoluteURLFetcher, self).__init__(profile, uri_base,
+                                                 config_file)
 
     def extract_content(self, content, url):
         """Calls extract_xml_content by default but can be overriden in
@@ -344,8 +347,8 @@ class AbsoluteURLFetcher(Fetcher):
         self.set_collections()
         if not self.collections:
             self.response["errors"] = "If sets are not supported then the " + \
-                                     "sets field in the profile must be set " \
-                                     "to \"NotSupported\""
+                                      "sets field in the profile must be " + \
+                                      "set to \"NotSupported\""
             yield self.response
 
         # Create records of ingestType "collection"
@@ -405,11 +408,28 @@ class AbsoluteURLFetcher(Fetcher):
         # Last yield
         if self.response["errors"] or self.response["records"]:
             yield self.response
+            self.reset_response()
+
+        # Retry fetches, if any
+        if self.retry:
+            print >> sys.stderr, "Retrying %s fetches..." % \
+                                 len(self.retry)
+            for error, records in self.retry_fetches():
+                self.response["errors"].extend(error)
+                self.response["records"].extend(records)
+
+                if len(self.response["records"]) >= self.batch_size:
+                    yield self.response
+                    self.reset_response()
+
+            if self.response["errors"] or self.response["records"]:
+                yield self.response
 
 class IAFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):
         super(IAFetcher, self).__init__(profile, uri_base, config_file)
         self.count = 0
+        self.retry_fetch_ids = []
         self.get_file_url = profile.get("get_file_url")
         self.prefix_files = profile.get("prefix_files")
         self.prefix_meta = profile.get("prefix_meta")
@@ -504,7 +524,10 @@ class IAFetcher(AbsoluteURLFetcher):
             try:
                 record = (self.queue.get(block=False))
                 count += 1
-                if isinstance(record, basestring):
+                if record is None:
+                    # None values are due to fetches that are to be retried
+                    pass
+                elif isinstance(record, basestring):
                     errors.append(record)
                 else:
                     records.append(record)
@@ -524,13 +547,51 @@ class IAFetcher(AbsoluteURLFetcher):
             yield errors, records, request_more
             print "Fetched %s of %s" % (read_records + count, total_records)
 
-    def fetch_record(self, id):
-        """Fetches a record and places it in the queue"""
+    def retry_fetches(self):
+        """Runs the functions in self.retry
+
+           Yields a list of records and errors, if any
+        """
+        errors = []
+        records = []
+
+        for func, kwargs in self.retry:
+            record = func(**kwargs)
+            if isinstance(record, basestring):
+                errors.append(record)
+            else:
+                records.append(record)
+
+            yield errors, records
+            errors = []
+            records = []
+
+    def get_file_url_content(self, id):
         file_url = self.get_file_url.format(id,
                                             self.prefix_files.format(id))
-        error, content = self.request_then_extract_xml(file_url)
+
+        return self.request_then_extract_xml(file_url)
+
+    def get_meta_url_content(self, id, meta):
+        meta_url = self.get_file_url.format(id, meta)
+
+        return self.request_then_extract_xml(meta_url)
+
+    def get_marc_url_content(self, id, marc):
+        marc_url = self.get_file_url.format(id, marc)
+
+        return self.request_then_extract_xml(marc_url)
+
+    def fetch_record(self, id, retry=True):
+        """Fetches a record and places it in the queue"""
+        error, content = self.get_file_url_content(id)
         if error is not None:
-            return error
+            if retry:
+                self.retry.append((self.fetch_record,
+                                   {"id": id, "retry": False}))
+                return None
+            else:
+                return error
 
         files_content = content["files"]
         record_data = {
@@ -566,19 +627,24 @@ class IAFetcher(AbsoluteURLFetcher):
             "_id":  id
         }
 
-        meta_url = self.get_file_url.format(id, record_data["meta"])
-        error, content = self.request_then_extract_xml(meta_url)
+        error, content = self.get_meta_url_content(id, record_data["meta"])
         if error is not None:
-            return error
+            if retry:
+                self.retry.append((fetch_record, {"id": id, "retry": False}))
+                return None
+            else:
+                return error
         record.update(content)
 
         if record_data["marc"]:
-            marc_url = self.get_file_url.format(
-                           id, record_data["marc"]
-                       )
-            error, content = self.request_then_extract_xml(marc_url)
+            error, content = self.get_marc_url_content(id, record_data["marc"])
             if error is not None:
-                return error
+                if retry:
+                    self.retry.append((fetch_record,
+                                      {"id": id, "retry": False}))
+                    return None
+                else:
+                    return error
             record.update(content)
 
         return record
@@ -586,17 +652,40 @@ class IAFetcher(AbsoluteURLFetcher):
     def queue_fetch_response(self, response): 
         try:
             self.queue.put(response, block=False)
-        except Exception, e:
-            print "Error: %s" % e
+        except:
+            print "Error putting fetch_record response in queue: %s" % response
 
 class MWDLFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):
+        self.total_records = None
         super(MWDLFetcher, self).__init__(profile, uri_base, config_file)
+
+    def retry_fetches(self):
+        """Retries failed fetch attemps and yield any errors and records"""
+        records = []
+        for func, kwargs in self.retry:
+            error, content = func(**kwargs)
+            if error is not None:
+                yield [error], records
+                continue
+
+            error, content = self.extract_content(content, kwargs["url"])
+            if error is not None:
+                yield [error], records
+            else:
+                for error, records, request_more in \
+                    self.request_records(content, retry=False):
+                    if records:
+                        self.add_provider_to_item_records(records)
+                        self.add_collection_to_item_records(set, records)
+
+                    yield filter(None, [error]), records
 
     def mwdl_extract_records(self, content):
         error = None
-        total_records = getprop(content,
-                                "SEGMENTS/JAGROOT/RESULT/DOCSET/TOTALHITS")
+        if not self.total_records:
+            total_records_prop = "SEGMENTS/JAGROOT/RESULT/DOCSET/TOTALHITS"
+            self.total_records = getprop(content, total_records_prop)
         records = getprop(content, "SEGMENTS/JAGROOT/RESULT/DOCSET/DOC")
 
         if records:
@@ -605,17 +694,36 @@ class MWDLFetcher(AbsoluteURLFetcher):
                 record["_id"] = getprop(record,
                                         "PrimoNMBib/record/control/recordid")
         else:
-            error = "No records found in MWDL content"
+            records = []
+            error = getprop(content, "SEGMENTS/JAGROOT/RESULT/ERROR/MESSAGE")
+            if not error:
+                error = "No records found in MWDL content: %s" % content
 
-        return error, total_records, records
+        return error, records
 
-    def request_records(self, content):
+    def request_records(self, content, retry=True):
         request_more = True
-        error, total_records, records = self.mwdl_extract_records(content)
-        self.endpoint_url_params["indx"] += len(records)
-        print "Fetched %s of %s" % (self.endpoint_url_params["indx"],
-                                    total_records)
-        request_more = (int(total_records) >=
+        error, records = self.mwdl_extract_records(content)
+        if error:
+            if retry:
+                print >> sys.stderr, "Error at indx %s: %s" % \
+                                      (self.endpoint_url_params["indx"], error)
+                self.retry.append((self.request_content_from,
+                                   {"url": self.endpoint_url,
+                                    "params": self.endpoint_url_params}))
+            else:
+                error = "Error at index %s: %s" % \
+                        (self.endpoint_url_params["indx"],
+                         error)
+
+            # Go on to the next indx
+            bulk_size = self.endpoint_url_params["bulkSize"]
+            self.endpoint_url_params["indx"] += bulk_size
+        else:
+            self.endpoint_url_params["indx"] += len(records)
+            print "Fetched %s of %s" % (self.endpoint_url_params["indx"] - 1,
+                                        self.total_records)
+        request_more = (int(self.total_records) >=
                         int(self.endpoint_url_params["indx"]))
 
         yield error, records, request_more

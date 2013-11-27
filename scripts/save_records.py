@@ -45,7 +45,10 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "save_process/status": "running",
-        "save_process/start_time": datetime.now().isoformat()
+        "save_process/start_time": datetime.now().isoformat(),
+        "save_process/end_time": None,
+        "save_process/error": None,
+        "save_process/total_saved": None
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -69,7 +72,8 @@ def main(argv):
 
     error_msg = None
     enrich_dir = getprop(ingestion_doc, "enrich_process/data_dir")
-    total_saved_documents = 0
+    total_items = 0
+    total_collections = 0
     docs = {}
     for file in os.listdir(enrich_dir):
         filename = os.path.join(enrich_dir, file)
@@ -86,10 +90,16 @@ def main(argv):
             resp, error_msg = couch.process_and_post_to_dpla(docs,
                                                              ingestion_doc)
             if resp == -1:
+                docs = None
                 break
 
-            total_saved_documents += len(docs)
-            print "Saved %s documents" % total_saved_documents
+            items = len([doc for doc in docs.values() if
+                         doc.get("ingestType") == "item"])
+            total_items += items
+            total_collections += len(docs) - items
+            print "Saved %s documents" % (total_items + total_collections)
+
+            # Set docs for the next iteration
             docs = file_docs
         else:
             docs.update(file_docs)
@@ -99,11 +109,14 @@ def main(argv):
         resp, error_msg = couch.process_and_post_to_dpla(docs,
                                                          ingestion_doc)
         if resp != -1:
-            total_saved_documents += len(docs)
-            print "Saved %s documents" % total_saved_documents
+            items = len([doc for doc in docs.values() if
+                         doc.get("ingestType") == "item"])
+            total_items += items
+            total_collections += len(docs) - items
+            print "Saved %s documents" % (total_items + total_collections)
 
-    logger.info("Total documents saved: %s (*includes duplicate collections)" %
-                total_saved_documents)
+    print "Total items: %s" % total_items
+    print "Total collections: %s" % total_collections
 
     if error_msg:
         status = "error"
@@ -112,7 +125,9 @@ def main(argv):
     kwargs = {
         "save_process/status": status,
         "save_process/error": error_msg,
-        "save_process/end_time": datetime.now().isoformat()
+        "save_process/end_time": datetime.now().isoformat(),
+        "save_process/total_items": total_items,
+        "save_process/total_collections": total_collections
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)

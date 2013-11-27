@@ -50,19 +50,17 @@ def enrich(body, ctype):
     records = json.loads(body)
 
     # Counts for enrich script
-    coll_count = 0
-    item_count = 0
     enriched_coll_count = 0
     enriched_item_count = 0
+    missing_id_count = 0
+    missing_source_resource_count = 0
 
     enriched_records = {}
     for record in records:
         if record.get("ingestType") == "collection":
-            coll_count += 1
             wsgi_header = "HTTP_PIPELINE_COLL"
             enrichments = coll_enrichments
         else:
-            item_count += 1
             wsgi_header = "HTTP_PIPELINE_ITEM"
             enrichments = item_enrichments
             # Preserve record prior to any enrichments
@@ -82,6 +80,7 @@ def enrich(body, ctype):
                 enriched_record):
                 logger.error("Records %s does not have sourceResource: %s" %
                              (enriched_record["_id"], enriched_record))
+                missing_source_resource_count += 1
             else:
                 enriched_records[enriched_record["_id"]] = enriched_record
                 if ingest_type == "item":
@@ -90,13 +89,14 @@ def enrich(body, ctype):
                     enriched_coll_count += 1
         else:
             logger.error("Found a record without an _id %s" % enriched_record)
+            missing_id_count += 1
 
     data = {
         "enriched_records": enriched_records,
-        "coll_count": coll_count,
-        "item_count": item_count,
         "enriched_coll_count": enriched_coll_count,
-        "enriched_item_count": enriched_item_count
+        "enriched_item_count": enriched_item_count,
+        "missing_id_count": missing_id_count,
+        "missing_source_resource_count": missing_source_resource_count
     }
 
     return json.dumps(data)
@@ -105,18 +105,53 @@ def enrich(body, ctype):
                 "enrich_storage", "application/json")
 def enrich_storage(body, ctype):
     """Establishes a pipeline of services identified by an ordered list of URIs
-       provided in request header "Pipeline-Rec"
+       provided in request header "Pipeline-Item"
     """
 
     request_headers = copy_headers_to_dict(request.environ)
     rec_enrichments = request_headers.get(u"Pipeline-Item","").split(",")
 
-    data = json.loads(body)
+    records = json.loads(body)
 
-    docs = {}
-    for record in data:
-        doc_text = pipe(record, ctype, rec_enrichments, "HTTP_PIPELINE_ITEM")
-        doc = json.loads(doc_text)
-        docs[doc["_id"]] = doc
+    # Counts
+    enriched_coll_count = 0
+    enriched_item_count = 0
+    missing_id_count = 0
+    missing_source_resource_count = 0
+
+    enriched_records = {}
+    for record in records:
+        enriched_record_text = pipe(record, ctype, rec_enrichments,
+                                    "HTTP_PIPELINE_ITEM")
+        enriched_record = json.loads(enriched_record_text)
+
+        if enriched_record.get("_id", None):
+            ingest_type = enriched_record.get("ingestType")
+            # Item records should have sourceResource
+            if (ingest_type == "item" and not
+                "sourceResource" in enriched_record):
+                logger.error("Record %s does not have sourceResource: %s" %
+                             (enriched_record["_id"], enriched_record))
+                missing_source_resource_count += 1
+            else:
+                enriched_records[enriched_record["_id"]] = enriched_record
+                if ingest_type == "item":
+                    enriched_item_count += 1
+                else:
+                    enriched_coll_count += 1
+        else:
+            logger.error("Found a record without an _id %s" % enriched_record)
+            missing_id_count += 1
+
+    data = {
+        "enriched_records": enriched_records,
+        "enriched_coll_count": enriched_coll_count,
+        "enriched_item_count": enriched_item_count,
+        "missing_id_count": missing_id_count,
+        "missing_source_resource_count": missing_source_resource_count
+    }
+
+    return json.dumps(data)
+
 
     return json.dumps(docs)

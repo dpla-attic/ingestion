@@ -41,12 +41,14 @@ class Couch(object):
             dashboard_db_name = config.get("CouchDb", "DashboardDatabase")
             views_directory = config.get("CouchDb", "ViewsDirectory")
             batch_size = config.get("CouchDb", "BatchSize")
+            log_level = config.get("CouchDb", "LogLevel")
         else:
             server_url = kwargs.get("server_url")
             dpla_db_name = kwargs.get("dpla_db_name")
             dashboard_db_name = kwargs.get("dashboard_db_name")
             views_directory = kwargs.get("views_directory")
             batch_size = kwargs.get("batch_size")
+            log_level = "DEBUG"
 
         self.server_url = server_url
         self.server = Server(server_url)
@@ -62,7 +64,7 @@ class Couch(object):
             "%b %d %H:%M:%S")
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(log_level)
 
     def _get_db(self, name):
         """Return a database given the database name, creating the database
@@ -79,6 +81,8 @@ class Couch(object):
            them in the appropriate database, then build the views. 
         """
         build_views_from_file = ["dpla_db_all_provider_docs.js",
+                                 # Uncomment when QA views have been built
+                                 #"dpla_db_qa_reports.js",
                                  "dashboard_db_all_provider_docs.js",
                                  "dashboard_db_all_ingestion_docs.js"]
         if db_name == "dpla":
@@ -390,20 +394,28 @@ class Couch(object):
                 "start_time": None,
                 "end_time": None,
                 "data_dir": None,
-                "error": None
+                "error": None,
+                "total_items": None,
+                "total_collections": None 
             },
             "enrich_process": {
                 "status": None,
                 "start_time": None,
                 "end_time": None,
                 "data_dir": None,
-                "error": None
+                "error": None,
+                "total_items": None,
+                "total_collections": None,
+                "missing_id": None,
+                "missing_source_resource": None
             },
             "save_process": {
                 "status": None,
                 "start_time": None,
                 "end_time": None,
-                "error": None
+                "error": None,
+                "total_items": None,
+                "total_collections": None
             },
             "delete_process": {
                 "status": None,
@@ -417,7 +429,19 @@ class Couch(object):
                 "end_time": None,
                 "error": None
             },
+            "poll_storage_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None,
+                "total_enriched": None,
+                "total_items": None,
+                "total_collections": None,
+                "missing_id": None,
+                "missing_source_resource": None
+            }
         }
+
         # Set the ingestion sequence
         latest_ingestion_doc = self._get_last_ingestion_doc_for(provider)
         if latest_ingestion_doc is None:

@@ -36,7 +36,9 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "dashboard_cleanup_process/status": "running",
-        "dashboard_cleanup_process/start_time": datetime.now().isoformat()
+        "dashboard_cleanup_process/start_time": datetime.now().isoformat(),
+        "dashboard_cleanup_process/end_time": None,
+        "dashboard_cleanup_process/error": None
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)

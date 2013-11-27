@@ -3,7 +3,7 @@
     "type": "mwdl",
     "endpoint_url": "http://thoth.library.utah.edu:1701/PrimoWebServices/xservice/search/brief?institution=MWDL&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources",
     "endpoint_url_params": {
-        "indx": 0,
+        "indx": 1,
         "bulkSize": 1000
     },
     "sets": "NotSupported",

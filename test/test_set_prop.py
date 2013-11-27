@@ -2,23 +2,15 @@ import sys
 from server_support import server, print_error_log
 from amara.thirdparty import httplib2
 from amara.thirdparty import json
+from urllib import urlencode
 
 CT_JSON = {"Content-Type": "application/json"}
 
 H = httplib2.Http()
 
-def _get_server_response(body, action="set", prop=None, value=None,
-                         condition_prop=None, condition=None, _dict=None):
-    url = server() + "%s_prop?prop=%s" % (action, prop)
-    if value:
-        url = "%s&value=%s" % (url, value)
-    if condition_prop:
-        url = "%s&condition_prop=%s" % (url, condition_prop)
-    if condition:
-        url = "%s&condition=%s" % (url, condition)
-    if _dict:
-        url = "%s&_dict=%s" % (url, _dict)
-    print >> sys.stderr, url
+def _get_server_response(body, action="set", **kwargs):
+    url = server() + "%s_prop?%s" % (action, urlencode(kwargs))
+
     return H.request(url, "POST", body=body, headers=CT_JSON)
 
 def test_set_prop1():
@@ -140,9 +132,8 @@ def test_set_prop5():
 def test_set_prop6():
     """Should parse value as JSON before setting the prop"""
     prop = "provider"
-    value = "%7B%22%40id%22%3A%22http%3A%2F%2Fdp.la%2Fapi%2Fcontributor%2F" + \
-            "scdl-clemson%22%2C%22name%22%3A%22South%20Carolina%20Digital%" + \
-            "20Library%22%7D"
+    value = '{"@id": "http://dp.la/api/contributor/scdl-clemson",' + \
+            '"name": "South Carolina Digital Library"}'
     INPUT = {
         "key1": "value1"
     }
@@ -156,6 +147,51 @@ def test_set_prop6():
 
     resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
                                         value=value, _dict=True)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_set_prop7():
+    """Should not set prop since condition_prop's value != condition_value"""
+    prop = "provider"
+    value = "provider"
+    condition_prop = "ingestType"
+    condition_value = "item"
+    INPUT = {
+        "key1": "value1",
+        "ingestType": "collection"
+    }
+    EXPECTED = {
+        "key1": "value1",
+        "ingestType": "collection"
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+                                        value=value,
+                                        condition_prop=condition_prop,
+                                        condition_value=condition_value)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_set_prop8():
+    """Should set prop since condition_prop's value == condition_value"""
+    prop = "provider"
+    value = "provider"
+    condition_prop = "ingestType"
+    condition_value = "item"
+    INPUT = {
+        "key1": "value1",
+        "ingestType": "item"
+    }
+    EXPECTED = {
+        "key1": "value1",
+        "ingestType": "item",
+        "provider": "provider"
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
+                                        value=value,
+                                        condition_prop=condition_prop,
+                                        condition_value=condition_value)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
@@ -214,7 +250,6 @@ def test_unset_prop2():
     resp,content = _get_server_response(json.dumps(INPUT), action=action,
         prop=prop, condition=condition)
     assert resp.status == 200
-    print_error_log()
     assert json.loads(content) == EXPECTED
 
 def test_unset_prop3():
@@ -286,7 +321,7 @@ def test_unset_prop6():
     action = "unset"
     prop = "_id"
     condition = "hathi_exclude"
-    condition_prop = "dataProvider%2CsourceResource%2Ftype"
+    condition_prop = "dataProvider,sourceResource/type"
 
     INPUT = {
         "_id": "12345",
@@ -304,7 +339,6 @@ def test_unset_prop6():
 
     resp, content = _get_server_response(json.dumps(INPUT), action=action,
         prop=prop, condition=condition, condition_prop=condition_prop)
-    print_error_log()
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
    
@@ -314,7 +348,7 @@ def test_unset_prop7():
     action = "unset"
     prop = "_id"
     condition = "hathi_exclude"
-    condition_prop = "dataProvider%2CsourceResource%2Ftype"
+    condition_prop = "dataProvider,sourceResource/type"
 
     INPUT = {
         "_id": "12345",
@@ -326,7 +360,6 @@ def test_unset_prop7():
 
     resp, content = _get_server_response(json.dumps(INPUT), action=action,
         prop=prop, condition=condition, condition_prop=condition_prop)
-    print_error_log()
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
@@ -335,7 +368,7 @@ def test_unset_prop8():
     action = "unset"
     prop = "_id"
     condition = "hathi_exclude"
-    condition_prop = "dataProvider%2CsourceResource%2Ftype"
+    condition_prop = "dataProvider,sourceResource/type"
 
     INPUT = {
         "_id": "12345",
@@ -347,7 +380,6 @@ def test_unset_prop8():
 
     resp, content = _get_server_response(json.dumps(INPUT), action=action,
         prop=prop, condition=condition, condition_prop=condition_prop)
-    print_error_log()
     assert resp.status == 200
     assert json.loads(content) == INPUT
 

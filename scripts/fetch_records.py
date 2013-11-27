@@ -41,7 +41,11 @@ def main(argv):
     kwargs = {
         "fetch_process/status": "running",
         "fetch_process/data_dir": fetch_dir,
-        "fetch_process/start_time": datetime.now().isoformat()
+        "fetch_process/start_time": datetime.now().isoformat(),
+        "fetch_process/end_time": None,
+        "fetch_process/error": None,
+        "fetch_process/total_items": None,
+        "fetch_process/total_collections": None
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -56,7 +60,8 @@ def main(argv):
                              ingestion_doc["uri_base"], config_file)
 
     print "Fetching records for " + fetcher.provider
-    total_fetched_records = 0
+    total_items = 0
+    total_collections = 0
     for response in fetcher.fetch_all_data():
         if response["errors"]:
             error_msg.extend(iterify(response["errors"]))
@@ -66,10 +71,14 @@ def main(argv):
             filename = os.path.join(fetch_dir, str(uuid.uuid4()))
             with open(filename, "w") as f:
                 f.write(json.dumps(response["records"]))
-            total_fetched_records += len(response["records"])
-            print "%s records fetched" % total_fetched_records
 
-    logger.info("Total records fetched: %s" % total_fetched_records)
+            items = len([record for record in response["records"] if not
+                         record.get("ingestType") == "collection"])
+            total_items += items
+            total_collections += len(response["records"]) - items
+
+    print "Total items: %s" % total_items
+    print "Total collections: %s" % total_collections
 
     # Update ingestion document
     try:
@@ -83,7 +92,9 @@ def main(argv):
     kwargs = {
         "fetch_process/status": status,
         "fetch_process/error": error_msg,
-        "fetch_process/end_time": datetime.now().isoformat()
+        "fetch_process/end_time": datetime.now().isoformat(),
+        "fetch_process/total_items": total_items,
+        "fetch_process/total_collections": total_collections
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
