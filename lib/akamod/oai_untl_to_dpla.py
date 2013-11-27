@@ -346,18 +346,6 @@ def identifier_transform(d, p):
         if qualifier == "license":
             identifier.append("%s: %s" % (qualifier, text))
 
-    # Add rights values as well
-    rights = getprop(d, META + "rights", True)
-    if rights is not None:
-        for s in iterify(rights):
-            try:
-                qualifier = s.get("qualifier")
-                text = s.get("#text")
-            except:
-                continue
-            if qualifier == "statement":
-                identifier.append("%s: %s" % (qualifier, text))
-
     return {"identifier": identifier} if identifier else {}
 
 def spatial_transform(d, p):
