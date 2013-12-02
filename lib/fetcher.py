@@ -982,19 +982,19 @@ class NARAFetcher(FileFetcher):
                 record["_id"] = record["arc-id"]
 
                 hier_items = getprop(record, "hierarchy/hierarchy-item")
-                # Keep records whose "hierarchy-item-lod" is "record group"
+                # Placeholder collection id and title
+                coll_id = "placeholder"
+                coll_title = ""
+                # Check if record has a collection
                 for hitem in iterify(hier_items):
-                    if hitem["hierarchy-item-lod"].lower() == "record group":
-                        hid = hitem["hierarchy-item-id"]
-                        title = hitem["hierarchy-item-title"]
-                        self.create_collection_record(hid, title)
-                        self.add_collection_to_item_record(hid, record)
-                        # Append record
-                        records.append(record)
+                    if hitem["hierarchy-item-lod"].lower() in ("record group",
+                                                               "collection"):
+                        coll_id = hitem["hierarchy-item-id"]
+                        coll_title = hitem["hierarchy-item-title"]
                         break
-                if not records:
-                    errors.append("Record does not have a hierarchy-item-lod" +
-                                  " of 'record group' in file %s" % file_path)
+                self.create_collection_record(coll_id, coll_title)
+                self.add_collection_to_item_record(coll_id, record)
+                records.append(record)
             except:
                 errors.append("Could not find 'arc_id' in file %s" % file_path)
         else:
@@ -1070,8 +1070,11 @@ class EDANFetcher(FileFetcher):
 
                     set_names = record["freetext"].get("setName")
                     if set_names is None:
-                        # Exclude records with no setName
-                        continue
+                        # Placeholder collection
+                        title = ""
+                        hid = "placeholder"
+                        self.create_collection_record(hid, title)
+                        self.add_collection_to_item_record(hid, record)
                     else:
                         for set in iterify(set_names):
                             title = set["#text"]
