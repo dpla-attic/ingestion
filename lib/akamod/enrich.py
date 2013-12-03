@@ -12,6 +12,7 @@ H.force_exception_as_status_code = True
 # FIXME: should support changing media type in a pipeline
 def pipe(content, ctype, enrichments, wsgi_header):
     body = json.dumps(content)
+    error = None
     for uri in enrichments:
         if not uri: continue # in case there's no pipeline
         if not is_absolute(uri):
@@ -26,12 +27,13 @@ def pipe(content, ctype, enrichments, wsgi_header):
         logger.debug("Calling url: %s " % uri)
         resp, cont = H.request(uri, "POST", body=body, headers=headers)
         if not str(resp.status).startswith("2"):
-            logger.warn("Error in enrichment pipeline at %s: %s" % 
-                        (uri, repr(resp)))
-            continue
+            error = "Error in enrichment pipeline at %s: %s" % (uri, cont)
+            logger.error(error)
+            break
+
         body = cont
 
-    return body
+    return error, body
 
 @simple_service("POST", "http://purl.org/la/dp/enrich", "enrich",
                 "application/json")
@@ -55,6 +57,7 @@ def enrich(body, ctype):
     missing_id_count = 0
     missing_source_resource_count = 0
 
+    errors = []
     enriched_records = {}
     for record in records:
         if record.get("ingestType") == "collection":
@@ -69,8 +72,11 @@ def enrich(body, ctype):
 
         record["ingestDate"] = datetime.datetime.now().isoformat()
 
-        enriched_record_text = pipe(record, ctype, enrichments, wsgi_header)
+        error, enriched_record_text = pipe(record, ctype, enrichments,
+                                           wsgi_header)
         enriched_record = json.loads(enriched_record_text)
+        if error:
+            errors.append(error)
 
         ingest_type = record.get("ingestType")
         # Enriched record should have an _id
@@ -88,7 +94,6 @@ def enrich(body, ctype):
                 else:
                     enriched_coll_count += 1
         else:
-            logger.error("Found a record without an _id %s" % enriched_record)
             missing_id_count += 1
 
     data = {
@@ -96,7 +101,8 @@ def enrich(body, ctype):
         "enriched_coll_count": enriched_coll_count,
         "enriched_item_count": enriched_item_count,
         "missing_id_count": missing_id_count,
-        "missing_source_resource_count": missing_source_resource_count
+        "missing_source_resource_count": missing_source_resource_count,
+        "errors": errors
     }
 
     return json.dumps(data)

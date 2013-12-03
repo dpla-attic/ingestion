@@ -198,19 +198,23 @@ class oaiservice(object):
                         resumption_token = resumption_token.get("#text", "")
         else:
             doc = bindery.parse(url, model=LISTRECORDS_MODELS[metadataPrefix])
-            records, first_id = metadata_dict(generate_metadata(doc),
-                                            nesteddict=False)
-          
-            for id_, props in records:
+            recs, first_id = metadata_dict(generate_metadata(doc),
+                                           nesteddict=False)
+
+            records = []
+            for id_, props in recs:
                 for k, v in props.iteritems():
                     props[k] = [ U(item) for item in v ]
+                if "deleted" in props.get("status", ""):
+                    self.logger.info("Record deleted")
+                else:
+                    records.append((id_, props))
             if (doc.OAI_PMH.ListRecords is not None) and (doc.OAI_PMH.ListRecords.resumptionToken is not None):
                 resumption_token = U(doc.OAI_PMH.ListRecords.resumptionToken)
 
         return {'records': records, 'resumption_token': resumption_token,
                 'error': error}
 
-#
 OAI_LISTSETS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
   <responseDate>2011-03-14T18:26:05Z</responseDate>
@@ -239,7 +243,7 @@ OAI_DC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
   <request verb="ListRecords" set="hdl_1721.1_18193" metadataPrefix="oai_dc">http://dspace.mit.edu/oai/request</request>
   <ListRecords>
     <record ak:resource="o:header/o:identifier">
-      <header>
+      <header status="deleted" ak:rel="'status'" ak:value="@status">
         <identifier>oai:dspace.mit.edu:1721.1/27225</identifier>
         <datestamp ak:rel="local-name()" ak:value=".">2008-03-10T16:34:16Z</datestamp>
         <setSpec ak:rel="local-name()" ak:value=".">hdl_1721.1_18193</setSpec>

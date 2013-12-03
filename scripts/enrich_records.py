@@ -45,9 +45,10 @@ def main(argv):
         return -1
 
     # Update ingestion document
+    status = "running"
     enrich_dir = create_enrich_dir(ingestion_doc["provider"])
     kwargs = {
-        "enrich_process/status": "running",
+        "enrich_process/status": status,
         "enrich_process/data_dir": enrich_dir,
         "enrich_process/start_time": datetime.now().isoformat(),
         "enrich_process/end_time": None,
@@ -73,7 +74,7 @@ def main(argv):
         "Pipeline-Coll": ",".join(profile["enrichments_coll"])
     }
 
-    error_msg = None
+    errors = []
     fetch_dir = getprop(ingestion_doc, "fetch_process/data_dir")
 
     # Counts for logger info
@@ -91,7 +92,7 @@ def main(argv):
             try:
                 data = json.loads(f.read())
             except:
-                error_msg = "Error loading " + filepath
+                errors.append("Error loading " + filepath)
                 break
 
         # Enrich
@@ -101,9 +102,10 @@ def main(argv):
         resp, content = H.request(enrich_path, "POST", body=json.dumps(data),
                                   headers=headers)
         if not resp["status"].startswith("2"):
-            error_msg = "Error (status %s) enriching data from %s" % \
-                        (resp["status"], filepath)
-            print "Stopped enrichment process: " + error_msg
+            errors.append("Error (status %s) enriching data from %s" %
+                          (resp["status"], filepath))
+            print "Stopped enrichment process: %s" % errors
+            status = "error"
             break
 
         data = json.loads(content)
@@ -114,6 +116,7 @@ def main(argv):
         enriched_colls += data["enriched_coll_count"]
         missing_id += data["missing_id_count"]
         missing_source_resource += data["missing_source_resource_count"]
+        errors.extend(data["errors"])
 
         # Write enriched data to file
         with open(os.path.join(enrich_dir, filename), "w") as f:
@@ -125,13 +128,11 @@ def main(argv):
     print "Missing sourceResource: %s" % missing_source_resource
 
     # Update ingestion document
-    if error_msg is not None:
-        status = "error"
-    else:
+    if not status == "error":
         status = "complete"
     kwargs = {
         "enrich_process/status": status,
-        "enrich_process/error": error_msg,
+        "enrich_process/error": errors,
         "enrich_process/end_time": datetime.now().isoformat(),
         "enrich_process/total_items": enriched_items,
         "enrich_process/total_collections": enriched_colls,
@@ -145,8 +146,8 @@ def main(argv):
         return -1
 
     # Compress fetch directory, then delete
-    make_tarfile(fetch_dir)
-    shutil.rmtree(fetch_dir)
+    #make_tarfile(fetch_dir)
+    #shutil.rmtree(fetch_dir)
 
     return 0 if status == "complete" else -1
 
