@@ -226,7 +226,12 @@ class DplaBingGeocoder(geocoders.Bing):
         params = {'q': q.encode("utf8"),
                   'key': self.api_key }
         url = self.url % urlencode(params)
-        page = urlopen(url)
+        try:
+            page = urlopen(url)
+        except Exception, e:
+            logger.error("Geocode error, could not open URL: %s, error: %s" %
+                         (url, e))
+            return []
 
         if (not isinstance(page, basestring)):
             page = util.decode_page(page);

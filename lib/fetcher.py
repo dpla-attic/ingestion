@@ -179,10 +179,6 @@ class OAIVerbsFetcher(Fetcher):
                 error = "Error decoding content from URL %s with params %s" % \
                         (list_records_url, params)
 
-            if not records_content.get("items"):
-                error = "No records received from URL %s with params %s" % \
-                        (list_records_url, params)
-
         return error, records_content
 
     def add_collection_to_item_records(self, item_records):
