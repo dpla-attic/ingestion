@@ -37,7 +37,8 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
                     try:
                         v = delim.join(v)
                     except Exception as e:
-                        logger.error("Can't join on delim. ID: %s\n%s" % (data["_id"], str(e)))
+                        logger.warn("Can't join list %s on delim for %s, %s" %
+                                    (v, data["_id"], e))
                 if delim in v:
                     setprop(data, p, v)
                 else:

@@ -3,6 +3,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
+from dplaingestion.utilities import iterify
 import re
 
 @simple_service('POST', 'http://purl.org/la/dp/move_date_values',
@@ -47,16 +48,17 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
         remove = []
         toprop = getprop(data, to_prop) if exists(data, to_prop) else []
         
-        for v in (values if isinstance(values, list) else [values]):
-            c = cleanup(v)
-            for pattern in REGSEARCH:
-                m = re.compile(pattern, re.I).findall(c)
-                if len(m) == 1 and not re.sub(m[0], "", c).strip():
-                    if m[0] not in toprop:
-                        toprop.append(m[0])
-                    # Append the non-cleaned value to remove
-                    remove.append(v)
-                    break
+        for v in iterify(values):
+            if isinstance(v, basestring):
+                c = cleanup(v)
+                for pattern in REGSEARCH:
+                    m = re.compile(pattern, re.I).findall(c)
+                    if len(m) == 1 and not re.sub(m[0], "", c).strip():
+                        if m[0] not in toprop:
+                            toprop.append(m[0])
+                        # Append the non-cleaned value to remove
+                        remove.append(v)
+                        break
 
         if toprop:
             setprop(data, to_prop, toprop)
