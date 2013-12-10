@@ -472,7 +472,6 @@ def location_transform_bpl(d, p):
     location = iterify(getprop(d, p)) 
     format = _get_media_type(d)
     phys_location = None
-    sub_location = None
     out = {}
     try:
         for _dict in location:
@@ -489,13 +488,8 @@ def location_transform_bpl(d, p):
                                               "format": format}
             if phys_location is None:
                 phys_location = getprop(_dict, "physicalLocation", True)
-            if sub_location is None:
-                sub_location = getprop(_dict, "holdingSimple/" +
-                                       "copyInformation/subLocation", True)
         if phys_location is not None:
             out["dataProvider"] = phys_location
-            if sub_location is not None:
-                out["dataProvider"] += ". " + sub_location
     except Exception as e:
         logger.error(e)
     finally:
