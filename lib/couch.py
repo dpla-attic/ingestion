@@ -553,7 +553,8 @@ class Couch(object):
 
     def dashboard_cleanup(self, ingestion_doc):
         """Deletes a provider's dashboard item-level documents whose ingestion
-           sequence is not in the last three ingestions.
+           sequence is not in the last three ingestions along with the backup
+           database for that ingesiton sequence.
 
            Returns a status (-1 for error, 0 for success) along with the total
            number of documents deleted.
@@ -564,7 +565,7 @@ class Couch(object):
                      self._get_sorted_ingestion_docs_for(provider)]
         if len(sequences) <= 3:
             msg = "Ingestion docs do not exceed 3. No dashboard documents " + \
-                  "will be deleted."
+                  "or backup databases will be deleted."
             print >> sys.stderr, msg
             return (0, total_deleted)
         else:
@@ -575,6 +576,11 @@ class Couch(object):
                                                               ):
                     if not doc.get("type") == "ingestion":
                         delete_docs.append(doc)
+                    else:
+                        # Delete this ingestion document's backup database
+                        backup_db = doc.get("backupDB")
+                        if backup_db and backup_db in self.server:
+                            del self.server[backup_db]
 
                     # So as not to use too much memory at once, do the bulk
                     # posts and deletions in batches of batch_size

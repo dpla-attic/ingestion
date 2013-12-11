@@ -56,7 +56,8 @@ class CouchTest(Couch):
         for row in query:
             if "backupDB" in row["doc"]:
                 backup_db = row["doc"]["backupDB"]
-                del self.server[backup_db]
+                if backup_db in self.server:
+                    del self.server[backup_db]
 
     def _delete_all_test_databases(self):
         self._delete_all_test_backups()
@@ -283,6 +284,9 @@ def test_multiple_ingestions():
     assert total_dashboard_records == first_ingestion_dashboard_items + \
                                       second_ingestion_dashboard_items + \
                                       ingestions
+    # Verify second backup exists
+    second_backup = couch.dashboard_db[second_ingestion_doc_id]["backupDB"]
+    assert second_backup in couch.server
 
     # Verify only item-level documents for the most recent three ingestions
     # exist in the dashboard database
@@ -300,6 +304,10 @@ def test_multiple_ingestions():
                                       second_ingestion_dashboard_items + \
                                       third_ingestion_dashboard_items + \
                                       ingestions
+    # Verify second and third backups exist
+    third_backup = couch.dashboard_db[third_ingestion_doc_id]["backupDB"]
+    assert second_backup in couch.server
+    assert third_backup in couch.server
 
     # Verify only item-level documents for the most recent three ingestions
     # exist in the dashboard database
@@ -317,6 +325,11 @@ def test_multiple_ingestions():
                                       third_ingestion_dashboard_items + \
                                       fourth_ingestion_dashboard_items + \
                                       ingestions
+    # Verify second, third, and fourth backups exist
+    fourth_backup = couch.dashboard_db[fourth_ingestion_doc_id]["backupDB"]
+    assert second_backup in couch.server
+    assert third_backup in couch.server
+    assert fourth_backup in couch.server
 
     # Verify only item-level documents for the most recent three ingestions
     # exist in the dashboard database
@@ -334,6 +347,13 @@ def test_multiple_ingestions():
                                       fourth_ingestion_dashboard_items + \
                                       fifth_ingestion_dashboard_items + \
                                       ingestions
+    # Verify second backup was removed
+    assert second_backup not in couch.server
+    # Verify third, fourth, and fifth backups exist
+    fifth_backup = couch.dashboard_db[fifth_ingestion_doc_id]["backupDB"]
+    assert third_backup in couch.server
+    assert fourth_backup in couch.server
+    assert fifth_backup in couch.server
 
     # Verify count fields for each ingestion document
     assert couch.dashboard_db.get(first_ingestion_doc_id)["countAdded"] == 243
