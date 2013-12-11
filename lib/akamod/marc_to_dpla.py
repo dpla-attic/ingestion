@@ -482,7 +482,9 @@ def all_transform(d, p):
                                     # There may be multiple tag values (ie, two
                                     # 245a values), so we join them there.
                                     s.extend(values)
-                                    values = [" ".join(s)]
+                                    # Remove trailing period from first value
+                                    s[0] = re.sub("\.$", "", s[0].strip())
+                                    values = ["; ".join(s)]
                                 data["sourceResource"][prop][index] = values 
             if tag == "662":
                 # Test: Log document with 662 (spatial)
