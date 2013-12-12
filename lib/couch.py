@@ -240,27 +240,18 @@ class Couch(object):
         
         return fields_changed
 
-    def _get_ingestion_tempfile(self, ingestion_doc_id):
-        path = "/tmp"
-        filename = "%s_harvested_ids" % ingestion_doc_id
-        return os.path.join(path, filename)
-
-    def _write_harvested_ids_to_tempfile(self, ingestion_doc_id, ids):
-        with open(self._get_ingestion_tempfile(ingestion_doc_id), "a") as f:
-            [f.write(id+"\n") for id in ids]
-
-    def _get_all_harvested_ids_from_tempfile(self, ingestion_doc_id):
-        with open(self._get_ingestion_tempfile(ingestion_doc_id), "r") as f:
-            harvested_ids = f.readlines()
-        return [id.replace("\n", "") for id in harvested_ids]
-
-    def _get_last_ingestion_doc_for(self, provider_name):
-        last_ingestion_doc = None
+    def _get_sorted_ingestion_docs_for(self, provider_name):
         ingestion_docs = self._query_all_provider_ingestion_docs(provider_name)
         if len(ingestion_docs):
             # Sort by ingestionSequence
             ingestion_docs = sorted(ingestion_docs,
                                     key=lambda k: k["ingestionSequence"])
+        return ingestion_docs
+
+    def _get_last_ingestion_doc_for(self, provider_name):
+        last_ingestion_doc = None
+        ingestion_docs = self._get_sorted_ingestion_docs_for(provider_name)
+        if ingestion_docs:
             last_ingestion_doc = ingestion_docs[-1]
         return last_ingestion_doc
 
@@ -562,29 +553,34 @@ class Couch(object):
 
     def dashboard_cleanup(self, ingestion_doc):
         """Deletes a provider's dashboard item-level documents whose ingestion
-           sequence is not in the last three ingestions.
+           sequence is not in the last three ingestions along with the backup
+           database for that ingesiton sequence.
 
            Returns a status (-1 for error, 0 for success) along with the total
            number of documents deleted.
         """
         total_deleted = 0
-        curr_seq = int(ingestion_doc["ingestionSequence"])
-        if curr_seq <= 3:
-            msg = "Current ingestion sequence %s <= 3. " % curr_seq
-            msg += "No dashboard documents will be deleted."
+        provider = ingestion_doc["provider"]
+        sequences = [doc["ingestionSequence"] for doc in
+                     self._get_sorted_ingestion_docs_for(provider)]
+        if len(sequences) <= 3:
+            msg = "Ingestion docs do not exceed 3. No dashboard documents " + \
+                  "or backup databases will be deleted."
             print >> sys.stderr, msg
             return (0, total_deleted)
         else:
-            provider = ingestion_doc["provider"]
-            seq_to_delete = range(1, curr_seq-2)
-
             delete_docs = []
-            for seq in seq_to_delete:
+            for seq in sequences[:len(sequences) - 3]:
                 for doc in self._query_all_dashboard_prov_docs_by_ingest_seq(
                                                               provider, seq
                                                               ):
                     if not doc.get("type") == "ingestion":
                         delete_docs.append(doc)
+                    else:
+                        # Delete this ingestion document's backup database
+                        backup_db = doc.get("backupDB")
+                        if backup_db and backup_db in self.server:
+                            del self.server[backup_db]
 
                     # So as not to use too much memory at once, do the bulk
                     # posts and deletions in batches of batch_size
