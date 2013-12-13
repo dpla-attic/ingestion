@@ -27,9 +27,9 @@ def pipe(content, ctype, enrichments, wsgi_header):
         logger.debug("Calling url: %s " % uri)
         resp, cont = H.request(uri, "POST", body=body, headers=headers)
         if not str(resp.status).startswith("2"):
-            error = "Error in enrichment pipeline at %s: %s" % (uri, cont)
+            error = "Error in enrichment pipeline at %s" % uri
             logger.error(error)
-            break
+            continue
 
         body = cont
 
@@ -125,10 +125,14 @@ def enrich_storage(body, ctype):
     missing_id_count = 0
     missing_source_resource_count = 0
 
+    errors = []
     enriched_records = {}
     for record in records:
-        enriched_record_text = pipe(record, ctype, rec_enrichments,
-                                    "HTTP_PIPELINE_ITEM")
+        error, enriched_record_text = pipe(record, ctype, rec_enrichments,
+                                           "HTTP_PIPELINE_ITEM")
+        if error:
+            errors.append(error)
+
         enriched_record = json.loads(enriched_record_text)
 
         if enriched_record.get("_id", None):
@@ -154,7 +158,8 @@ def enrich_storage(body, ctype):
         "enriched_coll_count": enriched_coll_count,
         "enriched_item_count": enriched_item_count,
         "missing_id_count": missing_id_count,
-        "missing_source_resource_count": missing_source_resource_count
+        "missing_source_resource_count": missing_source_resource_count,
+        "errors": errors
     }
 
     return json.dumps(data)

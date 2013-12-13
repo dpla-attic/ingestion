@@ -123,7 +123,7 @@ def main(argv):
 
     # Fetch provider documents
     docs = []
-    error = None
+    errors = []
     total_enriched = 0
     enriched_items = 0
     enriched_colls = 0
@@ -139,6 +139,7 @@ def main(argv):
             docs = []
             if error is None:
                 # Update counts
+                errors.extend(data["errors"])
                 enriched_items += data["enriched_item_count"]
                 enriched_colls += data["enriched_coll_count"]
                 missing_id += data["missing_id_count"]
@@ -146,6 +147,7 @@ def main(argv):
                 total_enriched += len(data["enriched_records"])
                 print "Enriched %s" % total_enriched
             else:
+                errors.append(error)
                 break
             
     # Enrich last batch
@@ -154,6 +156,7 @@ def main(argv):
                                             couch)
         if error is None:
             # Update counts
+            errors.extend(data["errors"])
             enriched_items += data["enriched_item_count"]
             enriched_colls += data["enriched_coll_count"]
             missing_id += data["missing_id_count"]
@@ -161,8 +164,8 @@ def main(argv):
             total_enriched += len(data["enriched_records"])
             print "Enriched %s" % total_enriched
 
-    if error:
-        print "Error %s" % error
+    if errors:
+        print "Error %s" % errors
 
     # Update ingestion document
     kwargs = {
@@ -173,7 +176,7 @@ def main(argv):
         "poll_storage_process/total_collections":  enriched_colls,
         "poll_storage_process/missing_id": missing_id,
         "poll_storage_process/missing_source_resource": missing_source_resource,
-        "poll_storage_process/error": error,
+        "poll_storage_process/error": errors,
         "save_process/status": "complete"
     }
     try:
