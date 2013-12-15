@@ -8,7 +8,7 @@ from dplaingestion.selector import getprop, delprop
                 "compare_with_schema", "application/json")
 def comparewithschema(body, ctype):
     """
-    Service that accepts a JSON document and removes any fields not in listed
+    Service that accepts a JSON document and removes any fields not listed
     as part of the schema.
     """
 
@@ -34,7 +34,8 @@ def comparewithschema(body, ctype):
                 field_prefix = "sourceResource/"
             else:
                 data_keys = data.keys()
-                data_keys.remove("_id")
+                if "_id" in data_keys:
+                    data_keys.remove("_id")
                 field_prefix = ""
 
             # Remove any keys in the document that are not found in the schema
