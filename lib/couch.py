@@ -425,7 +425,6 @@ class Couch(object):
                 "start_time": None,
                 "end_time": None,
                 "error": None,
-                "total_enriched": None,
                 "total_items": None,
                 "total_collections": None,
                 "missing_id": None,
