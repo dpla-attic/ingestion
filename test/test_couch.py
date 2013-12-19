@@ -31,12 +31,10 @@ if "TRAVIS" in os.environ:
 else:
     config = ConfigParser.ConfigParser()
     config.readfp(open("akara.ini"))
-    SERVER_URL = config.get("CouchDb", "Server")
-    BATCH_SIZE = config.get("CouchDb", "BatchSize")
+    SERVER_URL = config.get("CouchDb", "Url")
 
 TEST_DPLA_DB = "test_dpla"
 TEST_DASHBOARD_DB = "test_dashboard"
-VIEWS_DIRECTORY = "couchdb_views"
 
 class CouchTest(Couch):
     def __init__(self, **kwargs):
@@ -105,9 +103,7 @@ def couch_setup():
     global couch
     couch = CouchTest(server_url=SERVER_URL,
                       dpla_db_name=TEST_DPLA_DB,
-                      dashboard_db_name=TEST_DASHBOARD_DB,
-                      views_directory=VIEWS_DIRECTORY,
-                      batch_size=BATCH_SIZE)
+                      dashboard_db_name=TEST_DASHBOARD_DB)
     couch._sync_views("dpla")
     couch._sync_views("dashboard")
     couch._sync_test_views()
