@@ -36,6 +36,7 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
                 value = json.loads(value)
             except Exception, e:
                 logger.error("Unable to parse set_prop value: %s" % e)
+                return body
 
         def _set_prop():
             """Returns true if
@@ -52,7 +53,10 @@ def set_prop(body, ctype, prop=None, value=None, condition_prop=None,
                       getprop(data, condition_prop) == condition_value)))
 
         if _set_prop():
-            setprop(data, prop, value)
+            try:
+                setprop(data, prop, value)
+            except Exception, e:
+                logger.error("Error in set_prop: %s" % e)
 
     return json.dumps(data)
 
