@@ -33,29 +33,28 @@ class Couch(object):
                              are located.
             batch_size: The batch size to use with iterview
         """
+        config = ConfigParser.ConfigParser()
+        config.readfp(open(config_file))
+        url = config.get("CouchDb", "Url")
+        username = config.get("CouchDb", "Username")
+        password = config.get("CouchDb", "Password")
+
         if not kwargs:
-            config = ConfigParser.ConfigParser()
-            config.readfp(open(config_file))
-            server_url = config.get("CouchDb", "Server")
-            dpla_db_name = config.get("CouchDb", "DPLADatabase")
-            dashboard_db_name = config.get("CouchDb", "DashboardDatabase")
-            views_directory = config.get("CouchDb", "ViewsDirectory")
-            batch_size = config.get("CouchDb", "BatchSize")
-            log_level = config.get("CouchDb", "LogLevel")
+            dpla_db_name = "dpla"
+            dashboard_db_name = "dashboard"
         else:
-            server_url = kwargs.get("server_url")
             dpla_db_name = kwargs.get("dpla_db_name")
             dashboard_db_name = kwargs.get("dashboard_db_name")
-            views_directory = kwargs.get("views_directory")
-            batch_size = kwargs.get("batch_size")
-            log_level = "DEBUG"
 
-        self.server_url = server_url
+        # Create server URL
+        url = url.split("http://")
+        server_url = "http://%s:%s@%s" % (username, password, url[1])
         self.server = Server(server_url)
+
         self.dpla_db = self._get_db(dpla_db_name)
         self.dashboard_db = self._get_db(dashboard_db_name)
-        self.views_directory = views_directory
-        self.batch_size = int(batch_size)
+        self.views_directory = "couchdb_views"
+        self.batch_size = 500
 
         self.logger = logging.getLogger("couch")
         handler = logging.FileHandler("logs/couch.log")
@@ -64,7 +63,7 @@ class Couch(object):
             "%b %d %H:%M:%S")
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        self.logger.setLevel(log_level)
+        self.logger.setLevel("DEBUG")
 
     def _get_db(self, name):
         """Return a database given the database name, creating the database
@@ -72,7 +71,7 @@ class Couch(object):
         """ 
         try:
             db = self.server.create(name)
-        except Exception:
+        except:
             db = self.server[name]
         return db
 
@@ -425,7 +424,6 @@ class Couch(object):
                 "start_time": None,
                 "end_time": None,
                 "error": None,
-                "total_enriched": None,
                 "total_items": None,
                 "total_collections": None,
                 "missing_id": None,

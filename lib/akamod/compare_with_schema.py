@@ -21,6 +21,10 @@ def comparewithschema(body, ctype):
         response.add_header("content-type", "text/plain")
         return "Unable to parse body as JSON"
 
+    if "_id" not in data or ("sourceResource" not in data and
+                             data.get("ingestType") == "item"):
+        return body
+
     type = data.get("ingestType")
     if type:
         props = ["dpla/collection/properties"] if type == "collection" else \
@@ -34,8 +38,7 @@ def comparewithschema(body, ctype):
                 field_prefix = "sourceResource/"
             else:
                 data_keys = data.keys()
-                if "_id" in data_keys:
-                    data_keys.remove("_id")
+                data_keys.remove("_id")
                 field_prefix = ""
 
             # Remove any keys in the document that are not found in the schema

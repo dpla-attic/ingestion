@@ -199,7 +199,7 @@ class geocode:
     geonames_token = "${Geonames__Token}"
 
 class dpla_thumbs:
-    couch_database = "${CouchDb__Url}"
+    couch_database = "${CouchDb__Url}dpla"
     couch_database_username = "${CouchDb__Username}"
     couch_database_password = "${CouchDb__Password}"
 

@@ -32,9 +32,7 @@ def main(argv):
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
 
-    config = ConfigParser.ConfigParser()
-    config.readfp(open("akara.ini"))
-    batch_size = int(config.get("CouchDb", "BatchSize"))
+    batch_size = 500
 
     couch = Couch()
     ingestion_doc = couch.dashboard_db[args.ingestion_document_id]

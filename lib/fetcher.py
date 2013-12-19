@@ -52,9 +52,7 @@ class Fetcher(object):
         self.http_handle.force_exception_as_status_code = True
 
         # Set batch_size
-        config = ConfigParser.ConfigParser()
-        config.readfp(open(self.config_file))
-        self.batch_size = int(config.get("CouchDb", "BatchSize"))
+        self.batch_size = 500
 
         # Set response
         self.response = {"errors": [], "records": []}
