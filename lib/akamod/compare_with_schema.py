@@ -21,7 +21,8 @@ def comparewithschema(body, ctype):
         response.add_header("content-type", "text/plain")
         return "Unable to parse body as JSON"
 
-    if "_id" not in data or "sourceResource" not in data:
+    if "_id" not in data or ("sourceResource" not in data and
+                             data.get("ingestType") == "item"):
         return body
 
     type = data.get("ingestType")
