@@ -59,7 +59,7 @@
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat", 
         "/shred?prop=sourceResource%2Fsubject&delim=%3Cbr%3E",
         "/cleanup_value",
-        "/move_date_values?prop=sourceResource%2Fspatial",
+        "/move_date_values?prop=sourceResource%2Fspatial&to_prop=sourceResource%2Fdate",
         "/capitalize_value",
         "/enrich_earliest_date", 
         "/enrich-subject", 

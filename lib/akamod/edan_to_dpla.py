@@ -43,13 +43,12 @@ CONTEXT = {
 
 
 def transform_description(d):
-    description = None
+    description = []
     items = arc_group_extraction(d, "freetext", "notes")
     for item in (items if isinstance(items, list) else [items]):
-        if "@label" in item and item["@label"] == "Description":
-            if "#text" in item:
-                description = item["#text"]
-                break;
+        if "#text" in item:
+            description.append(item["#text"])
+
     return {"description": description} if description else {}
 
 
@@ -143,160 +142,149 @@ def collection_transform(d):
     return {"collection": collections} if collections else {}
 
 
-def creator_transform(d):
-    creator = []
+def creator_and_contributor_transform(d):
+    out = {}
     creators = arc_group_extraction(d, "freetext", "name")
     for c in (creators if isinstance(creators, list) else [creators]):
         if c["@label"] in creator_field_names:
-            if "#text" in c:
-                creator.append(c["#text"])
+            key = "creator"
+        elif c["@label"] == "associated person":
+            key = "contributor"
+        else:
+            continue
 
-    res = creator
-    if len(creator) == 1:
-        res = res[0]
+        if "#text" in c:
+            try:
+                out[key].append(c["#text"])
+            except:
+                out[key] = [c["#text"]]
 
-    return {"creator": res} if res else {}
+    return out
 
 
-def transform_format(d):
-    f = []
-    labels = ["Physical description", "Physical description", "Medium"]
-    formats = arc_group_extraction(d, "freetext", "physicalDescription")
-    [f.append(e["#text"]) for e in formats if e["@label"] in labels]
+def transform_format_and_extent(d):
+    out = {}
+    extent_labels = ["Dimensions"]
+    format_labels = ["Physical description", "Physical description", "Medium"]
+    phys = arc_group_extraction(d, "freetext", "physicalDescription")
+    for p in (phys if isinstance(phys, list) else [phys]):
+        if p["@label"] in format_labels:
+            key = "format"
+        elif p["@label"] in extent_labels:
+            key = "extent"
+        else:
+            continue
 
-    res = f
-    if len(res) == 1:
-        res = res[0]
-    return {"format": res} if res else {}
+        if "#text" in p:
+            try:
+                out[key].append(p["#text"])
+            except:
+                out[key] = [p["#text"]]
+
+    return out
 
 
 def transform_rights(d):
-    p = []
-    ps = arc_group_extraction(d, "freetext", "creditLine")
-    if ps and ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and "#text" in e and e["@label"] == "Credit Line"]
+    rights = []
+    try:
+        media = getprop(d, "descriptiveNonRepeating/online_media/media", True)
+        if media and "@rights" in media and media["@rights"] not in rights:
+            rights.append(media["@rights"])
+    except:
+        pass
 
-    ps = arc_group_extraction(d, "freetext", "objectRights")
-    if ps and ps != [None]:
-        [p.append(e["#text"]) for e in ps if "@label" in e and "#text" in e and e["@label"] == "Rights"]
+    if not rights:
+        ps = arc_group_extraction(d, "freetext", "creditLine")
+        if ps and ps != [None]:
+            [rights.append(e["#text"]) for e in ps if "@label" in e and
+             "#text" in e and e["@label"] == "Credit Line"]
 
-    res = p
-    if len(p) == 1:
-        res = p[0]
+        ps = arc_group_extraction(d, "freetext", "objectRights")
+        if ps and ps != [None]:
+            [rights.append(e["#text"]) for e in ps if "@label" in e and
+             "#text" in e and e["@label"] == "Rights"]
 
-    return {"rights": res} if res else {}
+    return {"rights": rights} if rights else {}
 
 
 def transform_publisher(d):
     p = []
     ps = arc_group_extraction(d, "freetext", "publisher")
     if ps:
-        [p.append(e["#text"]) for e in ps if "@label" in e and e["@label"] == "Publisher"]
+        [p.append(e["#text"]) for e in ps if "@label" in e and
+         e["@label"] == "Publisher"]
 
     return {"publisher": p} if p else {}
 
 
 def transform_spatial(d):
-    result = []
-    place = []
-    location_states = []
+    def _get_spatial(geo_dict):
+        """Given a geolocation dictionary, extracts
+           city/state/county/region/country/coordinates
+        """
+        tag_place_types = {
+            "L5": ["city", ("City", "Town")],
+            "L3": ["state", ("State", "Province")],
+            "L4": ["county", ("County", "Island")],
+            "L2": ["country", ("Country", "Nation")],
+            "Other": ["region", ()],
+            "points": ["coordinates", ("decimal", "degrees")]
+        }
 
-    places = arc_group_extraction(d, "freetext", "place")
-    if places:
-        for p in places:
-            if isinstance(p, dict):
-                if "#text" in p:
-                    place.append(p["#text"])
-
-    if len(place) == 1:
-        place = place[0]
-
-
-    def convert_location(location, name):
-        """Converts one location to a spatial record."""
-        city_keys    = ["City", "Town"]
-        state_keys   = ["State", "Province", "Department", "Country", "District", "Republic", "Sea", "Gulf", "Bay"]
-        county_keys  = ["County", "Island"]
-        country_L1_keys = ["Continent", "Ocean"]
-        country_L2_keys = ["Country", "Nation", "Sea", "Gulf", "Bay", "Sound"]
-        cities    = []
-        states    = []
-        counties  = []
-        countries = []
-        regions   = []
-        points    = []
-        
-        res = {}
-        def update(res, name, val):
-            if not val:
-                return
-            if len(val) == 1:
-                res.update({name: val[0]})
-            elif val:
-                res.update({name: val})
-        
-        for k, v in location.items():
-            if not ("#text" in v and "@type" in v):
+        spatial = {}
+        for tag in geo_dict:
+            if tag in tag_place_types:
+                place, types = tag_place_types[tag]
+            else:
                 continue
-            tp = v["@type"]
-            tx = v["#text"]
 
-            if k == "L5" and tp in city_keys:
-                cities.append(tx)
-            elif k == "L3" and tp in state_keys:
-                states.append(tx)
-                location_states.append(tx)
-            elif k == "L4" and tp in county_keys:
-                counties.append(tx)
-            #elif k == "L1" and tp in country_L1_keys:
-            #    countries.append(tx)
-            elif k == "L2" and tp in country_L2_keys:
-                countries.append(tx)
-            elif k in [ "L2", "L3", "L4", "L5"]:
-                regions.append(tx)
-            elif k == "points":
-                points.append(v)
+            if tag == "points":
+                lat_type = getprop(geo_dict,
+                                   tag + "/point/latitude/@type", True)
+                lat_value = getprop(geo_dict,
+                                    tag + "/point/latitude/#text", True)
+                lon_type = getprop(geo_dict,
+                                   tag + "/point/longitude/@type", True)
+                lon_value = getprop(geo_dict,
+                                    tag + "/point/longitude/#text", True)
+                correct_type = (lat_type in types and lon_type in types)
 
+                value = ",".join(filter(None, [lat_value, lon_value]))
+            else:
+                if tag == "Other":
+                    correct_type = True
+                else:
+                    geo_type = getprop(geo_dict, tag + "/@type", True)
+                    correct_type = geo_type in types
 
-        update(res, "name", place)
-        update(res, "city", cities)
-        update(res, "state", states)
-        update(res, "county", counties)
-        update(res, "country", countries)
-        update(res, "region", regions)
-        update(res, "lat_long", points)
-        
-        return res
+                value = getprop(geo_dict, tag + "/#text", True)
 
+            if correct_type and value:
+                spatial[place] = value
+
+        return spatial
+
+    spatial = []
+
+    # Geographic hierarchy
     geo = arc_group_extraction(d, "indexedStructured", "geoLocation")
-
     if geo:
         for g in geo:
-            
-            if not g:
-                continue
+            if isinstance(g, dict):
+                spatial_dict = {}
+                spatial_dict.update(_get_spatial(g))
+                if spatial_dict:
+                    spatial.append(spatial_dict)
+    else:
+        # Use freetext/place
+        places = arc_group_extraction(d, "freetext", "place")
+        if places:
+            for p in places:
+                if isinstance(p, dict) and "#text" in p:
+                    if p["#text"] not in spatial:
+                        spatial.append(p["#text"])
 
-            loc = convert_location(g, place)
-            if loc:
-                result.append(loc)
-
-
-    
-    ret = {}
-    if len(result) == 1:
-        ret = {"spatial": result[0]}
-    elif result:
-        ret = {"spatial": result}
-
-    # Also add stateLocatedIn
-    l = list(set(location_states))
-    if len(l) == 1:
-        l = l[0]
-
-    if l:
-        ret.update({"stateLocatedIn": l}) 
-
-    return ret
+    return {"spatial": spatial} if spatial else {}
 
 
 def transform_online_media(d):
@@ -350,7 +338,6 @@ def transform_title(d):
     return {"title": p} if p else {}
 
 def transform_subject(d):
-
     p = []
     topic_labels = ["Topic", "subject", "event"]
     ps = arc_group_extraction(d, "freetext", "topic")
@@ -365,15 +352,16 @@ def transform_subject(d):
               "tax_division","tax_class","tax_order","tax_family",
               "tax_sub-family","scientific_name","common_name","strat_group",
               "strat_formation","strat_member"]
-    if "freetext" in d:
-        for key, item in d["freetext"].items():
-            if key in fields:
-                if "#text" in item:
-                    p.append(item["#text"])
-
+    for field in fields:
+        item = getprop(d, "indexedStructured/" + field, True)
+        if item:
+            for i in (item if isinstance(item, list) else [item]):
+                if isinstance(i, basestring):
+                    p.append(i)
+                elif isinstance(i, dict) and "#text" in i:
+                    p.append(i["#text"])
+                        
     res = list(set(p))
-    if len(res) == 1:
-        res = res[0]
 
     return {"subject": res} if res else {}
 
@@ -453,22 +441,6 @@ def slugify_field(data, fieldname):
             setprop(data, fieldname, slugged)
 
 
-def type_transform(d):
-    type = []
-
-    if "general-records-types" in d:
-        type = arc_group_extraction(d, "general-records-types", "general-records-type",
-                                    "general-records-type-desc")
-    if "physical-occurrences" in d:
-        phys_occur = getprop(d, "physical-occurrences/physical-occurrence")
-        type_key = "media-occurrences/media-occurrence/media-type"
-        for p in phys_occur:
-            if exists(p, type_key):
-                type.append(getprop(p, type_key))
-
-    return {"type": "; ".join(type)} if type else {}
-
-
 def has_view_transform(d):
     has_view = []
 
@@ -516,6 +488,17 @@ def transform_collection(d):
 
     return collection
 
+def language_transform(d):
+    language = []
+    langs = arc_group_extraction(d, "indexedStructured", "language")
+    if langs:
+        for l in (langs if isinstance(langs, list) else [langs]):
+            language.append(l.replace(" language", ""))
+
+    return {"language": language} if language else {}
+
+def transform_type(d):
+    return {"type": getprop(d, "indexedStructured/online_media_type")}
 
 def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
     """
@@ -549,14 +532,16 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
             item = group
 
         subitem = item.get(itemKey)
-        if not isinstance(subitem,basestring):
+        if isinstance(subitem, basestring):
+            data.append(subitem)
+        elif isinstance(subitem, dict):
             for s in (subitem if isinstance(subitem,list) else [subitem]):
                 if nameKey:
                     data.append(s.get(nameKey,None))
                 else:
                     data.append(s)
         else:
-            data.append(subitem)
+            data = subitem
 
     return data
 
@@ -564,14 +549,15 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     "freetext/physicalDescription"  : extent_transform,
-    "freetext/name"                 : creator_transform,
+    "freetext/name"                 : creator_and_contributor_transform,
     "freetext/date"                 : transform_date,
     "freetext/notes"                : transform_description,
     "freetext/identifier"           : transform_identifier,
-    "language"                      : lambda d: {"language": d.get("language") },
-    "freetext/physicalDescription"  : transform_format,
+    "indexedStructured/language"    : language_transform,
+    "freetext/physicalDescription"  : transform_format_and_extent,
     "freetext/publisher"            : transform_publisher,
     "descriptiveNonRepeating/title" : transform_title,
+    "indexedStructured/online_media_type": transform_type,
     #"descriptiveNonRepeating/data_source" : transform_data_provider,
     #"descriptiveNonRepeating/online_media" : transform_online_media,
     "collection"            : lambda d: {"collection": d.get("collection")}
@@ -619,7 +605,6 @@ def edantodpla(body,ctype,geoprop=None):
 
     # Apply transformations that are dependent on more than one
     # original document  field
-    #out["sourceResource"].update(type_transform(data))
     out["sourceResource"].update(transform_rights(data))
     out["sourceResource"].update(transform_subject(data))
     out["sourceResource"].update(transform_spatial(data))
