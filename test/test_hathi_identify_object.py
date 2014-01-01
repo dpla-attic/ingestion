@@ -31,7 +31,7 @@ def test_thumbnail_url_prefix_COO():
 
 def test_thumbnail_url_prefix_HVD():
     hathi_record = hathi_records["hvd"]
-    thumbnail_url = "http://bks6.books.google.com/books?id=yTsuAAAAYAAJ&printsec=frontcover&img=1&zoom=5"
+    thumbnail_url = "http://bks8.books.google.com/books?id=0jkabTIXD04C&printsec=frontcover&img=1&zoom=5"
     thumbnail_urls = [thumbnail_url, thumbnail_url + "&edge=curl"]
 
     resp, content = _get_server_response(json.dumps(hathi_record))

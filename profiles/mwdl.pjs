@@ -41,6 +41,7 @@
         "/mwdl_cleanup_field",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/unset_prop?prop=%5Fid&condition=mwdl%5Fexclude&condition_prop=originalRecord%2FPrimoNMBib%2Frecord%2Fsearch%2Frsrctype",
+        "/unset_prop?prop=sourceResource%2Fformat",
         "/compare_with_schema"
     ]
 }

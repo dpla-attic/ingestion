@@ -37,6 +37,8 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/unset_prop?prop=sourceResource%2Fdescription&condition=is_digit",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/unset_prop?prop=sourceResource%2Ftemporal",
+        "/unset_prop?prop=sourceResource%2Frights",
         "/compare_with_schema"
     ] 
 }
