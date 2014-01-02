@@ -205,7 +205,11 @@ class oaiservice(object):
             for id_, props in recs:
                 for k, v in props.iteritems():
                     props[k] = [ U(item) for item in v ]
-                if "deleted" in props.get("status", ""):
+                if "error" in props:
+                    error = "Error in request to URL %s: %s" % (url,
+                                                                props["error"])
+                    self.logger.error(error)
+                elif "deleted" in props.get("status", ""):
                     self.logger.info("Record deleted")
                 else:
                     records.append((id_, props))
@@ -241,7 +245,8 @@ OAI_DC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
   xmlns:eg="http://examplotron.org/0/" xmlns:ak="http://purl.org/xml3k/akara/xmlmodel">
   <responseDate>2011-03-14T21:29:34Z</responseDate>
   <request verb="ListRecords" set="hdl_1721.1_18193" metadataPrefix="oai_dc">http://dspace.mit.edu/oai/request</request>
-  <ListRecords>
+  <error code="noRecordsMatch" ak:rel="'error'" ak:value="@code">The combination of the values of the from, until, set, and metadataPrefix arguments results in an empty list.</error>
+<ListRecords>
     <record ak:resource="o:header/o:identifier">
       <header status="deleted" ak:rel="'status'" ak:value="@status">
         <identifier>oai:dspace.mit.edu:1721.1/27225</identifier>
