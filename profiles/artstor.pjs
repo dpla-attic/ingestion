@@ -69,12 +69,14 @@
         "/artstor_spatial_to_dataprovider",
         "/artstor_cleanup",
         "/enrich_location",
+        "/geocode",
         "/cleanup_language",
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_type_from_physical_format",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/unset_prop?prop=sourceResource%2Frelation",
         "/compare_with_schema"
     ]
 }
