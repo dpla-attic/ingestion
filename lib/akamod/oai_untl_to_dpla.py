@@ -341,10 +341,10 @@ def identifier_transform(d, p):
         try:
             qualifier = s.get("qualifier")
             text = s.get("#text")
+            if qualifier and text:
+                identifier.append("%s: %s" % (qualifier, text))
         except:
-            continue
-        if qualifier == "license":
-            identifier.append("%s: %s" % (qualifier, text))
+            pass
 
     return {"identifier": identifier} if identifier else {}
 

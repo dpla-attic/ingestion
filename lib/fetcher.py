@@ -182,12 +182,18 @@ class OAIVerbsFetcher(Fetcher):
     def add_collection_to_item_records(self, item_records):
         for item_record in item_records:
             collections = []
-            for set_spec in iterify(item_record.get("setSpec")):
+
+            # setSpec may be in the item's root or in header
+            set_specs = getprop(item_record, "header/setSpec")
+            if not set_specs:
+                set_specs = item_record.get("setSpec", [])
+
+            for set_spec in iterify(set_specs):
                 collection = self.collections.get(set_spec)
                 if collection:
                     collections.append(collection)
             if collections:
-                item_record["collection"] = collection
+                item_record["collection"] = collections
 
     def set_collections(self):
         if not self.collections:
@@ -498,7 +504,7 @@ class IAFetcher(AbsoluteURLFetcher):
             # Since we are at the last page the expected_records will not
             # be equal to self.endpoint_url_params["rows"]
             expected_records = total_records - read_records
-            # Reset the page for the next colleciton
+            # Reset the page for the next collection
             self.endpoint_url_params["page"] = 1
         else:
             self.endpoint_url_params["page"] += 1
