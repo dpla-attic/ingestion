@@ -68,15 +68,15 @@ def date_transform(d):
 
     return {"date": date} if date else {}
 
-def is_part_of_transform(d):
-    is_part_of = []
+def relation_transform(d):
+    relation = []
     lods = ["series", "file unit"]
     items = arc_group_extraction(d, "hierarchy", "hierarchy-item")
     for item in iterify(items):
         if item["hierarchy-item-lod"].lower() in lods:
-            is_part_of.append(item["hierarchy-item-title"])
+            relation.append(item["hierarchy-item-title"])
 
-    return {"isPartOf": is_part_of} if is_part_of else {}
+    return {"relation": relation} if relation else {}
 
 def source_transform(d):
     source = None
@@ -238,12 +238,26 @@ def description_transform(d):
 
     return {"description": "; ".join(description)} if description else {}
 
-def collection_transform(d):
-    collection = d.get("collection")
-    if "scope-content-note" in d:
-        collection["description"] = d.get("scope-content-note")
+def identifier_transform(d):
+    identifier = [d.get("arc-id")]
+    variants = arc_group_extraction(d, "variant-control-numbers",
+                                    "variant-control-number")
+    for variant in iterify(variants):
+        identifier.append(variant.get("variant-type"))
+        identifier.append(variant.get("variant-number-desc"))
 
-    return {"collection": collection}
+    identifier = list(set(filter(None, identifier)))
+
+    return {"identifier": identifier} if identifier else {}
+
+def rights_transform(d):
+    rights = []
+    access = arc_group_extraction(d, "access-restriction", "restriction-status")
+    for right in iterify(access):
+        if right not in rights:
+            rights.append(right)
+
+    return {"rights": rights} if rights else {}
 
 def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
     """
@@ -291,8 +305,8 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 CHO_TRANSFORMER = {
     "physical-occurrences"  : extent_transform,
     "creators"              : creator_transform,
-    "hierarchy"             : is_part_of_transform,
-    "collection"            : collection_transform,
+    "hierarchy"             : relation_transform,
+    "collection"            : lambda d: {"collection": d.get("collection")},
     "title"                 : lambda d: {"title": d.get("title-only")},
     "languages"             : lambda d: {"language":
                                          arc_group_extraction(d, "languages",
@@ -301,7 +315,9 @@ CHO_TRANSFORMER = {
                                                               d,
                                                               "contributors",
                                                               "contributor"
-                                                              )
+                                                              ),
+    "variant-control-numbers": identifier_transform,
+    "access-restriction": rights_transform
 }
 
 AGGREGATION_TRANSFORMER = {
