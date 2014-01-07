@@ -67,16 +67,28 @@ def marc_data_processor(d, p):
         else:
             d[k] = v
 
-    def extract_sub_field(d, subfield_name="subfield", codes=tuple(), content_key="#text", concat_str=", "):
+    def extract_sub_field(d, subfield_name="subfield", codes=tuple(),
+                          exclude_codes=tuple(), content_key="#text",
+                          concat_str=", "):
         if subfield_name in d:
-            return concat_str.join(v[content_key] for v in d[subfield_name]
-                if isinstance(v, dict) and "code" in v and content_key in v and (not codes or v["code"] in codes))
+            if exclude_codes:
+                values = [v[content_key] for v in d[subfield_name] if
+                          isinstance(v, dict) and "code" in v and
+                          content_key in v and v["code"] not in exclude_codes]
+            else:
+                values = [v[content_key] for v in d[subfield_name] if
+                          isinstance(v, dict) and "code" in v and
+                          content_key in v and (not codes or v["code"] in
+                          codes)]
+            return concat_str.join(values)
         else:
             return None
 
 
     data_field_dicts = getprop(d, p)
-    out = {"contributor": [], "extent": [], "format": [], "spatial": [], "isPartOf": []}
+    out = {"contributor": [], "extent": [], "format": [], "spatial": [],
+           "isPartOf": []}
+    first_is_part_of_set = False
     for _dict in data_field_dicts:
         if isinstance(_dict, dict) and "tag" in _dict:
             tag = _dict["tag"]
@@ -86,8 +98,15 @@ def marc_data_processor(d, p):
             if tag.startswith("6") and len(tag) == 3:
                 value = extract_sub_field(_dict, codes=("z",))
                 update_field(out, "spatial", value)
-            if tag in ("440", "490"):
-                value = extract_sub_field(_dict, codes=("a",))
+            if (tag in ("440", "490", "800", "810", "830", "785") and
+                not first_is_part_of_set):
+                first_is_part_of_set = True
+                value = extract_sub_field(_dict, exclude_codes=("w",),
+                                          concat_str=". ")
+                update_field(out, "isPartOf", value)
+            if tag in ("780",):
+                value = extract_sub_field(_dict, exclude_codes=("w",),
+                                          concat_str=". ")
                 update_field(out, "isPartOf", value)
     for k, v in out.items():
         if not v:

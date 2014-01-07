@@ -306,7 +306,7 @@ def _get_subject_values(_dict, tag):
 
 def _join_sourceresource_values(prop, values):
     """Joins the prop values retrieved from all of a tags codes"""
-    join_props = (["subject"], ""), (["isPartOf"], ". "), \
+    join_props = (["subject"], ""), (["relation"], ". "), \
                  (["contributor", "creator", "publisher", "extent",
                    "identifier"], " ")
     for prop_list, delim in join_props:
@@ -343,9 +343,8 @@ def all_transform(d, p):
             "language": [],
             "spatial": [],
             "publisher": [],
-            "isPartOf": [],
+            "relation": [],
             "rights": [],
-            "stateLocatedIn": [],
             "subject": [],
             "temporal": [],
             "title": [None, None, None],
@@ -378,7 +377,6 @@ def all_transform(d, p):
                         "111"):         [("creator", None)],
         lambda t: t == "041":           [("language", "a")],
         lambda t: t == "260":           [("date", "c"), ("publisher", "ab")],
-        lambda t: t == "270":           [("stateLocatedIn", "c")],
         lambda t: t == "300":           [("extent", "ac")],
         lambda t: t in ("337", "338"):  [("format", "a")],
         lambda t: t == "340":           [("format", "a"), ("extent", "b")],
@@ -401,7 +399,7 @@ def all_transform(d, p):
                                                  ("format", "v"),
                                                  ("temporal", "y"),
                                                  ("spatial", "z")],
-        lambda t: (760 <= int(t) <= 787):       [("isPartOf", None)],
+        lambda t: (760 <= int(t) <= 787):       [("relation", None)],
 
     }
 
