@@ -9,7 +9,9 @@ Build Status
 Documentation
 -------------------
 Prerequisites:
-    Python 2.7
+
+* Python 2.7
+* CouchDB
 
 To install or upgrade the ingest subsystem, first install the necessary components;
 
@@ -26,10 +28,7 @@ Configure an akara.ini file appropriately for your environment;
     [CouchDb]
     Url=<URL to CouchDB instance, including trailing forward-slash>
     Username=<CouchDB username>
-    Passowrd=<CouchDB password>
-
-    [Bing]
-    ApiKey=<Bing API key>
+    Password=<CouchDB password>
 
     [Geonames]
     Username=<Geonames username>
@@ -61,8 +60,8 @@ If you have the endpoint URL but not a set id, there's a separate service for li
 To run the ingest process run the setup.py script, if not done so already, initialize the database and database views, then feed it a source profile (found in the profiles directory);
 
     $ python setup.py install
-    $ python scripts/sync_couch_views dpla
-    $ python scripts/sync_couch_views dashboard
+    $ python scripts/sync_couch_views.py dpla
+    $ python scripts/sync_couch_views.py dashboard
     $ python scripts/ingest_provider.py profiles/clemson.pjs
 
 License
@@ -70,3 +69,4 @@ License
 This application is released under a AGPLv3 license.
 
 Copyright President and Fellows of Harvard College, 2013
+Copyright Digital Public Library of America, 2014
