@@ -40,7 +40,7 @@ def is_region(spatial):
     return (getprop(spatial, "name") in REGIONS)
 
 def geocode_region(spatial):
-    setprop(spatial, "coordinates", "%s %s" % REGIONS[getprop(spatial, "name")])
+    setprop(spatial, "coordinates", "%s, %s" % REGIONS[getprop(spatial, "name")])
     delprop(spatial, "county")
     setprop(spatial, "state", "South Carolina")
     setprop(spatial, "country", "United States")
