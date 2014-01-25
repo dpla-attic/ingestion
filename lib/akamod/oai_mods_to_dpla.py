@@ -484,7 +484,7 @@ def location_transform_bpl(d, p):
                         elif url_dict["access"] == "preview":
                             out["object"] = url_dict.get("#text")
                         elif url_dict["access"] == "raw object":
-                            out["hasView"] = {"@id:": url_dict.get("#text"),
+                            out["hasView"] = {"@id": url_dict.get("#text"),
                                               "format": format}
             if phys_location is None:
                 phys_location = getprop(_dict, "physicalLocation", True)
