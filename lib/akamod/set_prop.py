@@ -80,7 +80,8 @@ def unset_prop(body, ctype, prop=None, condition=None, condition_prop=None):
         "is_digit": lambda v: v[0].isdigit(),
         "mwdl_exclude": lambda v: (v[0] == "collections" or
                                    v[0] == "findingAids"),
-        "hathi_exclude": lambda v: "Minnesota Digital Library" in v
+        "hathi_exclude": lambda v: "Minnesota Digital Library" in v,
+        "finding_aid_title": lambda v: v[0].startswith("Finding Aid")
     }
 
     def condition_met(condition_prop, condition):

@@ -372,5 +372,30 @@ def test_unset_prop8():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
+def test_unset_prop_finding_aid():
+    """Should unset _id since title starts with 'Finding Aid'"""
+    action = "unset"
+    prop = "_id"
+    condition = "finding_aid_title"
+    condition_prop = "sourceResource/title"
+
+    INPUT = {
+        "_id": "12345",
+        "sourceResource": {
+            "title": "Finding Aid: George Williams Papers"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "title": "Finding Aid: George Williams Papers"
+        }
+    }
+
+
+    resp, content = _get_server_response(json.dumps(INPUT), action=action,
+        prop=prop, condition=condition, condition_prop=condition_prop)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
