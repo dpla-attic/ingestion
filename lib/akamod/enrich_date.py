@@ -84,7 +84,7 @@ decade_date = re.compile("(?P<year>\d{3})-")
 # ie 1920s
 decade_date_s = re.compile("(?P<year>\d{4})s")
 # ie between 2000 and 2002
-between_date = re.compile("between(?P<year1>\d{4})and(?P<year2>\d{4})")
+between_date = re.compile("between\s*(?P<year1>\d{4})\s*and\s*(?P<year2>\d{4})")
 
 def parse_date_or_range(d):
     #TODO: Handle dates with BC, AD, AH
@@ -153,8 +153,9 @@ def parse_date_or_range(d):
             else:
                 a, b = None, None
         else:
-            # ie 1970-01-01-1971-01-01, 1970Fall/August, 1970April/May, or
+            # ie 1970-01-01-1971-01-01, 1970 Fall/August, 1970 April/May, or
             # wordy date like "mid 11th century AH/AD 17th century (Mughal)"
+            d = d.replace(" ", "")
             d = d.split(delim)
             begin = delim.join(d[:len(d)/2])
             end = delim.join(d[len(d)/2:])
@@ -218,9 +219,9 @@ def test_parse_date_or_range():
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
 def clean_date(d):
-    regex = [("to", "-"), ("[\?\(\)]|\s|ca\.?|~|x", "")]
+    regex = [("\s*to\s*|\s[-/]\s", "-"), ("[\?\(\)]|\s*ca\.?\s*|~|x", "")]
     if not "circa" in d and not "century" in d:
-        regex.append(("c\.?", ""))
+        regex.append(("\s*c\.?\s*", ""))
     for p, r in regex:
         d = re.sub(p, r, d)
     return d.strip()

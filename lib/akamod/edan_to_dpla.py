@@ -106,7 +106,6 @@ def source_transform(d):
 
 
 def transform_is_shown_at(d):
-    #propname = "descriptiveNonRepeating/online_media/media/#text"
     tmpl="http://collections.si.edu/search/results.htm?q=record_ID%%3A%s&repo=DPLA"
     propname = "descriptiveNonRepeating/record_ID"
     
@@ -254,8 +253,11 @@ def transform_spatial(d):
                 if tag == "Other":
                     correct_type = True
                 else:
-                    geo_type = getprop(geo_dict, tag + "/@type", True)
-                    correct_type = geo_type in types
+                    try:
+                        geo_type = getprop(geo_dict, tag + "/@type", True)
+                        correct_type = geo_type in types
+                    except:
+                        continue
 
                 value = getprop(geo_dict, tag + "/#text", True)
 

@@ -43,7 +43,7 @@ def convert_last(data, path, name, conv, delnonexisting):
     or add another key with converted value.
 
     """
-    if not path in data:
+    if not isinstance(data, dict) or not path in data:
         return
 
     value = data[path]
