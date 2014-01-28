@@ -316,25 +316,18 @@ def test_unset_prop5():
     assert json.loads(content) == INPUT
 
 def test_unset_prop6():
-    """Should unset prop since conditions are met for multiple condition
-       props"""
+    """Should unset prop since conditions are met for hathi_exclude"""
     action = "unset"
     prop = "_id"
     condition = "hathi_exclude"
-    condition_prop = "dataProvider,sourceResource/type"
+    condition_prop = "dataProvider"
 
     INPUT = {
         "_id": "12345",
-        "dataProvider": ["Hathitrust", "University of Minnesota"],
-        "sourceResource": {
-            "type": "image"
-        }
+        "dataProvider": ["Hathitrust", "Minnesota Digital Library"]
     }
     EXPECTED = {
-        "dataProvider": ["Hathitrust", "University of Minnesota"],
-        "sourceResource": {
-            "type": "image"
-        }
+        "dataProvider": ["Hathitrust", "Minnesota Digital Library"]
     }
 
     resp, content = _get_server_response(json.dumps(INPUT), action=action,
@@ -343,19 +336,15 @@ def test_unset_prop6():
     assert json.loads(content) == EXPECTED
    
 def test_unset_prop7():
-    """Should not unset prop since condition is not met with
-       sourceResource/type"""
+    """Should not unset prop since condition is not met for hathi_exclude"""
     action = "unset"
     prop = "_id"
     condition = "hathi_exclude"
-    condition_prop = "dataProvider,sourceResource/type"
+    condition_prop = "dataProvider"
 
     INPUT = {
         "_id": "12345",
-        "dataProvider": "University of Minnesota",
-        "sourceResource": {
-            "type": "text"
-        }
+        "dataProvider": ["Hathitrust"]
     }
 
     resp, content = _get_server_response(json.dumps(INPUT), action=action,
