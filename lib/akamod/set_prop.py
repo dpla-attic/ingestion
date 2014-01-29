@@ -3,6 +3,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/set_prop', 'set_prop',
     'application/json')
@@ -79,15 +80,16 @@ def unset_prop(body, ctype, prop=None, condition=None, condition_prop=None):
         "is_digit": lambda v: v[0].isdigit(),
         "mwdl_exclude": lambda v: (v[0] == "collections" or
                                    v[0] == "findingAids"),
-        "hathi_exclude": lambda v: ("University of Minnesota" in v[0] and
-                                    v[1] == "image")
+        "hathi_exclude": lambda v: "Minnesota Digital Library" in v,
+        "finding_aid_title": lambda v: v[0].startswith("Finding Aid")
     }
 
     def condition_met(condition_prop, condition):
         values = []
         props = condition_prop.split(",")
         for p in props:
-            values.append(getprop(data, p, True))
+            iterified = iterify(getprop(data, p, True))
+            [values.append(i) for i in iterified]
 
         return CONDITIONS[condition](values)
 

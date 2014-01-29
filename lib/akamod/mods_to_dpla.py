@@ -175,7 +175,7 @@ def location_transform_uva(d, p):
                         elif url_dict["access"] == "preview":
                             out["object"] = url_dict.get("#text")
                         elif url_dict["access"] == "raw object":
-                            out["hasView"] = {"@id:": url_dict.get("#text"), "format": format}
+                            out["hasView"] = {"@id": url_dict.get("#text"), "format": format}
             if "physicalLocation" in _dict and isinstance(_dict["physicalLocation"], basestring):
                 out["dataProvider"] = _dict["physicalLocation"]
     except Exception as e:

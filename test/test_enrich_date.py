@@ -137,6 +137,27 @@ def test_enrich_date_date_parse_format_natural_string():
     assert result['date'] == EXPECTED['date']
 
 
+def test_enrich_date_date_parse_format_natural_string_no_comma():
+    """Correctly transform a date of format Month DD YYYY"""
+    INPUT = {
+        "date" : "May 20 1928"
+    }
+    EXPECTED = {
+        'date' : {
+            'begin' : u'1928-05-20',
+            'end' : u'1928-05-20',
+            'displayDate' : 'May 20 1928'
+        }
+    }
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2")
+    result = json.loads(content)
+    assert result['date'] == EXPECTED['date']
+
+
 def test_enrich_date_date_parse_format_ca_string():
     """Correctly transform a date with circa abbreviation (ca.)"""
     INPUT = {

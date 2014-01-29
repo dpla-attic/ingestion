@@ -35,7 +35,7 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
         for v in iterify(value):
-            if "name" not in v:
+            if not isinstance(v, dict) or "name" not in v:
                 continue
 
             if coordinate(v["name"]):
@@ -225,7 +225,14 @@ class DplaBingGeocoder(geocoders.Bing):
     def _fetch_results(self, q):
         params = {'q': q.encode("utf8"),
                   'key': self.api_key }
-        url = self.url % urlencode(params)
+
+        # geopy changed the instance variables on the bing geocoder in
+        # version 0.96 - this handles the differences
+        if hasattr(self, 'url'):
+            url = self.url % urlencode(params)
+        else:
+            url = "%s?%s" % (self.api, urlencode(params))
+
         try:
             page = urlopen(url)
         except Exception, e:
