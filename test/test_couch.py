@@ -230,6 +230,13 @@ def test_rollback():
     rollback_all_ids = [doc["_id"] for doc in rollback_all_docs]
     assert set(rollback_all_ids) == set(first_ingestion_all_ids)
 
+    # Verify first ingestion "record" type documents were removed from
+    # dashboard database
+    first_ingestion_dashboard_docs = [doc for doc in
+                                      couch._query_all_dashboard_prov_docs_by_ingest_seq(PROVIDER, 2) if
+                                      doc.get("type") == "record"]
+    
+
 @attr(travis_exclude='yes')
 @with_setup(couch_setup, couch_teardown)
 def test_multiple_ingestions():
