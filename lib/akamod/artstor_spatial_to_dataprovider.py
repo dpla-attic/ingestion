@@ -3,6 +3,7 @@ from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, delprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST',
                 'http://purl.org/la/dp/artstor_spatial_to_dataprovider',
@@ -37,16 +38,19 @@ def artstor_spatial_to_dataprovider(body, ctype,
 
         spatial = []
         data_provider = None
-        collection = getprop(data, "originalRecord/setSpec", True)
-        if collection.startswith("DPLA"):
-            data_provider = v[0]
-        elif collection.startswith("SS"):
-            spatial = []
-            for s in v:
-                if "Repository" in s:
-                    data_provider = s
-                elif "Accession" not in s:
-                    spatial.append(s)
+        collections = getprop(data, "originalRecord/setSpec", True)
+        for coll in iterify(collections): 
+            if coll.startswith("DPLA"):
+                data_provider = v[0]
+                break
+            elif coll.startswith("SS"):
+                spatial = []
+                for s in v:
+                    if "Repository" in s:
+                        data_provider = s
+                    elif "Accession" not in s:
+                        spatial.append(s)
+                break
 
         delprop(data, prop)
         if spatial:

@@ -36,6 +36,7 @@ from amara.thirdparty import json
 from akara.services import simple_service
 from akara import logger
 from akara import module_config
+from datetime import datetime
 
 from dplaingestion.oai import oaiservice
 
@@ -51,6 +52,9 @@ def listrecords(endpoint, oaiset=None, resumption_token=None,
     curl "http://localhost:8880/oai.listrecords.json?oaiset=hdl_1721.1_18193&limit=10"
     """
     limit = int(limit)
+
+    if frm is not None and until is None:
+        until = datetime.now().strftime("%Y-%m-%d")
 
     remote = oaiservice(endpoint, logger)
     list_records_result = remote.list_records(set=oaiset,
