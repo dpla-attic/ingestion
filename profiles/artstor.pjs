@@ -22,17 +22,17 @@
         "DPLAYaleArt"
     ],
     "set_params": {
-        "SSDPLAWashington": {"frm": "2013-09-13", "until": "2013-09-15"},
-        "SSDelwareAtlas": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareGeorge": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareHistoric": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareIncorporated1968": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareIncorporated1959": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareIncorporated1989": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareRosenthal": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwarePostcard": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareBookplate": {"frm": "2013-10-15", "until": "2013-10-18"},
-        "SSDelwareStewart": {"frm": "2013-10-15", "until": "2013-10-18"},
+        "SSDPLAWashington": {"frm": "2013-09-13"},
+        "SSDelwareAtlas": {"frm": "2013-10-15"},
+        "SSDelwareGeorge": {"frm": "2013-10-15"},
+        "SSDelwareHistoric": {"frm": "2013-10-15"},
+        "SSDelwareIncorporated1968": {"frm": "2013-10-15"},
+        "SSDelwareIncorporated1959": {"frm": "2013-10-15"},
+        "SSDelwareIncorporated1989": {"frm": "2013-10-15"},
+        "SSDelwareRosenthal": {"frm": "2013-10-15"},
+        "SSDelwarePostcard": {"frm": "2013-10-15"},
+        "SSDelwareBookplate": {"frm": "2013-10-15"},
+        "SSDelwareStewart": {"frm": "2013-10-15"},
         "DPLADallas": {"frm": "2013-03-16"}
     },
     "contributor": {

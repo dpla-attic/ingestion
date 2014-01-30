@@ -712,15 +712,16 @@ class Couch(object):
             delete_docs = []
             for doc in self._query_all_dpla_provider_docs(provider):
                 delete_docs.append(doc)
-                count += 1
                 # Delete in batches of batch_size so as not to use too much
                 # memory
                 if len(delete_docs) == self.batch_size:
+                    count += len(delete_docs)
                     print "%s documents deleted" % count
                     self._delete_documents(self.dpla_db, delete_docs)
                     delete_docs = []
             # Last delete
             if delete_docs:
+                    count += len(delete_docs)
                     print "%s documents deleted" % count
                     self._delete_documents(self.dpla_db, delete_docs)
 
@@ -729,16 +730,17 @@ class Couch(object):
             count = 0
             docs = []
             for doc in self._query_all_docs(self.server[backup_db_name]):
-                count += 1
                 if "_rev" in doc:
                     del doc["_rev"]
                 docs.append(doc)
                 if len(docs) == self.batch_size:
+                    count += len(docs)
                     print "%s documents rolled back" % count
                     self._bulk_post_to(self.dpla_db, docs)
                     docs = []
             # Last POST
             if docs:
+                count += len(docs)
                 print "%s documents rolled back" % count
                 self._bulk_post_to(self.dpla_db, docs)
 
@@ -748,5 +750,27 @@ class Couch(object):
             msg = "Attempted to rollback but no ingestion document with " + \
                   "ingestionSequence of %s was found" % ingest_sequence
             self.logger.error(msg)
+
+        # Delete dashboard "record" documents for the ingestionSequence rolled
+        # back from
+        print "Deleting ingestionSequence %s dashboard record documents" % \
+              ingest_sequence
+        count = 0
+        delete_docs = []
+        for doc in self._query_all_dashboard_prov_docs_by_ingest_seq(
+                                                    provider, ingest_sequence
+                                                    ):
+            if doc.get("type") == "record":
+                delete_docs.append(doc)
+            if len(delete_docs) == self.batch_size:
+                count += len(delete_docs)
+                print "%s documents deleted" % count
+                self._delete_documents(self.dashboard_db, delete_docs)
+                delete_docs = []
+        # Last delete
+        if delete_docs:
+            count += len(delete_docs)
+            print "%s documents deleted" % count
+            self._delete_documents(self.dashboard_db, delete_docs)
 
         return msg
