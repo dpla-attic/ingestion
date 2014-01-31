@@ -80,8 +80,7 @@ class Couch(object):
            them in the appropriate database, then build the views. 
         """
         build_views_from_file = ["dpla_db_all_provider_docs.js",
-                                 # Uncomment when QA views have been built
-                                 #"dpla_db_qa_reports.js",
+                                 "dpla_db_qa_reports.js",
                                  "dashboard_db_all_provider_docs.js",
                                  "dashboard_db_all_ingestion_docs.js"]
         if db_name == "dpla":
