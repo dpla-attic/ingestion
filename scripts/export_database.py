@@ -37,7 +37,7 @@ pip install -r requrements.txt
     print msg
     exit(1)
 
-def set_global_variables():
+def set_global_variables(container):
     # Set the Rackspace and Database variables as global
     global RS_USERNAME
     global RS_APIKEY
@@ -51,7 +51,7 @@ def set_global_variables():
     config.readfp(open(config_file))
     RS_USERNAME = config.get("Rackspace", "Username")
     RS_APIKEY = config.get("Rackspace", "ApiKey")
-    RS_CONTAINER_NAME = config.get("Rackspace", "ContainerName")
+    RS_CONTAINER_NAME = config.get("Rackspace", container)
     DB_URL = config.get("CouchDb", "Url")
     DB_USERNAME = config.get("CouchDb", "Username")
     DB_PASSWORD = config.get("CouchDb", "Password")
@@ -601,7 +601,7 @@ def get_action_dispatcher():
 
 if __name__ == "__main__":
 
-    set_global_variables()
+    set_global_variables("DPLAContainer")
 
     arguments = validate_arguments()
     operation = arguments["operation"]
