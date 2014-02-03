@@ -3,7 +3,7 @@ class Mapper(object):
 
        Includes attributes and methods that are common to all types
     """
-    def map __init__(self, data):
+    def __init__(self, data):
         self.data = data
         self.context = {
             "@context": "http://rawgithub.com/anarchivist/8718510/raw/" + \
