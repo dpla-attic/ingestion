@@ -40,7 +40,10 @@ class Fetcher(object):
         """Set common attributes"""
         self.config_file = config_file
         self.uri_base = uri_base
+
+        # Which OAI sets get added as collections
         self.sets = profile.get("sets")
+
         self.provider = profile.get("name")
         self.blacklist = profile.get("blacklist")
         self.set_params = profile.get("set_params")
@@ -127,9 +130,14 @@ class OAIVerbsFetcher(Fetcher):
         return error, list_set_content
  
     def fetch_sets(self):
-        """Fetches all sets
+        """Fetch all sets in a collection.
 
-           Returns an (error, sets) tuple
+        A set is returned by the OAI endpoint as an object with properties
+        setDescription, setName, and setSpec (see list_sets()).  We return
+        a dictionary keyed on the short setSpec token, where values are
+        {'title': <the set name>}
+
+        Returns an (error, sets) tuple
         """
         error = None
         sets = {}
@@ -144,6 +152,7 @@ class OAIVerbsFetcher(Fetcher):
                     sets[set_spec] = {
                         "title": s["setName"]
                     }
+                    # FIXME:  This should probably be "setDescription":
                     if "description" in s:
                         sets[set_spec]["description"] = s["description"].strip()
 
@@ -196,6 +205,10 @@ class OAIVerbsFetcher(Fetcher):
                 item_record["collection"] = collections
 
     def set_collections(self):
+        """Assign collections with the dictionary of OAI sets from the provider.
+        
+           The collection dictionary is keyed on the short "setSpec" token.
+        """
         if not self.collections:
             error, sets = self.fetch_sets()
             if error is not None:
@@ -214,8 +227,10 @@ class OAIVerbsFetcher(Fetcher):
                 self.collections = sets
 
     def fetch_all_data(self):
-        """A generator to yield batches of records fetched, and any errors
-           encountered in the process, via the self.response dicitonary.
+        """A generator to yield batches (responses) of records fetched, and any
+           errors encountered in the process, via the self.response dicitonary.
+
+           Records can be for collections or items.
         """
         # Set self.collections
         self.set_collections()
@@ -1023,7 +1038,7 @@ class EDANFetcher(FileFetcher):
     def extract_xml_content(self, filepath):
         error = None
         # First <doc> is not on its own line so let's get it there
-        cmd = "grep -rl '><doc>' %s | xargs sed -i 's/><doc>/>\\n<doc>/g'" % \
+        cmd = "grep -rl '><doc>' %s | xargs sed -i -e 's/><doc>/>\\n<doc>/g'" % \
               filepath
         os.system(cmd)
 
