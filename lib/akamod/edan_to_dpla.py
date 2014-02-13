@@ -389,14 +389,6 @@ def transform_data_provider(d):
     return {"dataProvider": ds} if ds else {}
 
 
-def extent_transform(d):
-    extent = []
-    extents = arc_group_extraction(d, "freetext", "physicalDescription")
-    [extent.append(e["#text"]) for e in extents if e["@label"] == "Dimensions"]
-
-    return {"extent": extent} if extent else {}
-
-
 def subject_and_spatial_transform(d):
     v = {}
     subject = []
@@ -550,7 +542,6 @@ def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
 # Structure mapping the original top level property to a function returning a single
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
-    "freetext/physicalDescription"  : extent_transform,
     "freetext/name"                 : creator_and_contributor_transform,
     "freetext/date"                 : transform_date,
     "freetext/notes"                : transform_description,
