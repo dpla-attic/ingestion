@@ -1038,7 +1038,8 @@ class EDANFetcher(FileFetcher):
     def extract_xml_content(self, filepath):
         error = None
         # First <doc> is not on its own line so let's get it there
-        cmd = "grep -rl '><doc>' %s | xargs sed -i 's/><doc>/>\\n<doc>/g'" % \
+        cmd = "grep -rl '><doc>' %s | " \
+              "xargs sed -i'' -e 's/><doc>/>\\\n<doc>/g'" % \
               filepath
         os.system(cmd)
 
