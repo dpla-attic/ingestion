@@ -10,6 +10,8 @@ from amara.thirdparty import json
 from amara.thirdparty import httplib2
 from dplaingestion.fetcher import create_fetcher
 from dplaingestion.selector import getprop as _getprop
+from urllib2 import urlopen
+import xmltodict
 
 def getprop(obj, path):
     return _getprop(obj, path, True)
@@ -23,9 +25,9 @@ uri_base = server()[:-1]
 scdl_blacklist = ["ctm", "spg", "jfb", "jbt", "pre", "dnc", "scp", "swl",
                   "weg", "ghs", "wsb", "mbe", "gcj", "cwp", "nev", "hfp",
                   "big"]
-scdl_all_sets = ["gmb", "ctm", "spg", "jfb", "jbt", "pre", "dnc", "scp", "swl",
-                 "weg", "ghs", "wsb", "mbe", "gcj", "cwp", "nev", "hfp", "big",
-                 "dae"]
+
+list_sets = xmltodict.parse(urlopen("http://repository.clemson.edu/cgi-bin/oai.exe?verb=ListSets").read())
+scdl_all_sets = [s['setSpec'] for s in list_sets['OAI-PMH']['ListSets']['set']]
 
 # Test config file
 config_file = "test/test_data/test.conf"

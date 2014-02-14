@@ -150,6 +150,7 @@ MODULES = [
     "dplaingestion.akamod.mwdl_cleanup_field",
     "dplaingestion.akamod.ia_to_dpla",
     "dplaingestion.akamod.ia_identify_object",
+    "dplaingestion.akamod.ia_set_rights",
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.edan_to_dpla",
     "dplaingestion.akamod.cleanup_language",
