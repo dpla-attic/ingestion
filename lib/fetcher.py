@@ -152,9 +152,9 @@ class OAIVerbsFetcher(Fetcher):
                     sets[set_spec] = {
                         "title": s["setName"]
                     }
-                    # FIXME:  This should probably be "setDescription":
-                    if "description" in s:
-                        sets[set_spec]["description"] = s["description"].strip()
+                    if "setDescription" in s:
+                        sets[set_spec]["description"] = \
+                            s["setDescription"].strip()
 
                 if not sets:
                     error = "No sets received with ListSets request to %s" % \
