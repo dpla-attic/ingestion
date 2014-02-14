@@ -899,6 +899,794 @@ def test_multi_spatial_mapping():
     expected_spatial = ["value1", "value2"]
     assert expected_spatial == spatial, "%s != %s" % (expected_spatial, spatial)
 
+def test_ia_set_rights():
+    """Test application of blanket rights statement"""
+    INPUT = [{"expected_rights": u"Access to the Internet Archive's Collections is granted for scholarship and research purposes only. Some of the content available through the Archive may be governed by local, national, and/or international laws and regulations, and your use of such content is solely at your own risk.",
+              "json": u"""
+{
+   "files": {
+       "shown_at": "http://archive.org/details/wellesleynews4018well",
+       "marc": "wellesleynews4018well_marc.xml",
+       "dc": "wellesleynews4018well_dc.xml",
+       "gif": "wellesleynews4018well.gif",
+       "meta": "wellesleynews4018well_meta.xml",
+       "pdf": "wellesleynews4018well.pdf"
+   },
+   "record": {
+       "controlfield": [
+           {
+               "#text": "631245733",
+               "tag": "001"
+           },
+           {
+               "#text": "201005c19019999mau           0     eng d",
+               "tag": "008"
+           }
+       ],
+       "xmlns": "http://www.loc.gov/MARC21/slim",
+       "leader": "01489nam a2200265 a 450 ",
+       "datafield": [
+           {
+               "subfield": [
+                   {
+                       "#text": "WELL",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "WELW",
+                       "code": "a"
+                   }
+               ],
+               "tag": "049",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Newspaper",
+                   "code": "a"
+               },
+               "tag": "099",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Wellesley news.",
+                   "code": "a"
+               },
+               "tag": "245",
+               "ind1": "0",
+               "ind2": "0"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Wellesley, Mass :",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "Wellesley College.",
+                       "code": "b"
+                   }
+               ],
+               "tag": "260",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "v. ; 26-41 cm.",
+                   "code": "a"
+               },
+               "tag": "300",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Weekly from September to May.",
+                   "code": "a"
+               },
+               "tag": "310",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "v.1-   Oct. 10,1901-",
+                   "code": "a"
+               },
+               "tag": "362",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Title varies: Oct.10, 1901-June 28, 1911, College news; Oct.1911-Feb.1967, Wellesley College news.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "College news merged with Wellesley magazine to form Wellesley College news,, Oct.1911-July 1916, continuing volume-numbering of the Magazine for a while, its format.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "In Oct.1913, News resumed folio size but the magazine section remained the same, thus the magazine supplement to the News for 1913/14-1914/15 (v.22-23) are separately bound and supplement for 1915/1916 (v.24 is bound with the Wellesley College magazine for 1916/17 (v.25). In Oct.1916 the Magazine resumed its separate existence.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Wellesley College news literary supplement, issued 1922-26, is bound with v.31-34 of the News.  In Nov.1926, this supplement became a separate publication.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Clapp Library Holdings: v.1 (1901)-     (Shelved in Brackett Room)",
+                   "code": "a"
+               },
+               "tag": "599",
+               "ind1": "9",
+               "ind2": "9"
+           },
+           {
+               "subfield": {
+                   "#text": "Archives Holdings: v.1 (1901)-",
+                   "code": "a"
+               },
+               "tag": "599",
+               "ind1": "9",
+               "ind2": "9"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Wellesley College",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "Periodicals.",
+                       "code": "v"
+                   }
+               ],
+               "tag": "610",
+               "ind1": "2",
+               "ind2": "0"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Wellesley College",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "Students.",
+                       "code": "x"
+                   }
+               ],
+               "tag": "610",
+               "ind1": "2",
+               "ind2": "0"
+           },
+           {
+               "subfield": {
+                   "#text": "College news.",
+                   "code": "a"
+               },
+               "tag": "730",
+               "ind1": "0",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Wellesley College news.",
+                   "code": "a"
+               },
+               "tag": "730",
+               "ind1": "0",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": ".b16299425",
+                   "code": "a"
+               },
+               "tag": "907",
+               "ind1": " ",
+               "ind2": " "
+           }
+       ]
+    },
+   "_id": "wellesleynews4018well",
+   "metadata": {
+       "scanner": "scribe6.boston.archive.org",
+       "ppi": "500",
+       "operator": "associate-nicholas-delancey@archive.org",
+       "sponsor": "Wellesley College Library",
+       "contributor": "Wellesley College Library",
+       "foldoutcount": "0",
+       "scanfee": "250",
+       "subject": [
+           "Wellesley College",
+           "Wellesley College"
+       ],
+       "call_number": "b16299425",
+       "title": "Wellesley news",
+       "repub_state": "4",
+       "foldout_seconds": "209",
+       "source": "folio",
+       "camera": "Canon EOS 5D Mark II",
+       "ocr": "ABBYY FineReader 8.0",
+       "scanningcenter": "boston",
+       "description": [
+           "Title varies: Oct.10, 1901-June 28, 1911, College news; Oct.1911-Feb.1967, Wellesley College news",
+           "College news merged with Wellesley magazine to form Wellesley College news,, Oct.1911-July 1916, continuing volume-numbering of the Magazine for a while, its format",
+           "In Oct.1913, News resumed folio size but the magazine section remained the same, thus the magazine supplement to the News for 1913/14-1914/15 (v.22-23) are separately bound and supplement for 1915/1916 (v.24 is bound with the Wellesley College magazine for 1916/17 (v.25). In Oct.1916 the Magazine resumed its separate existence",
+           "Wellesley College news literary supplement, issued 1922-26, is bound with v.31-34 of the News. In Nov.1926, this supplement became a separate publication",
+           "Clapp Library Holdings: v.1 (1901)- (Shelved in Brackett Room)",
+           "Archives Holdings: v.1 (1901)-"
+       ],
+       "identifier-ark": "ark:/13960/t41r80q1q",
+       "mediatype": "texts",
+       "collection": [
+           "Wellesley_College_Library",
+           "blc",
+           "americana"
+       ],
+       "volume": "vol. 40 no. 18",
+       "updater": "Associate-Tim-Bigelow",
+       "updatedate": "2012-07-19 13:45:44",
+       "uploader": "Associate-Tim-Bigelow@archive.org",
+       "date": "1901",
+       "republisher": "associate-nicholas-delancey@archive.org",
+       "addeddate": "2012-07-19 13:45:46",
+       "foldout-operator": "associate-kayleigh-hinckley@archive.org",
+       "publisher": "Wellesley, Mass : Wellesley College",
+       "publicdate": "2012-07-19 13:45:50",
+       "language": "eng",
+       "page-progression": "lr",
+       "notes": "No title or copyright pages.",
+       "identifier-access": "http://archive.org/details/wellesleynews4018well",
+       "identifier": "wellesleynews4018well",
+       "sponsordate": "20120831",
+       "imagecount": "8",
+       "scandate": "20120723175550"
+   }
+}
+    """},
+    {"expected_rights": u"NOT_IN_COPYRIGHT", "json": u"""
+{
+   "files": {
+       "shown_at": "http://archive.org/details/reportofsuperint1872fitz",
+       "marc": "reportofsuperint1872fitz_marc.xml",
+       "dc": "reportofsuperint1872fitz_dc.xml",
+       "gif": "reportofsuperint1872fitz.gif",
+       "meta": "reportofsuperint1872fitz_meta.xml",
+       "pdf": "reportofsuperint1872fitz_bw.pdf"
+   },
+   "record": {
+       "controlfield": [
+           {
+               "#text": "34783177",
+               "tag": "001"
+           },
+           {
+               "#text": "OCoLC",
+               "tag": "003"
+           },
+           {
+               "#text": "19990422114840.0",
+               "tag": "005"
+           },
+           {
+               "#text": "960524c18uu9999nhuar         0   a0eng d",
+               "tag": "008"
+           }
+       ],
+       "xmlns": "http://www.loc.gov/MARC21/slim",
+       "leader": "02658nas a2200445Ia 4500",
+       "datafield": [
+           {
+               "subfield": {
+                   "#text": "21028254",
+                   "code": "b"
+               },
+               "tag": "035",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "NHS",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "NHS",
+                       "code": "c"
+                   },
+                   {
+                       "#text": "NHM",
+                       "code": "d"
+                   }
+               ],
+               "tag": "040",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "n-us-nh",
+                   "code": "a"
+               },
+               "tag": "043",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "NHMN",
+                   "code": "a"
+               },
+               "tag": "049",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Fitzwilliam (N.H. : Town)",
+                   "code": "a"
+               },
+               "tag": "110",
+               "ind1": "1",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Report of the superintending school committee of Fitzwilliam, for the year ending ..",
+                   "code": "a"
+               },
+               "tag": "245",
+               "ind1": "1",
+               "ind2": "0"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Report of Fitzwilliam schools made .... with a catalogue of the scholars",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1858.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Reports of the town officers of Fitzwilliam, N.H. made ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1860,1864.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Reports of the school committee, selectemen and treasurer of Fitzwilliam",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1862-63.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual report of the school committee of the Town of Fitzwilliam, for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1865.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Reports of the superintending school committee, selectmen and treasurer of the Town of Fitzwilliam, for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1866-1868.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports of the superintending school committee, selectmen and treasurer, of the Town of Fitzwilliam, for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1869-1873.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports of the superintending school committee, with selectmen and treasurer of the Town of Fitzwilliam also report of the town library for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1874.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual report of the superintending school committee of the Town of Fitzwilliam for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1875.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual report of the town officers of Fitzwilliam, N.H. for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1876-1897,1899-1929,1965-1966,1968-1969,1971,1984-1988,1990-",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports of the town officers and inventory of polls and ratable property of Fitzwilliam, N.H. for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1930-1964.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports of the Town of Fitzwilliam, New Hampshire for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1972-1975,1977-1983.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "2"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports of the town officers of Fitzwilliam, New Hampshire for the year ending ...",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1949-1955.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "4"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports Fitzwilliam, N.H. ",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1961-1971,1977-1978.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "4"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Fitzwilliam, New Hampshire annual reports",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1972-1976,1979-1984.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "4"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Town reports Fitzwilliam, N.H.",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "1845-1936.",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "8"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Annual reports of Fitzwilliam, N.H. ",
+                       "code": "a"
+                   },
+                   {
+                       "#text": " 1985-",
+                       "code": "f"
+                   }
+               ],
+               "tag": "246",
+               "ind1": "1",
+               "ind2": "4"
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "[Boston, Mass. :",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "S.N. Dickinson & Co. Printers,]",
+                       "code": "b"
+                   }
+               ],
+               "tag": "260",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "v. :",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "ill. ;",
+                       "code": "b"
+                   },
+                   {
+                       "#text": "24 cm.",
+                       "code": "c"
+                   }
+               ],
+               "tag": "300",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Annual.",
+                   "code": "a"
+               },
+               "tag": "310",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Description based on 1845.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Place of publiction and publisher varies.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "Titles vary slightly.",
+                   "code": "a"
+               },
+               "tag": "500",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": {
+                   "#text": "End of report year varies.",
+                   "code": "a"
+               },
+               "tag": "515",
+               "ind1": " ",
+               "ind2": " "
+           },
+           {
+               "subfield": [
+                   {
+                       "#text": "Fitzwilliam (N.H. : Town)",
+                       "code": "a"
+                   },
+                   {
+                       "#text": "Appropriations and expenditures",
+                       "code": "x"
+                   },
+                   {
+                       "#text": "Periodicals.",
+                       "code": "v"
+                   }
+               ],
+               "tag": "651",
+               "ind1": " ",
+               "ind2": "0"
+           },
+           {
+               "subfield": {
+                   "#text": "mjc retro",
+                   "code": "a"
+               },
+               "tag": "910",
+               "ind1": " ",
+               "ind2": " "
+           }
+       ]
+   },
+   "_id": "reportofsuperint1872fitz",
+   "metadata": {
+       "scanner": "scribe1.boston.archive.org",
+       "creator": "Fitzwilliam (N.H. : Town)",
+       "ppi": "400",
+       "rcamid": null,
+       "operator": "scanner-mary-holt@archive.org",
+       "missingpages": null,
+       "sponsor": "University of New Hampshire Library",
+       "contributor": "University of New Hampshire Library",
+       "foldoutcount": "0",
+       "scanfactors": "1",
+       "call_number": "2102825",
+       "title": "Report of the superintending school committee of Fitzwilliam, for the year ending .",
+       "repub_state": "4",
+       "lcamid": null,
+       "possible-copyright-status": "NOT_IN_COPYRIGHT",
+       "camera": "Canon 5D",
+       "ocr": "ABBYY FineReader 8.0",
+       "scanningcenter": "boston",
+       "description": [
+           "Description based on 1845",
+           "Place of publiction and publisher varies",
+           "Titles vary slightly",
+           "End of report year varies"
+       ],
+       "identifier-ark": "ark:/13960/t2z324395",
+       "mediatype": "texts",
+       "collection": [
+           "University_of_New_Hampshire_Library",
+           "blc",
+           "americana"
+       ],
+       "volume": "1872",
+       "updater": "tricia-gray@archive.org",
+       "updatedate": "2009-01-22 20:38:33",
+       "uploader": "tricia-gray@archive.org",
+       "date": "1872",
+       "addeddate": "2009-01-22 20:38:35",
+       "publisher": "[Boston, Mass. : S.N. Dickinson & Co. Printers,]",
+       "publicdate": "2009-01-22 20:38:40",
+       "language": "eng",
+       "curation": "[curator]julie@archive.org[/curator][date]20090220210806[/date][state]approved[/state]",
+       "identifier-access": "http://www.archive.org/details/reportofsuperint1872fitz",
+       "identifier": "reportofsuperint1872fitz",
+       "sponsordate": "20090131",
+       "imagecount": "40",
+       "scandate": "20090127004724"
+   }
+}
+    """}]
+
+    def ia_pipeline(endpoint, body):
+        url = server() + endpoint
+        resp, content = H.request(url, "POST", body)
+        assert str(resp.status).startswith("2"), str(resp) + "\n" + content
+        return content
+
+    for i in INPUT:
+        content = ia_pipeline("ia-to-dpla", i["json"])
+        content = ia_pipeline("ia-set-rights", content)
+        doc = json.loads(content)
+        assert "sourceResource" in doc, "sourceResource field is absent"
+        sr = doc["sourceResource"]
+        assert "rights" in sr, "rights in sourceResource not found"
+        sr_rights = sr["rights"]
+        expected_rights = i["expected_rights"]
+        assert expected_rights == sr_rights, "Expected rights not equal to sourceResource.rights: %s != %s" % (expected_rights, sr_rights)
+        if "hasView" in doc:
+            hv_rights = doc["hasView"]["rights"]
+            assert expected_rights == hv_rights, "Expected rights not equal to hasView.rights: %s != %s" % (expected_rights, hv_rights)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
