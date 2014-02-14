@@ -202,7 +202,10 @@ class OAIVerbsFetcher(Fetcher):
                 if collection:
                     collections.append(collection)
             if collections:
-                item_record["collection"] = collections
+                if len(collections) == 1:
+                    item_record["collection"] = collections[0]
+                else:
+                    item_record["collection"] = collections
 
     def set_collections(self):
         """Assign collections with the dictionary of OAI sets from the provider.
