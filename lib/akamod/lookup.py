@@ -393,10 +393,12 @@ COUNTRY_ALIAS = {
     "United States of America": "United States"
 }
 
+# Collection tree can be found here: http://digitalcommonwealth.org/collection-tree
 DC_DATA_PROVIDER = {
     "Beverly High School Digital Collection": "Beverly High School",
 
     "Brookline Photograph Collection": "Brookline Public Library",
+
     "Amherst Collection": "C/W MARS",
     "Athol Collection": "C/W MARS",
     "Baystate Medical Center Collection": "C/W MARS",
@@ -441,10 +443,12 @@ DC_DATA_PROVIDER = {
     "Worcester Collection": "C/W MARS",
     "WPI Collection": "C/W MARS",
 
+	"Chicopee Weekly Journal" : "Chicopee Public Library, Chicopee Archives Online",
+	"Soldier's Record, Town of Chicopee" : "Chicopee Public Library, Chicopee Archives Online",
+
     "Essex Aggie Digital Collection": "Essex Agricultural and Technical High School",
 
     "Henry Whittemore Library": "Framingham State University",
-
 
     "John W. Ragle Archives Room": "Governor's Academy",
 
@@ -558,6 +562,9 @@ DC_DATA_PROVIDER = {
     "West Bridgewater Public Library Historical Postcards": "SAILS Digital History Collection",
 
     "College Archives Digital Collections": "Springfield College",
+    "Springfield College Catalogs": "Springfield College",
+    "The Triangle and Physical Education Magazines": "Springfield College",
+    "Training School Notes, Association Outlook and Association Seminar": "Springfield College",
 
     "State Library of Massachusetts Collection": "State Library of Massachusetts Collection",
     "Attorney General Annual Reports": "State Library of Massachusetts Collection",
@@ -589,6 +596,15 @@ DC_DATA_PROVIDER = {
     "Lowell Massachusetts: Building Surveys Overview Reports": "University of Massachusetts Lowell Libraries",
     "Lowell Neighborhoods: Historical and Architectural Survey": "University of Massachusetts Lowell Libraries",
     "Stereoview Collection": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Correspondence": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Memoranda": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Other Documents": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Position Statements": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Press Releases": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Photographs": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Speeches": "University of Massachusetts Lowell Libraries",
+	"Paul E. Tsongas Congressional Papers: Reports": "University of Massachusetts Lowell Libraries",
+	"Tewksbury Almshouse Intake Records": "University of Massachusetts Lowell Libraries",
 
     u"Convers Francis, 1795\u20131863": "Watertown Free Public Library",
     "Watertown Arsenal": "Watertown Free Public Library",
