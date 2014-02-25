@@ -55,11 +55,14 @@ def transform_description(d):
 def transform_date(d):
     date = []
     dates = arc_group_extraction(d, "freetext", "date")
-    for item in dates:
-        if "@label" in item and "#text" in item:
-            date.append(item["#text"])
-            
-    return {"temporal": date} if date else {}
+    try:
+        for item in dates:
+            if "@label" in item and "#text" in item:
+                date.append(item["#text"])
+        return {"temporal": date} if date else {}
+    except TypeError:
+        # dates is not iterable
+        return {}
 
 def extract_date(d, group_key, item_key):
     dates = []
