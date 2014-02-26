@@ -31,10 +31,10 @@ out.close()
 from distutils.core import setup
 
 setup( name = 'ingestion',
-       version = '0.1',
+       version = '19.1',
        description='DPLA Ingestion Subsystem',
-       author='Mark Baker',
-       author_email='mark@zepheira.com',
+       author='Mark Breedlove',
+       author_email='mb@dp.la',
        url='http://dp.la',
        package_dir={'dplaingestion':'lib'},
        packages=['dplaingestion','dplaingestion.akamod'],
