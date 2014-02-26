@@ -255,3 +255,69 @@ class david_rumsey_identify_object(identify_object):
 
 class hathi_identify_object(identify_object):
     pass
+
+
+class type_conversion:
+    # Map of "physical description" substring to sourceResource.type.
+    # freetext/physicalDescription is considered first, and these values
+    # should be as specific as possible, to avoid false assignments, because
+    # physicalDescription is pretty free-form, unlike the object type fields.
+    type_for_phys_keyword = [
+        ('holiday card', 'image'),
+        ('christmas card', 'image'),
+        ('mail art', 'image'),
+        ('postcard', 'image'),
+    ]
+    # Map of "object type" substring to desired sourceResource.type.
+    # For simple "if substr in str" matching.  Place more specific
+    # patterns higher up, before more general ones.
+    # Items labeled as physical objects are "images of physical objects."
+    type_for_ot_keyword = [
+        ('photograph', 'image'),
+        ('sample book', 'image'),
+        ('book', 'text'),
+        ('specimen', 'image'),
+        ('electronic resource', 'interactive resource'),
+        ('textile', 'image'),
+        ('frame', 'image'),
+        ('costume', 'image'),
+        ('object', 'image'),
+        ('statue', 'image'),
+        ('sculpture', 'image'),
+        ('container', 'image'),
+        ('jewelry', 'image'),
+        ('furnishing', 'image'),
+        ('furniture', 'image'),
+        ('image', 'image'),
+        ('drawing', 'image'),
+        ('print', 'image'),
+        ('painting', 'image'),
+        ('illumination', 'image'),
+        ('poster', 'image'),
+        ('appliance', 'image'),
+        ('tool', 'image'),
+        ('electronic component', 'image'),
+        ('publication', 'text'),
+        ('magazine', 'text'),
+        ('journal', 'text'),
+        ('postcard', 'image'),
+        ('correspondence', 'text'),
+        ('writing', 'text'),
+        ('manuscript', 'text'),
+        # keep "equipment" above "audio" ("Audiovisual equipment")
+        ('equipment', 'image'),
+        ('audio', 'sound'),
+        ('sound recording', 'sound'),
+        ('oral history recording', 'sound'),
+        ('finding aid', 'collection'),
+        ('online collection', 'collection'),
+        ('online exhibit', 'interactive resource'),
+        ('motion picture', 'moving image'),
+        ('film', 'moving image'),
+        ('video game', 'interactive resource'),
+        ('video', 'moving image')
+    ]
+
+class edan_to_dpla(type_conversion):
+    pass
+

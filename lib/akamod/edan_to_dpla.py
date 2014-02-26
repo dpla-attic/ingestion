@@ -1,5 +1,4 @@
-from akara import logger
-from akara import request, response
+from akara import logger, request, response, module_config
 from akara.services import simple_service
 from amara.lib.iri import is_absolute
 from amara.thirdparty import json
@@ -40,6 +39,12 @@ CONTEXT = {
      "@type": "xsd:date"
    }
 }
+type_for_ot_keyword = module_config().get('type_for_ot_keyword')
+type_for_phys_keyword = module_config().get('type_for_phys_keyword')
+
+
+class NoTypeError(Exception):
+    pass
 
 
 def transform_description(d):
@@ -55,11 +60,14 @@ def transform_description(d):
 def transform_date(d):
     date = []
     dates = arc_group_extraction(d, "freetext", "date")
-    for item in dates:
-        if "@label" in item and "#text" in item:
-            date.append(item["#text"])
-            
-    return {"temporal": date} if date else {}
+    try:
+        for item in dates:
+            if "@label" in item and "#text" in item:
+                date.append(item["#text"])
+        return {"temporal": date} if date else {}
+    except TypeError:
+        # dates is not iterable
+        return {}
 
 def extract_date(d, group_key, item_key):
     dates = []
@@ -491,8 +499,69 @@ def language_transform(d):
 
     return {"language": language} if language else {}
 
+def _type_for_keyword(s, mappings):
+    """Given a string, return our mapped type, or None if we can't look it up.
+    
+    mapping: a tuple of (string, type)
+    """
+    for pair in mappings:
+        # example:  ('book', 'text')
+        if pair[0] in s:
+            return pair[1]
+    return None
+
+def _type_for_strings_and_mappings(string_map_combos):
+    """_type_for_strings_and_mappings([(list, list_of_tuples), ...])
+    
+    Given pairs of (list of strings, list of mapping tuples), try to find a
+    suitable item type.
+    """
+    for strings, mappings in string_map_combos:
+        # Try each of our strings to see if a keyword falls within it
+        for s in strings:
+            t = _type_for_keyword(s, mappings)
+            if t:
+                return t
+    raise NoTypeError
+
 def transform_type(d):
-    return {"type": getprop(d, "indexedStructured/online_media_type")}
+    """Get type from objectType or object_type element
+
+    Specifically, look at freetext/objectType[label=Type] and
+    indexedStructured/object_type.
+    """
+    global type_for_ot_keyword, type_for_phys_keyword
+    object_type_strings = []
+    phys_type_strings = []
+    phys_desc = arc_group_extraction(d, "freetext", "physicalDescription")
+    ot_ccase = arc_group_extraction(d, "freetext", "objectType")
+    ot_uscore = arc_group_extraction(d, "indexedStructured", "object_type")
+    if phys_desc:
+        for pd in phys_desc if (type(phys_desc) == list) else [phys_desc]:
+            pd_text = pd.get('#text', '').strip()
+            if pd_text:
+                phys_type_strings.append(pd_text.lower())
+    if ot_ccase:
+        for ot in ot_ccase if (type(ot_ccase) == list) else [ot_ccase]:
+            if ot.get('@label', '') == 'Type':
+                s = ot.get('#text', '').strip()
+                if s:
+                    object_type_strings.append(s.lower())
+    if ot_uscore:
+        for ot in ot_uscore:
+            s = ot.strip()
+            if s:
+                object_type_strings.append(s.lower())
+    try:
+        new_type = _type_for_strings_and_mappings([
+            (phys_type_strings, type_for_phys_keyword),
+            (object_type_strings, type_for_ot_keyword)
+            ])
+    except NoTypeError:
+        id_for_msg = d.get('_id', '[no _id]')
+        logger.warning('Can not deduce type for item with _id: %s' % id_for_msg)
+        new_type = 'image'
+    return {'type': new_type}
 
 def arc_group_extraction(d, groupKey, itemKey, nameKey=None):
     """
@@ -550,7 +619,6 @@ CHO_TRANSFORMER = {
     "freetext/physicalDescription"  : transform_format_and_extent,
     "freetext/publisher"            : transform_publisher,
     "descriptiveNonRepeating/title" : transform_title,
-    "indexedStructured/online_media_type": transform_type,
     #"descriptiveNonRepeating/data_source" : transform_data_provider,
     #"descriptiveNonRepeating/online_media" : transform_online_media,
     "collection"            : lambda d: {"collection": d.get("collection")}
@@ -576,7 +644,7 @@ def edantodpla(body,ctype,geoprop=None):
     try :
         data = json.loads(body)
     except:
-        response.code = 500
+        response.code = 400
         response.add_header("content-type","text/plain")
         return "Unable to parse body as JSON"
 
@@ -601,6 +669,7 @@ def edantodpla(body,ctype,geoprop=None):
     out["sourceResource"].update(transform_rights(data))
     out["sourceResource"].update(transform_subject(data))
     out["sourceResource"].update(transform_spatial(data))
+    out["sourceResource"].update(transform_type(data))
 
     out.update(transform_is_shown_at(data))
     out.update(transform_object(data))

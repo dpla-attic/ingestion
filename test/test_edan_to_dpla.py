@@ -9,7 +9,6 @@ from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest
 from urllib import quote
 
-
 BASIC_URL = server() + "edan_to_dpla"
 
 
@@ -83,6 +82,7 @@ def test_populating_collection_name():
     EXPECTED_COLLECTION = {
             "@id": "http://dp.la/api/collections/smithsonian--nmafa_files_1964-2008_[national_museum_of_african_art_u.s._office_of_the_director]",
             "title": "NMAfA Files 1964-2008 [National Museum of African Art (U.S.) Office of the Director]",
+            "type": "image"
             }
     resp, content = _get_server_response(INPUT)
     assert resp["status"].startswith("2")
@@ -111,7 +111,8 @@ def test_populating_publisher_field():
                 }
             }
     EXPECTED_PUBLISHER = {
-            "publisher": ["xx"]
+            "publisher": ["xx"],
+            "type": "image"
     }
     resp, content = _get_server_response(INPUT)
     print_error_log()
@@ -155,9 +156,17 @@ def test_populating_title():
         assert resp["status"].startswith("2")
         CONTENT = json.loads(content)
         if d[0]:
-            assert_same_jsons({"title": "tt"}, CONTENT["sourceResource"])
-        else:
-            assert "sourceResource" not in CONTENT
+            assert_same_jsons({"title": "tt", "type": "image"},
+                              CONTENT["sourceResource"])
+        # It does not seem that the following assertion should be performed.
+        # The fixture above is not the complete dict that would be coming from
+        # a real provider document.  You wouldn't have sourceResource being
+        # undefined in a real case.  It would be defined, with "title" being
+        # absent, so this assertion gives the false impression that documents
+        # without valid "title" data will be handled correctly.
+        # -- Mark B
+        #else:
+        #    assert "sourceResource" not in CONTENT
 
 
 def test_transforming_one_thumbnail():
@@ -227,3 +236,87 @@ def test_thumbnail_for_no_media():
     assert resp["status"].startswith("2")
     CONTENT = json.loads(content)
     assert not "object" in CONTENT
+
+
+### Tests for item type determination.
+#
+#   These make assumptions about the order of certain list items in the
+#   akara.conf config file (and the akara_test.config file that's generated
+#   by the server_support module.
+#
+
+def test_text_type():
+    """Text item is identified as text"""
+    original = {
+            "freetext": {
+                "objectType": {
+                    "#text": "Correspondence",
+                    "@label": "Type"
+                    }
+                },
+            "indexStructured": {
+                "object_type": [
+                    "Correspondence",
+                    "Archival materials"
+                    ]
+                }
+            }
+    resp, body = _get_server_response(original)
+    assert resp["status"] == "200"
+    result = json.loads(body)
+    assert result["sourceResource"]["type"] == "text"
+    
+
+def test_transform_type_phys_desc_override():
+    """physicalDescription overrides object type for determining item type"""
+    original = {
+            "freetext": {
+                "physicalDescription": {
+                    "#text": "mail art",
+                    "@label": "Physical description"
+                    },
+                "objectType": {
+                    "#text": "Correspondence",
+                    "@label": "Type"
+                    }
+                },
+            "indexStructured": {
+                "object_type": [
+                    "Correspondence",
+                    "Archival materials"
+                    ]
+                }
+            }
+    resp, body = _get_server_response(original)
+    assert resp["status"] == "200"
+    result = json.loads(body)
+    assert result["sourceResource"]["type"] == "image"
+
+def test_transform_type_multiple_phys_desc():
+    """Type is correctly determined when physicalDescription is a list"""
+    original = {
+            "freetext": {
+                "physicalDescription": [
+                    {
+                        "#text": "mail art",
+                        "@label": "Physical description"
+                    },
+                    {
+                        "#text": "Holiday card",
+                        "@label": "Physical description"
+                    }
+                    ]
+            },
+            "indexStructured": {
+                "object_type": [
+                    "Correspondence",
+                    "Archival materials"
+                    ]
+                }
+            }
+    resp, body = _get_server_response(original)
+    assert resp["status"] == "200"
+    result = json.loads(body)
+    assert result["sourceResource"]["type"] == "image"
+
+
