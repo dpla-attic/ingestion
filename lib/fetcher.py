@@ -5,6 +5,8 @@ import time
 import hashlib
 import fnmatch
 import urllib2
+from xml.parsers.expat import ExpatError
+from tempfile import mkstemp
 import xmltodict
 import ConfigParser
 import itertools as it
@@ -1035,8 +1037,17 @@ class EDANFetcher(FileFetcher):
         item_record["collection"].append(collection)
 
     def parse(self, doc_list):
-        parsed_docs = xmltodict.parse("<docs>" + "".join(doc_list) + "</docs>")
-        return parsed_docs["docs"]["doc"]
+        try:
+            parsed_docs = xmltodict.parse("<docs>" + "".join(doc_list) + \
+                                          "</docs>")
+            return parsed_docs["docs"]["doc"]
+        except ExpatError as e:
+            fd, error_file_name = mkstemp()
+            os.write(fd, "<docs>" + "".join(doc_list) + "</docs>")
+            print >> sys.stderr, e.message
+            print >> sys.stderr, "Bad batch written to %s" % error_file_name
+            sys.exit(1)
+
 
     def extract_xml_content(self, filepath):
         error = None
