@@ -52,7 +52,7 @@ def set_global_variables(container):
     RS_USERNAME = config.get("Rackspace", "Username")
     RS_APIKEY = config.get("Rackspace", "ApiKey")
     RS_CONTAINER_NAME = config.get("Rackspace", container)
-    DB_URL = config.get("CouchDb", "Url")
+    DB_URL = config.get("CouchDb", "Url") + "dpla"
     DB_USERNAME = config.get("CouchDb", "Username")
     DB_PASSWORD = config.get("CouchDb", "Password")
 

@@ -294,7 +294,7 @@ def _get_subject_values(_dict, tag):
             continue
 
         if "#text" in subfield:
-            values.append(subfield["#text"])
+            values.append(subfield["#text"].rstrip(", "))
             delimiters = _delimiters(tag, code)
             for delim in delimiters:
                 values = [delim.join(values)]

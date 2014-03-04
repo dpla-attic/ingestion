@@ -1,6 +1,9 @@
 # Utility methods 
 import os
+import sys
+import time
 import tarfile
+from functools import wraps
 
 def iterify(iterable):
     """Treat iterating over a single item or an iterator seamlessly"""
@@ -37,3 +40,57 @@ def couch_id_builder(src, lname):
 def couch_rec_id_builder(src, record):
     lname = record.get("id", "no-id").strip().relace(" ", "__")
     return couch_id_builder(src, lname)
+
+def with_retries(attempts_num=3, delay_sec=1, print_args_if_error=False):
+    """
+    Wrapper (decorator) that calls given func(*args, **kwargs);
+    In case of exception does 'attempts_num'
+    number of attempts with "delay_sec * attempt number" seconds delay
+    between attempts.
+
+    If 'print_args_if_error' is True, then wrapped function arguments
+    will be shown in error message besides function name.
+
+    Usage:
+    @with_retries(5, 2)
+    def get_document(doc_id, uri): ...
+    d = get_document(4444, "...") # now it will do the same logic but with retries
+
+    Or:
+    def get_document(...): ...
+    get_document = with_retries(5, 2)(get_document)
+    d = get_document(...) # now it will do the same logic but with retries
+    """
+
+    def apply_with_retries(func):
+        assert attempts_num >= 1
+        assert isinstance(attempts_num, int)
+        assert delay_sec >= 0
+
+        @wraps(func)
+        def func_with_retries(*args, **kwargs):
+
+            def pause(attempt):
+                """Do pause if current attempt is not the last"""
+                if attempt < attempts_num:
+                    sleep_sec = delay_sec * attempt
+                    time.sleep(sleep_sec)
+
+            for attempt in xrange(1, attempts_num + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    args_string = "" if not print_args_if_error else \
+                                  ", with arguments: %s, %s" % (args, kwargs)
+                    msg = ("Error [%s: %s] " % (e.__class__.__name__, str(e)) +
+                           "occurred while trying to call \"%s\"%s. " %
+                           (func.__name__, args_string) +
+                           "Attempt #%d failed" % (attempt))
+                    if attempt == attempts_num:
+                        raise
+                    else:
+                        pause(attempt)
+
+        return func_with_retries
+
+    return apply_with_retries

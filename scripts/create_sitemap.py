@@ -3,6 +3,7 @@ import time
 import shutil
 import tarfile
 import datetime
+import ConfigParser
 from dplaingestion.couch import Couch
 from export_database import set_global_variables
 from export_database import get_rackspace_connection
@@ -43,7 +44,10 @@ def create_sitemap_files(path, urls, count):
         f.write("</urlset>")
 
 def create_sitemap_index(path):
-    global CONTAINER
+    config_file = "akara.ini"
+    config = ConfigParser.ConfigParser()
+    config.readfp(open(config_file))
+    site_map_uri = config.get("Sitemap", "SitemapURI")
 
     lastmod = datetime.date.today().strftime("%Y-%m-%d")
     lastmod = datetime.date.today().strftime("%Y-%m-%d")
@@ -57,14 +61,15 @@ def create_sitemap_index(path):
             # Skip file being written to
             if item == "all_item_urls.xml":
                 continue
-            rs_file_uri = url_join(CONTAINER.public_uri(), item)
+            # sitemaps.dp.la is a CNAME pointing to the CDN host
+            file_uri = url_join(site_map_uri, item)
             lastmod = time.strftime("%Y-%m-%dT%H:%M:%S%z",
                                     time.gmtime(os.path.getmtime(
                                         os.path.join(path, item)
                                         )))
             line = "\t<sitemap>\n" + \
                    "\t\t<loc>%s</loc>\n\t\t<lastmod>%s</lastmod>\n" % \
-                   (rs_file_uri, lastmod) + "\t</sitemap>\n"
+                   (file_uri, lastmod) + "\t</sitemap>\n"
             f.write(line)
         f.write("</sitemapindex>")
 
