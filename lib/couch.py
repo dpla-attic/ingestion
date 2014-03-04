@@ -82,7 +82,8 @@ class Couch(object):
         build_views_from_file = ["dpla_db_all_provider_docs.js",
                                  "dpla_db_qa_reports.js",
                                  "dashboard_db_all_provider_docs.js",
-                                 "dashboard_db_all_ingestion_docs.js"]
+                                 "dashboard_db_all_ingestion_docs.js",
+                                 "dpla_db_export_database.js"]
         if db_name == "dpla":
             db = self.dpla_db
         elif db_name == "dashboard":
