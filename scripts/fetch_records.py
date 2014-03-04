@@ -14,9 +14,9 @@ from akara import logger
 from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
-from dplaingestion.fetcher import create_fetcher
 from dplaingestion.selector import getprop
 from dplaingestion.utilities import iterify
+from dplaingestion.create_fetcher import create_fetcher
 
 def create_fetch_dir(provider):
     return tempfile.mkdtemp("_" + provider)

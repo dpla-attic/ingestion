@@ -4,7 +4,7 @@
     "endpoint_url": "http://archive.org/advancedsearch.php?q=collection%3A%22{0}%22&fl%5B%5D=identifier&output=json",
     "endpoint_url_params": {
         "page": 1,
-        "rows": 100
+        "rows": 1000
     },
     "get_file_url": "http://www.archive.org/download/{0}/{1}",
     "prefix_files": "{0}_files.xml",
@@ -12,9 +12,6 @@
     "prefix_dc": "{0}_dc.xml",
     "shown_at_url": "http://archive.org/details/{0}",
     "collections": {
-        "statelibrarynorthcarolina": {
-            "title": "State Library of North Carolina, Government & Heritage Library Collection"
-        },
         "blc": {
             "title": "Boston Library Consortium"
         },

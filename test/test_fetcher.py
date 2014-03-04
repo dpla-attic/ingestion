@@ -8,7 +8,7 @@ from server_support import server
 from server_support import print_error_log
 from amara.thirdparty import json
 from amara.thirdparty import httplib2
-from dplaingestion.fetcher import create_fetcher
+from dplaingestion.create_fetcher import create_fetcher
 from dplaingestion.selector import getprop as _getprop
 from urllib2 import urlopen
 import xmltodict
