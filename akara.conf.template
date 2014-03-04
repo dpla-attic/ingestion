@@ -192,10 +192,12 @@ MODULES = [
     "dplaingestion.akamod.hathi_identify_object",
     "dplaingestion.akamod.oai_untl_to_dpla",
     "dplaingestion.akamod.texas_enrich_location",
-    "dplaingestion.akamod.georgia_set_spec_type",
+    "dplaingestion.akamod.set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
     "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
     "dplaingestion.akamod.compare_with_schema",
+    "dplaingestion.akamod.qdc_to_dpla",
+    "dplaingestion.akamod.mdl_state_located_in",
     ]
 
 ### Section 3: Other module configuration goes here

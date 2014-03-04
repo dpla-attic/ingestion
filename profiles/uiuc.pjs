@@ -1,6 +1,7 @@
 {
-    "name": "uiuc", 
+    "name": "uiuc",
     "type": "oai_verbs",
+    "metadata_prefix": "oai_qdc",
     "endpoint_url": "http://imagesearchnew.library.illinois.edu/oai/oai.php",
     "sets": [
         "kennedy",
@@ -23,23 +24,24 @@
         "blueprints",
         "cannon",
         "sanborn"
-    ], 
+    ],
     "contributor": {
         "@id": "http://dp.la/api/contributor/uiuc",
         "name": "University of Illinois at Urbana-Champaign"
     },
     "enrichments_coll": [
         "/compare_with_schema"
-    ], 
+    ],
     "enrichments_item": [
         "/select-id",
-        "/oai-to-dpla",
+        "/qdc_to_dpla?provider=uiuc",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
         "/cleanup_value",
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/move_date_values?prop=sourceResource%2Fspatial",
+        "/shred?prop=sourceResource%2Fspatial",
         "/shred?prop=sourceResource%2Fspatial&delim=--",
         "/capitalize_value",
         "/enrich_earliest_date",
@@ -56,9 +58,8 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/contentdm_identify_object",
-        "/copy_prop?prop=sourceResource%2Frelation&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True&remove=True",
-        "/copy_prop?prop=dataProvider&to_prop=sourceResource%2FisPartOf&create=True&no_replace=True",
         "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library",
+        "/unset_prop?prop=sourceResource%2Fcontributor",
         "/compare_with_schema"
     ]
 }

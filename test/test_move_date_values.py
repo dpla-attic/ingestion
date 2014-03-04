@@ -279,6 +279,35 @@ def test_move_date_values_with_circa():
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
+def test_move_date_values_non_empty_temporal():
+    """Should iterify temporal and append date"""
+    prop = "sourceResource/spatial"
+    INPUT = {
+        "sourceResource": {
+            "spatial": [
+                "Asheville",
+                "1941"
+            ],
+            "temporal": "1940"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "spatial": [
+                "Asheville"
+            ],
+            "temporal": [
+                "1940",
+                "1941"
+            ]
+        }
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop) 
+    assert resp.status == 200
+    print >> sys.stderr, json.loads(content)
+    print >> sys.stderr, EXPECTED
+    assert json.loads(content) == EXPECTED
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

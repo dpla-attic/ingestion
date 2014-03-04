@@ -1,5 +1,5 @@
 {
-    "name": "uiuc_book", 
+    "name": "uiuc_book",
     "type": "oai_verbs",
     "metadata_prefix": "marc",
     "endpoint_url": "http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp",
@@ -9,12 +9,12 @@
         "MN"
     ],
     "contributor": {
-        "@id": "http://dp.la/api/contributor/uiuc", 
+        "@id": "http://dp.la/api/contributor/uiuc",
         "name": "University of Illinois at Urbana-Champaign"
-    }, 
+    },
     "enrichments_coll": [
         "/compare_with_schema"
-    ], 
+    ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/marc_to_dpla",
@@ -24,7 +24,7 @@
         "/enrich-subject",
         "/enrich_date",
         "/enrich-type",
-        "/enrich-format", 
+        "/enrich-format",
         "/enrich_location",
         "/geocode",
         "/cleanup_language",
