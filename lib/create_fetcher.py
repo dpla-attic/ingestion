@@ -32,7 +32,7 @@ def create_fetcher(profile_path, uri_base, config_file):
 
     def _create_hathi_fetcher(profile, uri_base, config_file):
         from dplaingestion.fetchers.hathi_fetcher import HathiFetcher
-        return Fetcher(profile, uri_base, config_file)
+        return HathiFetcher(profile, uri_base, config_file)
 
     def _create_oai_verbs_fetcher(profile, uri_base, config_file):
         from dplaingestion.fetchers.oai_verbs_fetcher import OAIVerbsFetcher
