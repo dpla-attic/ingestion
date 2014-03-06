@@ -100,8 +100,7 @@ class Akara:
     #      CRITICAL, ERROR, WARN, INFO, DEBUG
     #  Also, WARNING is an alias for WARN
     #
-    #LogLevel = "INFO"
-    LogLevel = "DEBUG"
+    LogLevel = "${Akara__LogLevel}"
 
 ### Section 2: List of extension modules to install
 

@@ -21,6 +21,8 @@ Configure an akara.ini file appropriately for your environment;
 
     [Akara]
     Port=<port for Akara to run on>
+    ; Recommended LogLevel is one of DEBUG or INFO
+    LogLevel=<priority>
 
     [Bing]
     ApiKey=<your Bing Maps API key>
