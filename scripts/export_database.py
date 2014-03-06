@@ -36,6 +36,8 @@ pip install -r requrements.txt
 """
     print msg
     exit(1)
+import sys
+
 
 def set_global_variables(container):
     # Set the Rackspace and Database variables as global
@@ -211,8 +213,11 @@ def download_source_data(arguments):
     # Set the file name
     arguments["file"] = s.lower().replace(" ", "_") + ".gz"
 
-    store_result_into_file(resp, arguments)
-    send_file_to_rackspace(arguments)
+    status = store_result_into_file(resp, arguments)
+    if status == 0:
+        send_file_to_rackspace(arguments)
+    else:
+        print >> sys.stderr, "File %s not uploaded" % arguments["file"]
 
 
 def download_each_source_data(arguments):
@@ -430,7 +435,7 @@ def download_all_database(arguments):
     if status == 0:
         send_file_to_rackspace(arguments)
     else:
-        print "Did not send file %s to the Rackspace container" \
+        print >> sys.stderr, "Did not send file %s to the Rackspace container" \
               % arguments["file"]
 
 
@@ -442,7 +447,7 @@ def store_result_into_file(result, arguments):
         arguments - dictionary returned by the validate_arguments function
 
     Returns:
-        nothing
+        0 for success, -1 for error
     """
     from gzip import GzipFile as zipf
 
