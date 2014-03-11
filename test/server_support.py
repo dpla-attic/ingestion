@@ -180,9 +180,11 @@ MODULES = [
     "dplaingestion.akamod.usc_enrich_location",
     "dplaingestion.akamod.hathi_identify_object",
     "dplaingestion.akamod.texas_enrich_location",
-    "dplaingestion.akamod.georgia_set_spec_type",
+    "dplaingestion.akamod.set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
     "dplaingestion.akamod.compare_with_schema",
+    "dplaingestion.akamod.mdl_state_located_in",
+    "dplaingestion.akamod.scdl_format_to_type",
     ]
 
 class download_preview:

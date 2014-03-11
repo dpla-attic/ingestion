@@ -200,9 +200,9 @@ class DplaBingGeocoder(geocoders.Bing):
 
                 if (valid_result): 
                     if ("name" in spatial): 
-                        logger.info("Geocode result: %s => %s (%s)" % (spatial["name"], result["name"], result["point"]["coordinates"],))
+                        logger.debug("Geocode result: %s => %s (%s)" % (spatial["name"], result["name"], result["point"]["coordinates"],))
                     else: 
-                        logger.info("Geocode result: %s => %s (%s)" % (spatial, result["name"], result["point"]["coordinates"],))
+                        logger.debug("Geocode result: %s => %s (%s)" % (spatial, result["name"], result["point"]["coordinates"],))
                     return coordinate
 
         return None

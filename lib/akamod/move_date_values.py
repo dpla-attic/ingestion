@@ -46,7 +46,8 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
     if exists(data, prop):
         values = getprop(data, prop)
         remove = []
-        toprop = getprop(data, to_prop) if exists(data, to_prop) else []
+        toprop = iterify(getprop(data, to_prop)) if exists(data, to_prop) \
+                 else []
         
         for v in iterify(values):
             if isinstance(v, basestring):

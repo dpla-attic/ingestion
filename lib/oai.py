@@ -173,7 +173,6 @@ class oaiservice(object):
         if resumption_token:
             params = {'verb' : 'ListRecords', 'resumptionToken': resumption_token}
         
-
         qstr = urllib.urlencode(params)
         url = self.root + '?' + qstr
         self.logger.debug('OAI request URL: {0}'.format(url))
@@ -299,17 +298,19 @@ OAI_DC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 
 QDC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
+         xmlns:o="http://www.openarchives.org/OAI/2.0/"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
-         http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd"
+         xmlns:eg="http://examplotron.org/0/"
+         xmlns:ak="http://purl.org/xml3k/akara/xmlmodel">
   <responseDate>2013-03-12T20:06:26Z</responseDate>
   <request verb="ListRecords" metadataPrefix="qdc" set="maps">http://imagesearch.library.illinois.edu/cgi-bin/oai.exe</request>
   <ListRecords>
-    <record>
-      <header>
+    <record ak:resource="o:header/o:identifier">
+      <header status="deleted" ak:rel="'status'" ak:value="@status">
         <identifier>oai:imagesearch.library.illinois.edu:maps/2243</identifier>
-        <datestamp>2013-02-26</datestamp>
-        <setSpec>maps</setSpec>
+        <datestamp ak:rel="local-name()" ak:value=".">2013-02-26</datestamp>
+        <setSpec ak:rel="local-name()" ak:value=".">maps</setSpec>
       </header>
       <metadata>
         <qdc:qualifieddc xmlns:qdc="http://epubs.cclrc.ac.uk/xmlns/qdc/"
@@ -318,21 +319,27 @@ QDC_LISTRECORDS_XML = """<?xml version="1.0" encoding="UTF-8"?>
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://epubs.cclrc.ac.uk/xmlns/qdc/
            http://epubs.cclrc.ac.uk/xsd/qdc.xsd">
-          <dc:title>Illinois (Cook County), Chicago quadrangle : topographic sheet</dc:title>
-          <dcterms:alternative>Chicago quadrangle, Illinois (Cook County)</dcterms:alternative>
-          <dc:creator>Geological Survey (U.S.)</dc:creator>
-          <dcterms:spatial>Illinois</dcterms:spatial>
-          <dc:subject>Illinois; Maps; Topographic maps; Topography; Chicago (Ill.); Cook County (Ill.)</dc:subject>
-          <dc:type>Maps</dc:type>
-          <dc:description>1 map : col. ; 45 x 34 cm. -- Relief indicated by contours. -- &quot;Surveyed in 1889, 1897 and 1899.&quot; -- &quot;Contour interval 5 feet.&quot;</dc:description>
-          <dc:date>1901</dc:date>
-          <dc:contributor>Gannett, Henry, 1846-1914; Harrison, D.C.; Renshawe, John H.; United States. Lake Survey</dc:contributor>
-          <dc:description>Scale 1:62,500</dc:description>
-          <dcterms:isPartOf>Historical Maps Online</dcterms:isPartOf>
-          <dc:publisher>[Washington, D.C.] : U.S. Geological Survey, 1901.</dc:publisher>
-          <dc:rights>http://images.library.uiuc.edu/projects/maps/terms.html</dc:rights>
-          <dc:relation>http://histmapimages.grainger.illinois.edu/jp2files/Chicago1901.jp2</dc:relation>
-          <dc:identifier>http://imagesearch.library.illinois.edu/u?/maps,2243</dc:identifier>
+          <dc:title ak:rel="local-name()" ak:value=".">Illinois (Cook County), Chicago quadrangle : topographic sheet</dc:title>
+          <dcterms:alternative ak:rel="local-name()" ak:value=".">Chicago quadrangle, Illinois (Cook County)</dcterms:alternative>
+          <dc:creator ak:rel="local-name()" ak:value=".">Geological Survey (U.S.)</dc:creator>
+          <dcterms:spatial ak:rel="local-name()" ak:value=".">Illinois</dcterms:spatial>
+          <dc:subject ak:rel="local-name()" ak:value=".">Illinois; Maps; Topographic maps; Topography; Chicago (Ill.); Cook County (Ill.)</dc:subject>
+          <dc:type ak:rel="local-name()" ak:value=".">Maps</dc:type>
+          <dc:description ak:rel="local-name()" ak:value=".">1 map : col. ; 45 x 34 cm. -- Relief indicated by contours. -- &quot;Surveyed in 1889, 1897 and 1899.&quot; -- &quot;Contour interval 5 feet.&quot;</dc:description>
+          <dcterms:temporal ak:rel="local-name()" ak:value=".">1894-1932</dcterms:temporal>
+          <dcterms:isPartOf ak:rel="local-name()" ak:value=".">University of Illinois Theatrical Print Collection</dcterms:isPartOf>
+          <dcterms:created ak:rel="local-name()" ak:value=".">1901</dcterms:created>
+          <dc:date ak:rel="local-name()" ak:value=".">1901</dc:date>
+          <dc:contributor ak:rel="local-name()" ak:value=".">Gannett, Henry, 1846-1914; Harrison, D.C.; Renshawe, John H.; United States. Lake Survey</dc:contributor>
+          <dc:description ak:rel="local-name()" ak:value=".">Scale 1:62,500</dc:description>
+          <dcterms:isPartOf ak:rel="local-name()" ak:value=".">Historical Maps Online</dcterms:isPartOf>
+          <dc:publisher ak:rel="local-name()" ak:value=".">[Washington, D.C.] : U.S. Geological Survey, 1901.</dc:publisher>
+          <dc:rights ak:rel="local-name()" ak:value=".">http://images.library.uiuc.edu/projects/maps/terms.html</dc:rights>
+          <dc:relation ak:rel="local-name()" ak:value=".">http://histmapimages.grainger.illinois.edu/jp2files/Chicago1901.jp2</dc:relation>
+          <dcterms:medium ak:rel="local-name()" ak:value=".">Images</dcterms:medium>
+          <dcterms:extent ak:rel="local-name()" ak:value=".">Extent</dcterms:extent>
+          <dc:identifier ak:rel="'handle'" ak:value=".">04980676</dc:identifier>
+          <dc:language ak:rel="local-name()" ak:value=".">en_US</dc:language>
         </qdc:qualifieddc>
       </metadata>
     </record>
@@ -516,5 +523,6 @@ OAI_DC_LISTRECORDS_MODEL = examplotron_model(OAI_DC_LISTRECORDS_XML)
 LISTRECORDS_MODELS = {
     "qdc": QDC_LISTRECORDS_MODEL,
     "mods": MODS_LISTRECORDS_MODEL,
-    "oai_dc": OAI_DC_LISTRECORDS_MODEL
+    "oai_dc": OAI_DC_LISTRECORDS_MODEL,
+    "oai_qdc": QDC_LISTRECORDS_MODEL
 }

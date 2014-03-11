@@ -100,8 +100,7 @@ class Akara:
     #      CRITICAL, ERROR, WARN, INFO, DEBUG
     #  Also, WARNING is an alias for WARN
     #
-    #LogLevel = "INFO"
-    LogLevel = "DEBUG"
+    LogLevel = "${Akara__LogLevel}"
 
 ### Section 2: List of extension modules to install
 
@@ -192,10 +191,13 @@ MODULES = [
     "dplaingestion.akamod.hathi_identify_object",
     "dplaingestion.akamod.oai_untl_to_dpla",
     "dplaingestion.akamod.texas_enrich_location",
-    "dplaingestion.akamod.georgia_set_spec_type",
+    "dplaingestion.akamod.set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
     "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
     "dplaingestion.akamod.compare_with_schema",
+    "dplaingestion.akamod.qdc_to_dpla",
+    "dplaingestion.akamod.mdl_state_located_in",
+    "dplaingestion.akamod.scdl_format_to_type",
     ]
 
 ### Section 3: Other module configuration goes here

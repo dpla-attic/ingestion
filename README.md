@@ -8,12 +8,13 @@ Build Status
 
 Documentation
 -------------------
-Prerequisites:
+Setting up the ingestion server:
 
-* Python 2.7
-* CouchDB
+Install Python 2.7 if not already installed (http://www.python.org/download/releases/2.7/);
 
-To install or upgrade the ingest subsystem, first install the necessary components;
+Install PIP (http://pip.readthedocs.org/en/latest/installing.html);
+
+Install the ingestion subsystem;
 
     $ pip install --no-deps --ignore-installed -r requirements.txt
 
@@ -21,6 +22,8 @@ Configure an akara.ini file appropriately for your environment;
 
     [Akara]
     Port=<port for Akara to run on>
+    ; Recommended LogLevel is one of DEBUG or INFO
+    LogLevel=<priority>
 
     [Bing]
     ApiKey=<your Bing Maps API key>
@@ -37,17 +40,27 @@ Configure an akara.ini file appropriately for your environment;
     [Rackspace]
     Username=<Rackspace username>
     ApiKey=<Rackspace API key>
-    ContainerName=<Rackspace container>
-    
+    DPLAContainer=<Rackspace container for bulk download data>
+    SitemapContainer=<Rackspace container for sitemap files>
 
-The akara.conf.template and akara.ini file are merged to generate the akara.conf file by running;
+    [Sitemap]
+    SitemapURI=<Sitemap URI>
+    
+Merge the akara.conf.template and akara.ini file to create the akara.conf file;
 
     $ python setup.py install 
 
-Set up and start the (Akara) server;
+Set up and start the Akara server;
 
     $ akara -f akara.conf setup
     $ akara -f akara.conf start
+
+Build the database views;
+
+    $ python scripts/sync_couch_views.py dpla
+    $ python scripts/sync_couch_views.py dashboard
+
+Testing the ingestion server:
 
 You can test it with this set description from Clemson;
 

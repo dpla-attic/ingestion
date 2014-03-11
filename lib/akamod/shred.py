@@ -36,6 +36,7 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
                 if isinstance(v, list):
                     try:
                         v = delim.join(v)
+                        v = v.replace("%s%s" % (delim, delim), delim)
                     except Exception as e:
                         logger.warn("Can't join list %s on delim for %s, %s" %
                                     (v, data["_id"], e))

@@ -1,6 +1,7 @@
 {
     "name": "minnesota", 
     "type": "oai_verbs",
+    "metadata_prefix": "qdc",
     "endpoint_url": "http://reflections.mndigital.org/oai/oai2.php",
     "contributor": {
         "@id": "http://dp.la/api/contributor/mdl", 
@@ -12,9 +13,9 @@
     ], 
     "enrichments_item": [
         "/select-id", 
-        "/oai-to-dpla", 
+        "/qdc_to_dpla?provider=mdl", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
-        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Frelation",
+        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Frelation%2CsourceResource%2Fspatial",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
         "/cleanup_value",
         "/move_date_values?prop=sourceResource%2Fsubject",
@@ -26,16 +27,15 @@
         "/enrich-subject",
         "/enrich-type", 
         "/enrich-format", 
-        "/mdl-enrich-location",
+        "/enrich_location",
         "/geocode",
         "/contentdm_identify_object",
-        "/unset_prop?prop=dataProvider",
-        "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
         "/cleanup_language",
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/mdl_state_located_in",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/compare_with_schema"
     ]
 }

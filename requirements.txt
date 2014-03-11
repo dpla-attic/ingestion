@@ -1,5 +1,5 @@
 git+https://github.com/zepheira/amara.git#egg=amara
-git+https://github.com/zepheira/akara.git#egg=akara
+git+https://github.com/dpla/akara.git#egg=akara
 git+https://github.com/zepheira/freemix-akara.git#egg=freemix-akara
 git+https://github.com/dpla/xmltodict#egg=xmltodict
 hg+http://foundry.zepheira.com/hg/zenpub/#egg=zen
