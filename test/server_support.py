@@ -184,6 +184,7 @@ MODULES = [
     "dplaingestion.akamod.usc_set_dataprovider",
     "dplaingestion.akamod.compare_with_schema",
     "dplaingestion.akamod.mdl_state_located_in",
+    "dplaingestion.akamod.scdl_format_to_type",
     ]
 
 class download_preview:

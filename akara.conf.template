@@ -197,6 +197,7 @@ MODULES = [
     "dplaingestion.akamod.compare_with_schema",
     "dplaingestion.akamod.qdc_to_dpla",
     "dplaingestion.akamod.mdl_state_located_in",
+    "dplaingestion.akamod.scdl_format_to_type",
     ]
 
 ### Section 3: Other module configuration goes here
