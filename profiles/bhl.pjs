@@ -40,5 +40,10 @@
         "/unset_prop?prop=sourceResource%2Ftemporal",
         "/unset_prop?prop=sourceResource%2Frights",
         "/compare_with_schema"
-    ] 
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
 }

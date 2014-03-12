@@ -33,5 +33,10 @@
     ],
     "set_provider": [
         "/set_prop?prop=provider&_dict=True&value=%7B%22%40id%22%3A%22http%3A%2F%2Fdp.la%2Fapi%2Fcontributor%2Fhathitrust%22%2C%22name%22%3A%22HathiTrust%22%7D"
-    ]
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
 }

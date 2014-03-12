@@ -43,5 +43,10 @@
         "/unset_prop?prop=%5Fid&condition=mwdl%5Fexclude&condition_prop=originalRecord%2FPrimoNMBib%2Frecord%2Fsearch%2Frsrctype",
         "/unset_prop?prop=sourceResource%2Fformat",
         "/compare_with_schema"
-    ]
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
 }

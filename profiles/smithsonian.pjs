@@ -40,5 +40,10 @@
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Washington%2C%20D.C.",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/compare_with_schema"
-    ]
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
 }

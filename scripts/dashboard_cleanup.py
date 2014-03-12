@@ -29,8 +29,8 @@ def main(argv):
 
     couch = Couch()
     ingestion_doc = couch.dashboard_db[args.ingestion_document_id]
-    if getprop(ingestion_doc, "delete_process/status") != "complete":
-        print "Error, delete process did not complete"
+    if getprop(ingestion_doc, "check_counts_process/status") != "complete":
+        print "Error, checkk counts process did not complete"
         return -1
 
     # Update ingestion document

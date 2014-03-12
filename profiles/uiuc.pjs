@@ -61,5 +61,10 @@
         "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library",
         "/unset_prop?prop=sourceResource%2Fcontributor",
         "/compare_with_schema"
-    ]
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
 }

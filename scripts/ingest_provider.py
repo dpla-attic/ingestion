@@ -12,6 +12,7 @@ import fetch_records
 import enrich_records
 import save_records
 import remove_deleted_records
+import check_ingestion_counts
 import dashboard_cleanup
 from amara.thirdparty import json
 
@@ -52,6 +53,11 @@ def main(argv):
         resp = remove_deleted_records.main([None, ingestion_doc_id]) 
         if not resp == 0:
             print "Error deleting records"
+            continue
+
+        resp = check_ingestion_counts.main([None, ingestion_doc_id])
+        if not resp == 0:
+            print "Error checking counts"
             continue
 
         resp = dashboard_cleanup.main([None, ingestion_doc_id])
