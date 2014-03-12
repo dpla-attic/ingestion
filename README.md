@@ -46,6 +46,10 @@ Configure an akara.ini file appropriately for your environment;
     [Sitemap]
     SitemapURI=<Sitemap URI>
     
+    [Alert]
+    To=<Comma-separated email addresses to receive alert email>
+    From=<Email address to send alert email>
+
 Merge the akara.conf.template and akara.ini file to create the akara.conf file;
 
     $ python setup.py install 
