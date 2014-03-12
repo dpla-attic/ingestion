@@ -29,7 +29,7 @@
         "/enrich-subject",
         "/enrich-type", 
         "/enrich-format", 
-	    "/enrich_location",
+        "/enrich_location",
         "/david_rumsey_identify_object",
         "/set_prop?prop=sourceResource%2Ftype&value=image",
         "/set_prop?prop=dataProvider&value=David%20Rumsey",
@@ -37,5 +37,10 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/replace_substring?prop=isShownAt&old=74%2E126%2E224%2E122&new=www%2Edavidrumsey%2Ecom",
         "/compare_with_schema"
-    ]
+    ],
+    "thresholds": {                                                             
+        "added": 5000,                                                          
+        "changed": 1000,                                                        
+        "deleted": 1000                                                         
+    }
 }

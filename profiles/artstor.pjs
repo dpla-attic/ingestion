@@ -78,5 +78,10 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/unset_prop?prop=sourceResource%2Frelation",
         "/compare_with_schema"
-    ]
+    ],
+    "thresholds": {                                                             
+        "added": 5000,                                                          
+        "changed": 1000,                                                        
+        "deleted": 1000                                                         
+    }
 }

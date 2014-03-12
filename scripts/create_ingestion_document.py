@@ -37,11 +37,13 @@ def main(argv):
             print "Error, could not load profile in %s" % __name__
             return None
     provider = profile["name"]
+    thresholds = profile["thresholds"]
 
     couch = Couch()
     latest_ingestion_doc = couch._get_last_ingestion_doc_for(provider)
-    if latest_ingestion_doc and \
-       getprop(latest_ingestion_doc, "delete_process/status") != "complete":
+    if (latest_ingestion_doc and
+        getprop(latest_ingestion_doc,
+                "dashboard_cleanup_process/status") != "complete"):
         error_msg = "Error, last ingestion did not complete. Review " + \
                     "dashboard document %s for errors." % \
                     latest_ingestion_doc["_id"]
@@ -51,7 +53,8 @@ def main(argv):
 
     ingestion_document_id = couch._create_ingestion_document(provider,
                                                              uri_base,
-                                                             args.profile_path)
+                                                             args.profile_path,
+                                                             thresholds)
     msg = "Ingestion document %s created." % ingestion_document_id
     logger.debug(msg)
     print msg

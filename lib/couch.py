@@ -365,7 +365,8 @@ class Couch(object):
         self._sync_views(db.name)
         self.logger.debug("%s database response: %s" % (db.name, resp))
 
-    def _create_ingestion_document(self, provider, uri_base, profile_path):
+    def _create_ingestion_document(self, provider, uri_base, profile_path,
+                                   thresholds):
         """Creates and returns an ingestion document for the provider.
         """
 
@@ -395,6 +396,7 @@ class Couch(object):
                 "data_dir": None,
                 "error": None,
                 "total_items": None,
+            "thresholdDeleted": 0,
                 "total_collections": None,
                 "missing_id": None,
                 "missing_source_resource": None
@@ -408,6 +410,12 @@ class Couch(object):
                 "total_collections": None
             },
             "delete_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None
+            },
+            "check_counts_process": {
                 "status": None,
                 "start_time": None,
                 "end_time": None,
@@ -430,6 +438,7 @@ class Couch(object):
                 "missing_source_resource": None
             }
         }
+        ingestion_doc.update({"thresholds": thresholds})
 
         # Set the ingestion sequence
         latest_ingestion_doc = self._get_last_ingestion_doc_for(provider)

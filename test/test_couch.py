@@ -36,6 +36,13 @@ else:
 TEST_DPLA_DB = "test_dpla"
 TEST_DASHBOARD_DB = "test_dashboard"
 
+# Dummy thresholds so that alert emails are not sent
+THRESHOLDS = {
+    "added": 100000,
+    "changed": 100000,
+    "deleted": 100000
+}
+
 class CouchTest(Couch):
     def __init__(self, **kwargs):
         super(CouchTest, self).__init__(**kwargs)
@@ -83,7 +90,8 @@ class CouchTest(Couch):
 
         uri_base = server()[:-1]
         ingestion_doc_id = self._create_ingestion_document(provider, uri_base,
-                                                           "profiles/clemson.pjs")
+                                                           "profiles/clemson.pjs",
+                                                           THRESHOLDS)
         ingestion_doc = self.dashboard_db[ingestion_doc_id]
 
         url = server() + "enrich"
