@@ -8,6 +8,7 @@ import sys
 import re
 from copy import deepcopy
 from dplaingestion.selector import getprop, setprop, exists
+import dplaingestion.itemtype as itemtype
 
 GEOPROP = None
 
@@ -41,10 +42,6 @@ CONTEXT = {
 }
 type_for_ot_keyword = module_config().get('type_for_ot_keyword')
 type_for_phys_keyword = module_config().get('type_for_phys_keyword')
-
-
-class NoTypeError(Exception):
-    pass
 
 
 def transform_description(d):
@@ -499,30 +496,6 @@ def language_transform(d):
 
     return {"language": language} if language else {}
 
-def _type_for_keyword(s, mappings):
-    """Given a string, return our mapped type, or None if we can't look it up.
-    
-    mapping: a tuple of (string, type)
-    """
-    for pair in mappings:
-        # example:  ('book', 'text')
-        if pair[0] in s:
-            return pair[1]
-    return None
-
-def _type_for_strings_and_mappings(string_map_combos):
-    """_type_for_strings_and_mappings([(list, list_of_tuples), ...])
-    
-    Given pairs of (list of strings, list of mapping tuples), try to find a
-    suitable item type.
-    """
-    for strings, mappings in string_map_combos:
-        # Try each of our strings to see if a keyword falls within it
-        for s in strings:
-            t = _type_for_keyword(s, mappings)
-            if t:
-                return t
-    raise NoTypeError
 
 def transform_type(d):
     """Get type from objectType or object_type element
@@ -553,11 +526,11 @@ def transform_type(d):
             if s:
                 object_type_strings.append(s.lower())
     try:
-        new_type = _type_for_strings_and_mappings([
+        new_type = itemtype.type_for_strings_and_mappings([
             (phys_type_strings, type_for_phys_keyword),
             (object_type_strings, type_for_ot_keyword)
             ])
-    except NoTypeError:
+    except itemtype.NoTypeError:
         id_for_msg = d.get('_id', '[no _id]')
         logger.warning('Can not deduce type for item with _id: %s' % id_for_msg)
         new_type = 'image'

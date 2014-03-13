@@ -271,17 +271,17 @@ class hathi_identify_object(identify_object):
 
 
 class type_conversion:
-    # Map of "physical description" substring to sourceResource.type.
-    # freetext/physicalDescription is considered first, and these values
-    # should be as specific as possible, to avoid false assignments, because
-    # physicalDescription is pretty free-form, unlike the object type fields.
+    # Map of "format" or "physical description" substring to
+    # sourceResource.type.  This format field is considered first, and these
+    # values should be as specific as possible, to avoid false assignments,
+    # because this field is usually pretty free-form, unlike the type fields.
     type_for_phys_keyword = [
         ('holiday card', 'image'),
         ('christmas card', 'image'),
         ('mail art', 'image'),
         ('postcard', 'image'),
     ]
-    # Map of "object type" substring to desired sourceResource.type.
+    # Map of type-related substring to desired sourceResource.type.
     # For simple "if substr in str" matching.  Place more specific
     # patterns higher up, before more general ones.
     # Items labeled as physical objects are "images of physical objects."
@@ -291,7 +291,9 @@ class type_conversion:
         ('book', 'text'),
         ('specimen', 'image'),
         ('electronic resource', 'interactive resource'),
+        # Keep "textile" above "text"
         ('textile', 'image'),
+        ('text', 'text'),
         ('frame', 'image'),
         ('costume', 'image'),
         ('object', 'image'),
@@ -319,6 +321,9 @@ class type_conversion:
         ('manuscript', 'text'),
         # keep "equipment" above "audio" ("Audiovisual equipment")
         ('equipment', 'image'),
+        ('cartographic', 'image'),
+        ('notated music', 'image'),
+        ('mixed material', 'image'),
         ('audio', 'sound'),
         ('sound recording', 'sound'),
         ('oral history recording', 'sound'),
@@ -332,5 +337,8 @@ class type_conversion:
     ]
 
 class edan_to_dpla(type_conversion):
+    pass
+
+class enrich_type(type_conversion):
     pass
 

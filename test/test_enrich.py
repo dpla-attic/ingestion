@@ -358,26 +358,6 @@ def test_enrich_subject_cleanup():
     assert result['subject'] == EXPECTED['subject']
 
 
-def test_enrich_type_cleanup():
-    "Test type normalization"
-    INPUT = {
-        "type": ["Still Images", "Moving Images", "Moving Image", "Text", "Statue"]
-    }
-    EXPECTED = {
-        u'type': ["image", "moving image", "moving image", "text"],
-        u'TBD_physicalformat': ["Statue"]
-    }
-
-    url = server() + "enrich-type?prop=type&format_field=TBD_physicalformat"
-
-    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    print_error_log()
-    assert str(resp.status).startswith("2")
-    result = json.loads(content)
-    pinfo(content)
-    assert result['type'] == EXPECTED['type']
-
-
 def test_enrich_format_cleanup_multiple():
     "Test format normalization and removal of non IMT formats"
     INPUT = {
@@ -415,35 +395,6 @@ def test_enrich_format_cleanup():
     assert str(resp.status).startswith("2")
     result = json.loads(content)
     assert_same_jsons(content, EXPECTED)
-
-
-def test_physical_format_from_format_and_type():
-    """
-Test physical format appending from format and type fields
-"""
-    INPUT = {
-        "format": ["76.8 x 104 cm",
-                   "Oil on canvas",
-                   "7 1/4 x 6 inches (18.4 x 15.2 cm)",
-                   "Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)"],
-        "type": ["Paintings", "Painting"]
-    }
-    EXPECTED = {
-        "format": ["76.8 x 104 cm",
-                   "Oil on canvas",
-                   "7 1/4 x 6 inches (18.4 x 15.2 cm)",
-                   "Sheet: 9 1/2 x 12 1/8 inches (24.1 x 30.8 cm)",
-                   "Paintings", "Painting"]
-    }
-
-    resp, content = H.request(server() + "enrich-type?prop=type&format_field=format", "POST", body=json.dumps(INPUT))
-    assert str(resp.status).startswith("2")
-    FETCHED = json.loads(content)
-    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
-    resp, content = H.request(server() + "enrich-format?prop=format&type_field=type", "POST", body=content)
-    assert str(resp.status).startswith("2")
-    FETCHED = json.loads(content)
-    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
 
 def test_setting_missing_type_for_missing_format():
