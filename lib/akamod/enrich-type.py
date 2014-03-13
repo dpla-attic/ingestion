@@ -1,47 +1,35 @@
-from akara import logger
-from akara import response
+from akara import logger, response, module_config
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import delprop, getprop, setprop, exists
+import dplaingestion.itemtype as itemtype
 import re
+
+type_for_type_keyword = \
+        module_config('enrich_type').get('type_for_ot_keyword')
+type_for_format_keyword = \
+        module_config('enrich_type').get('type_for_phys_keyword')
+
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-type', 'enrich-type',
                 'application/json')
-def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
-               format_field="sourceResource/format"):
+def enrichtype(body, ctype,
+               action="enrich-type",
+               prop="sourceResource/type",
+               format_field="sourceResource/format",
+               default=None):
     """   
     Service that accepts a JSON document and enriches the "type" field of that
     document by: 
 
-    a) making the type lowercase
-    b) converting "image" to "still image"
-      (TODO: Amy to confirm that this is ok)
-    c) applying a set of regexps to do data cleanup (remove plural forms)
-    d) moving all items that are not standard DC types to the
-       sourceResource/format
-       (http://dublincore.org/documents/resource-typelist/)
-    
     By default works on the 'type' field, but can be overridden by passing the
-    name of the field to use as a parameter
+    name of the field to use as a parameter.
+
+    A default type, if none can be determined, may be specified with the
+    "default" querystring parameter.  If no default is given, the type field
+    will be unmodified, or not added, in the result.
     """
-
-    REGEXPS = ('images','image'), ('still image','image'),\
-              ('textual records', 'text'),\
-              ('photographs and other graphic materials', 'image'),\
-              ('texts', 'text')
-    DC_TYPES = ['collection', 'dataset', 'event', 'image', 'still image',
-                'interactive resource', 'moving image',
-                'physical object', 'service', 'software', 'sound',
-                'text']
-
-    def cleanup(s):
-        s = s.lower().strip()
-        for pattern, replace in REGEXPS:
-            s = re.sub(pattern, replace, s)
-        return s
-
-    def is_dc_type(s):
-        return s in DC_TYPES
+    global type_for_type_keyword, type_for_format_keyword
 
     try :
         data = json.loads(body)
@@ -50,29 +38,27 @@ def enrichtype(body,ctype,action="enrich-type", prop="sourceResource/type",
         response.add_header('content-type','text/plain')
         return "Unable to parse body as JSON"
 
-    if exists(data,prop):
-        v = getprop(data, prop)
-        dctype = []
-        f = getprop(data, format_field) if exists(data, format_field) else []
-        if not isinstance(f, list):
-            f = [f]
-
-        for s in (v if not isinstance(v,basestring) else [v]):
-            if is_dc_type(cleanup(s)):
-                dctype.append(cleanup(s))
-            else:
-                f.append(s)
-
-        if dctype:
-            if len(dctype) == 1:
-                dctype = dctype[0]
-            setprop(data, prop, dctype)
-        else:
-            delprop(data, prop)
-
-        if len(f) > 1:
-            setprop(data, format_field, f)
-        elif len(f) == 1:
-            setprop(data, format_field, f[0])
+    type_strings = []
+    format_strings = []
+    sr_type = data['sourceResource'].get('type', [])
+    sr_format = data['sourceResource'].get('format', [])
+    if sr_type:
+        for t in sr_type if (type(sr_type) == list) else [sr_type]:
+            type_strings.append(t.lower())
+    if sr_format:
+        for f in sr_format if (type(sr_format) == list) else [sr_format]:
+            format_strings.append(f.lower())
+    try:
+        data['sourceResource']['type'] = \
+                itemtype.type_for_strings_and_mappings([
+                    (format_strings, type_for_format_keyword),
+                    (type_strings, type_for_type_keyword)
+                ])
+    except itemtype.NoTypeError:
+        id_for_msg = data.get('_id', '[no id]')
+        logger.warning('Can not deduce type for item with _id: %s' % \
+                       id_for_msg)
+        if default:
+            data['sourceResource']['type'] = default
 
     return json.dumps(data)
