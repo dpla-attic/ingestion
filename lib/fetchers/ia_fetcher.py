@@ -24,7 +24,6 @@ class IAFetcher(AbsoluteURLFetcher):
         self.mutex = Lock()
         self.docs_counter = Counter({"downloaded": 0})
         self._initstophook()
-        self.retry_attempts = 10
         self.task_args = (self.get_file_url, self.prefix_files,
                           self.shown_at_url, self.fetch_url)
 
@@ -71,7 +70,7 @@ class IAFetcher(AbsoluteURLFetcher):
             return TaskResult(TaskResult.ERROR, None, task.__class__.__name__,
                               "%s: %s" % (e.__class__.__name__, str(e)))
 
-    @with_retries(self.retry_attempts, 1)
+    @with_retries(10, 1)
     def fetch_url(self, url):
         """
         Downloads data related to the given url and checks that the response
