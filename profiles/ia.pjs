@@ -12,6 +12,15 @@
     "prefix_dc": "{0}_dc.xml",
     "shown_at_url": "http://archive.org/details/{0}",
     "collections": {
+        "blc": {
+            "title": "Boston Library Consortium"
+        },
+        "clemson": {
+            "title": "LYRASIS members and Sloan Foundation"
+        },
+        "bostonpubliclibrary": {
+            "title": "Boston Public Library"
+        },
         "regionaldigitizationmass": {
             "title": "Regional Digitization in Massachusetts"
         }
