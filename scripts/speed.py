@@ -14,20 +14,25 @@ Usage:
 import re
 import sys
 
+def resource_and_elapsed(lines):
+    """Yield the resource and elapsed-microseconds fields of each line"""
+    for line in lines:
+        request_uri = line.split(None, 7)[6]
+        resource = request_uri.split('?')[0]
+        elapsed = float(line.rsplit(None, 1)[1])
+        yield (resource, elapsed)
+
 def main():
     total = {}
     count = {}
-    p = re.compile(r'(\S+) HTTP.* (\S+)$')
-    for line in sys.stdin:
-        m = p.search(line)
-        path, elapsed = m.group(1, 2)
-        path = re.sub(r'\?.*$', '', path)
-        total.setdefault(path, 0)
-        total[path] += float(elapsed)
-        count.setdefault(path, 0)
-        count[path] += 1.0
-    print "\n".join(["%s\t%d" % (path, int(round(total[path] / count[path])))
-                     for path in total.keys()])
+    for resource, elapsed in resource_and_elapsed(sys.stdin):
+        total.setdefault(resource, 0)
+        count.setdefault(resource, 0)
+        total[resource] += elapsed
+        count[resource] += 1.0
+    avg_elapsed = lambda tot, count: int(round(tot / count))
+    for resource in total.keys():
+        print resource, avg_elapsed(total[resource], count[resource])
 
 
 if __name__ == '__main__':
