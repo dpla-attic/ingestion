@@ -39,5 +39,5 @@ setup( name = 'ingestion',
        package_dir={'dplaingestion':'lib'},
        packages=['dplaingestion','dplaingestion.akamod',
                  'dplaingestion.fetchers'],
-       scripts=['scripts/poll_profiles', 'scripts/rollback_ingestion'],
+       scripts=['scripts/rollback_ingestion'],
 )
