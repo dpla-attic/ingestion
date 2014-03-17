@@ -48,8 +48,8 @@
         "/unset_prop?prop=_id&condition_prop=sourceResource%2Ftitle&condition=finding_aid_title"
     ],
     "thresholds": {
-        "added": 5000,
-        "changed": 1000,
-        "deleted": 1000
+        "added": 10,
+        "changed": 100,
+        "deleted": 10
     }
 }
