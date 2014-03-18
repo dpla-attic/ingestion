@@ -59,7 +59,6 @@ def main(argv):
             alerts.append("%s items %s exceeds threshold of %s" %
                           (count, ctype.lower(), threshold))
 
-    status = "complete"
     error_msg = None
     if alerts:
         config_file = "akara.ini"
@@ -69,7 +68,8 @@ def main(argv):
         frm = config.get("Alert", "From")
 
         month = dateparser.parse(ingestion_doc["ingestDate"]).strftime("%B")
-        msg = MIMEText("\n".join(alerts))
+        alerts = "\n".join(alerts)
+        msg = MIMEText(alerts)
         msg["Subject"] = "Threshold(s) exceeded for %s ingestion of %s" % \
                          (month, ingestion_doc["provider"])
         msg["To"] = ", ".join(to)
@@ -80,10 +80,16 @@ def main(argv):
             s.sendmail(frm, to, msg.as_string())
             s.quit()
         except Exception, e:
-            status = "error"
-            error_msg = "%s: %s" % (e, e.message)
-            
+            error_msg = e
+
+    if error_msg:
+        print >> sys.stderr, ("********************\n" +
+                              "Error sending alert email: %s" % error_msg)
+        print >> sys.stderr, ("Alerts:\n%s" % alerts +
+                              "\n********************")
+
     # Update ingestion document
+    status = "complete"
     kwargs = {
         "check_counts_process/status": status,
         "check_counts_process/error": error_msg,
