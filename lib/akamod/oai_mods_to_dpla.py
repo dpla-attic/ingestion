@@ -469,14 +469,14 @@ def location_transform_bpl(d, p):
 
         return None
 
-    location = iterify(getprop(d, p)) 
+    location = iterify(getprop(d, p))
     format = _get_media_type(d)
     phys_location = None
     out = {}
     try:
         for _dict in location:
             if "url" in _dict:
-                for url_dict in _dict["url"]:
+                for url_dict in iterify(_dict["url"]):
                     if url_dict and "access" in url_dict:
                         if url_dict["access"] == "object in context" and \
                            url_dict.get("usage") == "primary":
@@ -491,7 +491,7 @@ def location_transform_bpl(d, p):
         if phys_location is not None:
             out["dataProvider"] = phys_location
     except Exception as e:
-        logger.error(e)
+        logger.error("Error in location_transform: %s" % e)
     finally:
         return out
 

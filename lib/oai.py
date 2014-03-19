@@ -187,7 +187,9 @@ class oaiservice(object):
             records = []
             error = getprop(xml_content, "OAI-PMH/error/#text", True)
             if error is None:
-                for record in xml_content["OAI-PMH"]["ListRecords"]["record"]:
+                for record in iterify(
+                    xml_content["OAI-PMH"]["ListRecords"]["record"]
+                    ):
                     id = record["header"]["identifier"]
                     if "null" not in id:
                         records.append((id, record))
