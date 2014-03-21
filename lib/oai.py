@@ -191,7 +191,7 @@ class oaiservice(object):
                     xml_content["OAI-PMH"]["ListRecords"]["record"]
                     ):
                     id = record["header"]["identifier"]
-                    if record["header"].get("@status") == "deleted":
+                    if record["header"].get("status") == "deleted":
                         self.logger.info("Record with identifier '%s' " % id +
                                          "has been deleted")
                     elif "null" not in id:
