@@ -191,7 +191,10 @@ class oaiservice(object):
                     xml_content["OAI-PMH"]["ListRecords"]["record"]
                     ):
                     id = record["header"]["identifier"]
-                    if "null" not in id:
+                    if record["header"].get("@status") == "deleted":
+                        self.logger.info("Record with identifier '%s' " % id +
+                                         "has been deleted")
+                    elif "null" not in id:
                         records.append((id, record))
                 if "resumptionToken" in xml_content["OAI-PMH"]["ListRecords"]:
                     resumption_token = xml_content["OAI-PMH"]["ListRecords"]["resumptionToken"]
