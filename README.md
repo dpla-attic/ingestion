@@ -50,6 +50,10 @@ Configure an akara.ini file appropriately for your environment;
     To=<Comma-separated email addresses to receive alert email>
     From=<Email address to send alert email>
 
+    [Enrichment]
+    QueueSize=4
+    ThreadCount=4
+
 Merge the akara.conf.template and akara.ini file to create the akara.conf file;
 
     $ python setup.py install 
