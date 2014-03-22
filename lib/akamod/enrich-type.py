@@ -40,8 +40,16 @@ def enrichtype(body, ctype,
 
     type_strings = []
     format_strings = []
-    sr_type = data['sourceResource'].get('type', [])
-    sr_format = data['sourceResource'].get('format', [])
+    try:
+        sr_type = data['sourceResource'].get('type', [])
+        sr_format = data['sourceResource'].get('format', [])
+    except KeyError:
+        # In this case, sourceResource is not present, so give up and return
+        # the original data unmodified.
+        id_for_msg = data.get('_id', '[no id]')
+        logger.warning('enrich-type lacks sourceResource for _id %s' % \
+                id_for_msg)
+        return body
     if sr_type:
         for t in sr_type if (type(sr_type) == list) else [sr_type]:
             type_strings.append(t.lower())
