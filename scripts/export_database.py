@@ -450,15 +450,26 @@ def store_result_into_file(result, arguments):
         0 for success, -1 for error
     """
     from gzip import GzipFile as zipf
+    from httplib import IncompleteRead
+    from tempfile import mkstemp
+    import os
+    import sys
 
     downloaded_size = 0
-    block_size = 10 * 1024 * 1024
+    block_size = 5 * 1024 * 1024
     with zipf(arguments["file"], "w") as zf:
         while True:
             try:
                 buffer = result.read(block_size)
                 if not buffer:
                     break
+            except IncompleteRead, e:
+                fd, partial_file_name = mkstemp()
+                os.write(fd, e.partial)
+                os.close(fd)
+                print >> sys.stderr, "Incomplete read of stream.  ", \
+                    "Partial block saved to ", partial_file_name
+                return -1
             except Exception, e:
                 print "Error reading from result: %s" % e
                 return -1
