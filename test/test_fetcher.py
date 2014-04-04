@@ -153,11 +153,6 @@ def test_all_oai_verb_fetchers():
             if prof.get("type") == "oai_verbs":
                 fetcher =  create_fetcher(profile_path, uri_base, config_file)
                 assert fetcher.__class__.__name__ == "OAIVerbsFetcher"
-
-                # Digital Commonwealth sets 217, 218 are giving errors
-                if prof.get("name") == "digital-commonwealth":
-                    fetcher.blacklist.extend(["217", "218"])
-
                 for response in fetcher.fetch_all_data():
                     if response['errors']:
                         print >> sys.stderr, response['errors']
