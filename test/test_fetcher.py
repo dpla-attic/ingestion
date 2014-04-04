@@ -159,6 +159,8 @@ def test_all_oai_verb_fetchers():
                     fetcher.blacklist.extend(["217", "218"])
 
                 for response in fetcher.fetch_all_data():
+                    if response['errors']:
+                        print >> sys.stderr, response['errors']
                     assert not response["errors"]
                     assert response["records"]
                     break

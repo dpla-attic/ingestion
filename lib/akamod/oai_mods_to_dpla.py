@@ -97,7 +97,7 @@ def creator_and_contributor_transform(d, p):
 
     return val
 
-def subject_and_spatial_transform(d, p):
+def subject_and_spatial_transform_harvard(d, p):
     val = {}
     val["subject"] = []
     val["spatial"] = []
@@ -148,6 +148,67 @@ def subject_and_spatial_transform(d, p):
         del val["spatial"]
 
     return val
+
+def subject_and_spatial_transform_bpl(d, p):
+    val = {}
+    val["subject"] = []
+    val["spatial"] = []
+    spatial_keys = ("country", "state", "county", "city", "coordinates")
+
+    v = getprop(d, p)
+    for s in (iterify(v)):
+        subject = []
+        spatial = {}
+        if "name" in s:
+            subject.append(name_from_name_part(getprop(s, "name/namePart")))
+
+        if "topic" in s:
+            for t in (s["topic"] if isinstance(s["topic"], list) else
+                      [s["topic"]]):
+                if t not in subject:
+                    subject.append(t)
+
+        if "geographic" in s:
+            for g in iterify(s["geographic"]):
+                if g not in subject:
+                    subject.append(g)
+                spatial["name"] = g
+
+        if "hierarchicalGeographic" in s:
+            for h in iterify(s["hierarchicalGeographic"]):
+                if isinstance(h, dict):
+                    if "country" in h:
+                        subject.append(h["country"])
+
+                    for k in h.keys():
+                        if k not in spatial_keys:
+                            del h[k]
+                    spatial.update(h)
+                    if "name" not in spatial:
+                        name = filter(None,
+                                      [h.get(sk) for sk in spatial_keys if
+                                       sk != "coordinates"])
+                        if name:
+                            spatial["name"] = "--".join(name)
+
+        coords = getprop(s, "cartographics/coordinates", True)
+        if coords:
+            spatial["coordinates"] = coords
+
+        if "temporal" in s:
+            logger.debug("TEMPORAL: %s" % s["temporal"])
+
+        val["subject"].append("--".join(subject))
+        if spatial and spatial not in val["spatial"]:
+            val["spatial"].append(spatial)
+
+    if not val["subject"]:
+        del val["subject"]
+    if not val["spatial"]:
+        del val["spatial"]
+
+    return val
+
 
 def title_transform(d, p, unsupported_types=[], unsupported_subelements=[]):
     title = None
@@ -454,7 +515,7 @@ def rights_transform_bpl(d, p):
     for s in iterify(getprop(d, p)):
         rights.append(s.get("#text"))
 
-    rights = ". ".join(rights).replace("..", ".")
+    rights = ". ".join(filter(None, rights)).replace("..", ".")
 
     return {"rights": rights} if rights else {}
 
@@ -490,6 +551,12 @@ def location_transform_bpl(d, p):
                 phys_location = getprop(_dict, "physicalLocation", True)
         if phys_location is not None:
             out["dataProvider"] = phys_location
+        if out.get("dataProvider") is None:
+            if exists(d, MODS + "recordInfo/recordContentSource"):
+                out["dataProvider"] = \
+                    getprop(d, MODS + "recordInfo/recordContentSource")
+            else:
+                logger.error("Field dataProvider not set for %s" % d["_id"])
     except Exception as e:
         logger.error("Error in location_transform: %s" % e)
     finally:
@@ -522,7 +589,8 @@ CHO_TRANSFORMER["BPL"] = {
     MODS + "originInfo"                : origin_info_transform_bpl,
     MODS + "language/languageTerm"     : language_transform_bpl,
     MODS + "relatedItem"               : is_part_of_transform_bpl,
-    MODS + "accessCondition"           : rights_transform_bpl
+    MODS + "accessCondition"           : rights_transform_bpl,
+    MODS + "subject"                   : subject_and_spatial_transform_bpl
 }
 
 CHO_TRANSFORMER["HARVARD"] = {
@@ -531,14 +599,14 @@ CHO_TRANSFORMER["HARVARD"] = {
     MODS + "relatedItem"               : is_part_of_transform_harvard,
     MODS + "titleInfo"                 : title_transform_harvard,
     MODS + "originInfo"                : origin_info_transform_harvard,
-    MODS + "language/languageTerm"     : language_transform_harvard
+    MODS + "language/languageTerm"     : language_transform_harvard,
+    MODS + "subject"                   : subject_and_spatial_transform_harvard
 }
 
 CHO_TRANSFORMER["common"] = {
     "collection"                       : lambda d, p: {"collection":
                                                        getprop(d, p)},
     MODS + "name"                      : creator_and_contributor_transform,
-    MODS + "subject"                   : subject_and_spatial_transform,
     MODS + "typeOfResource"            : type_transform,
     MODS + "physicalDescription/extent": lambda d, p: {"extent": getprop(d, p)}
 }

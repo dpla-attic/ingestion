@@ -1,8 +1,8 @@
 {
     "name": "digital-commonwealth",
     "type": "oai_verbs",
-    "endpoint_url": "http://digitalcommonwealth.org/oai-pmh-repository/request",
     "sets": ["305", "338", "339", "340", "341", "342", "343", "344", "345", "346"],
+    "endpoint_url": "http://legacy.digitalcommonwealth.org/oai-pmh-repository/request",
     "contributor": {
         "@id": "http://dp.la/api/contributor/digital-commonwealth",
         "name": "Digital Commonwealth"
