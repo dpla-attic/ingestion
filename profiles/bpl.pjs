@@ -24,7 +24,6 @@
         "/enrich_date",
         "/enrich-type",
         "/enrich-format",
-        "/harvard_enrich_location",
         "/enrich_location",
         "/geocode",
         "/cleanup_language",

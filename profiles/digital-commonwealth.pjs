@@ -1,8 +1,8 @@
 {
     "name": "digital-commonwealth",
     "type": "oai_verbs",
-    "endpoint_url": "http://digitalcommonwealth.org/oai-pmh-repository/request",
-    "blacklist": ["3","5","6","8","13","18","19","20","27","41","112","118","119","138","140","141","143","144","147","148","149","150","152","153","154","155","158","159","166","167","169","171","177","296","298","302"],
+    "sets": ["305", "338", "339", "340", "341", "342", "343", "344", "345", "346"],
+    "endpoint_url": "http://legacy.digitalcommonwealth.org/oai-pmh-repository/request",
     "contributor": {
         "@id": "http://dp.la/api/contributor/digital-commonwealth",
         "name": "Digital Commonwealth"
