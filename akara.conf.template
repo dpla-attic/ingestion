@@ -303,6 +303,8 @@ class type_conversion:
         ('jewelry', 'image'),
         ('furnishing', 'image'),
         ('furniture', 'image'),
+        # Keep "moving image" above "image"
+        ('moving image', 'moving image'),
         ('image', 'image'),
         ('drawing', 'image'),
         ('print', 'image'),
@@ -330,7 +332,6 @@ class type_conversion:
         ('finding aid', 'collection'),
         ('online collection', 'collection'),
         ('online exhibit', 'interactive resource'),
-        ('moving image', 'moving image'),
         ('motion picture', 'moving image'),
         ('film', 'moving image'),
         ('video game', 'interactive resource'),
