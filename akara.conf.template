@@ -327,7 +327,7 @@ class type_conversion:
         ('notated music', 'image'),
         ('mixed material', 'image'),
         ('audio', 'sound'),
-        ('sound recording', 'sound'),
+        ('sound', 'sound'),
         ('oral history recording', 'sound'),
         ('finding aid', 'collection'),
         ('online collection', 'collection'),
