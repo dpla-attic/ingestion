@@ -71,7 +71,7 @@ def multi_transform(d, key, props, return_format="str"):
 # item dict representing the new property and its value
 CHO_TRANSFORMER = {
     RECORD + "display/creator"      : lambda d, p: {"creator": getprop(d, p)},
-    RECORD + "search/creationdate"  : lambda d, p: {"date": getprop(d, p)},
+    RECORD + "display/creationdate" : lambda d, p: {"date": getprop(d, p)},
     RECORD + "search/description"   : lambda d, p: {"description": getprop(d, p)},
     RECORD + "display/lds05"        : lambda d, p: {"extent": getprop(d, p)},
     RECORD + "facets/language"      : lambda d, p: {"language": getprop(d, p)},
