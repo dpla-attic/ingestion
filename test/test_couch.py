@@ -75,8 +75,8 @@ class CouchTest(Couch):
         del self.server[TEST_DASHBOARD_DB]
         self.dpla_db = self.server.create(TEST_DPLA_DB)
         self.dashboard_db = self.server.create(TEST_DASHBOARD_DB)
-        self._sync_views("dpla")
-        self._sync_views("dashboard")
+        self.sync_views("dpla")
+        self.sync_views("dashboard")
 
     def get_provider_backups(self):
         return [db for db in self.server if db.startswith(PROVIDER + "_")]
@@ -112,8 +112,8 @@ def couch_setup():
     couch = CouchTest(server_url=SERVER_URL,
                       dpla_db_name=TEST_DPLA_DB,
                       dashboard_db_name=TEST_DASHBOARD_DB)
-    couch._sync_views("dpla")
-    couch._sync_views("dashboard")
+    couch.sync_views("dpla")
+    couch.sync_views("dashboard")
     couch._sync_test_views()
 
 @nottest
