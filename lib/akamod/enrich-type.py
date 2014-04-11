@@ -68,5 +68,10 @@ def enrichtype(body, ctype,
                        id_for_msg)
         if default:
             data['sourceResource']['type'] = default
+        else:
+            try:
+                del data['sourceResource']['type']
+            except:
+                pass
 
     return json.dumps(data)
