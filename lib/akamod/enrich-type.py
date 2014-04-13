@@ -10,7 +10,6 @@ type_for_type_keyword = \
 type_for_format_keyword = \
         module_config('enrich_type').get('type_for_phys_keyword')
 
-
 @simple_service('POST', 'http://purl.org/la/dp/enrich-type', 'enrich-type',
                 'application/json')
 def enrichtype(body, ctype,
@@ -68,5 +67,10 @@ def enrichtype(body, ctype,
                        id_for_msg)
         if default:
             data['sourceResource']['type'] = default
+        else:
+            try:
+                del data['sourceResource']['type']
+            except:
+                pass
 
     return json.dumps(data)

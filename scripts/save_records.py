@@ -72,6 +72,7 @@ def main(argv):
     enrich_dir = getprop(ingestion_doc, "enrich_process/data_dir")
     total_items = 0
     total_collections = 0
+    sync_point = 5000
     docs = {}
     for file in os.listdir(enrich_dir):
         filename = os.path.join(enrich_dir, file)
@@ -97,6 +98,11 @@ def main(argv):
             total_collections += len(docs) - items
             print "Saved %s documents" % (total_items + total_collections)
 
+            if total_items > sync_point:
+                print "Syncing views"
+                couch.sync_views(couch.dpla_db.name)
+                sync_point = total_items + 10000
+
             # Set docs for the next iteration
             docs = file_docs
         else:
@@ -112,6 +118,8 @@ def main(argv):
             total_items += items
             total_collections += len(docs) - items
             print "Saved %s documents" % (total_items + total_collections)
+            print "Syncing views"
+            couch.sync_views(couch.dpla_db.name)
 
     print "Total items: %s" % total_items
     print "Total collections: %s" % total_collections

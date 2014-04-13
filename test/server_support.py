@@ -302,6 +302,9 @@ class type_conversion:
 class edan_to_dpla(type_conversion):
     pass
 
+class enrich_type(type_conversion):
+    pass
+
 """ % dict(config_root = config_root,
            port = port,
            thumbs_root = thumbs_root,

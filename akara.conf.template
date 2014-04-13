@@ -72,7 +72,7 @@ class Akara:
     #
     #  MaxServers: maximum number of servers to run at any one time
     #  (this is therefore the maximum number of simultaneous connections)
-    MaxServers           = 10
+    MaxServers           = 20
     #
     #  A 'spare' server is one which is waiting to handle an HTTP request
     #  MinSpareServers: minimum number of spare servers
@@ -81,7 +81,7 @@ class Akara:
     MaxSpareServers      =  2
 
     #  MaxRequestsPerServer: restart a server after this many requests
-    MaxRequestsPerServer =   100
+    MaxRequestsPerServer =   500
 
 
     #### Log configuration
@@ -303,6 +303,8 @@ class type_conversion:
         ('jewelry', 'image'),
         ('furnishing', 'image'),
         ('furniture', 'image'),
+        # Keep "moving image" above "image"
+        ('moving image', 'moving image'),
         ('image', 'image'),
         ('drawing', 'image'),
         ('print', 'image'),
@@ -325,7 +327,7 @@ class type_conversion:
         ('notated music', 'image'),
         ('mixed material', 'image'),
         ('audio', 'sound'),
-        ('sound recording', 'sound'),
+        ('sound', 'sound'),
         ('oral history recording', 'sound'),
         ('finding aid', 'collection'),
         ('online collection', 'collection'),
