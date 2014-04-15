@@ -27,6 +27,7 @@ import argparse
 import dashboard_cleanup
 import remove_deleted_records
 import create_ingestion_document
+import check_ingestion_counts
 from datetime import datetime
 from dplaingestion.couch import Couch
 from amara.thirdparty import json, httplib2
@@ -218,6 +219,11 @@ def main(argv):
     if not resp == 0:
         print "Error deleting records"
         return
+
+    # Run check counts
+    resp = check_ingestion_counts.main([None, ingestion_doc_id])
+    if not resp == 0:
+        print "Error checking ingestion counts"
 
     # Run dashboard cleanup
     resp = dashboard_cleanup.main([None, ingestion_doc_id])
