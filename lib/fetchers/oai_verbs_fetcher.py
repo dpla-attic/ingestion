@@ -120,11 +120,13 @@ class OAIVerbsFetcher(Fetcher):
                             del sets[set]
                 self.collections = sets
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, one_set=None):
         """A generator to yield batches (responses) of records fetched, and any
            errors encountered in the process, via the self.response dicitonary.
 
            Records can be for collections or items.
+
+           one_set is ignored for now.
         """
         # Set self.collections
         self.set_collections()

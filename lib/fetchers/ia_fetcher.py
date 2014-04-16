@@ -1,6 +1,6 @@
 from dplaingestion.fetchers.absolute_url_fetcher import *
 from dplaingestion.utilities import with_retries
-from amara.thirdparty import json, httplib2
+from amara.thirdparty import json
 from collections import OrderedDict, Counter
 from xml.parsers import expat
 from abc import ABCMeta
@@ -139,14 +139,14 @@ class IAFetcher(AbsoluteURLFetcher):
                     errors = []
                     records = []
 
-    def request_records(self, content):
+    def request_records(self, content, set_id=None):
         content = content["response"]
         total_records = int(content["numFound"])
         read_records = int(content["start"])
         expected_records = self.endpoint_url_params["rows"]
-
         total_pages = total_records/expected_records + 1
         request_more =  total_pages != self.endpoint_url_params["page"]
+
         if not request_more:
             # Since we are at the last page the expected_records will not
             # be equal to self.endpoint_url_params["rows"]

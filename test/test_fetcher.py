@@ -84,12 +84,15 @@ def test_oai_fetcher_with_blacklist():
             s not in fetcher.collections]
     assert diff == []
 
+@attr(travis_exclude='yes')
 def test_absolute_url_fetcher_nypl():
     profile_path = "profiles/nypl.pjs"
-    fetcher =  create_fetcher(profile_path, uri_base, config_file)
+    fetcher =  create_fetcher(profile_path, uri_base, "akara.ini")
     assert fetcher.__class__.__name__ == "NYPLFetcher"
 
-    for response in fetcher.fetch_all_data():
+    for response in fetcher.fetch_all_data(
+            "cd4c3430-c6cb-012f-ccf3-58d385a7bc34"
+            ):
         assert not response["errors"]
         assert response["records"]
         break

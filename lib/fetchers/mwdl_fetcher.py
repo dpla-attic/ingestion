@@ -46,7 +46,7 @@ class MWDLFetcher(AbsoluteURLFetcher):
 
         return error, records
 
-    def request_records(self, content, retry=True):
+    def request_records(self, content, set_id=None, retry=True):
         request_more = True
         error, records = self.mwdl_extract_records(content)
         if error:

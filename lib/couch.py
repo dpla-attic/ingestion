@@ -364,7 +364,7 @@ class Couch(object):
         self.logger.debug("%s database response: %s" % (db.name, resp))
 
     def _create_ingestion_document(self, provider, uri_base, profile_path,
-                                   thresholds):
+                                   thresholds, fetcher_threads):
         """Creates and returns an ingestion document for the provider.
         """
 
@@ -378,6 +378,7 @@ class Couch(object):
             "countDeleted": 0,
             "uri_base": uri_base,
             "profile_path": profile_path,
+            "fetcher_threads": fetcher_threads,
             "fetch_process": {
                 "status": None,
                 "start_time": None,

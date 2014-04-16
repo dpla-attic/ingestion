@@ -55,7 +55,7 @@ class UVAFetcher(AbsoluteURLFetcher):
                                     self.uva_extract_records(cont, url):
                                     yield error, recs
 
-    def request_records(self, content):
+    def request_records(self, content, set_id=None):
         # UVA will not use the request_more flag
         request_more = False
 
