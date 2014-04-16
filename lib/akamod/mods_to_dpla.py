@@ -575,6 +575,9 @@ CHO_TRANSFORMER["NYPL"] = {
     "subject/temporal"              : lambda d, p: {"temporal": getprop(d, p)},
     "typeOfResource"                : lambda d, p: {"type": getprop(d, p)},
 }
+AGGREGATION_TRANSFORMER["NYPL"] = {
+    "location"                      : data_provider_transform_nypl
+}
 
 # Common TRANSFORMERs
 CHO_TRANSFORMER["common"] = {}
@@ -590,7 +593,6 @@ AGGREGATION_TRANSFORMER["common"] = {
                                                  "@id": "http://dp.la/api/" +
                                                  "items/" + getprop(d, p)}),
     "provider"                   : lambda d, p: {"provider": getprop(d, p)},
-    "location"                   : data_provider_transform_nypl,
     "tmp_item_link"              : lambda d, p: {"isShownAt": getprop(d, p)}
 }
 
