@@ -272,7 +272,13 @@ def description_transform_nypl(d):
         else:
             return ""
     note = txt(getprop(d, "note"))
-    pnote = txt(getprop(d, "physicalDescription/note"))
+    pd = getprop(d, "physicalDescription")
+    pnote = None
+    if type(pd) == list:
+        pnote = [e["note"] for e in pd if "note" in e]  # Yes, a list.
+    elif type(pd) == dict and "note" in pd:
+        pnote = txt(pd["note"])  # Yes, a string.
+
     return {"description": note or pnote}
 
 def format_transform_nypl(d, p):
@@ -280,11 +286,7 @@ def format_transform_nypl(d, p):
     for v in iterify(getprop(d, p)):
         if isinstance(v, dict):
             f = v.get("$")
-            if not f:
-                msg = "An item in physicalDescription/form has an empty " + \
-                      "\"$\" field; %s" % d["_id"]
-                logger.error(msg)
-            else:
+            if f:
                 format.append(f)
         else:
             msg = "Value in physicalDescription/form not a dict; %s" % d["_id"]
