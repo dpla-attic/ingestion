@@ -199,18 +199,6 @@ MODULES = [
     "dplaingestion.marc_code_to_relator",
     ]
 
-class download_preview:
-    thumbs_root_path = '%(thumbs_root)s'
-    thumbs_root_url  = 'http://aaa.bbb.com/'
-    # Only these MIME types are supported
-    # The value is the extension which will be used for storing the
-    # file on disk.
-    mime_to_type = {
-        'image/jpeg' : '.jpg',
-        'image/gif'  : '.gif',
-        'image/png'  : '.png',
-    }
-
 class geocode: 
     bing_api_key = '%(bing_apikey)s'
     geonames_username = '%(geonames_username)s'
