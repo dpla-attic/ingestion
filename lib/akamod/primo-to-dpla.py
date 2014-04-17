@@ -79,7 +79,7 @@ CHO_TRANSFORMER = {
     RECORD + "display/rights"       : lambda d, p: {"rights": getprop(d, p)},
     RECORD + "display/subject"      : lambda d, p: {"subject": getprop(d, p)},
     RECORD + "display/lds09"        : lambda d, p: {"temporal": getprop(d, p)},
-    RECORD + "display/lds17"        : lambda d, p: {"type": getprop(d, p)},
+    RECORD + "facets/rsrctype"      : lambda d, p: {"type": getprop(d, p)},
     RECORD + "search/lsr03"         : lambda d, p: {"stateLocatedIn": getprop(d, p)},
     LINKS + "linktorsrc"             : lambda d, p: {"identifier": getprop(d, p)}
 }

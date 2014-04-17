@@ -1,6 +1,5 @@
 """Support module to start a local Akara test server"""
 
-import atexit
 import os
 from os.path import abspath, dirname
 import shutil
@@ -99,10 +98,11 @@ class Akara:
   InternalServerRoot = 'http://localhost:%(port)s/'
   Listen = 'localhost:%(port)s'
   LogLevel = 'DEBUG'
+  ErrorLog = 'logs/error.log'
   MinSpareServers = 3
   # These affect test_server.py:test_restart
   MaxServers = 5
-  MaxRequestsPerServer = 5
+  MaxRequestsPerServer = 500
 
 MODULES = [
     "freemix_akara.contentdm",
@@ -133,43 +133,50 @@ MODULES = [
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.dpla-list-sets",
-    "dplaingestion.akamod.contentdm_identify_object",
-    "dplaingestion.akamod.download_preview",
-    "dplaingestion.akamod.download_test_image",
+    "dplaingestion.akamod.digital_commonwealth_enrich_location",
+    "dplaingestion.akamod.harvard_enrich_location",
+    "dplaingestion.akamod.mdl-enrich-location",
+    "dplaingestion.akamod.mwdl_enrich_location",
+    "dplaingestion.akamod.nara_enrich_location",
+    "dplaingestion.akamod.scdl_enrich_location",
+    "dplaingestion.akamod.uiuc_enrich_location",
+    "dplaingestion.akamod.scdl_geocode_regions",
     "dplaingestion.akamod.filter_empty_values",
     "dplaingestion.akamod.artstor_select_isshownat",
     "dplaingestion.akamod.artstor_identify_object",
-    "dplaingestion.akamod.digital_commonwealth_enrich_location",
-    "dplaingestion.akamod.uiuc_enrich_location",
+    "dplaingestion.akamod.contentdm_identify_object",
     "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
-    "dplaingestion.akamod.geocode",
     "dplaingestion.akamod.lookup",
+    "dplaingestion.akamod.kentucky_identify_object",
     "dplaingestion.akamod.georgia_identify_object",
     "dplaingestion.akamod.bhl_contributor_to_collection",
     "dplaingestion.akamod.copy_prop",
     "dplaingestion.akamod.cleanup_value",
     "dplaingestion.akamod.set_prop",
     "dplaingestion.akamod.enrich_language",
-    "dplaingestion.akamod.dpla-get-record",
+    "dplaingestion.akamod.arc-to-dpla",
     "dplaingestion.akamod.mods_to_dpla",
+    "dplaingestion.akamod.dpla-get-record",
+    "dplaingestion.akamod.primo-to-dpla",
+    "dplaingestion.akamod.mwdl_enrich_state_located_in",
     "dplaingestion.akamod.artstor_cleanup",
     "dplaingestion.akamod.nypl_identify_object",
     "dplaingestion.akamod.nypl_coll_title",
     "dplaingestion.akamod.nypl_select_hasview",
-    "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_cleanup_field",
     "dplaingestion.akamod.ia_to_dpla",
     "dplaingestion.akamod.ia_identify_object",
     "dplaingestion.akamod.ia_set_rights",
     "dplaingestion.akamod.dc_clean_invalid_dates",
+    "dplaingestion.akamod.edan_select_id",
     "dplaingestion.akamod.edan_to_dpla",
     "dplaingestion.akamod.cleanup_language",
     "dplaingestion.akamod.dc_clean_invalid_dates",
+    "dplaingestion.akamod.oai_mods_to_dpla",
     "dplaingestion.akamod.decode_html",
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",
-    "dplaingestion.akamod.oai_mods_to_dpla",
-    "dplaingestion.akamod.arc-to-dpla",
+    "dplaingestion.akamod.david_rumsey_identify_object",
     "dplaingestion.akamod.dedup_value",
     "dplaingestion.akamod.set_type_from_physical_format",
     "dplaingestion.akamod.capitalize_value",
@@ -177,27 +184,20 @@ MODULES = [
     "dplaingestion.akamod.replace_substring",
     "dplaingestion.akamod.uiuc_cleanup_spatial_name",
     "dplaingestion.akamod.remove_list_values",
+    "dplaingestion.akamod.marc_to_dpla",
     "dplaingestion.akamod.usc_enrich_location",
     "dplaingestion.akamod.hathi_identify_object",
+    "dplaingestion.akamod.oai_untl_to_dpla",
     "dplaingestion.akamod.texas_enrich_location",
     "dplaingestion.akamod.set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
+    "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
     "dplaingestion.akamod.compare_with_schema",
+    "dplaingestion.akamod.qdc_to_dpla",
     "dplaingestion.akamod.mdl_state_located_in",
     "dplaingestion.akamod.scdl_format_to_type",
+    "dplaingestion.marc_code_to_relator",
     ]
-
-class download_preview:
-    thumbs_root_path = '%(thumbs_root)s'
-    thumbs_root_url  = 'http://aaa.bbb.com/'
-    # Only these MIME types are supported
-    # The value is the extension which will be used for storing the
-    # file on disk.
-    mime_to_type = {
-        'image/jpeg' : '.jpg',
-        'image/gif'  : '.gif',
-        'image/png'  : '.png',
-    }
 
 class geocode: 
     bing_api_key = '%(bing_apikey)s'
@@ -259,7 +259,9 @@ class type_conversion:
         ('book', 'text'),
         ('specimen', 'image'),
         ('electronic resource', 'interactive resource'),
+        # Keep "textile" above "text"
         ('textile', 'image'),
+        ('text', 'text'),
         ('frame', 'image'),
         ('costume', 'image'),
         ('object', 'image'),
@@ -269,6 +271,8 @@ class type_conversion:
         ('jewelry', 'image'),
         ('furnishing', 'image'),
         ('furniture', 'image'),
+        # Keep "moving image" above "image"
+        ('moving image', 'moving image'),
         ('image', 'image'),
         ('drawing', 'image'),
         ('print', 'image'),
@@ -340,8 +344,6 @@ def remove_server_dir():
         else:
             print "Test server configuration and log files are in", config_root
         config_root = None
-
-atexit.register(remove_server_dir)
 
 # Start a new Akara server in server mode.
 def start_server():

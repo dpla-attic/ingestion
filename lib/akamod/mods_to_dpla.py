@@ -5,6 +5,7 @@ from amara.thirdparty import json
 import base64
 from dplaingestion.utilities import iterify, remove_key_prefix
 from dplaingestion.selector import getprop as selector_getprop, exists
+from dplaingestion.marc_code_to_relator import MARC_CODE_TO_RELATOR
 
 
 def getprop(d, p):
@@ -242,134 +243,13 @@ def spatial_transform_nypl(d, p):
     return {"spatial": spatial} if spatial else {}
 
 def title_transform_nypl(d, p):
-    title_info = iterify(getprop(d, p))
-    # Title is in the last titleInfo element
-    try:
-        title = title_info[-1].get("title")
-    except:
-        logger.error("Error setting sourceResource.title for %s" % d["_id"])
-    
-    return {"title": title} if title else {}
-
-def identifier_transform_nypl(d, p):
-    identifier = [s.get("#text") for s in iterify(getprop(d, p)) if
-                  isinstance(s, dict) and s.get("type") in
-                  ("local_bnumber", "uuid")]
-    idenfitier = filter(None, identifier)
-
-    return {"identifier": identifier} if identifier else {}
-
-def creator_transform_nypl(d, p):
-    def _update_value(d, k, v):
-        if k in d:
-            if isinstance(d[k], list):
-                d[k].append(v)
-            else:
-                d[k] = [d[k], v]
-        else:
-            d[k] = v
-
-    creator_roles = frozenset(("architect", "artist", "author", "cartographer",
-                     "composer", "creator", "designer", "director",
-                     "engraver", "interviewer", "landscape architect",
-                     "lithographer", "lyricist", "musical director",
-                     "performer", "project director", "singer", "storyteller",
-                     "surveyor", "technical director", "woodcutter"))
-    names = iterify(getprop(d, p))
-    out = {}
-    for creator_dict in names:
-        if isinstance(creator_dict, dict) and "type" in creator_dict and "namePart" in creator_dict:
-            if creator_dict["type"] == "personal" and exists(creator_dict, "role/roleTerm"):
-                roles = frozenset([role_dict["#text"].lower() for role_dict in creator_dict["role"]["roleTerm"] if "#text" in role_dict])
-                name = creator_dict["namePart"]
-                if "publisher" in roles:
-                    _update_value(out, "publisher", name)
-                elif roles & creator_roles:
-                    _update_value(out, "creator", name)
-                else:
-                    _update_value(out, "contributor", name)
-    return out
-
-def date_transform_nypl(d, p):
-    def _date_created(d, p):
-        date_created_list = iterify(getprop(d, p))
-        keyDate, startDate, endDate = None, None, None
-        for _dict in date_created_list:
-            if not isinstance(_dict, dict):
-                continue
-            if _dict.get("keyDate") == "yes":
-                keyDate = _dict.get("#text")
-            if _dict.get("point") == "start":
-                startDate = _dict.get("#text")
-            elif _dict.get("point") == "end":
-                endDate = _dict.get("#text")
-        if startDate and endDate:
-            return {"date": "{0} - {1}".format(startDate, endDate)}
-        else:
-            return {"date": keyDate}
-
-    originInfo = getprop(d, p)
-    date_field_check_order = ("dateCreated", "dateIssued")
-    for field in date_field_check_order:
-        if field in originInfo:
-            return _date_created(d, p + "/" + field)
-    return {}
-
-def description_transform_nypl(d, p):
-    note = getprop(d, "note")
-    abstract = getprop(d, "abstract")
-
-    # Extract note values first
-    if note is not None:
-        desc = []
-        for s in iterify(note):
-            if "#text" in s:
-                desc.append(s["#text"])
-            else:
-                desc.append(s)
-
-    # Override note values if abstract exists
-    if abstract is not None:
-        desc = []
-        for s in iterify(abstract):
-            if "#text" in s:
-                desc.append(s["#text"])
-            else:
-                desc.append(s)
-
-    return {"description": desc} if desc else {}
-
-def is_shown_at_transform_nypl(d, p):
-    is_shown_at = None
-    collection_title = getprop(d, p + "/title")
-
-    if collection_title:
-        # Handle NYPL isShownAt for collection with title
-        # "Lawrence H. Slaughter Collection of English maps, charts, 
-        #  globes, books and atlases"
-        # For collection with title
-        # "Thomas Addis Emmet collection, 1483-1876, bulk (1700-1800)",
-        # use placeholder item link: http://archives.nypl.org/mss/927
-        lawrence_title = ("Lawrence H. Slaughter Collection of English maps," +
-                          " charts, globes, books and atlases")
-        emmet_title = ("Thomas Addis Emmet collection, 1483-1876, bulk" +
-                       " (1700-1800)")
-        placeholder_item_link = "http://archives.nypl.org/mss/927"
-        if exists(d, "tmp_item_link"):
-            if collection_title == lawrence_title:
-                is_shown_at = getprop(d, "tmp_item_link")
-            elif collection_title == emmet_title:
-                is_shown_at = placeholder_item_link
-
-    return {"isShownAt": is_shown_at} if is_shown_at else {}
-
-def collection_transform_nypl(d, p):
-    collection = getprop(d, p)
-    title_info = getprop(d, "titleInfo")
-    if title_info is not None:
-        collection["title"] = iterify(title_info)[0].get("title")
-
-    return {"collection": collection}
+   title_info = iterify(getprop(d, p))
+   # Title is in the last titleInfo element
+   try:
+       title = title_info[-1].get("title")
+   except:
+       logger.error("Error setting sourceResource.title for %s" % d["_id"])
+   return {"title": title} if title else {}
 
 # MODS transforms (applies to both UVA and NYPL)
 def language_transform(d, p):
@@ -380,6 +260,278 @@ def language_transform(d, p):
             language.append(s["#text"])
 
     return {"language": language} if language else {}
+
+def description_transform_nypl(d):
+    def txt(n):
+        if not n:
+            return ""
+        if type(n) == dict:
+            return n.get("#text") or ""
+        elif isinstance(n, basestring):
+            return n
+        else:
+            return ""
+    note = txt(getprop(d, "note"))
+    pd = getprop(d, "physicalDescription")
+    pnote = None
+    if type(pd) == list:
+        pnote = [e["note"] for e in pd if "note" in e]  # Yes, a list.
+    elif type(pd) == dict and "note" in pd:
+        pnote = txt(pd["note"])  # Yes, a string.
+
+    return {"description": note or pnote}
+
+def format_transform_nypl(d, p):
+    format = []
+    for v in iterify(getprop(d, p)):
+        if isinstance(v, dict):
+            f = v.get("$")
+            if f:
+                format.append(f)
+        else:
+            msg = "Value in physicalDescription/form not a dict; %s" % d["_id"]
+
+    return {"format": format} if format else {}
+
+def language_transform_nypl(d, p):
+    code = ""
+    text = ""
+    for v in iterify(getprop(d, p)):
+        if v.get("type") == "code":
+            if not code:
+                code = v.get("$")
+            else:
+                msg = "Multiple codes in language/languageTerm; %s" % d["_id"]
+                logger.error(msg)
+        if v.get("type") == "text":
+            if not text:
+                text = v.get("$")
+            else:
+                msg = "Multiple texts in language/languageTerm; %s" % d["_id"]
+                logger.error(msg)
+    if code and text:
+        return {"language": {"name": text, "iso639_3": code}}
+    else:
+        logger.error("Only one value (code/text) found; %s" % d["_id"])
+        return {}
+
+def date_publisher_and_spatial_transform_nypl(d, p):
+    """
+    Examine the many possible originInfo elements and pick out date, spatial,
+    and publisher information.
+
+    Dates may come in multiple originInfo elements, in which case we take the
+    last one.
+    """
+    date = []
+    spatial = []
+    publisher = []
+    date_fields = ("dateIssued", "dateCreated", "dateCaptured", "dateValid",
+                   "dateModified", "copyrightDate", "dateOther")
+    date_origin_info = []
+
+    def datestring(date_data):
+        """
+        Given a "date field" element from inside an originInfo, return a
+        string representation of the date or dates represented.
+        """
+        if type(date_data) == dict:
+            # E.g. single dateCaptured without any attributes; just take it.
+            return date_data.get("#text")
+        if type(date_data) == unicode:
+            return date_data
+        keyDate, startDate, endDate = None, None, None
+        for _dict in date_data:
+            if _dict.get("keyDate") == "yes":
+                keyDate = _dict.get("#text")
+            if _dict.get("point") == "start":
+                startDate = _dict.get("#text")
+            elif _dict.get("point") == "end":
+                endDate = _dict.get("#text")
+        if startDate and endDate:
+            return "%s - %s" % (startDate, endDate)
+        elif keyDate:
+            return keyDate
+        else:
+            return None
+
+    for origin_info in iterify(getprop(d, p)):
+        # Put aside date-related originInfo elements for later ...
+        for field in date_fields:
+            if field in origin_info:
+                date_origin_info.append(origin_info)
+                break
+        else:
+            # Map publisher
+            if ("publisher" in origin_info and
+                    origin_info["publisher"] not in publisher):
+                publisher.append(origin_info["publisher"])
+            # Map spatial
+            if exists(origin_info, "place/placeTerm"):
+                for place_term in iterify(getprop(origin_info, "place/placeTerm")):
+                    if isinstance(place_term, basestring):
+                        pass
+                    elif isinstance(place_term, dict):
+                        place_term = place_term.get("#text")
+                        if place_term is None:
+                            logger.error("No/empty field #text in originInfo/" +
+                                         "place/placeTerm; %s" % d["_id"])
+                            continue
+                    else:
+                        logger.error("Value in originInfo/place/placeTerm is " +
+                                     "neither a string or a dict; %s" % d["_id"])
+                        continue
+                    if place_term not in spatial:
+                        spatial.append(place_term)
+
+    # Map dates.  Only use the last date-related originInfo element.
+    try:
+        last_date_origin_info = date_origin_info[-1]
+        for field in date_fields:
+                if field in last_date_origin_info:
+                    s = datestring(last_date_origin_info[field])
+                    if s not in date:
+                        date.append(s)
+    except Exception as e:
+        logger.info("Can not get date from %s" % d["_id"])
+
+    out = {}
+    if date:
+        out["date"] = date
+    if spatial:
+        out["spatial"] = spatial
+    if publisher:
+        out["publisher"] = publisher
+
+    return out
+
+def identifier_transform_nypl(d, p):
+    id_values = ("local_imageid", "isbn", "isrc", "isan", "ismn", "iswc",
+                 "issn","uri", "urn")
+    identifier = []
+    for v in iterify(getprop(d, p)):
+        for id_value in id_values:
+            if (id_value in v.get("displayLabel", "") or
+                id_value in v.get("type", "")):
+                identifier.append(v.get("#text"))
+                break
+
+    return {"identifier": identifier} if identifier else {}
+
+def spec_type_transform_nypl(d, p):
+    spec_type = []
+    for v in iterify(getprop(d, p)):
+        if isinstance(v, basestring):
+            if "book" in v or "periodical" in v or "magazine" in v:
+                spec_type.append(v)
+
+    return {"specType": spec_type} if spec_type else {}
+
+def subject_transform_nypl(d):
+    # Mapped from subject and genre
+    #
+    # Per discussion with Amy on 10 April 2014, don't worry
+    # about checking whether heading maps to authority file. Amy simplified
+    # the crosswalk.
+    #
+    # TODO: When present, we should probably pull in the valueURI and
+    # authority values into the sourceResource.subject - this would represent
+    # an index/API change, however. 
+    subject = []
+
+    if exists(d, "subject"):
+        for v in iterify(getprop(d, "subject")):
+            if "topic" in v:
+                if isinstance(v, basestring):
+                    subject.append(v["topic"])
+                elif isinstance(v["topic"], dict):
+                    subject.append(v["topic"].get("#text"))
+                else:
+                    logger.error("Topic is not a string nor a dict; %s" % d["_id"])
+            if exists(v, "name/namePart"):
+                subject.append(getprop(v, "name/namePart"))
+
+    if exists(d, "genre"):
+        for v in iterify(getprop(d, "genre")):
+            if isinstance(v, basestring):
+                subject.append(v)
+            elif isinstance(v, dict):
+                subject.append(v.get("#text"))
+            else:
+                logger.error("Genre is not a string nor a dict; %s" % d["_id"])
+
+    return {"subject": subject} if subject else {}
+
+def collection_and_relation_transform_nypl(d):
+    out = {
+        "collection": getprop(d, "collection")
+    }
+
+    if exists(d, "relatedItem"):
+        related_items = iterify(getprop(d, "relatedItem"))
+        # Map relation
+        relation = filter(None, [getprop(item, "titleInfo/title") for item in
+                                 related_items])
+        if relation:
+            relation.reverse()
+            relation = ". ".join(relation).replace("..", ".")
+            out["relation"] = relation
+
+
+        # Map collection title
+        host_types = [item for item in related_items if
+                      item.get("type") == "host"]
+        if host_types:
+            title = getprop(host_types[-1], "titleInfo/title")
+            if title:
+                out["collection"]["title"] = title
+
+    return out
+
+def data_provider_transform_nypl(d, p):
+    data_provider = None
+    for v in iterify(getprop(d, p)):
+        if "physicalLocation" in v:
+            for p in iterify(v["physicalLocation"]):
+                if (p.get("type") == "division" and
+                    p.get("authority") != "marcorg"):
+                    phys_location = p.get("#text")
+                    while phys_location.endswith("."):
+                        phys_location = phys_location[:-1]
+                    data_provider = phys_location + \
+                                    ". The New York Public Library" 
+
+    return {"dataProvider": data_provider} if data_provider else {}
+
+NYPL_CREATOR_ROLES = ["architect", "artist", "author", "cartographer",
+    "composer", "creator", "designer", "director", "engraver", "interviewer",
+    "landscape architect", "lithographer", "lyricist", "musical director",
+    "performer", "project director", "singer", "storyteller", "surveyor",
+    "technical director", "woodcutter"]
+
+def creator_and_contributor_transform_nypl(d, p):
+    creator = set()
+    contributor = set()
+    for v in iterify(getprop(d, p)):
+        if exists(v, "role"):
+            for role in iterify(v["role"]):
+                if exists(role, "roleTerm"):
+                    for role_term in iterify(role["roleTerm"]):
+                        rt = role_term.get("#text").lower().strip(' .')
+                        if rt in NYPL_CREATOR_ROLES:
+                            creator.add(v["namePart"])
+                        elif rt != "publisher":
+                            contributor.add(v["namePart"])
+
+    out = {}
+    if creator:
+        out["creator"] = list(creator)
+    cont = contributor - creator
+    if cont:
+        out['contributor'] = list(cont)
+
+    return out
+
 
 CHO_TRANSFORMER = {}
 AGGREGATION_TRANSFORMER = {}
@@ -413,20 +565,20 @@ AGGREGATION_TRANSFORMER["UVA"] = {
 
 # NYPL TRANSFORMERs
 CHO_TRANSFORMER["NYPL"] = {
-    "name"                          : creator_transform_nypl,
-    "subject"                       : spatial_transform_nypl,
-    "titleInfo"                     : title_transform_nypl,
-    "originInfo"                    : date_transform_nypl,
+    "physicalDescription/form"      : format_transform_nypl,
+    "language/languageTerm"         : language_transform_nypl,
+    "originInfo"                    : date_publisher_and_spatial_transform_nypl,
     "identifier"                    : identifier_transform_nypl,
-    "typeOfResource/#text"          : lambda d, p: {"type": getprop(d, p)},
-    "relatedItem/titleInfo/title"   : lambda d, p: {"isPartOf": getprop(d, p)},
-    "collection"                    : collection_transform_nypl,
-    "note"                          : description_transform_nypl,
-    "abstract"                      : description_transform_nypl
+    "genre"                         : spec_type_transform_nypl,
+    "titleInfo"                     : title_transform_nypl,
+    "name"                          : creator_and_contributor_transform_nypl,
+    "physicalDescription/extent"    : lambda d, p: {"extent": getprop(d, p)},
+    "tmp_rights_statement"          : lambda d, p: {"rights": getprop(d, p)},
+    "subject/temporal"              : lambda d, p: {"temporal": getprop(d, p)},
+    "typeOfResource"                : lambda d, p: {"type": getprop(d, p)},
 }
-
 AGGREGATION_TRANSFORMER["NYPL"] = {
-    "collection": is_shown_at_transform_nypl,
+    "location"                      : data_provider_transform_nypl
 }
 
 # Common TRANSFORMERs
@@ -442,7 +594,8 @@ AGGREGATION_TRANSFORMER["common"] = {
     "id"                         : lambda d, p: ({"id": getprop(d, p),
                                                  "@id": "http://dp.la/api/" +
                                                  "items/" + getprop(d, p)}),
-    "provider"                   : lambda d, p: {"provider": getprop(d, p)}
+    "provider"                   : lambda d, p: {"provider": getprop(d, p)},
+    "tmp_item_link"              : lambda d, p: {"isShownAt": getprop(d, p)}
 }
 
 
@@ -489,6 +642,11 @@ def mods_to_dpla(body, ctype, geoprop=None, provider=None):
     for p in transformer_pipeline:
         if exists(data, p):
             out.update(transformer_pipeline[p](data, p))
+
+    out["sourceResource"].update(description_transform_nypl(data))
+    out["sourceResource"].update(subject_transform_nypl(data))
+    out["sourceResource"].update(collection_and_relation_transform_nypl(data))
+    out["sourceResource"].update({"stateLocatedIn": "New York"})
 
     # Strip out keys with None/null values?
     out = dict((k,v) for (k,v) in out.items() if v)

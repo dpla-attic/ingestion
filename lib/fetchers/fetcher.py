@@ -7,11 +7,12 @@ import fnmatch
 import urllib2
 import xmltodict
 import ConfigParser
+import httplib
+import socket
 import itertools as it
 from urllib import urlencode
 from datetime import datetime
 from amara.thirdparty import json
-from amara.thirdparty import httplib2
 from amara.lib.iri import is_absolute
 from dplaingestion.selector import exists
 from dplaingestion.selector import setprop
@@ -31,8 +32,10 @@ class Fetcher(object):
     """
     def __init__(self, profile, uri_base, config_file):
         """Set common attributes"""
-        self.config_file = config_file
         self.uri_base = uri_base
+        self.config = ConfigParser.ConfigParser()
+        with open(config_file, "r") as f:
+            self.config.readfp(f)
 
         # Which OAI sets get added as collections
         self.sets = profile.get("sets")
@@ -44,8 +47,7 @@ class Fetcher(object):
         self.collections = profile.get("collections", {})
         self.endpoint_url = profile.get("endpoint_url")
         self.collection_titles = profile.get("collection_titles")
-        self.http_handle = httplib2.Http('/tmp/.pollcache')
-        self.http_handle.force_exception_as_status_code = True
+        self.http_headers = profile.get("http_headers", {})
 
         # Set batch_size
         self.batch_size = 500
@@ -63,27 +65,48 @@ class Fetcher(object):
                     del self.sets[set]
 
     def request_content_from(self, url, params={}, attempts=3):
-        error, content = None, None
+        error = None
+        resp = None
+        m = re.match(r"http://(.*?)(/.*)", url)
+        socket_parts = m.group(1).split(":")
+        host = socket_parts[0]
+        if len(socket_parts) == 2:
+            port = int(socket_parts[1])
+        else:
+            port = 80
+        req_uri = m.group(2)
         if params:
-            if "?" in url:
-                url += "&" + urlencode(params)
+            if "?" in req_uri:
+                req_uri += "&" + urlencode(params)
             else:
-                url += "?" + urlencode(params)
+                req_uri += "?" + urlencode(params)
 
         for i in range(attempts):
-            resp, content = self.http_handle.request(url)
-            # Break if 2xx response status
-            if resp["status"].startswith("2"):
-                break
+            try:
+                con = httplib.HTTPConnection(host, port)
+                con.request("GET", req_uri, None, self.http_headers)
+                resp = con.getresponse()
+                if resp.status == 200:
+                    break  # connection stays open for read()!
+                con.close()
+            except Exception as e:
+                if type(e) == socket.error:
+                    err_msg = e
+                else:
+                    err_msg = e.message
+                print >> sys.stderr, "Requesting %s: %s" % (req_uri, err_msg)
             time.sleep(2)
 
-        # Handle non 2xx response status
-        if not resp["status"].startswith("2"):
-            error = "Error ('%s') resolving URL %s" % (resp["status"], url)
-        elif not len(content) > 2:
-            error = "Length of content is no > 2 for URL %s" %  url
-
-        return error, content
+        if resp and resp.status == 200:
+            rv = resp.read()
+            con.close()
+        elif resp:
+            error = "Error ('%d') requesting %s" % (resp.status, url)
+            rv = None
+        else:
+            error = "Could not request %s" % url
+            rv = None
+        return error, rv
 
     def create_collection_records(self):
         if self.collections:

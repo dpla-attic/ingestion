@@ -94,7 +94,8 @@ DEFAULT_PROP = [
     "sourceResource/description",
     "sourceResource/collection/title",
     "sourceResource/collection/description",
-    "sourceResource/contributor"
+    "sourceResource/contributor",
+    "sourceResource/spatial/name"
 ]
 
 

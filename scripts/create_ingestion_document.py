@@ -38,6 +38,7 @@ def main(argv):
             return None
     provider = profile["name"]
     thresholds = profile["thresholds"]
+    fetcher_threads = profile.get("fetcher_threads") or 1
 
     couch = Couch()
     latest_ingestion_doc = couch._get_last_ingestion_doc_for(provider)
@@ -54,7 +55,8 @@ def main(argv):
     ingestion_document_id = couch._create_ingestion_document(provider,
                                                              uri_base,
                                                              args.profile_path,
-                                                             thresholds)
+                                                             thresholds,
+                                                             fetcher_threads)
     msg = "Ingestion document %s created." % ingestion_document_id
     logger.debug(msg)
     print msg

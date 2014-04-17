@@ -198,6 +198,7 @@ MODULES = [
     "dplaingestion.akamod.qdc_to_dpla",
     "dplaingestion.akamod.mdl_state_located_in",
     "dplaingestion.akamod.scdl_format_to_type",
+    "dplaingestion.marc_code_to_relator",
     ]
 
 ### Section 3: Other module configuration goes here
@@ -216,18 +217,6 @@ class dpla_thumbs:
     couch_database = "${CouchDb__Url}dpla"
     couch_database_username = "${CouchDb__Username}"
     couch_database_password = "${CouchDb__Password}"
-
-class download_preview:
-    thumbs_root_path = '/tmp/thumbs/'
-    thumbs_root_url  = 'http://something/'
-    # Only these MIME types are supported
-    # The value is the extension which will be used for storing the
-    # file on disk.
-    mime_to_type = {
-        'image/jpeg' : '.jpg',
-        'image/gif'  : '.gif',
-        'image/png'  : '.png',
-    }
 
 class lookup:
     # Key is passed in query param.

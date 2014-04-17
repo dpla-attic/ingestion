@@ -42,9 +42,11 @@ class FileFetcher(Fetcher):
                 "ingestType": "collection"
             }
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, set=None):
         """A generator to yield batches of records fetched, and any errors
            encountered in the process, via the self.response dicitonary.
+
+           set is ignored, for now.
         """
         # The endpoint URL is actually a file path and should have the form:
         # file:/path/to/files/

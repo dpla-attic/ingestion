@@ -1,4 +1,6 @@
 from dplaingestion.fetchers.fetcher import *
+import threading
+
 
 class AbsoluteURLFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):
@@ -41,11 +43,11 @@ class AbsoluteURLFetcher(Fetcher):
         if not self.collections:
             error, sets = self.fetch_sets()
             if error is not None:
-                self.response["errors"].append(error)
+                return error
             elif sets:
                 self.collections = sets
 
-    def request_records(self):
+    def request_records(self, content, set_id):
         # Implemented in child classes
         pass
 
@@ -55,14 +57,20 @@ class AbsoluteURLFetcher(Fetcher):
             for record in records:
                 record["collection"] = collection
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, set_id=None):
         """A generator to yield batches of records fetched, and any errors
            encountered in the process, via the self.response dicitonary.
         """
 
-        # Set self.collections
-        self.set_collections()
-        if not self.collections:
+        if set_id:
+            self.sets = [set_id]
+            self.collections = {set_id: {"id": set_id}}
+
+        error = self.set_collections()
+        if error:
+            self.response["errors"].append(error)
+            yield self.response
+        elif not self.collections:
             self.response["errors"] = "If sets are not supported then the " + \
                                       "sets field in the profile must be " + \
                                       "set to \"NotSupported\""
@@ -85,20 +93,20 @@ class AbsoluteURLFetcher(Fetcher):
                     del v[prop]
 
         # Request records for each set
-        for set in self.collections.keys():
-            print "Fetching records for set " + set
+        for set_id in self.collections.keys():
 
             request_more = True
-            if set:
-                url = self.endpoint_url.format(set)
+            if set_id:
+                url = self.endpoint_url.format(set_id)
             else:
                 url = self.endpoint_url
-            params = self.endpoint_url_params
 
             while request_more:
+
                 error, content = self.request_content_from(
                     url, self.endpoint_url_params
                     )
+                print "requesting %s %s" % (url, self.endpoint_url_params)
 
                 if error is not None:
                     # Stop requesting from this set
@@ -112,11 +120,12 @@ class AbsoluteURLFetcher(Fetcher):
                     self.response["errors"].extend(iterify(error))
                 else:
                     for error, records, request_more in \
-                        self.request_records(content):
+                            self.request_records(content=content,
+                                                 set_id=set_id):
                         if error is not None:
                             self.response["errors"].extend(iterify(error))
                         self.add_provider_to_item_records(records)
-                        self.add_collection_to_item_records(set, records)
+                        self.add_collection_to_item_records(set_id, records)
                         self.response["records"].extend(records)
                         if len(self.response["records"]) >= self.batch_size:
                             yield self.response
