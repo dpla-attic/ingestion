@@ -1,5 +1,6 @@
 """Support module to start a local Akara test server"""
 
+import atexit
 import os
 from os.path import abspath, dirname
 import shutil
@@ -98,7 +99,6 @@ class Akara:
   InternalServerRoot = 'http://localhost:%(port)s/'
   Listen = 'localhost:%(port)s'
   LogLevel = 'DEBUG'
-  ErrorLog = 'logs/error.log'
   MinSpareServers = 3
   # These affect test_server.py:test_restart
   MaxServers = 5
@@ -344,6 +344,8 @@ def remove_server_dir():
         else:
             print "Test server configuration and log files are in", config_root
         config_root = None
+
+atexit.register(remove_server_dir)
 
 # Start a new Akara server in server mode.
 def start_server():
