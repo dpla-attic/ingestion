@@ -141,33 +141,36 @@ def test_absolute_url_fetcher_mwdl():
         assert response["records"]
         break
 
-# Exclude since certain feeds are restricted
-@attr(travis_exclude='yes')
 def test_all_oai_verb_fetchers():
-    for profile in os.listdir("profiles"):
-        if profile.endswith(".pjs"):
-            # David Rumsey ListSets is returning 500 on hz4 and Travis
-            if profile == "david_rumsey.pjs":
-                continue
-            try:
-                profile_path = "profiles/" + profile
-                with open(profile_path, "r") as f:
-                    prof = json.loads(f.read())
-                if prof.get("type") == "oai_verbs":
-                    fetcher =  create_fetcher(profile_path,
-                                              uri_base,
-                                              config_file)
-                    assert fetcher.__class__.__name__ == "OAIVerbsFetcher"
-                    for response in fetcher.fetch_all_data():
-                        if response['errors']:
-                            print >> sys.stderr, response['errors']
-                        assert not response["errors"]
-                        assert response["records"]
-                        break
-            except Exception as e:
-                print >> sys.stderr, "\nError with %s: %s" % (profile,
-                                                              e.message)
-                assert False
+    # Profiles that are representative of each type and are not restricted:
+    profiles = [
+        "harvard.pjs",   # mods
+        "clemson.pjs",   # qdc
+        "texas.pjs",     # untl
+        "uiuc.pjs",      # oai_qdc
+        "uiuc_book.pjs", # marc
+        "artstor.pjs"    # oai_dc
+    ]
+    for profile in profiles:
+        try:
+            profile_path = "profiles/" + profile
+            with open(profile_path, "r") as f:
+                prof = json.loads(f.read())
+            if prof.get("type") == "oai_verbs":
+                fetcher =  create_fetcher(profile_path,
+                                          uri_base,
+                                          config_file)
+                assert fetcher.__class__.__name__ == "OAIVerbsFetcher"
+                for response in fetcher.fetch_all_data():
+                    if response['errors']:
+                        print >> sys.stderr, response['errors']
+                    assert not response["errors"]
+                    assert response["records"]
+                    break
+        except Exception as e:
+            print >> sys.stderr, "\nError with %s: %s" % (profile,
+                                                          e.message)
+            assert False
 
 def test_file_fetcher_nara():
     profile_path = "profiles/nara.pjs"
