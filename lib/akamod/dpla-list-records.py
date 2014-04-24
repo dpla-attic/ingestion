@@ -70,7 +70,7 @@ def listrecords(endpoint, oaiset=None, resumption_token=None,
     for rid, rinfo in records:
         erecord = {u'id': rid}
         for k, v in rinfo.iteritems():
-            if len(v) == 1 and isinstance(v, list):
+            if isinstance(v, list) and len(v) == 1:
                 erecord[k] = v[0]
             else:
                 erecord[k] = v
