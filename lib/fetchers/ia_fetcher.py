@@ -174,6 +174,9 @@ class IAFetcher(AbsoluteURLFetcher):
         while not self.queue.empty():
             record = self.queue.get(False)
 
+            if record["metadata"]["mediatype"] == "collection":
+                continue
+
             if isinstance(record, basestring):
                 errors.append(record)
             else:
