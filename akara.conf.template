@@ -294,6 +294,8 @@ class type_conversion:
         ('furniture', 'image'),
         # Keep "moving image" above "image"
         ('moving image', 'moving image'),
+        # And, yes, "MovingImage" is a valid DC type.
+        ('movingimage', 'moving image'),
         ('image', 'image'),
         ('drawing', 'image'),
         ('print', 'image'),
