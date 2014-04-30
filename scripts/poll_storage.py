@@ -133,6 +133,7 @@ def main(argv):
     enriched_colls = 0
     missing_id = 0
     missing_source_resource = 0
+    saved_items = 0
 
     for doc in couch._query_all_dpla_provider_docs(provider):
         docs.append(doc)
