@@ -46,8 +46,11 @@ def artstor_identify_object(body, ctype, download="True"):
     http_re = re.compile("https?://.*$", re.I)
     size_re = re.compile(r'/size\d/')
     for s in data[original_document_key][original_sources_key]:
-        if re.search(http_re, s) and re.search(size_re, s):
-            preview_url = re.sub(size_re, '/size1/', s)
+        # Whole string could start with "Thumbnail: http://..."
+        url_match = re.search(http_re, s)
+        if url_match and re.search(size_re, s):
+            url_part = url_match.group(0)
+            preview_url = re.sub(size_re, '/size1/', url_part)
             break
 
     if not preview_url:
