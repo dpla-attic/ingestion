@@ -45,6 +45,7 @@
     "enrichments_item": [
         "/select-id?prop=id", 
         "/oai-to-dpla", 
+        "/unset_prop?prop=sourceResource%2Fspatial",
         "/decode_html?prop=sourceResource%2Fsubject",
         "/artstor_select_isshownat", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
@@ -54,8 +55,6 @@
         "/cleanup_value",
         "/artstor_cleanup_creator",
         "/move_date_values?prop=sourceResource%2Fsubject",
-        "/move_date_values?prop=sourceResource%2Fspatial",
-        "/shred?prop=sourceResource%2Fspatial&delim=--",
         "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich-subject", 
@@ -66,7 +65,6 @@
         "/enrich_date",
         "/artstor_identify_object",
         "/filter_paths?paths=sourceResource%2Fspatial%2CsourceResource%2Frights%2CsourceResource%2Fformat%2CsourceResource%2Fdescription",
-        "/artstor_spatial_to_dataprovider",
         "/artstor_cleanup",
         "/enrich_location",
         "/geocode",
@@ -75,7 +73,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_type_from_physical_format",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True",
         "/unset_prop?prop=sourceResource%2Frelation",
         "/compare_with_schema"
     ],

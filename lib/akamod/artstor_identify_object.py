@@ -31,7 +31,6 @@ def artstor_identify_object(body, ctype, download="True"):
 
     original_document_key = u"originalRecord"
     original_sources_key = u"handle"
-    artstor_preview_prefix = "/size1/"
 
     if original_document_key not in data:
         logger.error("There is no '%s' key in JSON for doc [%s].", original_document_key, data[u'id'])
@@ -41,14 +40,18 @@ def artstor_identify_object(body, ctype, download="True"):
         logger.error("There is no '%s/%s' key in JSON for doc [%s].", original_document_key, original_sources_key, data[u'id'])
         return body
 
+    # Find a handle string that is a URL and contains /size\d/.
+    # Transform the size to size1 (smaller thumbnail).
     preview_url = None
     http_re = re.compile("https?://.*$", re.I)
+    size_re = re.compile(r'/size\d/')
     for s in data[original_document_key][original_sources_key]:
-        if artstor_preview_prefix in s:
-            match = re.search(http_re, s)
-            if match:
-                preview_url = match.group(0)
-                break
+        # Whole string could start with "Thumbnail: http://..."
+        url_match = re.search(http_re, s)
+        if url_match and re.search(size_re, s):
+            url_part = url_match.group(0)
+            preview_url = re.sub(size_re, '/size1/', url_part)
+            break
 
     if not preview_url:
         logger.error("Can't find url with '%s' prefix in [%s] for fetching document preview url for Artstor.", artstor_preview_prefix, data[original_document_key][original_sources_key])
