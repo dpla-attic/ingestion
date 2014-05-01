@@ -8,8 +8,10 @@ from server_support import server
 from server_support import print_error_log
 from amara.thirdparty import json
 from amara.thirdparty import httplib2
+from akara import logger
 from dplaingestion.create_fetcher import create_fetcher
 from dplaingestion.selector import getprop as _getprop
+from dplaingestion.oai import oaiservice
 from urllib2 import urlopen
 import xmltodict
 
@@ -171,6 +173,113 @@ def test_all_oai_verb_fetchers():
             print >> sys.stderr, "\nError with %s: %s" % (profile,
                                                           e.message)
             assert False
+
+
+def first_non_collection_record(records_list):
+    """
+    Return the first non-collection record in a list of records
+    """
+    records = iter(records_list)
+    while True:
+        record = records.next()
+        # Collections have "ingestType", items don't
+        if "ingestType" not in record:
+            return record
+
+def test_oai_qdc_field_conversion():
+    """
+    oai.oaiservice returns dict with correct fields for QDC-format XML
+    """
+    svc = oaiservice("http://repository.clemson.edu/cgi-bin/oai.exe", logger)
+    lr_result = svc.list_records(set="mbe", metadataPrefix="qdc")
+    record = first_non_collection_record(lr_result["records"])
+    actual_fields = record[1].keys()  # (id, record)
+    actual_fields.sort()
+    expected_fields = ['contributor', 'date', 'datestamp', 'description',
+                       'format', 'handle', 'language', 'medium', 'publisher',
+                       'relation', 'rights', 'setSpec', 'source', 'spatial',
+                       'status', 'subject', 'title', 'type']
+    assert actual_fields == expected_fields, \
+            "\n%s\ndoes not match expected:\n%s\n" % (actual_fields,
+                                                      expected_fields)
+
+def test_oai_dc_field_conversion():
+    """
+    oai.oaiservice returns dict with correct fields for DC-format XML
+    """
+    svc = oaiservice("http://digitallibrary.usc.edu/oai/oai.php", logger)
+    lr_result = svc.list_records(set="p15799coll46", metadataPrefix="oai_dc")
+    record = first_non_collection_record(lr_result["records"])
+    actual_fields = record[1].keys()  # (id, record)
+    actual_fields.sort()
+    expected_fields = ['contributor', 'coverage', 'creator', 'date',
+                       'datestamp', 'handle', 'publisher', 'relation',
+                       'rights', 'setSpec', 'source', 'status', 'title',
+                       'type']
+    assert actual_fields == expected_fields
+
+def test_mods_field_conversion():
+    """
+    oai.oaiservice returns dict with correct fields for MODS-format XML
+
+    It's difficult at the moment to test all of the metadata fields because of
+    variations between providers, and we don't have a configuration that
+    specifies valid fields per provider.
+    """
+    svc = oaiservice("http://vcoai.lib.harvard.edu/vcoai/vc", logger)
+    lr_result = svc.list_records(set="manuscripts", metadataPrefix="mods")
+    record = first_non_collection_record(lr_result["records"])
+    actual_record_fields = record[1].keys()  # (id, record)
+    actual_record_fields.sort()
+    actual_mods_fields = record[1]['metadata']['mods'].keys()
+    actual_mods_fields.sort()
+    expected_record_fields = ['header', 'metadata']  # minimum fields
+    for f in expected_record_fields:
+        assert f in actual_record_fields
+
+def test_marc_field_conversion():
+    """
+    oai.oaiservice returns dict with correct fields for MARC-format XML
+    """
+    svc = oaiservice(
+        # uiuc_book profile
+        "http://quest.library.illinois.edu/OCA-OAIProvider/oai.asp",
+        logger)
+    lr_result = svc.list_records(set="UC", metadataPrefix="marc")
+    record = first_non_collection_record(lr_result["records"])
+    actual_record_fields = record[1].keys()  # (id, record)
+    actual_record_fields.sort()
+    metadata = record[1]['metadata']['record']
+    actual_marc_fields = metadata.keys()
+    actual_marc_fields.sort()
+    expected_record_fields = ['header', 'metadata']
+    expected_marc_fields = ['controlfield', 'datafield', 'leader', 'xmlns',
+                            'xmlns:xsi', 'xsi:schemaLocation']
+    assert actual_record_fields == expected_record_fields
+    assert actual_marc_fields == expected_marc_fields
+
+def test_untl_field_conversion():
+    """
+    oai.oaiservice returns dict with correct fields for UNTL-format XML
+    """
+    svc = oaiservice("http://texashistory.unt.edu/oai/", logger)
+    lr_result = svc.list_records(set="partner:RGPL", metadataPrefix="untl")
+    record = first_non_collection_record(lr_result["records"])
+    actual_record_fields = record[1].keys()  # (id, record)
+    actual_record_fields.sort()
+    metadata = record[1]['metadata']['untl:metadata']
+    actual_untl_fields = metadata.keys()
+    actual_untl_fields.sort()
+    expected_record_fields = ['header', 'metadata']
+    expected_untl_fields = ['untl:collection', 'untl:coverage', 'untl:creator',
+                            'untl:date', 'untl:description', 'untl:format',
+                            'untl:identifier', 'untl:institution',
+                            'untl:language', 'untl:meta', 'untl:note',
+                            'untl:primarySource', 'untl:publisher',
+                            'untl:resourceType', 'untl:rights', 'untl:subject',
+                            'untl:title', 'xmlns:untl']
+    assert actual_record_fields == expected_record_fields
+    assert actual_untl_fields == expected_untl_fields
 
 def test_file_fetcher_nara():
     profile_path = "profiles/nara.pjs"
