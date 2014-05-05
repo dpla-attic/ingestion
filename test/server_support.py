@@ -157,7 +157,6 @@ MODULES = [
     "dplaingestion.akamod.enrich_language",
     "dplaingestion.akamod.arc-to-dpla",
     "dplaingestion.akamod.mods_to_dpla",
-    "dplaingestion.akamod.dpla-get-record",
     "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_enrich_state_located_in",
     "dplaingestion.akamod.artstor_cleanup",
