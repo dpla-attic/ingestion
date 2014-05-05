@@ -506,8 +506,8 @@ def data_provider_transform_nypl(d, p):
 NYPL_CREATOR_ROLES = ["architect", "artist", "author", "cartographer",
     "composer", "creator", "designer", "director", "engraver", "interviewer",
     "landscape architect", "lithographer", "lyricist", "musical director",
-    "performer", "project director", "singer", "storyteller", "surveyor",
-    "technical director", "woodcutter"]
+    "photographer", "performer", "project director", "singer", "storyteller",
+    "surveyor", "technical director", "woodcutter"]
 
 def creator_and_contributor_transform_nypl(d, p):
     creator = set()
