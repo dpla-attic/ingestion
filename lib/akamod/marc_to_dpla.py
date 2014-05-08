@@ -8,11 +8,8 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-
 from dplaingestion.selector import getprop as selector_getprop, setprop, exists
 
-def getprop(d, p):
-    return selector_getprop(d, p, True)
 
 CONTEXT = {
     "@vocab": "http://purl.org/dc/terms/",
@@ -41,6 +38,32 @@ CONTEXT = {
         "@type": "xsd:date"
     }
 }
+
+hathi_rights_desc = {
+    "pd":       "Public domain",
+    "ic-world": "In-copyright and permitted as world viewable by the "
+                "copyright holder",
+    "pdus":     "Public domain only when viewed in the US",
+    "cc-by":    "Creative Commons Attribution license",
+    "cc-by-nd": "Creative Commons Attribution-NoDerivatives license",
+    "cc-by-nc-nd": "Creative Commons Attribution-NonCommercial-NoDerivatives "
+                   "license",
+    "cc-by-nc":    "Creative Commons Attribution-NonCommercial license",
+    "cc-by-nc-sa": "Creative Commons Attribution-NonCommercial-ShareAlike "
+                   "license",
+    "cc-by-sa":    "Creative Commons Attribution-ShareAlike license",
+    "cc-zero":     "Creative Commons Zero license (implies pd)",
+    "und-world":   "undetermined copyright status and permitted as world "
+                   "viewable by the depositor"
+}
+
+
+class HathiRightsError(Exception):
+    pass
+
+
+def getprop(d, p):
+    return selector_getprop(d, p, True)
 
 def _as_list(v):
     return v if isinstance(v, (list, tuple)) else [v]
@@ -157,6 +180,15 @@ def dataprovider_transform_hathi(values):
     data_provider = filter(None, data_provider)
 
     return {"dataProvider": data_provider} if data_provider else {}
+
+def hathi_rights(values):
+    code = values[0]
+    try:
+        desc = hathi_rights_desc[code]
+        desc += ".  Learn more at http://www.hathitrust.org/access_use"
+        return desc
+    except KeyError:
+        raise HathiRightsError(code)
 
 def get_gov_spec_type(control_008_28, datafield_086_or_087):
     if (control_008_28 in ("a", "c", "f", "i", "l", "m", "o", "s") or
@@ -489,6 +521,16 @@ def all_transform(d, p):
                 logger.debug("Document has 662: %s" % d["_id"])
             elif tag == "086" or tag == "087":
                 datafield_086_or_087 = True
+            elif tag == "974":
+                # Hathi rights
+                values = _get_values(_dict, "r")
+                try:
+                    data["sourceResource"]["rights"] = hathi_rights(values)
+                except HathiRightsError as e:
+                    logger.warning("Unacceptable rights code for %s: %s" %
+                                   (d["_id"], e.message))
+                except:
+                    logger.error("Could not get rights from %s" % d["_id"])
 
     # Handle sourceResource/title
     title = filter(None, data["sourceResource"]["title"])
