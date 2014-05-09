@@ -682,20 +682,23 @@ class Couch(object):
         error_msg = None
         try:
             self._bulk_post_to(self.dashboard_db, added_docs + changed_docs)
-        except:
-            error_msg = "Error posting to the dashboard database"
+        except Exception, e:
+            error_msg = "Error posting to the dashboard database: %s" % e
+            print error_msg
             return (status, error_msg)
         try:
             self._update_ingestion_doc_counts(ingestion_doc,
                                               countAdded=len(added_docs),
                                               countChanged=len(changed_docs))
-        except:
-            error_msg = "Error updating ingestion document counts"
+        except Exception, e:
+            error_msg = "Error updating ingestion document counts: %s" % e
+            print error_msg
             return (status, error_msg)
         try:
             self._bulk_post_to(self.dpla_db, harvested_docs.values())
-        except:
-            error_msg = "Error posting to the dpla database"
+        except Exception, e:
+            error_msg = "Error posting to the dpla database: %s" % e
+            print error_msg
             return (status, error_msg)
 
         status = 0
