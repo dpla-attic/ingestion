@@ -1,6 +1,6 @@
 import itertools
 import sys
-from server_support import server, H, print_error_log
+from server_support import server, H
 from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
@@ -16,7 +16,7 @@ def test_geocode():
         "sourceResource": {
             "spatial": [
                 { 
-                    "name": "Boston, MA"
+                    "name": "Bakersfield, CA"
                 }
             ]
         },
@@ -28,10 +28,11 @@ def test_geocode():
         "sourceResource": {
             "spatial": [
                 {
-                    "name": "Boston, MA",
-                    "state": "Massachusetts",
+                    "name": "Bakersfield, CA",
+                    "state": "California",
+                    "county": "Kern County",
                     "country": "United States",
-                    "coordinates": "42.3586616516, -71.0567398071"
+                    "coordinates": "35.3669586182, -119.018859863"
                 }
             ]
         },
@@ -40,8 +41,8 @@ def test_geocode():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
+    print json.loads(content)
     assert_same_jsons(EXPECTED, json.loads(content))
 
 
@@ -97,7 +98,7 @@ def test_close_multiple_results():
                     "name": "Georgia",
                     "state": "Georgia",
                     "country": "United States",
-                    "coordinates": "32.6376190186, -83.4289627075"
+                    "coordinates": "32.6483230591, -83.4445343018"
                 }
             ]
         },
@@ -106,7 +107,6 @@ def test_close_multiple_results():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
@@ -145,7 +145,6 @@ def test_geocode_coordinate_provided1():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
@@ -184,7 +183,6 @@ def test_geocode_coordinate_provided2():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
@@ -225,6 +223,5 @@ def test_geocode_with_existing_props():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
