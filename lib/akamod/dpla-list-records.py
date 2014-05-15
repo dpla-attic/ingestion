@@ -36,9 +36,10 @@ from amara.thirdparty import json
 from akara.services import simple_service
 from akara import logger
 from akara import module_config
+from akara import response
 from datetime import datetime
 
-from dplaingestion.oai import oaiservice
+from dplaingestion.oai import oaiservice, OAIError, OAIHTTPError, OAIParseError
 
 
 LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-list-records'
@@ -57,33 +58,55 @@ def listrecords(endpoint, oaiset=None, resumption_token=None,
         until = datetime.now().strftime("%Y-%m-%d")
 
     remote = oaiservice(endpoint, logger)
-    list_records_result = remote.list_records(set=oaiset,
-                                              resumption_token=resumption_token,
-                                              metadataPrefix=metadataPrefix,
-                                              frm=frm, until=until)
 
-    records = list_records_result['records'][:limit]
-    resumption_token = list_records_result['resumption_token'] if 'resumption_token' in list_records_result else ''
+    try:
+        list_records_result = \
+                remote.list_records(set_id=oaiset,
+                                    resumption_token=resumption_token,
+                                    metadataPrefix=metadataPrefix,
+                                    frm=frm, until=until)
+        records = list_records_result['records'][:limit]
+        resumption_token = list_records_result.get('resumption_token', '')
+        exhibit_records = []
+        properties_used = set() # track the properties in use
+        for rid, rinfo in records:
+            erecord = {u'id': rid}
+            for k, v in rinfo.iteritems():
+                if isinstance(v, list) and len(v) == 1:
+                    erecord[k] = v[0]
+                else:
+                    erecord[k] = v
+                if u'title' in erecord:
+                    erecord[u'label'] = erecord[u'title']
 
-    exhibit_records = []
-    properties_used = set() # track the properties in use
-    for rid, rinfo in records:
-        erecord = {u'id': rid}
-        for k, v in rinfo.iteritems():
-            if isinstance(v, list) and len(v) == 1:
-                erecord[k] = v[0]
-            else:
-                erecord[k] = v
-            if u'title' in erecord:
-                erecord[u'label'] = erecord[u'title']
+            properties_used.update(erecord.keys())
+            exhibit_records.append(erecord)
+        PROFILE["properties"][:] = \
+                strip_unused_profile_properties(PROFILE["properties"],
+                                                properties_used)
+        return json.dumps({
+                           'items': exhibit_records,
+                           'data_profile': PROFILE,
+                           'resumption_token': resumption_token
+                           },
+                           indent=4)
+    except OAIError as e:
+        msg = "Error message from OAI response for set %s: %s" % (oaiset,
+                                                                  e.message)
+        logger.error(msg)
+        response.code = 500
+        return msg
+    except OAIHTTPError as e:
+        msg = "HTTP error fetching set %s: %s" % (oaiset, e.message)
+        logger.error(msg)
+        response.code = 500
+        return msg
+    except OAIParseError as e:
+        msg = "Document structure error with set %s: %s" % (oaiset, e.message)
+        logger.error(msg)
+        response.code = 500
+        return msg
 
-        properties_used.update(erecord.keys())
-        exhibit_records.append(erecord)
-
-    PROFILE["properties"][:] = strip_unused_profile_properties(PROFILE["properties"],properties_used)
-
-    #FIXME: This profile is NOT correct.  Dumb copy from CDM endpoint.  Please fix up below
-    return json.dumps({'items': exhibit_records, 'data_profile': PROFILE, 'resumption_token': resumption_token}, indent=4)
 
 # Rebuild the data profile by removing optional, unused properties
 strip_unused_profile_properties = lambda prof_props, used: [ p for p in prof_props if p["property"] in used ]

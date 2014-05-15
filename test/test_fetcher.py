@@ -201,7 +201,7 @@ def test_oai_qdc_field_conversion():
     oai.oaiservice returns dict with correct fields for QDC-format XML
     """
     svc = oaiservice("http://repository.clemson.edu/cgi-bin/oai.exe", logger)
-    lr_result = svc.list_records(set="mbe", metadataPrefix="qdc")
+    lr_result = svc.list_records(set_id="mbe", metadataPrefix="qdc")
     record = first_non_collection_record(lr_result["records"])
     actual_fields = record[1].keys()  # (id, record)
     actual_fields.sort()
@@ -219,7 +219,8 @@ def test_oai_dc_field_conversion():
     oai.oaiservice returns dict with correct fields for DC-format XML
     """
     svc = oaiservice("http://digitallibrary.usc.edu/oai/oai.php", logger)
-    lr_result = svc.list_records(set="p15799coll46", metadataPrefix="oai_dc")
+    lr_result = svc.list_records(set_id="p15799coll46",
+                                 metadataPrefix="oai_dc")
     record = first_non_collection_record(lr_result["records"])
     actual_fields = record[1].keys()  # (id, record)
     actual_fields.sort()
@@ -239,7 +240,7 @@ def test_mods_field_conversion():
     specifies valid fields per provider.
     """
     svc = oaiservice("http://vcoai.lib.harvard.edu/vcoai/vc", logger)
-    lr_result = svc.list_records(set="manuscripts", metadataPrefix="mods")
+    lr_result = svc.list_records(set_id="manuscripts", metadataPrefix="mods")
     record = first_non_collection_record(lr_result["records"])
     actual_record_fields = record[1].keys()  # (id, record)
     actual_record_fields.sort()
@@ -259,7 +260,7 @@ def test_marc_field_conversion():
         # uiuc_book profile
         "http://quest.library.illinois.edu/OCA-OAIProvider/oai.asp",
         logger)
-    lr_result = svc.list_records(set="UC", metadataPrefix="marc")
+    lr_result = svc.list_records(set_id="UC", metadataPrefix="marc")
     record = first_non_collection_record(lr_result["records"])
     actual_record_fields = record[1].keys()  # (id, record)
     actual_record_fields.sort()
@@ -279,7 +280,7 @@ def test_untl_field_conversion():
     oai.oaiservice returns dict with correct fields for UNTL-format XML
     """
     svc = oaiservice("http://texashistory.unt.edu/oai/", logger)
-    lr_result = svc.list_records(set="partner:RGPL", metadataPrefix="untl")
+    lr_result = svc.list_records(set_id="partner:RGPL", metadataPrefix="untl")
     record = first_non_collection_record(lr_result["records"])
     actual_record_fields = record[1].keys()  # (id, record)
     actual_record_fields.sort()
