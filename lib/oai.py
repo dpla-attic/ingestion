@@ -85,6 +85,16 @@ header_field_map = {
 }
 
 
+class OAIError(Exception):
+    pass
+
+class OAIHTTPError(Exception):
+    pass
+
+class OAIParseError(Exception):
+    pass
+
+
 class oaiservice(object):
     """
     Class for listing OAI sets and records
@@ -134,7 +144,7 @@ class oaiservice(object):
         pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
         return sets
 
-    def list_records(self, set="", resumption_token="", metadataPrefix="",
+    def list_records(self, set_id=None, resumption_token="", metadataPrefix="",
                      frm=None, until=None):
         '''
         List records. Use either the resumption token or set id.
@@ -143,10 +153,11 @@ class oaiservice(object):
         records = []
 
         params = {
-                    'set': set,
                     'verb' : 'ListRecords',
                     'metadataPrefix': metadataPrefix
         }
+        if set_id:
+            params["set"] = set_id
         metadataPrefix = metadataPrefix.lower()
         if frm:
             params["from"] = frm
@@ -163,11 +174,21 @@ class oaiservice(object):
         start_t = time.time()
         resp, content = self.h.request(url)
         retrieved_t = time.time()
+        if resp.status != 200:
+            raise OAIHTTPError("Status code: %d" % resp.status)
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
 
         xml_content = XML_PARSE(content)
-        resumption_token = \
-            xml_content["OAI-PMH"]["ListRecords"].get("resumptionToken", "")
+        try:
+            resumption_token = \
+                xml_content["OAI-PMH"]["ListRecords"].get("resumptionToken",
+                                                          "")
+        except KeyError:
+            try:
+                error = xml_content["OAI-PMH"]["error"]
+                raise OAIError(error)
+            except KeyError:
+                raise OAIParseError("Could not parse %s:\n%s" % (url, content))
         if isinstance(resumption_token, dict):
             resumption_token = resumption_token.get("#text", "")
         if isinstance(xml_content['OAI-PMH']['ListRecords']['record'], dict):
@@ -188,7 +209,7 @@ class oaiservice(object):
                     elif metadataPrefix == 'untl':
                         rec_field = md['untl:metadata']
                     else:
-                        rec_field = md[metadataPrefix]
+                        rec_field = md.get('mods:mods') or md.get('mods')
                     status = rec_field.get('status', '')
                     if not 'deleted' in status:
                         records.append((rec_id, full_rec))

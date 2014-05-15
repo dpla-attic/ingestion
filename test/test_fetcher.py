@@ -24,16 +24,10 @@ def getprop(obj, path):
 # Remove trailing forward slash
 uri_base = server()[:-1]
 
-scdl_blacklist = ["ctm", "spg", "jfb", "jbt", "pre", "dnc", "scp", "swl",
-                  "weg", "ghs", "wsb", "mbe", "gcj", "cwp", "nev", "hfp",
-                  "big"]
-
-list_sets = xmltodict.parse(urlopen("http://repository.clemson.edu/cgi-bin/oai.exe?verb=ListSets").read())
-scdl_all_sets = [s['setSpec'] for s in list_sets['OAI-PMH']['ListSets']['set']]
-
 # Test config file
 config_file = "test/test_data/test.conf"
 
+@attr(uses_network="yes")
 def test_oai_fetcher_valid_set():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -47,6 +41,7 @@ def test_oai_fetcher_valid_set():
 
     assert fetcher.collections.keys() == ["gmb"]
 
+@attr(uses_network="yes")
 def test_oai_fetcher_invalid_set():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -59,11 +54,15 @@ def test_oai_fetcher_invalid_set():
 
     assert fetcher.collections.keys() == []
 
+@attr(uses_network="yes")
 def test_oai_fetcher_all_sets():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "OAIVerbsFetcher"
-
+    url = "http://repository.clemson.edu/cgi-bin/oai.exe?verb=ListSets"
+    list_sets = xmltodict.parse(urlopen(url).read())
+    scdl_all_sets = [s['setSpec']
+                     for s in list_sets['OAI-PMH']['ListSets']['set']]
     for response in fetcher.fetch_all_data():
         assert not response["errors"]
         assert response["records"]
@@ -72,21 +71,26 @@ def test_oai_fetcher_all_sets():
             s not in fetcher.collections]
     assert diff == []
 
+@attr(uses_network="yes")
 def test_oai_fetcher_with_blacklist():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "OAIVerbsFetcher"
-
-    fetcher.blacklist = scdl_blacklist
+    fetcher.blacklist = ["ctm", "spg", "jfb", "jbt", "pre", "dnc", "scp",
+                         "swl", "weg", "ghs", "wsb", "mbe", "gcj", "cwp",
+                         "nev", "hfp", "big"]
     for response in fetcher.fetch_all_data():
         pass
-
-    sets = list(set(scdl_all_sets) - set(scdl_blacklist))
+    url = "http://repository.clemson.edu/cgi-bin/oai.exe?verb=ListSets"
+    list_sets = xmltodict.parse(urlopen(url).read())
+    scdl_all_sets = [s['setSpec']
+                     for s in list_sets['OAI-PMH']['ListSets']['set']]
+    sets = list(set(scdl_all_sets) - set(fetcher.blacklist))
     diff = [s for s in sets if
             s not in fetcher.collections]
     assert diff == []
 
-@attr(travis_exclude='yes')
+@attr(travis_exclude='yes', uses_network='yes')
 def test_absolute_url_fetcher_nypl():
     profile_path = "profiles/nypl.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, "akara.ini")
@@ -99,6 +103,7 @@ def test_absolute_url_fetcher_nypl():
         assert response["records"]
         break
 
+@attr(uses_network="yes")
 def test_absolute_url_fetcher_uva1():
     profile_path = "profiles/virginia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -109,6 +114,7 @@ def test_absolute_url_fetcher_uva1():
         assert response["records"]
         break
 
+@attr(uses_network="yes")
 def test_absolute_url_fetcher_uva2():
     profile_path = "profiles/virginia_books.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -120,6 +126,7 @@ def test_absolute_url_fetcher_uva2():
         break
 
 @nottest
+@attr(uses_network="yes")
 def test_absolute_url_fetcher_ia():
     profile_path = "profiles/ia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -132,7 +139,7 @@ def test_absolute_url_fetcher_ia():
         break
 
 # Exclude the MWDL test in Travis as access to the feed is restricted
-@attr(travis_exclude='yes')
+@attr(travis_exclude='yes', uses_network='yes')
 def test_absolute_url_fetcher_mwdl():
     profile_path = "profiles/mwdl.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -143,6 +150,8 @@ def test_absolute_url_fetcher_mwdl():
         assert response["records"]
         break
 
+@nottest
+@attr(uses_network="yes")
 def test_all_oai_verb_fetchers():
     # Profiles that are representative of each type and are not restricted:
     profiles = [
@@ -186,12 +195,13 @@ def first_non_collection_record(records_list):
         if "ingestType" not in record:
             return record
 
+@attr(uses_network="yes")
 def test_oai_qdc_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for QDC-format XML
     """
     svc = oaiservice("http://repository.clemson.edu/cgi-bin/oai.exe", logger)
-    lr_result = svc.list_records(set="mbe", metadataPrefix="qdc")
+    lr_result = svc.list_records(set_id="mbe", metadataPrefix="qdc")
     record = first_non_collection_record(lr_result["records"])
     actual_fields = record[1].keys()  # (id, record)
     actual_fields.sort()
@@ -203,12 +213,14 @@ def test_oai_qdc_field_conversion():
             "\n%s\ndoes not match expected:\n%s\n" % (actual_fields,
                                                       expected_fields)
 
+@attr(uses_network="yes")
 def test_oai_dc_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for DC-format XML
     """
     svc = oaiservice("http://digitallibrary.usc.edu/oai/oai.php", logger)
-    lr_result = svc.list_records(set="p15799coll46", metadataPrefix="oai_dc")
+    lr_result = svc.list_records(set_id="p15799coll46",
+                                 metadataPrefix="oai_dc")
     record = first_non_collection_record(lr_result["records"])
     actual_fields = record[1].keys()  # (id, record)
     actual_fields.sort()
@@ -218,6 +230,7 @@ def test_oai_dc_field_conversion():
                        'type']
     assert actual_fields == expected_fields
 
+@attr(uses_network="yes")
 def test_mods_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for MODS-format XML
@@ -227,7 +240,7 @@ def test_mods_field_conversion():
     specifies valid fields per provider.
     """
     svc = oaiservice("http://vcoai.lib.harvard.edu/vcoai/vc", logger)
-    lr_result = svc.list_records(set="manuscripts", metadataPrefix="mods")
+    lr_result = svc.list_records(set_id="manuscripts", metadataPrefix="mods")
     record = first_non_collection_record(lr_result["records"])
     actual_record_fields = record[1].keys()  # (id, record)
     actual_record_fields.sort()
@@ -237,6 +250,8 @@ def test_mods_field_conversion():
     for f in expected_record_fields:
         assert f in actual_record_fields
 
+@nottest
+@attr(uses_network="yes")
 def test_marc_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for MARC-format XML
@@ -245,7 +260,7 @@ def test_marc_field_conversion():
         # uiuc_book profile
         "http://quest.library.illinois.edu/OCA-OAIProvider/oai.asp",
         logger)
-    lr_result = svc.list_records(set="UC", metadataPrefix="marc")
+    lr_result = svc.list_records(set_id="UC", metadataPrefix="marc")
     record = first_non_collection_record(lr_result["records"])
     actual_record_fields = record[1].keys()  # (id, record)
     actual_record_fields.sort()
@@ -258,12 +273,14 @@ def test_marc_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_marc_fields == expected_marc_fields
 
+@nottest
+@attr(uses_network="yes")
 def test_untl_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for UNTL-format XML
     """
     svc = oaiservice("http://texashistory.unt.edu/oai/", logger)
-    lr_result = svc.list_records(set="partner:RGPL", metadataPrefix="untl")
+    lr_result = svc.list_records(set_id="partner:RGPL", metadataPrefix="untl")
     record = first_non_collection_record(lr_result["records"])
     actual_record_fields = record[1].keys()  # (id, record)
     actual_record_fields.sort()
@@ -281,6 +298,7 @@ def test_untl_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_untl_fields == expected_untl_fields
 
+@attr(uses_network="yes")
 def test_file_fetcher_nara():
     profile_path = "profiles/nara.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -292,6 +310,7 @@ def test_file_fetcher_nara():
         assert response["records"]
         break
 
+@attr(uses_network="yes")
 def test_file_fetcher_smithsonian():
     profile_path = "profiles/smithsonian.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
