@@ -129,7 +129,7 @@ class oaiservice(object):
             u'string(o:setDescription/oai_dc:dc/dc:description)',
             u'string(o:setDescription/o:oclcdc/dc:description)',
             u'string(o:setDescription/dc:description)',
-            u'string(o:setDescription)'            
+            u'string(o:setDescription)'
         ]
         def receive_nodes(n):
             setSpec = n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)
@@ -202,9 +202,9 @@ class oaiservice(object):
                 # Due to the way this function used to be written, code for
                 # different metadata formats still expect the data to be
                 # formatted differently.
-                if metadataPrefix in ['marc', 'mods', 'untl']:
+                if metadataPrefix in ['marc', 'marc21', 'mods', 'untl']:
                     md = full_rec['metadata']
-                    if metadataPrefix == 'marc':
+                    if metadataPrefix in ('marc', 'marc21'):
                         rec_field = md['record']
                     elif metadataPrefix == 'untl':
                         rec_field = md['untl:metadata']
@@ -215,7 +215,7 @@ class oaiservice(object):
                         records.append((rec_id, full_rec))
                 else:
                     # (This is the condition that we eventually want to make
-                    # the only one, doing away with this if/else.  This will
+                    # the only one, doing away with this if/else. This will
                     # require refactoring the enrichment modules for the MARC,
                     # MODS, and UNTL providers.)
                     #
@@ -256,14 +256,14 @@ class oaiservice(object):
                 for k in orig.keys():
                     if k.startswith("xmlns:") or k.startswith("xsi:"):
                         continue
-                    f = mfm.get(k, lambda (v): {})  # ignore if undefined
+                    f = mfm.get(k, lambda (v): {}) # ignore if undefined
                     v = orig[k]
                     record.update(f(v))
             else:
                 record = orig
             if hfm:
                 for k in header.keys():
-                    f = hfm.get(k, lambda (v): {})  # ignore if undefined
+                    f = hfm.get(k, lambda (v): {}) # ignore if undefined
                     v = header[k]
                     record.update(f(v))
             record["status"] = record.get("status", [])

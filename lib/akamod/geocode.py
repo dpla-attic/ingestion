@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from akara import module_config, response
 from akara import logger
 from akara.services import simple_service
@@ -50,9 +51,12 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
             if v.get("state") is not None:
                 # Do not geocode if dictionary has a "state" value
                 continue
-            if v.get("country") == "United States":
-                # Likewise, skip generic "United States"
-                continue
+
+            # Likewise, skip generic "United States"
+            pattern = " *(United States(?!-)|États-Unis)".decode("utf-8")
+            if re.search(pattern, v.get("name", "")) or \
+               re.search(pattern, v.get("country", "")):
+                    continue
 
             if "coordinates" in v:
                 if get_coordinates(v["coordinates"]):
@@ -68,9 +72,7 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
             else:
                 # Attempt to find this item's lat/lng coordinates
                 api_key = module_config().get("bing_api_key")
-                result = DplaBingGeocoder(api_key=api_key).geocode_spatial(
-                                                            v
-                                                            )
+                result = DplaBingGeocoder(api_key=api_key).geocode_spatial(v)
 
             if (result):
                 lat, lng = result
