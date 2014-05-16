@@ -14,6 +14,7 @@ import save_records
 import remove_deleted_records
 import check_ingestion_counts
 import dashboard_cleanup
+import upload_bulk_data
 from amara.thirdparty import json
 
 def define_arguments():
@@ -63,6 +64,11 @@ def main(argv):
         resp = dashboard_cleanup.main([None, ingestion_doc_id])
         if not resp == 0:
             print "Error cleaning up dashboard"
+            continue
+
+        resp = upload_bulk_data.main([None, ingestion_doc_id])
+        if not resp == 0:
+            print "Error uploading bulk download data"
             continue
 
         print "Ingestion complete!"

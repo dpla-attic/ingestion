@@ -2,10 +2,10 @@ import os
 import sys
 import json
 import time
+import couchdb
 import logging
 import ConfigParser
 from copy import deepcopy
-from couchdb import Server
 from datetime import datetime
 from dplaingestion.selector import setprop
 from dplaingestion.dict_differ import DictDiffer
@@ -46,13 +46,16 @@ class Couch(object):
             dpla_db_name = kwargs.get("dpla_db_name")
             dashboard_db_name = kwargs.get("dashboard_db_name")
 
+        bulk_download_db_name = "bulk_download"
+
         # Create server URL
         url = url.split("http://")
         server_url = "http://%s:%s@%s" % (username, password, url[1])
-        self.server = Server(server_url)
+        self.server = couchdb.Server(server_url)
 
         self.dpla_db = self._get_db(dpla_db_name)
         self.dashboard_db = self._get_db(dashboard_db_name)
+        self.bulk_download_db = self._get_db(bulk_download_db_name)
         self.views_directory = "couchdb_views"
         self.batch_size = 500
 
@@ -83,11 +86,14 @@ class Couch(object):
                                  "dpla_db_qa_reports.js",
                                  "dashboard_db_all_provider_docs.js",
                                  "dashboard_db_all_ingestion_docs.js",
-                                 "dpla_db_export_database.js"]
+                                 "dpla_db_export_database.js",
+                                 "bulk_download_db_all_contributor_docs.js"]
         if db_name == "dpla":
             db = self.dpla_db
         elif db_name == "dashboard":
             db = self.dashboard_db
+        elif db_name == "bulk_download":
+            db = self.bulk_download_db
 
         for file in os.listdir(self.views_directory):
             if file.startswith(db_name):
@@ -215,6 +221,16 @@ class Couch(object):
         view = self.dashboard_db.view(view_name, include_docs=True,
                                       key=[provider_name, ingestion_sequence])
         return view.rows[-1]["doc"]
+
+    def _get_bulk_download_doc(self, contributor):
+        view_name = "all_docs/by_contributor"
+        view = self.bulk_download_db.view(view_name, include_docs=True,
+                                           key=contributor)
+
+        try:
+            return view.rows[0]["doc"]
+        except couchdb.http.ResourceNotFound:
+            return {"contributor": contributor}
 
     def _prep_for_diff(self, doc):
         """Removes keys from document that should not be compared."""
@@ -426,6 +442,13 @@ class Couch(object):
                 "end_time": None,
                 "error": None
             },
+            "upload_bulk_data_process": {
+                "status": None,
+                "start_time": None,
+                "end_time": None,
+                "error": None
+            },
+
             "poll_storage_process": {
                 "status": None,
                 "start_time": None,
@@ -789,3 +812,18 @@ class Couch(object):
             self._delete_documents(self.dashboard_db, delete_docs)
 
         return msg
+
+    def update_bulk_download_document(self, contributor, file_path,
+                                      file_size):
+        """Creates/updates a document for a contributor's bulk data file and
+           returns the document id
+        """
+
+        bulk_download_doc = self._get_bulk_download_doc(contributor)
+        bulk_download_doc.update({
+            "file_path": file_path,
+            "file_size": file_size,
+            "last_updated": datetime.now().isoformat()
+            })
+
+        return self.bulk_download_db.save(bulk_download_doc)[0]

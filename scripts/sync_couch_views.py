@@ -5,7 +5,7 @@ Script to add/update then build the views of a database.
 Usage:
     $ python scripts/sync_couch_views.py <database_name>
 
-    where database_name is either "dpla" or "dashboard"
+    where database_name is either "dpla", "dashboard", or "bulk_download"
 """
 import sys
 import time
@@ -27,11 +27,12 @@ def main(argv):
     args = parser.parse_args(argv[1:])
 
     couch = Couch()
-    if args.database_name in ["dpla", "dashboard"]:
+    database_names = ["dpla", "dashboard", "bulk_download"]
+    if args.database_name in database_names:
         couch.sync_views(args.database_name)
     else:
         print >> sys.stderr, "The database_name parameter should be " + \
-                             "either \"dpla\" or \"dashboard\""
+                             "either %s" % " or ".join(database_names)
 
 if __name__ == "__main__":
     main(sys.argv)
