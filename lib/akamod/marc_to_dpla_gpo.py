@@ -421,7 +421,6 @@ def all_transform(d, p):
         lambda t: t in ("041", "546"):         [("language", None)],
         lambda t: t == "650":                  [("spatial", "z")],
         lambda t: t == "651":                  [("spatial", "a")],
-        lambda t: t in ("034"):                [("spatial", None)],
         lambda t: int(t) in (range(760, 787) +
                              ["490", "730",
                               "740", "830"]):  [("relation", None)],
