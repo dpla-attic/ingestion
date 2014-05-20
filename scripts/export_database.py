@@ -217,7 +217,7 @@ def download_source_data(arguments):
     arguments["file"] = s.lower().replace(" ", "_") + ".gz"
 
     status, file_size = store_result_into_file(resp, arguments)
-    if status == 0:
+    if status == 0 and arguments.get("upload"):
         rs_file_uri = send_file_to_rackspace(arguments)
         update_bulk_download_document(s, rs_file_uri, file_size)
     else:
@@ -437,7 +437,7 @@ def download_all_database(arguments):
     arguments["file"] = "dpla.gz"
 
     status, file_size = store_result_into_file(response, arguments)
-    if status == 0:
+    if status == 0 and arguments.get("upload"):
         rs_file_uri = send_file_to_rackspace(arguments)
         update_bulk_download_document("Complete Repository", rs_file_uri,
                                       file_size)
