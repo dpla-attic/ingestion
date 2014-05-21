@@ -198,6 +198,7 @@ MODULES = [
     "dplaingestion.akamod.mdl_state_located_in",
     "dplaingestion.akamod.scdl_format_to_type",
     "dplaingestion.marc_code_to_relator",
+    "dplaingestion.akamod.marc_to_dpla_gpo",
     ]
 
 ### Section 3: Other module configuration goes here

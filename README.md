@@ -67,6 +67,7 @@ Build the database views;
 
     $ python scripts/sync_couch_views.py dpla
     $ python scripts/sync_couch_views.py dashboard
+    $ python scripts/sync_couch_views.py bulk_download
 
 Testing the ingestion server:
 

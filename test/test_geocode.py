@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 import itertools
 import sys
-from server_support import server, H
+from server_support import server, H, print_error_log
 from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
@@ -223,5 +224,59 @@ def test_geocode_with_existing_props():
         
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_skip_united_states():
+    """Should not geocode when name or country value is 'United States' or
+       États-Unis
+    """
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": ""
+        }
+    }
+
+    url = server() + "geocode"
+    for v in ["United States", "United States.", "États-Unis", "États-Unis."]:
+        for field in ["name", "country"]:
+            INPUT["sourceResource"]["spatial"] = {field: v}
+            resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+            print_error_log()
+            assert resp.status == 200
+            INPUT["sourceResource"]["spatial"].update({field:
+                                                       v.decode("utf-8")})
+            assert_same_jsons(INPUT, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_do_not_skip_united_states():
+    """Should geocode when name value is 'United States' is followed by a '-'
+    """
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {"name": "United States--California"}
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "coordinates": "37.2551002502, -119.617523193",
+                "country": "United States",
+                "name": "United States--California",
+                "state": "California"
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))

@@ -37,6 +37,7 @@ pip install -r requrements.txt
     print msg
     exit(1)
 import sys
+from dplaingestion.couch import Couch
 
 
 def set_global_variables(container):
@@ -116,6 +117,8 @@ def send_file_to_rackspace(arguments):
               + "using `export_database rsinfo`"
     else:
         print "Couldn't upload file to Rackspace CDN."
+
+    return rs_file_uri
 
 
 def get_rackspace_connection():
@@ -213,12 +216,14 @@ def download_source_data(arguments):
     # Set the file name
     arguments["file"] = s.lower().replace(" ", "_") + ".gz"
 
-    status = store_result_into_file(resp, arguments)
+    status, file_size = store_result_into_file(resp, arguments)
     if status == 0:
-        send_file_to_rackspace(arguments)
+        rs_file_uri = send_file_to_rackspace(arguments)
+        update_bulk_download_document(s, rs_file_uri, file_size)
     else:
         print >> sys.stderr, "File %s not uploaded" % arguments["file"]
 
+    return status
 
 def download_each_source_data(arguments):
     """Gets a list of all sources in the Couch database and downloads each
@@ -431,13 +436,16 @@ def download_all_database(arguments):
     # Set file name
     arguments["file"] = "dpla.gz"
 
-    status = store_result_into_file(response, arguments)
+    status, file_size = store_result_into_file(response, arguments)
     if status == 0:
-        send_file_to_rackspace(arguments)
+        rs_file_uri = send_file_to_rackspace(arguments)
+        update_bulk_download_document("Complete Repository", rs_file_uri,
+                                      file_size)
     else:
-        print >> sys.stderr, "Did not send file %s to the Rackspace container" \
-              % arguments["file"]
+        print >> sys.stderr, "Did not send file %s " % arguments["file"] + \
+                             "to the Rackspace container"
 
+    return status
 
 def store_result_into_file(result, arguments):
     """Stores given result into a compressed file.
@@ -478,7 +486,7 @@ def store_result_into_file(result, arguments):
             status = "Downloaded " + convert_bytes(downloaded_size)
             print status
 
-    return 0
+    return (0, convert_bytes(downloaded_size))
 
 
 def print_usage():
@@ -525,9 +533,8 @@ Usage:
     exit(1)
 
 
-def validate_arguments():
+def validate_arguments(argv):
     """Validates arguments passed to the script."""
-    from sys import argv
     res = {}
 
     if len(argv) < 2:
@@ -593,6 +600,13 @@ def validate_arguments():
     else:
         print_usage()
 
+def update_bulk_download_document(provider, file_path, file_size):
+    c = Couch()
+    bulk_download_doc_id = c.update_bulk_download_document(
+                            provider, file_path, file_size
+                            )
+    print "Updated bulk_download database document with ID %s" % \
+          bulk_download_doc_id
 
 def get_action_dispatcher():
     """Creates a structure for dispatching actions.
@@ -614,13 +628,14 @@ def get_action_dispatcher():
     }
     return res
 
-
-if __name__ == "__main__":
-
+def main(argv):
     set_global_variables("DPLAContainer")
 
-    arguments = validate_arguments()
+    arguments = validate_arguments(argv)
     operation = arguments["operation"]
 
     dispatcher = get_action_dispatcher()
     dispatcher[operation](arguments)
+
+if __name__ == "__main__":
+    main(sys.argv)

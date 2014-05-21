@@ -1,0 +1,37 @@
+{
+    "name": "gpo",
+    "type": "oai_verbs",
+    "metadata_prefix": "marc21",
+    "endpoint_url": "http://test.catalog.gpo.gov/OAI",
+    "sets": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/gpo",
+        "name": "United States Government Printing Office (GPO)"
+    },
+    "enrichments_coll": [
+        "/compare_with_schema"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=header%2Fidentifier",
+        "/marc_to_dpla_gpo",
+        "/dedup_value?prop=sourceResource%2Ftemporal", 
+        "/cleanup_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/compare_with_schema" 
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}

@@ -227,6 +227,30 @@ def test_shred13():
     FETCHED = json.loads(content)
     assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
+def test_shred14():
+    """Should shred and disregard mismatched parens since count of open or
+       closed parens is 0
+    """
+    INPUT = {
+        "m": "H: 35 in.A) 11 1/2 x 13 x 13 in.; " + \
+             "B) 4 1/4 x 12 1/2 x 3 1/4 in.; C) 10 x 4 x 4 in.; " + \
+             "glass; Furnishings;"
+    }
+    EXPECTED = {
+        "m": [
+            "H: 35 in.A) 11 1/2 x 13 x 13 in.",
+            "B) 4 1/4 x 12 1/2 x 3 1/4 in.",
+            "C) 10 x 4 x 4 in.",
+            "glass",
+            "Furnishings"
+        ]
+    }
+    url = server() + "shred?prop=m"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    FETCHED = json.loads(content)
+    assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
+
 def test_unshred1():
     "Valid unshredding"
 
