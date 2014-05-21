@@ -758,4 +758,13 @@ def marc_to_dpla_gpo(body, ctype, geoprop=None):
         title = " ".join(out["sourceResource"]["title"])
         out["sourceResource"]["title"] = title
 
+    # Handle rights
+    if not out["sourceResource"]["rights"]:
+        rights = "Pursuant to Title 17 Section 105 of the United States " + \
+                 "Code, this file is not subject to copyright protection " + \
+                 "and is in the public domain. For more information " + \
+                 "please see http://www.gpo.gov/help/index.html#" + \
+                 "public_domain_copyright_notice.htm"
+        out["sourceResource"]["rights"] = rights
+
     return json.dumps(out)
