@@ -78,6 +78,10 @@ class Couch(object):
             db = self.server[name]
         return db
 
+    def dpla_view(self, viewname, **options):
+        """Return the result of the given view in the "dpla" database"""
+        return self.dpla_db.view(viewname, None, **options)
+
     def sync_views(self, db_name):
         """Fetches design documents from the views_directory, saves/updates
            them in the appropriate database, then build the views. 
@@ -151,25 +155,20 @@ class Couch(object):
         }
         return kwargs
 
+    # TODO:  rename these _query* functions to remove "_query_" and remove
+    # leading underscores for methods that don't have to be internal.
+
     def _query_all_docs(self, db):
         view_name = "_all_docs"
         for row in db.iterview(view_name, batch=self.batch_size,
                                include_docs=True):
             yield row["doc"]
 
-    def _query_all_provider_docs(self, db, provider_name):
-        """Fetches all provider docs by provider name. The key for this view
-           is the list [provider_name, doc._id], so we supply "0" as the
-           startkey doc._id and "Z" as the endkey doc._id in order to ensure
-           proper sorting. See collation sequence here:
-           https://wiki.apache.org/couchdb/View_collation
-        """
-        view_name = "all_provider_docs/by_provider_name"
-        for row in db.iterview(view_name,
-                               batch=self.batch_size,
-                               include_docs=True,
-                               startkey=[provider_name, "0"],
-                               endkey=[provider_name, "Z"]):
+    def all_dpla_docs(self):
+        """Yield all documents in the dpla database"""
+        for row in self.dpla_db.iterview("_all_docs",
+                                         batch=self.batch_size,
+                                         include_docs=True):
             yield row["doc"]
 
     def _query_all_prov_docs_by_ingest_seq(self, db, provider_name,
@@ -179,7 +178,7 @@ class Couch(object):
            ingestion_sequence, doc._id], so we supply "0" as the startkey
            doc._id and "Z" as the endkey doc._id in order to ensure proper
            sorting. See collation sequence here:
-           https://wiki.apache.org/couchdb/View_collation
+           http://docs.couchdb.org/en/latest/couchapp/views/collation.html
         """
         view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
         startkey = [provider_name, ingestion_sequence, "0"]
@@ -192,7 +191,19 @@ class Couch(object):
             yield row["doc"]
 
     def _query_all_dpla_provider_docs(self, provider_name):
-        return self._query_all_provider_docs(self.dpla_db, provider_name)
+        """Yield all "dpla" database documents for the given provider"""
+        # Regarding the startkey and endkey values that are used to define
+        # the result, and the sort order of the documents, see the following,
+        # and note that _all_docs uses an ASCII collation, such that "."
+        # comes after "-":
+        # http://docs.couchdb.org/en/latest/couchapp/views/collation.html#all-docs
+        # ... and note that our _id values look like "provider--<somtehing>"
+        for row in self.dpla_db.iterview("_all_docs",
+                                         batch=self.batch_size,
+                                         include_docs=True,
+                                         startkey=provider_name,
+                                         endkey=provider_name + "."):
+            yield row["doc"]
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
                                                 ingestion_sequence):
@@ -201,8 +212,15 @@ class Couch(object):
                                                       ingestion_sequence)
  
     def _query_all_dashboard_provider_docs(self, provider_name):
-        return self._query_all_provider_docs(self.dashboard_db,
-                                                provider_name)
+        """Yield all "dashboard" database documents for the given provider"""
+        # See http://docs.couchdb.org/en/latest/couchapp/views/collation.html
+        view = "all_provider_docs/by_provider_name"
+        for row in self.dashboard_db.iterview(view,
+                                              batch=self.batch_size,
+                                              include_docs=True,
+                                              startkey=[provider_name, "0"],
+                                              endkey=[provider_name, "Z"]):
+            yield row["doc"]
 
     def _query_all_dashboard_prov_docs_by_ingest_seq(self, provider_name,
                                                      ingestion_sequence):
