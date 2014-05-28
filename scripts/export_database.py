@@ -166,7 +166,7 @@ def item_docs(provider_name=None):
         docs = couch.all_dpla_docs()
     for doc in docs:
         if doc.get("ingestType") == "item":
-            yield doc
+            yield {"doc": doc}
 
 def profile_names_for_contributor(contributor):
     """Return a list of profile names that use the given contributor name"""
