@@ -40,7 +40,7 @@
         "name": "ARTstor"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=id", 
@@ -74,7 +74,7 @@
         "/set_type_from_physical_format",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True",
         "/unset_prop?prop=sourceResource%2Frelation",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

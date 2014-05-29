@@ -8,7 +8,7 @@
         "name": "Kentucky Digital Library"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id", 
@@ -39,7 +39,7 @@
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True",
         "/unset_prop?prop=sourceResource%2Fpublisher",
         "/geocode",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

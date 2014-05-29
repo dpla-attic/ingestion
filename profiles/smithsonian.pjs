@@ -7,7 +7,7 @@
         "name": "Smithsonian Institution"
     },
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/edan_select_id",
@@ -34,7 +34,7 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Washington%2C%20D.C.",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

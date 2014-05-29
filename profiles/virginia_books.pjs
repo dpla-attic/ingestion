@@ -12,7 +12,7 @@
         "name": "University of Virginia Library"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
@@ -32,7 +32,7 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Virginia",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

@@ -48,7 +48,7 @@
         "p15799coll104"
     ], 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id", 
@@ -77,7 +77,7 @@
         "/remove_list_values?prop=sourceResource%2Ftype&values=item",
         "/dedup_value?prop=sourceResource%2Ftype",
         "/unset_prop?prop=sourceResource%2Fcollection",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

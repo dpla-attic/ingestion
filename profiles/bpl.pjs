@@ -9,7 +9,7 @@
         "name": "Digital Commonwealth"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
@@ -33,7 +33,7 @@
         "/set_prop?prop=provider%2Fname&value=Digital%20Commonwealth",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

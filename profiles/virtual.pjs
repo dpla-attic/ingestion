@@ -8,7 +8,7 @@
         "name": "Harvard Virtual Collection"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id",
@@ -22,6 +22,6 @@
         "/enrich-format",
         "/enrich_location",
         "/contentdm_identify_object",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ]
 }
