@@ -3,7 +3,7 @@ from akara.services import simple_service
 from akara import response
 from akara import logger
 from dplaingestion.selector import getprop, delprop
-from dplaingestion.mapv3 import MAPV3
+from dplaingestion.mapv3 import MAPV3_SCHEMAS
 from jsonschema import validate 
 from jsonschema.exceptions import ValidationError
 
@@ -19,20 +19,27 @@ def validatemapv3(body, ctype):
 
     try:
         data = json.loads(body)
+        id_for_msg = data.get('_id', '[no id]')
     except:
         response.code = 500
         response.add_header("content-type", "text/plain")
         return "Unable to parse body as JSON"
 
+    valid = None
+
     try:
-        validate(data, MAPV3)
-        valid = True
+        ingest_type = data.get('ingestType', None)
+        if ingest_type is not None:
+            validate(data, MAPV3_SCHEMAS[ingest_type])
+            valid = True
+        else:
+            logger.warning('Could not get ingestType for record with id %s; refusing to validate.' % id_for_msg)
     except ValidationError as err:
         valid = False
-    finally:
-        if "admin" in data:
-            data["admin"]["valid_after_enrich"] = valid
-        else:
-            data["admin"] = {"valid_after_enrich": valid}
-        print data 
-        return json.dumps(data)
+        logger.warning('Could not validate %s record with id %s: %s' % (ingest_type, id_for_msg, err.message))
+
+    if "admin" in data:
+        data["admin"]["valid_after_enrich"] = valid
+    else:
+        data["admin"] = {"valid_after_enrich": valid}
+    return json.dumps(data)
