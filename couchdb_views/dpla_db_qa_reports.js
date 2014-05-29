@@ -184,8 +184,12 @@
            "map": "function(doc) { provider = doc._id.split('--').shift(); v = doc.sourceResource.identifier; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit([provider, v[i]], 1);}}}",
            "reduce": "_count"
        },
-       "invalid_records": {
-           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin !== undefined) { v = doc.admin.valid_after_enrich; if (v === false) {emit([provider, doc['id']]);}}}"
+       "invalid_record_messages": {
+           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin !== undefined) { v = doc.admin.valid_after_enrich; if (v === false) {emit([provider, doc['id']], doc.admin.validation_message);}}}"
+       },
+       "invalid_record_messages_count": {
+           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin !== undefined) { v = doc.admin.valid_after_enrich; if (v === false) {emit([provider, doc.admin.validation_message], 1);}}}",
+           "reduce": "_count"
        },
        "validation_status": {
            "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin === undefined) { status = 'not validated'; } else { v = doc.admin.valid_after_enrich; if (typeof v === 'boolean') { status = (v ? 'valid' : 'invalid'); } else { status = 'not validated'; } } emit([provider, doc['id']], status); }"
