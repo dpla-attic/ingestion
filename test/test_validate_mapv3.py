@@ -110,7 +110,10 @@ def test_validate_mapv3_valid_item():
         "isShownAt": "http://texashistory.unt.edu/ark:/67531/metapth245858/"
     }
     VALID_ITEM = deepcopy(ITEM)
-    VALID_ITEM["admin"] = {"valid_after_enrich": True}
+    VALID_ITEM["admin"] = {
+        "valid_after_enrich": True,
+        "validation_message": None
+    }
 
     url = server() + "validate_mapv3"
     resp,content = H.request(url,"POST",body=json.dumps(ITEM))
@@ -131,7 +134,10 @@ def test_validate_mapv3_valid_coll():
     }
 
     VALID_COLL = deepcopy(COLL)
-    VALID_COLL["admin"] = {"valid_after_enrich": True}
+    VALID_COLL["admin"] = {
+        "valid_after_enrich": True,
+        "validation_message": None
+    }
 
     url = server() + "validate_mapv3"
     resp,content = H.request(url,"POST",body=json.dumps(COLL))
@@ -195,6 +201,7 @@ def test_validate_mapv3_invalid_item():
     }
     INVALID_ITEM = deepcopy(ITEM)
     INVALID_ITEM["admin"]["valid_after_enrich"] = False
+    INVALID_ITEM["admin"]["validation_message"] = "'originalRecord' is a required property"
 
     url = server() + "validate_mapv3"
     resp,content = H.request(url,"POST",body=json.dumps(ITEM))
@@ -207,7 +214,10 @@ def test_validate_mapv3_invalid_coll():
         "ingestType": "collection"
     }
     INVALID_COLL = deepcopy(COLL)
-    INVALID_COLL["admin"] = {"valid_after_enrich": False}
+    INVALID_COLL["admin"] = {
+        "valid_after_enrich": False,
+        "validation_message": "'@id' is a required property"
+    }
 
     url = server() + "validate_mapv3"
     resp,content = H.request(url,"POST",body=json.dumps(COLL))
@@ -219,7 +229,10 @@ def test_validate_mapv3_missing_ingest_type():
         "title": "Foo"
     }
     NOT_VALIDATED_RECORD = deepcopy(RECORD)
-    NOT_VALIDATED_RECORD["admin"] = {"valid_after_enrich": None}
+    NOT_VALIDATED_RECORD["admin"] = {
+        "valid_after_enrich": None,
+        "validation_message": None
+    }
 
     url = server() + "validate_mapv3"
     resp,content = H.request(url,"POST",body=json.dumps(RECORD))

@@ -26,6 +26,7 @@ def validatemapv3(body, ctype):
         return "Unable to parse body as JSON"
 
     valid = None
+    validation_message = None
 
     try:
         ingest_type = data.get('ingestType', None)
@@ -37,9 +38,14 @@ def validatemapv3(body, ctype):
     except ValidationError as err:
         valid = False
         logger.warning('Could not validate %s record with id %s: %s' % (ingest_type, id_for_msg, err.message))
+        validation_message = err.message
 
     if "admin" in data:
         data["admin"]["valid_after_enrich"] = valid
+        data["admin"]["validation_message"] = validation_message
     else:
-        data["admin"] = {"valid_after_enrich": valid}
+        data["admin"] = {
+            "valid_after_enrich": valid,
+            "validation_message": validation_message
+        }
     return json.dumps(data)
