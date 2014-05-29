@@ -213,7 +213,7 @@ def download_data(arguments):
             statinfo = os.stat(filename)
             update_bulk_download_document(bulk_doc_provider_name,
                                           uri,
-                                          statinfo.st_size)
+                                          convert_bytes(statinfo.st_size))
     except Exception as e:
         raise
         print >> sys.stderr, "Caught %s: %s" % (e.__class__, e.message)
