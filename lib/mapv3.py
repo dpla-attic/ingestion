@@ -5,7 +5,8 @@ def array_or_item(obj):
 MAPV3 = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "DPLA Metadata Application Profile v3 JSON Schema",
-    "id": "http://api.dp.la/schemas/mapv3#", 
+    # Do not include the ID until this can be dereferenced
+    # "id": "http://api.dp.la/schemas/mapv3#",
     "type": "object",
     # Recommended: store these at dereferenceable URIs
     "oneOf": [
@@ -26,9 +27,13 @@ MAPV3 = {
                 "@id": {"type": "string", "format": "uri"},
                 "_id": {"type": "string"},
                 "_rev": {"type": "string"},
+                "admin": {"type": "object"},
                 "description": {"$ref": "#/definitions/arrayOrString"},
                 "ingestionSequence": {"type": "number"},
-                "ingestDate": {"type": "string", "format": "date-time"},
+                # do not check ingestDate as the 'date-time' json-schema
+                # format, since it requires RFC 3339 conformance and not
+                # ISO 8601 conformance
+                "ingestDate": {"type": "string"},
                 "ingestType": {"type": "string", "enum": ["collection"]},
                 "id": {"type": "string"},
                 "title": {"$ref": "#/definitions/arrayOrString"}
@@ -73,7 +78,7 @@ MAPV3 = {
                 "@type": {"type": "string", "enum": ["ore:Aggregation"]},
                 "_id": {"type": "string"},
                 "_rev": {"type": "string"},
-                "admin": {"type": "object"}, # remove?
+                "admin": {"type": "object"},
                 "aggregatedCHO": {"type": "string", "format": "uri"},
                 "dataProvider": {"$ref": "#/definitions/arrayOrString"},
                 "hasView": {
@@ -81,7 +86,10 @@ MAPV3 = {
                 },
                 "id": {"type": "string"},
                 "ingestionSequence": {"type": "number"},
-                "ingestDate": {"type": "string", "format": "date-time"},
+                # do not check ingestDate as the 'date-time' json-schema
+                # format, since it requires RFC 3339 conformance and not
+                # ISO 8601 conformance
+                "ingestDate": {"type": "string"},
                 "ingestType": {"type": "string", "enum": ["item"]},
                 "isShownAt": {"type": "string", "format": "uri"},
                 "object": {"type": "string", "format": "uri"},
@@ -143,7 +151,7 @@ MAPV3 = {
                 "spatial": {
                     "oneOf": array_or_item({"$ref": "#/definitions/spatial"})
                 },
-                "specType": {"type": "string"},
+                "specType": {"$ref": "#/definitions/arrayOrString"},
                 "stateLocatedIn": {
                     "type": "array",
                     "items": {
@@ -194,5 +202,5 @@ MAPV3 = {
                 "text"
             ]
         }
-    },
+    }
 }
