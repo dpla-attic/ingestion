@@ -185,13 +185,13 @@
            "reduce": "_count"
        },
        "invalid_records": {
-           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin !== undefined) { v = doc.admin.valid_on_enrich; if (v === false) {emit([provider, doc['id']]);}}}"
+           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin !== undefined) { v = doc.admin.valid_after_enrich; if (v === false) {emit([provider, doc['id']]);}}}"
        },
        "validation_status": {
-           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin === undefined) { status = 'not validated'; } else { v = doc.admin.valid_on_enrich; if (typeof v === 'boolean') { status = (v ? 'valid' : 'invalid'); } else { status = 'not validated'; } } emit([provider, doc['id']], status); }"
+           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin === undefined) { status = 'not validated'; } else { v = doc.admin.valid_after_enrich; if (typeof v === 'boolean') { status = (v ? 'valid' : 'invalid'); } else { status = 'not validated'; } } emit([provider, doc['id']], status); }"
        },
        "validation_status_count": {
-           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin === undefined) { status = 'not validated'; } else { v = doc.admin.valid_on_enrich; if (typeof v === 'boolean') { status = (v ? 'valid' : 'invalid'); } else { status = 'not validated'; } } emit([provider, status], 1); }",
+           "map": "function(doc) { provider = doc._id.split('--').shift(); if (doc.admin === undefined) { status = 'not validated'; } else { v = doc.admin.valid_after_enrich; if (typeof v === 'boolean') { status = (v ? 'valid' : 'invalid'); } else { status = 'not validated'; } } emit([provider, status], 1); }",
            "reduce": "_count"
        }
    },
