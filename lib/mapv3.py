@@ -49,7 +49,6 @@ MAPV3_SCHEMAS = {
             "@id",
             "dataProvider",
             "id",
-            "ingestionSequence",
             "isShownAt",
             "object",
             "originalRecord",
