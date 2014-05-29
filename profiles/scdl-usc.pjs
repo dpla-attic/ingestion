@@ -9,7 +9,7 @@
         "name": "South Carolina Digital Library"
     },
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id",
@@ -48,7 +48,7 @@
         "/lookup?prop=sourceResource%2Fformat&target=sourceResource%2Fformat&substitution=scdl_fix_format",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=South%20Carolina",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

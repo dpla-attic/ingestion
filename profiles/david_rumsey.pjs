@@ -10,7 +10,7 @@
     "enrichments_coll": [
         "/set_prop?prop=title&value=David%20Rumsey%20Map%20Collection",
         "/set_prop?prop=description&value=The%20historical%20map%20collection%20has%20over%2038%2C000%20maps%20and%20images%20online%2E%20The%20collection%20focuses%20on%20rare%2018th%20and%2019th%20century%20North%20American%20and%20South%20American%20maps%20and%20other%20cartographic%20materials%2E%20Historic%20maps%20of%20the%20World%2C%20Europe%2C%20Asia%2C%20and%20Africa%20are%20also%20represented%2E",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id", 
@@ -36,7 +36,7 @@
         "/set_prop?prop=sourceResource%2Frights&value=Creative%20Commons%20Attribution-NonCommercial-ShareAlike%203.0%20Unported%3B%20http%3A%2F%2Fcreativecommons%2Eorg%2Flicenses%2Fby%2Dnc%2Dsa%2F3%2E0%2F",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/replace_substring?prop=isShownAt&old=74%2E126%2E224%2E122&new=www%2Edavidrumsey%2Ecom",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

@@ -30,7 +30,7 @@
         "name": "University of Illinois at Urbana-Champaign"
     },
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id",
@@ -60,7 +60,7 @@
         "/contentdm_identify_object",
         "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library",
         "/unset_prop?prop=sourceResource%2Fcontributor",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

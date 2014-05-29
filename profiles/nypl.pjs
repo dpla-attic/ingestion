@@ -16,7 +16,7 @@
         "name": "The New York Public Library"
     }, 
    "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
@@ -35,7 +35,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

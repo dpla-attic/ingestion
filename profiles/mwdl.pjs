@@ -12,7 +12,7 @@
         "name": "Mountain West Digital Library"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=_id", 
@@ -42,7 +42,7 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/unset_prop?prop=%5Fid&condition=mwdl%5Fexclude&condition_prop=originalRecord%2FPrimoNMBib%2Frecord%2Fsearch%2Frsrctype",
         "/unset_prop?prop=sourceResource%2Fformat",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,
