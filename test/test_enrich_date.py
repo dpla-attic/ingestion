@@ -784,5 +784,33 @@ def test_enrich_dates_range_with_u():
         EXPECTED["date"]["displayDate"] = INPUT[i]["date"]
         assert_same_jsons(EXPECTED, content)
 
+def test_date_from_timestamp():
+    """Date value is extracted from a timestamp"""
+    INPUT = [{"date": "2003-12-27T09:07:05Z"},
+             {"date": "2003-12-27T09:07:05+01:00"},
+             {"date": "2003-12-27T09:07:05-04"},
+             {"date": "2003-12-27T09:07:05"}]
+    EXPECTED = {"date": {"end": "2003-12-27", "begin": "2003-12-27"}}
+    url = server() + "enrich_earliest_date?prop=date"
+    for obj in INPUT:
+        print obj["date"]
+        resp, content = H.request(url, "POST", body=json.dumps(obj))
+        EXPECTED["date"]["displayDate"] = obj["date"]
+        assert_same_jsons(EXPECTED, content)
+
+def test_date_with_ellipses():
+    """Date values are extracted from uncertain dates (with ellipses)"""
+    INPUT = {"date": "[1993-08-05..1993-08-08]"}
+    EXPECTED = {
+                "date": {
+                         "displayDate": "1993-08-05..1993-08-08",
+                         "end": "1993-08-08",
+                         "begin": "1993-08-05"
+                        }
+                }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert_same_jsons(EXPECTED, content)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
