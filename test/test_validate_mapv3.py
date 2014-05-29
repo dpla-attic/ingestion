@@ -120,11 +120,16 @@ def test_validate_mapv3_valid_item():
 
 def test_validate_mapv3_valid_coll():
     COLL = {
-        "description": "",
         "id": "6814902bd6e5f107185a764123c18dda",
         "@id": "http://dp.la/api/collections/6814902bd6e5f107185a764123c18dda",
-        "title": "Gillespie County Historical Society"
+        "ingestType": "collection",
+        "ingestionSequence": 7,
+        "ingestDate": "2014-04-29T17:58:39.828429",
+        "title": "Gillespie County Historical Society",
+        "description": "",
+        "_id": "texas--partner:GCHS"
     }
+
     VALID_COLL = deepcopy(COLL)
     VALID_COLL["admin"] = {"valid_after_enrich": True}
 
@@ -197,7 +202,10 @@ def test_validate_mapv3_invalid_item():
     assert_same_jsons(json.loads(content), INVALID_ITEM)
 
 def test_validate_mapv3_invalid_coll():
-    COLL = {"title": "Gillespie County Historical Society"}
+    COLL = {
+        "title": "Gillespie County Historical Society",
+        "ingestType": "collection"
+    }
     INVALID_COLL = deepcopy(COLL)
     INVALID_COLL["admin"] = {"valid_after_enrich": False}
 
@@ -205,3 +213,15 @@ def test_validate_mapv3_invalid_coll():
     resp,content = H.request(url,"POST",body=json.dumps(COLL))
     assert resp.status == 200
     assert_same_jsons(json.loads(content), INVALID_COLL)
+
+def test_validate_mapv3_missing_ingest_type():
+    RECORD = {
+        "title": "Foo"
+    }
+    NOT_VALIDATED_RECORD = deepcopy(RECORD)
+    NOT_VALIDATED_RECORD["admin"] = {"valid_after_enrich": None}
+
+    url = server() + "validate_mapv3"
+    resp,content = H.request(url,"POST",body=json.dumps(RECORD))
+    assert resp.status == 200
+    assert_same_jsons(json.loads(content), NOT_VALIDATED_RECORD)
