@@ -12,10 +12,6 @@
     "enrichments_item": [
         "/edan_select_id",
         "/edan_to_dpla", 
-        "/shred?prop=aggregatedCHO%2Fcontributor%2CaggregatedCHO%2Fcreator%2CaggregatedCHO%2Fdate",
-        "/shred?prop=aggregatedCHO%2Flanguage%2CaggregatedCHO%2Fpublisher%2CaggregatedCHO%2Frelation",
-        "/shred?prop=aggregatedCHO%2Fsubject%2CaggregatedCHO%2Ftype",
-        "/shred?prop=aggregatedCHO%2Fsubject&delim=%3Cbr%3E",
         "/shred?prop=sourceResource%2Fformat",
         "/shred?prop=sourceResource%2Fsubject&delim=%5C",
         "/shred?prop=sourceResource%2Fsubject&delim=%3A",
@@ -27,7 +23,6 @@
         "/cleanup_value",
         "/enrich-type",
         "/enrich-format",
-        "/copy_prop?prop=aggregatedCHO%2Fpublisher&to_prop=dataProvider&create=True&remove=True",
         "/cleanup_language",
         "/enrich_language",
         "/enrich_location",

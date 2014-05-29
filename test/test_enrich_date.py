@@ -1,7 +1,7 @@
 from amara.thirdparty import json
 from nose.tools import nottest
 from dplaingestion.akamod.enrich_date import check_date_format
-from server_support import server, H, print_error_log
+from server_support import server, H
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 import sys
 
@@ -22,7 +22,7 @@ def test_enrich_dates_bogus_date():
     url = server() + "enrich_earliest_date?prop=date"
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    print_error_log()
+
     assert str(resp.status).startswith("2")
 
     result = json.loads(content)
@@ -197,7 +197,6 @@ def test_enrich_date_date_parse_format_c_string():
 
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
-
     result = json.loads(content)
     assert result['date'] == EXPECTED['date']
 
@@ -246,7 +245,6 @@ def test_date_with_brackets():
 
         resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
-        print_error_log()
         assert_same_jsons(EXPECTED, content)
 
 
@@ -273,7 +271,6 @@ def test_range_years_with_brackets():
 
         resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
-        print_error_log()
         assert_same_jsons(EXPECTED, content)
 
 
@@ -302,7 +299,6 @@ def test_range_with_brackets():
 
         resp, content = H.request(url, "POST", body=json.dumps(INPUT))
         assert str(resp.status).startswith("2")
-        print_error_log()
         assert_same_jsons(EXPECTED, content)
 
 
@@ -442,12 +438,10 @@ def test_enrich_temporal_date():
 
     url = server() + "move_date_values?prop=sourceResource/spatial"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
 
     url = server() + "enrich_date"
     resp, content = H.request(url, "POST", body=content)
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, content)
 
@@ -506,7 +500,6 @@ def test_dates_with_question_marks():
         expected = {"date": EXPECTED[i]}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(content, expected)
 
@@ -530,7 +523,6 @@ def test_decade_date():
         expected = {"date": EXPECTED[i]}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -580,7 +572,6 @@ def test_tricky_dates1():
         }
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -595,7 +586,6 @@ def test_tricky_dates2():
         expected = {"date": {"begin": "1938-08-23", "end": "1938-08-24", "displayDate": date}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -613,7 +603,6 @@ def test_year_month():
         expected = {"date": {"begin": d, "end": d, "displayDate": date}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -628,7 +617,6 @@ def test_day_out_of_range():
         expected = {"date": {"begin": EXPECTED[i], "end": EXPECTED[i], "displayDate": INPUT[i]}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -645,7 +633,6 @@ def test_full_date_range():
         expected = {"date": {"begin": "1901-01-01", "end": "1902-01-01", "displayDate": INPUT[i]}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -660,7 +647,6 @@ def test_delim_with_months():
         expected = {"date": {"begin": "2004-07", "end": "2004-08", "displayDate": INPUT[i]}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
    
@@ -675,7 +661,6 @@ def test_delim_with_seasons():
         expected = {"date": {"begin": "2004", "end": "2004", "displayDate": INPUT[i]}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
-        print_error_log()
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
 
@@ -687,7 +672,6 @@ def test_date_with_parentheses_and_question_mark():
     url = server() + "enrich_earliest_date?prop=date"
 
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    print_error_log()
     assert str(resp.status).startswith("2")
     assert_same_jsons(EXPECTED, content)
 
@@ -699,7 +683,6 @@ def test_wordy_date():
     url = server() + "enrich_earliest_date?prop=date"
 
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    print_error_log()
     assert str(resp.status).startswith("2")
     assert_same_jsons(EXPECTED, content)
 
@@ -711,7 +694,6 @@ def test_reversed_date_range():
     url = server() + "enrich_earliest_date?prop=date"
 
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    print_error_log()
     assert str(resp.status).startswith("2")
     assert_same_jsons(EXPECTED, content)
 
@@ -801,6 +783,34 @@ def test_enrich_dates_range_with_u():
         assert str(resp.status).startswith("2")
         EXPECTED["date"]["displayDate"] = INPUT[i]["date"]
         assert_same_jsons(EXPECTED, content)
+
+def test_date_from_timestamp():
+    """Date value is extracted from a timestamp"""
+    INPUT = [{"date": "2003-12-27T09:07:05Z"},
+             {"date": "2003-12-27T09:07:05+01:00"},
+             {"date": "2003-12-27T09:07:05-04"},
+             {"date": "2003-12-27T09:07:05"}]
+    EXPECTED = {"date": {"end": "2003-12-27", "begin": "2003-12-27"}}
+    url = server() + "enrich_earliest_date?prop=date"
+    for obj in INPUT:
+        print obj["date"]
+        resp, content = H.request(url, "POST", body=json.dumps(obj))
+        EXPECTED["date"]["displayDate"] = obj["date"]
+        assert_same_jsons(EXPECTED, content)
+
+def test_date_with_ellipses():
+    """Date values are extracted from uncertain dates (with ellipses)"""
+    INPUT = {"date": "[1993-08-05..1993-08-08]"}
+    EXPECTED = {
+                "date": {
+                         "displayDate": "1993-08-05..1993-08-08",
+                         "end": "1993-08-08",
+                         "begin": "1993-08-05"
+                        }
+                }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert_same_jsons(EXPECTED, content)
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
