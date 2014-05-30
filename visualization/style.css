@@ -1,0 +1,46 @@
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+#start {
+  fill: green;
+}
+
+.link.start {
+  stroke: green;
+}
+
+#end {
+  fill: red;
+}
+
+.link.end {
+  stroke: red;
+}
+.link.parameterized {
+  stroke-dasharray: 0,2 1;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+circle.start {
+  fill: green;
+  stroke: green;
+}
+
+circle.end {
+  fill: red;
+  stroke: red;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('style.css');
+</style>
+</head>
+<body>
+<select id="json_sources" name="json_sources">
+	<option value="" selected>Select a provider</option>
+    <option value="../profiles/artstor.pjs">artstor</option>
+    <option value="../profiles/bhl.pjs">bhl</option>
+    <option value="../profiles/bpl.pjs">bpl</option>
+    <option value="../profiles/clemson.pjs">clemson</option>
+    <option value="../profiles/david_rumsey.pjs">david_rumsey</option>
+    <option value="../profiles/digital-commonwealth.pjs">digital-commonwealth</option>
+    <option value="../profiles/digitalnc.pjs">digitalnc</option>
+    <option value="../profiles/georgia.pjs">georgia</option>
+    <option value="../profiles/gpo.pjs">gpo</option>
+    <option value="../profiles/harvard.pjs">harvard</option>
+    <option value="../profiles/hathi.pjs">hathi</option>
+    <option value="../profiles/ia.pjs">ia</option>
+    <option value="../profiles/kentucky.pjs">kentucky</option>
+    <option value="../profiles/minnesota.pjs">minnesota</option>
+    <option value="../profiles/mwdl.pjs">mwdl</option>
+    <option value="../profiles/nara.pjs">nara</option>
+    <option value="../profiles/nypl.pjs">nypl</option>
+    <option value="../profiles/scdl-charleston.pjs">scdl-charleston</option>
+    <option value="../profiles/scdl-usc.pjs">scdl-usc</option>
+    <option value="../profiles/smithsonian.pjs">smithsonian</option>
+    <option value="../profiles/texas.pjs">texas</option>
+    <option value="../profiles/uiuc.pjs">uiuc</option>
+    <option value="../profiles/uiuc_book.pjs">uiuc_book</option>
+    <option value="../profiles/usc.pjs">usc</option>
+    <option value="../profiles/virginia.pjs">virginia</option>
+    <option value="../profiles/virginia_books.pjs">virginia_books</option>
+    <option value="../profiles/virtual.pjs">virtual</option>
+</select>​
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var dropdown = d3.select("#json_sources");
+var change = function() {
+  var source = dropdown.node().options[dropdown.node().selectedIndex].value;
+
+d3.json(source, function(error, json) {
+  	var nodes = [];
+  	var links = [];
+  	var enrichment_counter = {};
+  	var current = {};
+  	var target = '';
+  	data = json;
+  	current.esource = 'start';
+  	current.etype = 'start';
+  	data['enrichments_item'].forEach(function(e) {
+  		var enrichment = e.split("?");
+  		var current_enrichment = enrichment[0];
+  		current.etype = 'common';
+  		if (current.esource == 'start') {
+  			current.etype = 'start';
+  		} else if (enrichment.length == 2) {
+  			current.etype = 'parameterized';
+  		} else {
+  			current.etype = 'common';
+  		}
+  		if (current_enrichment in enrichment_counter) {
+  			enrichment_counter[current_enrichment] += 1;
+  		} else {
+  			enrichment_counter[current_enrichment] = 1;
+  		}
+  		current.etarget = "".concat(current_enrichment, '[', enrichment_counter[current_enrichment], ']');
+  		links.push({'source': current.esource, 'target': current.etarget, 'type': current.etype});
+  		delete current.esource;
+  		current.esource = current.etarget;
+  	});
+  	links.push({'source': current.esource, 'target': 'end', 'type': 'end'});
+
+  	// Compute the distinct nodes from the links.
+  	links.forEach(function(link) {
+  	  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+  	  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+  	});
+
+  	var width = 1024,
+  	    height = 768;
+
+  	nodes['start'].fixed = true;
+  	nodes['start'].x = 50;
+  	nodes['start'].y = 50;
+  	nodes['end'].fixed = true;
+  	nodes['end'].x = width - 50;
+  	nodes['end'].y = height - 50;
+
+
+  	var force = d3.layout.force()
+  	    .nodes(d3.values(nodes))
+  	    .links(links)
+  	    .size([width, height])
+  	    .linkDistance(60)
+  	    .charge(-350)
+  	    .on("tick", tick)
+  	    .start();
+
+  	d3.select("#viz").select("svg").remove();
+  	var svg = d3.select("#viz").append("svg")
+  	    .attr("width", width)
+  	    .attr("height", height);
+
+  	// Per-type markers, as they don't inherit styles.
+  	svg.append("defs").selectAll("marker")
+  	    .data(["start", "end", "parameterized", "common"])
+  	  .enter().append("marker")
+  	    .attr("id", function(d) { return d; })
+  	    .attr("viewBox", "0 -5 10 10")
+  	    .attr("refX", 15)
+  	    .attr("refY", -1.5)
+  	    .attr("markerWidth", 6)
+  	    .attr("markerHeight", 6)
+  	    .attr("orient", "auto")
+  	  .append("path")
+  	    .attr("d", "M0,-5L10,0L0,5");
+
+  	var path = svg.append("g").selectAll("path")
+  	    .data(force.links())
+  	  .enter().append("path")
+  	    .attr("class", function(d) { return "link " + d.type; })
+  	    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+  	var circle = svg.append("g").selectAll("circle")
+  	    .data(force.nodes())
+  	  .enter().append("circle")
+  	    .attr("class", function(d) { return "circle " + d.name; })
+  	    .attr("r", 8)
+  	    .call(force.drag);
+
+  	var text = svg.append("g").selectAll("text")
+  	    .data(force.nodes())
+  	  .enter().append("text")
+  	    .attr("x", 10)
+  	    .attr("y", ".31em")
+  	    .text(function(d) { return d.name; });
+
+    // Use elliptical arc path segments to doubly-encode directionality.
+    function tick() {
+      path.attr("d", linkArc);
+      circle.attr("transform", transform);
+      text.attr("transform", transform);
+    }
+
+    function linkArc(d) {
+      var dx = d.target.x - d.source.x,
+          dy = d.target.y - d.source.y,
+          dr = Math.sqrt(dx * dx + dy * dy);
+      return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+    }
+
+    function transform(d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    }
+});
+}
+
+dropdown.on("change", change)
+change(); //trigger json on load
+
+
+</script>
+<div id="viz"></div>
+</body>
+</html>
