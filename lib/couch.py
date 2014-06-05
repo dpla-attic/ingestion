@@ -246,9 +246,11 @@ class Couch(object):
                                            key=contributor)
         try:
             return view.rows[0]["doc"]
-        except (couchdb.http.ResourceNotFound, IndexError):
-            # View does not exist (ResourceNotFound) or there's nothing for
-            # this contributor yet (IndexError).
+        except couchdb.http.ResourceNotFound:
+            raise Exception("View all_docs/by_contributor does not exist "
+                            "in bulk_download database.")
+        except IndexError:
+            # Nothing for this contributor yet, so start new document.
             return {"contributor": contributor}
 
     def _prep_for_diff(self, doc):
