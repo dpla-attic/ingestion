@@ -1,7 +1,7 @@
 {
     "name": "mwdl",
     "type": "mwdl",
-    "endpoint_url": "http://thoth.library.utah.edu:1701/PrimoWebServices/xservice/search/brief?institution=MWDL&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources",
+    "endpoint_url": "http://utah-primoprod.hosted.exlibrisgroup.com/PrimoWebServices/xservice/search/brief?institution=MWDL&indx=1&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources&bulkSize=1000&query_exc=facet_rtype,exact,collections",
     "endpoint_url_params": {
         "indx": 1,
         "bulkSize": 500
