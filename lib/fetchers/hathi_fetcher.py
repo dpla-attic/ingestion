@@ -12,6 +12,8 @@ class HathiFetcher(FileFetcher):
                                    "<record>\n".join(grouped_records) + \
                                    "</group_records>")
             parsed_docs = parsed_xml["group_records"]["record"]
+            if not isinstance(parsed_docs, list):
+                parsed_docs = [parsed_docs]
         except Exception, e:
             error = "Error parsing grouped records from file %s: %s" % \
                     (file, e)
