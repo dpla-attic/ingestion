@@ -244,10 +244,13 @@ class Couch(object):
         view_name = "all_docs/by_contributor"
         view = self.bulk_download_db.view(view_name, include_docs=True,
                                            key=contributor)
-
         try:
             return view.rows[0]["doc"]
         except couchdb.http.ResourceNotFound:
+            raise Exception("View all_docs/by_contributor does not exist "
+                            "in bulk_download database.")
+        except IndexError:
+            # Nothing for this contributor yet, so start new document.
             return {"contributor": contributor}
 
     def _prep_for_diff(self, doc):
