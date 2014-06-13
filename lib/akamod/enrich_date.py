@@ -54,11 +54,15 @@ def robust_date_parser(d):
 
     Returns None if it fails
     """
+    # Function for a formatted date string, since datetime.datetime.strftime()
+    # only works with years >= 1900.
+    return_date = lambda d: "%d-%02d-%02d" % (d.year, d.month, d.day)
+
     # Check for EDTF timestamp first, because it is simple.
     if edtf_date_and_time.match(d):
         try:
             dateinfo = dateutil_parse(d)
-            return dateinfo.strftime("%Y-%m-%d")
+            return return_date(dateinfo)
         except TypeError:
             # not parseable by dateutil_parse()
             dateinfo = None
@@ -77,7 +81,7 @@ def robust_date_parser(d):
                 logger.error("Exception %s in %s" % (e, __name__))
 
         if dateinfo:
-            return dateinfo.strftime("%Y-%m-%d")
+            return return_date(dateinfo)
 
     return isodate
 
