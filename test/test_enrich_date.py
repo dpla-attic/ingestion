@@ -50,6 +50,25 @@ def test_enrich_date_single():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
+def test_enrich_pre_1900_date():
+    """Pre-1900 date is transformed correctly"""
+    # Lest anyone try to use datetime.datetime.strftime() in
+    # enrich_date_robust_date_parser(), as this does not handle pre-1900 dates.
+    INPUT = {
+        "date": "1870-01-02T12:00:00"
+    }
+    EXPECTED = {
+        u'date': {
+            'begin': u'1870-01-02',
+            'end': u'1870-01-02',
+            'displayDate': '1870-01-02T12:00:00'
+        }
+    }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    result = json.loads(content)
+    print result
+    assert result['date'] == EXPECTED[u'date']
 
 def test_enrich_date_date_multiple():
     """Correctly transform a multiple date value, and take the earliest"""
