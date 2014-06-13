@@ -20,7 +20,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/mods-to-dpla?provider=NYPL",
+        "/dpla_mapper?type=nypl",
         "/nypl_identify_object",
         "/cleanup_value",
         "/capitalize_value",

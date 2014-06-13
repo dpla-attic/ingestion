@@ -37,7 +37,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/ia-to-dpla",
+        "/dpla_mapper?type=ia",
         "/ia-set-rights",
         "/cleanup_value",
         "/shred?action=unshred&prop=sourceResource%2Ftitle&delim=%2C%20",

@@ -11,7 +11,7 @@
     ], 
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/marc_to_dpla",
+	    "/dpla_mapper?type=hathi",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fspatial",
         "/dedup_value?prop=sourceResource%2Fspatial",
         "/cleanup_value",

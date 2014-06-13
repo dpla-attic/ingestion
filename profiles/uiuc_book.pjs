@@ -17,7 +17,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/marc_to_dpla",
+        "/dpla_mapper?type=uiuc_marc",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fspatial",
         "/cleanup_value",
         "/enrich_earliest_date",

@@ -38,6 +38,6 @@ setup( name = 'ingestion',
        url='http://dp.la',
        package_dir={'dplaingestion':'lib'},
        packages=['dplaingestion','dplaingestion.akamod',
-                 'dplaingestion.fetchers'],
+                 'dplaingestion.fetchers', 'dplaingestion.mappers'],
        scripts=['scripts/rollback_ingestion'],
 )

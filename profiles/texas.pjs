@@ -317,7 +317,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_untl_to_dpla",
+        "/dpla_mapper?type=untl",
         "/shred?prop=sourceResource%2Fsubject&delim=%20-%20",
         "/cleanup_value",
         "/capitalize_value",

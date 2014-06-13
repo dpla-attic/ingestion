@@ -123,6 +123,15 @@ MODULES = [
     "dplaingestion.fetchers.nara_fetcher",
     "dplaingestion.fetchers.edan_fetcher",
     "dplaingestion.fetchers.hathi_fetcher",
+    "dplaingestion.mapper",
+    "dplaingestion.fetcher",
+    "dplaingestion.create_mapper",
+    "dplaingestion.mappers.mapper",
+    "dplaingestion.mappers.dublin_core_mapper",
+    "dplaingestion.mappers.mods_mapper",
+    "dplaingestion.mappers.harvard_mapper",
+    "dplaingestion.mappers.bpl_mapper",
+    "dplaingestion.mappers.primo_mapper",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
@@ -199,7 +208,8 @@ MODULES = [
     "dplaingestion.akamod.scdl_format_to_type",
     "dplaingestion.marc_code_to_relator",
     "dplaingestion.akamod.marc_to_dpla_gpo",
-    "dplaingestion.akamod.validate_mapv3"
+    "dplaingestion.akamod.validate_mapv3",
+    "dplaingestion.akamod.dpla_mapper",
     ]
 
 ### Section 3: Other module configuration goes here

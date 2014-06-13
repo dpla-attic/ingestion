@@ -12,7 +12,7 @@
     ], 
     "enrichments_item": [
         "/select-id", 
-        "/oai-to-dpla", 
+        "/dpla_mapper?type=dublin_core",
         "/unset_prop?prop=collection",
         "/unset_prop?prop=sourceResource%2Fcontributor",
         "/shred?prop=sourceResource%2Fcreator%2CsourceResource%2Fdate",

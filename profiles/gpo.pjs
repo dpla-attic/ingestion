@@ -13,7 +13,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/marc_to_dpla_gpo",
+        "/dpla_mapper?type=gpo",
         "/dedup_value?prop=sourceResource%2Ftemporal", 
         "/cleanup_value",
         "/enrich_earliest_date",

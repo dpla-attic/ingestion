@@ -22,7 +22,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/mods-to-dpla?provider=UVA",
+        "/dpla_mapper?type=uva",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",
         "/cleanup_value",
         "/capitalize_value",

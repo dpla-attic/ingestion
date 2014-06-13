@@ -44,7 +44,7 @@
     ], 
     "enrichments_item": [
         "/select-id?prop=id", 
-        "/oai-to-dpla", 
+        "/dpla_mapper?type=dublin_core",
         "/unset_prop?prop=sourceResource%2Fspatial",
         "/decode_html?prop=sourceResource%2Fsubject",
         "/artstor_select_isshownat", 
