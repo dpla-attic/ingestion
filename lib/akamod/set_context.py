@@ -31,8 +31,7 @@ def setcontext(body, ctype, prop="@context"):
 
     if data["ingestType"] == "item":
         data.update(item_context)
-        setprop(data, "sourceResource/@id",
-                "http://dp.la/api/items/%s#sourceResource" % data["id"])
+        setprop(data, "sourceResource/@id", "%s#sourceResource" % data["@id"])
     else:
         data.update(collection_context)
 
