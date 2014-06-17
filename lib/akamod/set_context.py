@@ -19,24 +19,21 @@ def setcontext(body, ctype, prop="@context"):
         return "Unable to parse body as JSON"
 
     item_context = {
-        "@id": "http://dp.la/api/items/%s" % data["id"],
         "@context": "http://dp.la/api/items/context",
         "aggregatedCHO": "#sourceResource",
-        "@type": "ore:Aggregation",
-        "sourceResource": {
-           "@id": "http://dp.la/api/items/%s#sourceResource" % data["id"]
-        }
+        "@type": "ore:Aggregation"
     }
 
     collection_context = {
         "@context": "http://dp.la/api/collections/context",
-        "@id": "http://dp.la/api/collections/%s" % data["id"],
         "@type": "dcmitype:Collection" 
     }
 
     if data["ingestType"] == "item":
-        setprop(data, prop, item_context)
+        data.update(item_context)
+        setprop(data, "sourceResource/@id",
+                "http://dp.la/api/items/%s#sourceResource" % data["id"])
     else:
-        setprop(data, prop, collection_context)
+        data.update(collection_context)
 
     return json.dumps(data)
