@@ -16,11 +16,13 @@
         "name": "The New York Public Library"
     }, 
    "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
         "/dpla_mapper?type=nypl",
+        "/set_context",
         "/nypl_identify_object",
         "/cleanup_value",
         "/capitalize_value",

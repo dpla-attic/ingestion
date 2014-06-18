@@ -30,39 +30,6 @@ class Mapper(object):
 
     def __init__(self, data, key_prefix=None):
         self.provider_data = data
-        self.context = {
-           "begin": {
-               "@id": "dpla:dateRangeStart",
-               "@type": "xsd:date"
-           },
-           "@vocab": "http://purl.org/dc/terms/",
-           "hasView": "edm:hasView",
-           "name": "xsd:string",
-           "object": "edm:object",
-           "dpla": "http://dp.la/terms/",
-           "collection": "dpla:aggregation",
-           "edm": "http://www.europeana.eu/schemas/edm/",
-           "end": {
-               "@id": "dpla:end",
-               "@type": "xsd:date"
-           },
-           "state": "dpla:state",
-           "aggregatedDigitalResource": "dpla:aggregatedDigitalResource",
-           "coordinates": "dpla:coordinates",
-           "isShownAt": "edm:isShownAt",
-           "stateLocatedIn": "dpla:stateLocatedIn",
-           "sourceResource": "edm:sourceResource",
-           "dataProvider": "edm:dataProvider",
-           "originalRecord": "dpla:originalRecord",
-           "provider": "edm:provider",
-           "LCSH": "http://id.loc.gov/authorities/subjects"
-        }
-        #self.context = {
-        #    "@context": "http://rawgithub.com/anarchivist/8718510/raw/" + \
-        #                "dpla-mapv3-context.json",
-        #    "aggregatedCHO": "#sourceResource",
-        #    "@type": "ore:Aggregation"
-        #}
         self.mapped_data = {"sourceResource": {}}
         if key_prefix is not None:
             self.remove_key_prefix(self.provider_data, key_prefix)
@@ -151,14 +118,12 @@ class Mapper(object):
 
     def map_base(self):
         """Maps base fields shared by all Mappers"""
-        self.map_context()
         self.map_original_record()
         self.map_ids()
         self.map_ingest_fields()
 
     def map_source_resource(self):
         """Mapps the mapped_data sourceResource fields."""
-        #self.mapped_data["sourceResource"] = {"@id": "#sourceResource"}
         self.map_collection()
         self.map_contributor()
         self.map_creator()
@@ -187,10 +152,6 @@ class Mapper(object):
         self.mapped_data["sourceResource"].update(_dict)
 
     # base mapping functions
-    def map_context(self):
-        #self.mapped_data.update(self.context)
-        self.mapped_data.update({"@context": self.context})
-
     def map_original_record(self):
         prop = "originalRecord"
         self.mapped_data["originalRecord"] = self.provider_data.get(prop)

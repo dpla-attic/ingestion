@@ -8,11 +8,13 @@
         "name": "Kentucky Digital Library"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id", 
         "/dpla_mapper?type=dublin_core",
+        "/set_context",
         "/unset_prop?prop=collection",
         "/unset_prop?prop=sourceResource%2Fcontributor",
         "/shred?prop=sourceResource%2Fcreator%2CsourceResource%2Fdate",
