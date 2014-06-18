@@ -15,11 +15,13 @@
         "name": "Harvard Library"
     },
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/dpla_mapper?type=harvard",
+        "/set_context",
         "/set_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",

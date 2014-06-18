@@ -33,11 +33,13 @@
         "name": "Internet Archive"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
         "/dpla_mapper?type=ia",
+        "/set_context",
         "/ia-set-rights",
         "/cleanup_value",
         "/shred?action=unshred&prop=sourceResource%2Ftitle&delim=%2C%20",
