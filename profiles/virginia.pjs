@@ -18,11 +18,13 @@
         "name": "University of Virginia Library"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/mods-to-dpla?provider=UVA",
+        "/dpla_mapper?type=uva",
+        "/set_context",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights&create=True",
         "/cleanup_value",
         "/capitalize_value",

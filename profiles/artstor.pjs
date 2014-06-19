@@ -40,11 +40,13 @@
         "name": "ARTstor"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=id", 
-        "/oai-to-dpla", 
+        "/dpla_mapper?type=dublin_core",
+        "/set_context",
         "/unset_prop?prop=sourceResource%2Fspatial",
         "/decode_html?prop=sourceResource%2Fsubject",
         "/artstor_select_isshownat", 

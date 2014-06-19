@@ -139,7 +139,10 @@ def test_absolute_url_fetcher_ia():
         break
 
 # Exclude the MWDL test in Travis as access to the feed is restricted
-@attr(travis_exclude='yes', uses_network='yes')
+# @attr(travis_exclude='yes', uses_network='yes')
+# TEMPORARY:  disable this test because the recent MWDL upgrade introduced
+#             data errors that have yet to be resolved.
+@nottest
 def test_absolute_url_fetcher_mwdl():
     profile_path = "profiles/mwdl.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)

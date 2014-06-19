@@ -1,7 +1,7 @@
 {
     "name": "mwdl",
     "type": "mwdl",
-    "endpoint_url": "http://thoth.library.utah.edu:1701/PrimoWebServices/xservice/search/brief?institution=MWDL&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources",
+    "endpoint_url": "http://utah-primoprod.hosted.exlibrisgroup.com/PrimoWebServices/xservice/search/brief?institution=MWDL&indx=1&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources&bulkSize=1000&query_exc=facet_rtype,exact,collections",
     "endpoint_url_params": {
         "indx": 1,
         "bulkSize": 500
@@ -12,11 +12,13 @@
         "name": "Mountain West Digital Library"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=_id", 
-        "/primo-to-dpla",
+        "/dpla_mapper?type=primo",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",

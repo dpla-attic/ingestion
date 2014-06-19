@@ -3,17 +3,19 @@
     "type": "oai_verbs",
     "metadata_prefix": "mods",
     "endpoint_url": "http://fedora.digitalcommonwealth.org/oaiprovider/",
-    "blacklist": ["commonwealth", "commonwealth-oai"],
+    "sets": ["commonwealth:2j62s484w"],
     "contributor": {
         "@id": "http://dp.la/api/contributor/digital-commonwealth",
         "name": "Digital Commonwealth"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_mods_to_dpla?provider=BPL",
+        "/dpla_mapper?type=bpl",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",

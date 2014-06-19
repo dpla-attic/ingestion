@@ -9,11 +9,13 @@
         "name": "North Carolina Digital Heritage Center"
     }, 
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_mods_to_dpla_digitalnc",
+        "/dpla_mapper?type=digitalnc",
+        "/set_context",
         "/shred?prop=sourceResource%2Fdate&delim=%2C",
         "/enrich-subject",
         "/enrich_earliest_date",

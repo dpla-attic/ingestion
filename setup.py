@@ -31,13 +31,13 @@ out.close()
 from distutils.core import setup
 
 setup( name = 'ingestion',
-       version = '27.0',
+       version = '27.1',
        description='DPLA Ingestion Subsystem',
        author='Digital Public Library of America',
        author_email='tech@dp.la',
        url='http://dp.la',
        package_dir={'dplaingestion':'lib'},
        packages=['dplaingestion','dplaingestion.akamod',
-                 'dplaingestion.fetchers'],
+                 'dplaingestion.fetchers', 'dplaingestion.mappers'],
        scripts=['scripts/rollback_ingestion'],
 )

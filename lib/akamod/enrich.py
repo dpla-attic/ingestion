@@ -1,4 +1,5 @@
 import datetime
+import re
 from akara import logger
 from akara import request
 from amara.lib.iri import is_absolute
@@ -21,7 +22,9 @@ def pipe(content, ctype, enrichments, wsgi_header):
                 prefix += request.environ["HTTP_HOST"]
             else:
                 prefix += request.environ["SERVER_NAME"]
-            uri = prefix + uri
+            # Join the prefix and given pipeline module path, ensuring the
+            # path starts with "/".
+            uri = prefix + re.sub(r"^(?!/)", "/", uri)
         headers = copy_headers_to_dict(request.environ, exclude=[wsgi_header])
         headers["content-type"] = ctype
         logger.debug("Calling url: %s " % uri)

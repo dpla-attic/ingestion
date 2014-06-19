@@ -9,11 +9,13 @@
         "name": "United States Government Printing Office (GPO)"
     },
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/marc_to_dpla_gpo",
+        "/dpla_mapper?type=gpo",
+        "/set_context",
         "/dedup_value?prop=sourceResource%2Ftemporal", 
         "/cleanup_value",
         "/enrich_earliest_date",

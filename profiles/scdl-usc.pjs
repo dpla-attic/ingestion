@@ -9,11 +9,13 @@
         "name": "South Carolina Digital Library"
     },
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
-        "/select-id",
-        "/qdc_to_dpla?provider=scdl-usc",
+        "/select-id", 
+        "/dpla_mapper?type=scdl",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",

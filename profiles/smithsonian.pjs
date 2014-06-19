@@ -7,11 +7,13 @@
         "name": "Smithsonian Institution"
     },
     "enrichments_coll": [
+        "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
         "/edan_select_id",
-        "/edan_to_dpla", 
+        "/dpla_mapper?type=edan",
+        "/set_context",
         "/shred?prop=sourceResource%2Fformat",
         "/shred?prop=sourceResource%2Fsubject&delim=%5C",
         "/shred?prop=sourceResource%2Fsubject&delim=%3A",
