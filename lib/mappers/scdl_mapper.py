@@ -1,8 +1,8 @@
-from dplaingestion.mappers.qdc_mapper import *
+from dplaingestion.mappers.qdc_mapper import QDCMapper
 
 class SCDLMapper(QDCMapper):
-    def __init__(self, data):
-        super(SCDLMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(SCDLMapper, self).__init__(provider_data)
         self.provider_name = self.provider_data["_id"].split("--")[0]
 
     def map_is_shown_at(self):

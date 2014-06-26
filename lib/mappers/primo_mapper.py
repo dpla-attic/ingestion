@@ -1,9 +1,9 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 
 class PrimoMapper(Mapper):
-    def __init__(self, data):
-        super(PrimoMapper, self).__init__(data)
-        if exists(data, "PrimoNMBib/record"):
+    def __init__(self, provider_data):
+        super(PrimoMapper, self).__init__(provider_data)
+        if exists(provider_data, "PrimoNMBib/record"):
             self.root_key = "PrimoNMBib/record/"
         else:
             self.root_key = ""

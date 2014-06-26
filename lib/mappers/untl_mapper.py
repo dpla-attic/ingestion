@@ -1,8 +1,8 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 
 class UNTLMapper(Mapper):
-    def __init__(self, data, key_prefix="untl:"):
-        super(UNTLMapper, self).__init__(data, key_prefix)
+    def __init__(self, provider_data, key_prefix="untl:"):
+        super(UNTLMapper, self).__init__(provider_data, key_prefix)
         self.root_key = "metadata/metadata/"
         self.rights_term_label = {
             "by": "Attribution.",

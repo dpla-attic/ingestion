@@ -14,7 +14,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/dpla_mapper?type=gpo",
+        "/dpla_mapper?mapper_type=gpo",
         "/set_context",
         "/dedup_value?prop=sourceResource%2Ftemporal", 
         "/cleanup_value",

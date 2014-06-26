@@ -1,8 +1,8 @@
-from dplaingestion.mappers.qdc_mapper import *
+from dplaingestion.mappers.qdc_mapper import QDCMapper
 
 class UIUCMapper(QDCMapper):
-    def __init__(self, data):
-        super(UIUCMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(UIUCMapper, self).__init__(provider_data)
 
     def map_is_shown_at(self):
         index = -1

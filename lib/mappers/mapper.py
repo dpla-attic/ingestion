@@ -28,8 +28,8 @@ class Mapper(object):
        update_mapped_fields.
     """
 
-    def __init__(self, data, key_prefix=None):
-        self.provider_data = data
+    def __init__(self, provider_data, key_prefix=None):
+        self.provider_data = provider_data
         self.mapped_data = {"sourceResource": {}}
         if key_prefix is not None:
             self.remove_key_prefix(self.provider_data, key_prefix)

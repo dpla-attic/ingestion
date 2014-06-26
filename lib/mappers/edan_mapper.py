@@ -1,12 +1,12 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 import dplaingestion.itemtype as itemtype
 
 class NoTypeError(Exception):
     pass
 
 class EDANMapper(Mapper):
-    def __init__(self, data):
-        super(EDANMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(EDANMapper, self).__init__(provider_data)
 
         # Map of "format" or "physical description" substring to
         # sourceResource.type. This format field is considered first, and these

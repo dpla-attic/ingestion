@@ -1,9 +1,9 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 
 class OAIMODSMapper(Mapper):
-    def __init__(self, data, key_prefix="mods:"):
-        super(OAIMODSMapper, self).__init__(data, key_prefix)
-        if exists(data, "metadata/mods"):
+    def __init__(self, provider_data, key_prefix="mods:"):
+        super(OAIMODSMapper, self).__init__(provider_data, key_prefix)
+        if exists(provider_data, "metadata/mods"):
             self.root_key = "metadata/mods/"
         else:
             self.root_key = ""
