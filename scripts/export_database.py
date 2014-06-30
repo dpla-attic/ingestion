@@ -166,7 +166,7 @@ def item_docs(provider_name=None):
         docs = couch.all_dpla_docs()
     for doc in docs:
         if doc.get("ingestType") == "item":
-            yield {"doc": doc}
+            yield doc
 
 def profile_names_for_contributor(contributor):
     """Return a list of profile names that use the given contributor name"""
@@ -201,13 +201,14 @@ def download_data(arguments):
             filename = source.lower().replace(" ", "_") + ".gz"
             bulk_doc_provider_name = source
         with gzip.GzipFile(filename, "w") as outfile:
-            outfile.write("{\"rows\":[\n")
+            outfile.write("[\n")
             if source == "all":
                 total_rows = download_all_data(outfile)
             else:
                 total_rows = download_source_data(outfile, source)
-            outfile.write("\n],\n\"total_rows\": %d}\n" % total_rows)
+            outfile.write("\n]\n")
             outfile.close()
+            print "source: %s, total records: %s" % (source, total_rows)
         if arguments["upload"]:
             uri = send_file_to_rackspace(filename)
             statinfo = os.stat(filename)

@@ -21,7 +21,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/dpla_mapper?type=nypl",
+        "/dpla_mapper?mapper_type=nypl",
         "/set_context",
         "/nypl_identify_object",
         "/cleanup_value",

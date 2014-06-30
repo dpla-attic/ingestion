@@ -1,8 +1,8 @@
-from dplaingestion.mappers.mods_mapper import *
+from dplaingestion.mappers.mods_mapper import MODSMapper
 
 class NYPLMapper(MODSMapper):
-    def __init__(self, data):
-        super(NYPLMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(NYPLMapper, self).__init__(provider_data)
         self.creator_roles = [
             "architect", "artist", "author", "cartographer", "composer",
             "creator", "designer", "director", "engraver", "interviewer",

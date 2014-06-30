@@ -1,8 +1,8 @@
-from dplaingestion.mappers.marc_mapper import *                                      
+from dplaingestion.mappers.marc_mapper import MARCMapper
 
 class UIUCMARCMapper(MARCMapper):                                                       
-    def __init__(self, data):                                                   
-        super(UIUCMARCMapper, self).__init__(data)
+    def __init__(self, provider_data):                                                   
+        super(UIUCMARCMapper, self).__init__(provider_data)
 
         self.mapping_dict.update({
             lambda t: t == "852": [(self.map_data_provider, "a")]

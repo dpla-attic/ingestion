@@ -13,7 +13,7 @@
     ], 
     "enrichments_item": [
         "/select-id",
-	    "/dpla_mapper?type=dublin_core",
+        "/dpla_mapper?mapper_type=dublin_core",
         "/set_context",
         "/unset_prop?prop=sourceResource%2Fdate",
         "/copy_prop?prop=originalRecord%2Fsource&to_prop=sourceResource%2Fdescription&create=True&no_replace=True",

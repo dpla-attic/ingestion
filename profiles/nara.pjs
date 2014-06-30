@@ -12,7 +12,7 @@
     ], 
     "enrichments_item": [
         "/select-id?prop=_id", 
-        "/dpla_mapper?type=nara",
+        "/dpla_mapper?mapper_type=nara",
         "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate", 
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation", 

@@ -1,9 +1,10 @@
-from dplaingestion.mappers.mapper import *                                      
-from collections import OrderedDict
+from dplaingestion.mappers.mapper import Mapper
 
 class MARCMapper(Mapper):                                                       
-    def __init__(self, data, key_prefix=None):
-        super(MARCMapper, self).__init__(data, key_prefix)
+    from collections import OrderedDict
+
+    def __init__(self, provider_data, key_prefix=None):
+        super(MARCMapper, self).__init__(provider_data, key_prefix)
 
         # Fields controlfield, datafield, and leader may be nested within the
         # metadata/record field

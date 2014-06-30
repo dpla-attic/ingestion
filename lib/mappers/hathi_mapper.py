@@ -1,8 +1,8 @@
-from dplaingestion.mappers.marc_mapper import *                                      
+from dplaingestion.mappers.marc_mapper import MARCMapper
 
-class HathiMapper(MARCMapper):                                                       
-    def __init__(self, data):
-        super(HathiMapper, self).__init__(data)
+class HathiMapper(MARCMapper):
+    def __init__(self, provider_data):
+        super(HathiMapper, self).__init__(provider_data)
 
         self.mapping_dict.update({
             lambda t: t == "973": [(self.map_provider, "ab")],

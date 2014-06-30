@@ -1,8 +1,8 @@
-from dplaingestion.mappers.qdc_mapper import *
+from dplaingestion.mappers.qdc_mapper import QDCMapper
 
 class MDLMapper(QDCMapper):
-    def __init__(self, data):
-        super(MDLMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(MDLMapper, self).__init__(provider_data)
 
     def map_is_shown_at(self):
         index = 1

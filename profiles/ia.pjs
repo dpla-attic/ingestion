@@ -41,7 +41,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/dpla_mapper?type=ia",
+        "/dpla_mapper?mapper_type=ia",
         "/set_context",
         "/ia-set-rights",
         "/cleanup_value",

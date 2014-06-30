@@ -1,8 +1,8 @@
-from dplaingestion.mappers.mods_mapper import *
+from dplaingestion.mappers.mods_mapper import MODSMapper
 
 class UVAMapper(MODSMapper):
-    def __init__(self, data):
-        super(UVAMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(UVAMapper, self).__init__(provider_data)
 
     def map_subject(self):
         def _join_on_double_hyphen(subject_list):

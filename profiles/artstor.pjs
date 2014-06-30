@@ -44,8 +44,8 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=id", 
-        "/dpla_mapper?type=dublin_core",
+        "/select-id?prop=id",
+        "/dpla_mapper?mapper_type=dublin_core",
         "/set_context",
         "/unset_prop?prop=sourceResource%2Fspatial",
         "/decode_html?prop=sourceResource%2Fsubject",

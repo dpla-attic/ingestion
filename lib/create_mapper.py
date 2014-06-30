@@ -1,7 +1,7 @@
-def create_mapper(type, data):
+def create_mapper(mapper_type, data):
     """
-    Given a type, creates imports and instanstiates the appropriate Mapper
-    class with the given data.
+    Given a mapper_type, creates imports and instanstiates the appropriate
+    Mapper class with the given data.
     """
 
     def _create_ia_mapper(data):
@@ -92,4 +92,4 @@ def create_mapper(type, data):
         'dublin_core':  lambda d: _create_dublin_core_mapper(d),
     }
 
-    return mappers.get(type)(data)
+    return mappers.get(mapper_type)(data)

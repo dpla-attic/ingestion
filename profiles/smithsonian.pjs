@@ -12,7 +12,7 @@
     ],
     "enrichments_item": [
         "/edan_select_id",
-        "/dpla_mapper?type=edan",
+        "/dpla_mapper?mapper_type=edan",
         "/set_context",
         "/shred?prop=sourceResource%2Fformat",
         "/shred?prop=sourceResource%2Fsubject&delim=%5C",

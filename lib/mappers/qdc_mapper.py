@@ -1,8 +1,8 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 
 class QDCMapper(Mapper):
-    def __init__(self, data):
-        super(QDCMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(QDCMapper, self).__init__(provider_data)
 
     # root mapping
     def map_is_shown_at(self, index=None):

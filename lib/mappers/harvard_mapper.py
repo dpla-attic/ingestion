@@ -1,14 +1,14 @@
-from dplaingestion.mappers.oai_mods_mapper import *
+from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 
 class HarvardMapper(OAIMODSMapper):
-    def __init__(self, data):
+    def __init__(self, provider_data):
         self.set_to_data_provider = {
             "lap": "Widener Library, Harvard University",
             "crimes": "Harvard Law School Library, Harvard University",
             "scarlet": "Harvard Law School Library, Harvard University",
             "manuscripts": "Houghton Library, Harvard University"
         }
-        super(HarvardMapper, self).__init__(data)
+        super(HarvardMapper, self).__init__(provider_data)
 
     def map_date_and_publisher(self):
         prop = self.root_key + "originInfo"

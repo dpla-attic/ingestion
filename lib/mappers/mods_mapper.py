@@ -1,8 +1,8 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 
 class MODSMapper(Mapper):
-    def __init__(self, data, key_prefix="mods:"):
-        super(MODSMapper, self).__init__(data, key_prefix)
+    def __init__(self, provider_data, key_prefix="mods:"):
+        super(MODSMapper, self).__init__(provider_data, key_prefix)
 
     # Common methods
     def map_language(self):

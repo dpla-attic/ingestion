@@ -1,8 +1,8 @@
-from dplaingestion.mappers.mapper import *
+from dplaingestion.mappers.mapper import Mapper
 
 class IAMapper(Mapper):
-    def __init__(self, data):
-        super(IAMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(IAMapper, self).__init__(provider_data)
         self.meta_key = "metadata/"
 
     def _map_meta(self, to_prop, from_props=None, source_resource=True):

@@ -1,8 +1,8 @@
-from dplaingestion.mappers.oai_mods_mapper import *
+from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 
 class DigitalNCMapper(OAIMODSMapper):
-    def __init__(self, data):
-        super(DigitalNCMapper, self).__init__(data)
+    def __init__(self, provider_data):
+        super(DigitalNCMapper, self).__init__(provider_data)
 
     def map_creator_and_contributor(self):
         prop = self.root_key + "name"
