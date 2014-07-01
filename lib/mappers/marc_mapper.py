@@ -1,7 +1,12 @@
+import re
+from akara import logger
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists
+from dplaingestion.selector import getprop, setprop, delprop
+from collections import OrderedDict
 from dplaingestion.mappers.mapper import Mapper
 
 class MARCMapper(Mapper):                                                       
-    from collections import OrderedDict
 
     def __init__(self, provider_data, key_prefix=None):
         super(MARCMapper, self).__init__(provider_data, key_prefix)
@@ -150,7 +155,7 @@ class MARCMapper(Mapper):
             setprop(self.mapped_data, prop, prop_value)
 
     def _get_mapped_value(self, prop):
-        v = getprop(self.mapped_data, prop)
+        v = getprop(self.mapped_data, prop, True)
         if v is None:
             v = []
         else:

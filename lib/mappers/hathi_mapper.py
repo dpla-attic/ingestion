@@ -1,3 +1,7 @@
+from akara import logger
+from dplaingestion.selector import getprop, setprop
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists
 from dplaingestion.mappers.marc_mapper import MARCMapper
 
 class HathiMapper(MARCMapper):
