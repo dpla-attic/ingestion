@@ -1,3 +1,5 @@
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.qdc_mapper import QDCMapper
 
 class UIUCMapper(QDCMapper):

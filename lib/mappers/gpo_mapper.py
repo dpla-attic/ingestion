@@ -1,3 +1,5 @@
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.marc_mapper import MARCMapper
 
 class GPOMapper(MARCMapper):

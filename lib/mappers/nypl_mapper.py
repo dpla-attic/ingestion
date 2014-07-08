@@ -1,3 +1,6 @@
+from akara import logger
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mods_mapper import MODSMapper
 
 class NYPLMapper(MODSMapper):
@@ -56,8 +59,8 @@ class NYPLMapper(MODSMapper):
             else:
                 return "" 
 
-        note = txt(getprop(self.provider_data, "note"))
-        pd = getprop(self.provider_data, "physicalDescription")
+        note = txt(getprop(self.provider_data, "note", True))
+        pd = getprop(self.provider_data, "physicalDescription", True)
         pnote = None
         if type(pd) == list:
             pnote = [e["note"] for e in pd if "note" in e] # Yes, a list.
@@ -214,7 +217,7 @@ class NYPLMapper(MODSMapper):
                 return None
 
         origin_infos = filter(None, iterify(getprop(self.provider_data,
-                                                    "originInfo")))
+                                                    "originInfo", True)))
         for origin_info in origin_infos:
             # Put aside date-related originInfo elements for later ...
             for field in date_fields:
@@ -280,7 +283,7 @@ class NYPLMapper(MODSMapper):
             related_items = iterify(getprop(self.provider_data, 
                                     "relatedItem"))
             # Map relation
-            relation = filter(None, [getprop(item, "titleInfo/title") for
+            relation = filter(None, [getprop(item, "titleInfo/title", True) for
                                      item in related_items])
             if relation:
                 relation.reverse()
@@ -291,7 +294,7 @@ class NYPLMapper(MODSMapper):
             host_types = [item for item in related_items if
                           item.get("type") == "host"]
             if host_types:
-                title = getprop(host_types[-1], "titleInfo/title")
+                title = getprop(host_types[-1], "titleInfo/title", True)
                 if title:
                     ret_dict["collection"]["title"] = title
 

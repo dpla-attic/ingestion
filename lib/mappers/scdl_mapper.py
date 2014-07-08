@@ -1,3 +1,5 @@
+from akara import logger
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.qdc_mapper import QDCMapper
 
 class SCDLMapper(QDCMapper):

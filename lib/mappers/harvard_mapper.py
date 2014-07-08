@@ -1,3 +1,6 @@
+from akara import logger
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 
 class HarvardMapper(OAIMODSMapper):
@@ -20,8 +23,9 @@ class HarvardMapper(OAIMODSMapper):
             date = None
             if "dateCreated" in origin_info:
                 date = origin_info["dateCreated"]
-            if not date and getprop(origin_info, "dateOther/keyDate") == "yes":
-                date = getprop(origin_info, "dateOther/#text")
+            if not date and \
+                getprop(origin_info, "dateOther/keyDate", True) == "yes":
+                date = getprop(origin_info, "dateOther/#text", True)
 
             if isinstance(date, list):
                 dd = {}
@@ -53,8 +57,8 @@ class HarvardMapper(OAIMODSMapper):
                 terms = []
                 if "place" in origin_info:
                     for p in iterify(origin_info["place"]):
-                        if getprop(p, "placeTerm/type") == "text":
-                            terms.append(getprop(p, "placeTerm/#text"))
+                        if getprop(p, "placeTerm/type", True) == "text":
+                            terms.append(getprop(p, "placeTerm/#text", True))
 
                 for t in filter(None, terms):
                     if di:
@@ -76,15 +80,15 @@ class HarvardMapper(OAIMODSMapper):
             iho = {}
             location = getprop(self.provider_data, prop)
             for loc in iterify(location):
-                urls = getprop(loc, "url")
+                urls = getprop(loc, "url", True)
                 if urls:
                     for url in iterify(urls):
                         if isinstance(url, dict):
-                            usage = getprop(url, "usage")
+                            usage = getprop(url, "usage", True)
                             if usage == "primary display":
                                 iho["isShownAt"] = getprop(url, "#text")
 
-                            label = getprop(url, "displayLabel")
+                            label = getprop(url, "displayLabel", True)
                             if label == "Full Image":
                                 iho["hasView"] = {"@id": getprop(url,
                                                                  "#text")}
@@ -96,12 +100,14 @@ class HarvardMapper(OAIMODSMapper):
 
     def map_data_provider(self):
         dp = None
-        set = getprop(self.provider_data, "header/setSpec")
-        location = getprop(self.provider_data, self.root_key + "location")
+        set = getprop(self.provider_data, "header/setSpec", True)
+        location = getprop(self.provider_data, self.root_key + "location",
+                           True)
         if set == "dag" and location is not None:
             for loc in iterify(location):
-                phys = getprop(loc, "physicalLocation")
-                if phys and getprop(phys, "displayLabel") == "repository":
+                phys = getprop(loc, "physicalLocation", True)
+                if phys and \
+                    getprop(phys, "displayLabel", True) == "repository":
                     dp = getprop(phys, "#text").split(";")[0]
                     dp += ", Harvard University"
 
@@ -128,7 +134,7 @@ class HarvardMapper(OAIMODSMapper):
     def map_description(self):
         prop = self.root_key + "note"
 
-        desc = getprop(self.provider_data, prop)
+        desc = getprop(self.provider_data, prop, True)
         if isinstance(desc, dict):
             desc = desc["#text"] if "#text" in desc else None
 
@@ -146,12 +152,13 @@ class HarvardMapper(OAIMODSMapper):
 
     def map_identifier(self):
         id = []
-        obj = getprop(self.provider_data, self.root_key + "identifier")
+        obj = getprop(self.provider_data, self.root_key + "identifier", True)
         if obj and "type" in obj and obj["type"] == "Object Number":
             id.append(obj["#text"])
 
         record_id = getprop(self.provider_data,
-                            self.root_key + "recordInfo/recordIdentifier")
+                            self.root_key + "recordInfo/recordIdentifier",
+                            True)
         if (record_id and "source" in record_id and
             record_id["source"] == "VIA"):
             id.append(record_id["#text"])
@@ -180,7 +187,7 @@ class HarvardMapper(OAIMODSMapper):
             relation = []
             for s in iterify(getprop(self.provider_data, prop)):
                 if "type" in s and s["type"] == "series":
-                    relation.append(getprop(s, "titleInfo/title"))
+                    relation.append(getprop(s, "titleInfo/title", True))
 
             relation = filter(None, relation)
             relation = relation[0] if len(relation) == 1 else relation

@@ -1,12 +1,5 @@
-import re
-from akara import logger
-from amara.lib.iri import is_absolute
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists
-from dplaingestion.selector import getprop as get_prop, setprop, delprop
-
-def getprop(data, prop):
-    return get_prop(data, prop, True)
 
 class Mapper(object):
     """The base class for all mappers.

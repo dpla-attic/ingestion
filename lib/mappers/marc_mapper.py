@@ -1,8 +1,7 @@
 import re
-from akara import logger
 from dplaingestion.utilities import iterify
-from dplaingestion.selector import exists
-from dplaingestion.selector import getprop, setprop, delprop
+from dplaingestion.selector import exists, setprop, delprop
+from dplaingestion.selector import getprop
 from collections import OrderedDict
 from dplaingestion.mappers.mapper import Mapper
 

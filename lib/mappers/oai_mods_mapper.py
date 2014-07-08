@@ -1,3 +1,6 @@
+import re
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mapper import Mapper
 
 class OAIMODSMapper(Mapper):
@@ -31,10 +34,10 @@ class OAIMODSMapper(Mapper):
             for s in iterify(getprop(self.provider_data, prop)):
                 name = {}
                 name["name"] = self.name_from_name_part(
-                                getprop(s, "namePart")
+                                getprop(s, "namePart", True)
                                 )
                 if name["name"]:
-                    name["type"] = getprop(s, "type")
+                    name["type"] = getprop(s, "type", True)
                     name["roles"] = []
                     if "role" in s:
                         roles = getprop(s, "role")
@@ -71,7 +74,7 @@ class OAIMODSMapper(Mapper):
             for s in iterify(getprop(self.provider_data, prop)):
                 subject = []
                 if "name" in s:
-                    namepart = getprop(s, "name/namePart")
+                    namepart = getprop(s, "name/namePart", True)
                     name = self.name_from_name_part(namepart)
                     if name and name not in subject:
                         subject.append(name)
@@ -101,7 +104,7 @@ class OAIMODSMapper(Mapper):
                             if "country" in h:
                                 ret_dict["spatial"].append(h["country"])
 
-                coords = getprop(s, "cartographics/coordinates")
+                coords = getprop(s, "cartographics/coordinates", True)
                 if coords and coords not in ret_dict["spatial"]:
                     ret_dict["spatial"].append(coords)
 

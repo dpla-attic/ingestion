@@ -1,5 +1,8 @@
-from dplaingestion.mappers.mapper import Mapper
+from akara import logger
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 import dplaingestion.itemtype as itemtype
+from dplaingestion.mappers.mapper import Mapper
 
 class NoTypeError(Exception):
     pass
@@ -337,13 +340,13 @@ class EDANMapper(Mapper):
 
                 if tag == "points":
                     lat_type = getprop(_dict,
-                                       tag + "/point/latitude/@type")
+                                       tag + "/point/latitude/@type", True)
                     lon_type = getprop(_dict,
-                                       tag + "/point/longitude/@type")
+                                       tag + "/point/longitude/@type", True)
                     lat_value = getprop(_dict,
-                                        tag + "/point/latitude/#text")
+                                        tag + "/point/latitude/#text", True)
                     lon_value = getprop(_dict,
-                                        tag + "/point/longitude/#text")
+                                        tag + "/point/longitude/#text", True)
                     correct_type = (lat_type in types and lon_type in
                                     types)
 
@@ -353,12 +356,12 @@ class EDANMapper(Mapper):
                         correct_type = True
                     else:
                         try:
-                            geo_type = getprop(_dict, tag + "/@type")
+                            geo_type = getprop(_dict, tag + "/@type", True)
                             correct_type = geo_type in types
                         except:
                             continue
 
-                    value = getprop(_dict, tag + "/#text")
+                    value = getprop(_dict, tag + "/#text", True)
 
                 if correct_type and value:
                     spatial[place] = value
