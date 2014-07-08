@@ -1,3 +1,5 @@
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mapper import Mapper
 
 class NARAMapper(Mapper):

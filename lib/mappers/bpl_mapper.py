@@ -1,3 +1,6 @@
+from akara import logger
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 
 class BPLMapper(OAIMODSMapper):
@@ -13,7 +16,7 @@ class BPLMapper(OAIMODSMapper):
             date = []
             for key in ["dateCreated", "dateIssued", "dateOther",
                         "copyrightDate"]:
-                _dict = getprop(origin_info, key)
+                _dict = getprop(origin_info, key, True)
                 if _dict is not None:
                     start_date = None
                     end_date = None
@@ -36,7 +39,7 @@ class BPLMapper(OAIMODSMapper):
                 publisher.append(origin_info["publisher"])
             if "place" in origin_info:
                 for p in iterify(origin_info["place"]):
-                    if getprop(p, "placeTerm/type") == "text":
+                    if getprop(p, "placeTerm/type", True) == "text":
                         publisher.append(getprop(p, "placeTerm/#text"))
 
             date_and_publisher = {}
@@ -52,17 +55,17 @@ class BPLMapper(OAIMODSMapper):
     def map_is_shown_at_has_view_object_and_data_provider(self):
         def _get_media_type():
             pd = iterify(getprop(self.provider_data,
-                         self.root_key + "physicalDescription"))
+                         self.root_key + "physicalDescription", True))
             for _dict in filter(None, pd):
                 try:
-                    return getprop(_dict, "internetMediaType")
+                    return getprop(_dict, "internetMediaType", True)
                 except KeyError:
                     pass
 
             return None
 
         location = iterify(getprop(self.provider_data,
-                                   self.root_key + "location"))
+                                   self.root_key + "location", True))
         format = _get_media_type()
         phys_location = None
         out = {}
@@ -80,7 +83,7 @@ class BPLMapper(OAIMODSMapper):
                                 out["hasView"] = {"@id": url_dict.get("#text"),
                                                   "format": format}
                 if phys_location is None:
-                    phys_location = getprop(_dict, "physicalLocation")
+                    phys_location = getprop(_dict, "physicalLocation", True)
             if phys_location is not None:
                 out["dataProvider"] = phys_location
         except Exception as e:
@@ -170,7 +173,7 @@ class BPLMapper(OAIMODSMapper):
             host = None
             series = None
             for s in iterify(getprop(self.provider_data, prop)):
-                title = getprop(s, "titleInfo/title")
+                title = getprop(s, "titleInfo/title", True)
                 if title is not None:
                     if s.get("type") == "host":
                         host = title

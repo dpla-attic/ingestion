@@ -1,3 +1,4 @@
+from dplaingestion.selector import setprop
 from dplaingestion.mappers.marc_mapper import MARCMapper
 
 class UIUCMARCMapper(MARCMapper):                                                       

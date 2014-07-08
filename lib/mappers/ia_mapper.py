@@ -1,3 +1,5 @@
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mapper import Mapper
 
 class IAMapper(Mapper):
@@ -61,13 +63,13 @@ class IAMapper(Mapper):
         self._map_meta("isShownAt", "identifier-access", False)
 
     def map_has_view(self):
-        _id = getprop(self.provider_data, "originalRecord/_id")
-        file_name = getprop(self.provider_data, "files/pdf")
+        _id = getprop(self.provider_data, "originalRecord/_id", True)
+        file_name = getprop(self.provider_data, "files/pdf", True)
         if _id and file_name:
             _format = "application/pdf"
             url_prefix = "http://www.archive.org/download/{0}/{1}"
             rights = getprop(self.provider_data,
-                             "metadata/possible-copyright-status")
+                             "metadata/possible-copyright-status", True)
             has_view = {"@id": url_prefix.format(_id, file_name),
                         "rights": rights,
                         "format": _format}
