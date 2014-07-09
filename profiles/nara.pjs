@@ -7,11 +7,13 @@
         "name": "National Archives and Records Administration"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=_id", 
-        "/arc-to-dpla", 
+        "/dpla_mapper?mapper_type=nara",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate", 
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation", 
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat", 
@@ -22,6 +24,7 @@
         "/enrich-subject",
         "/enrich-type",
         "/enrich-format",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/enrich_location",
         "/nara_enrich_location",
         "/geocode",
@@ -30,7 +33,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

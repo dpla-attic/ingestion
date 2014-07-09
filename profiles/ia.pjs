@@ -26,6 +26,9 @@
         },
         "regionaldigitizationmass": {
             "title": "Regional Digitization in Massachusetts"
+        },
+        "getty": {
+            "title": "Getty Research Institute"
         }
     },
     "contributor": {
@@ -33,11 +36,13 @@
         "name": "Internet Archive"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=_id",
-        "/ia-to-dpla",
+        "/dpla_mapper?mapper_type=ia",
+        "/set_context",
         "/ia-set-rights",
         "/cleanup_value",
         "/shred?action=unshred&prop=sourceResource%2Ftitle&delim=%2C%20",
@@ -54,7 +59,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "set_provider": [
         "/set_prop?prop=provider&_dict=True&value=%7B%22%40id%22%3A%22http%3A%2F%2Fdp.la%2Fapi%2Fcontributor%2Finternet_archive%22%2C%22name%22%3A%22Internet%20Archive%22%7D"

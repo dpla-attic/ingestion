@@ -10,11 +10,13 @@
         "name": "Biodiversity Heritage Library"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id",
-        "/oai-to-dpla",
+        "/dpla_mapper?mapper_type=dublin_core",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
@@ -39,7 +41,7 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/unset_prop?prop=sourceResource%2Ftemporal",
         "/unset_prop?prop=sourceResource%2Frights",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

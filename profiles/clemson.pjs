@@ -9,11 +9,13 @@
         "name": "South Carolina Digital Library"
     },
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id",
-        "/qdc_to_dpla?provider=clemson",
+        "/dpla_mapper?mapper_type=scdl",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
@@ -46,7 +48,7 @@
         "/lookup?prop=sourceResource%2Fformat&target=sourceResource%2Fformat&substitution=scdl_fix_format",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=South%20Carolina",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

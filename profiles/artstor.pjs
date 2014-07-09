@@ -3,6 +3,9 @@
     "type": "oai_verbs",
     "endpoint_url": "http://oai.artstor.org/oaicatmuseum/OAIHandler",
     "sets": [
+        "SSDPLABrynMawr",
+        "SSDPLACornell",
+        "SSDPLAUCSD",
         "SSDPLAWashington",
         "SSDelwareAtlas",
         "SSDelwareGeorge",
@@ -40,18 +43,19 @@
         "name": "ARTstor"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=id", 
-        "/oai-to-dpla", 
+        "/select-id?prop=id",
+        "/dpla_mapper?mapper_type=dublin_core",
+        "/set_context",
         "/unset_prop?prop=sourceResource%2Fspatial",
         "/decode_html?prop=sourceResource%2Fsubject",
         "/artstor_select_isshownat", 
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
-        "/shred?prop=sourceResource%2Fformat&delim=%3A",
         "/cleanup_value",
         "/artstor_cleanup_creator",
         "/move_date_values?prop=sourceResource%2Fsubject",
@@ -75,7 +79,7 @@
         "/set_type_from_physical_format",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True",
         "/unset_prop?prop=sourceResource%2Frelation",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

@@ -36,7 +36,10 @@ pip install -r requrements.txt
 """
     print msg
     exit(1)
+import os
 import sys
+import json
+import gzip
 from dplaingestion.couch import Couch
 
 
@@ -45,9 +48,6 @@ def set_global_variables(container):
     global RS_USERNAME
     global RS_APIKEY
     global RS_CONTAINER_NAME
-    global DB_URL
-    global DB_USERNAME
-    global DB_PASSWORD
 
     config_file = "akara.ini"
     config = ConfigParser.ConfigParser()
@@ -55,9 +55,6 @@ def set_global_variables(container):
     RS_USERNAME = config.get("Rackspace", "Username")
     RS_APIKEY = config.get("Rackspace", "ApiKey")
     RS_CONTAINER_NAME = config.get("Rackspace", container)
-    DB_URL = config.get("CouchDb", "Url") + "dpla"
-    DB_USERNAME = config.get("CouchDb", "Username")
-    DB_PASSWORD = config.get("CouchDb", "Password")
 
     if not RS_USERNAME:
         print "There is no Rackspace Username in the configuration file"
@@ -71,19 +68,7 @@ def set_global_variables(container):
         print "There is no Rackspace Container in the configuration file"
         exit(1)
 
-    if not DB_URL:
-        print "There is no CouchDb Url in the configuration file"
-        exit(1)
-
-    if not DB_USERNAME:
-        print "There is no CouchDb Username in the configuration file"
-        exit(1)
-
-    if not DB_PASSWORD:
-        print "There is no CouchDb Password in the configuration file"
-        exit(1)
-
-def send_file_to_rackspace(arguments):
+def send_file_to_rackspace(fname):
     """Sends the created file to the Rackspace CDN.
 
     Arguments:
@@ -96,27 +81,18 @@ def send_file_to_rackspace(arguments):
     After loding the file, th function checks if the file is listed in the
     container objects list.
     """
-
-    if not arguments["upload"]:
-        return
-
-    fname = arguments['file']
     rsfname = fname.split('/')[-1:][0]
-
     container = get_rackspace_container()
-
     f = container.create_object(rsfname)
 
-    print "Loading file [%s] to Rackspace CDN." % fname
+    print "Uploading %s" % fname
     f.load_from_filename(fname)
 
     if file_is_in_container(rsfname, container):
         rs_file_uri = url_join(container.public_uri(), rsfname)
-        print "File loaded, it is available at: %s" % rs_file_uri
-        print "You can now check the information about rackspace files " \
-              + "using `export_database rsinfo`"
+        print "... %s" % rs_file_uri
     else:
-        print "Couldn't upload file to Rackspace CDN."
+        print "Couldn't upload file."
 
     return rs_file_uri
 
@@ -166,7 +142,7 @@ def print_rackspace_info(arguments):
     """
     container = get_rackspace_container()
 
-    print "Rackspace CDN info"
+    print
     print "Container name      : %s" % container.name
     print "Container public URI: %s" % container.public_uri()
     print "Container size      : %s" % container.size_used
@@ -174,56 +150,107 @@ def print_rackspace_info(arguments):
     objects = get_sorted_objects_from_container(container)
     print "There are %d files." % len(objects)
 
-    l = 0
     for ob in objects:
-        l = max(l, len(ob["name"]) + len("Public URI:    ") + 2)
-
-    for ob in objects:
-        print "x" * (l + len(container.public_uri()))
+        print
         print "File name:     %s" % ob["name"]
         print "Last modified: %s" % ob["last_modified"]
         print "Size:          %s" % convert_bytes(ob["bytes"])
         print "Public URI:    %s/%s" % (container.public_uri(), ob["name"])
 
-    print "x" * (l + len(container.public_uri()))
+def item_docs(provider_name=None):
+    """Yield all item documents for the given provider, else all providers"""
+    couch = Couch()
+    if provider_name:
+        docs = couch._query_all_dpla_provider_docs(provider_name)
+    else:
+        docs = couch.all_dpla_docs()
+    for doc in docs:
+        if doc.get("ingestType") == "item":
+            yield doc
 
+def profile_names_for_contributor(contributor):
+    """Return a list of profile names that use the given contributor name"""
+    profiles = {}
+    couch = Couch()
+    view = "export_database/profile_and_source_names"
+    for row in couch.dpla_view(view, group=True):
+        k = row["key"]
+        profiles.setdefault(k[0], []).append(k[1])
+    return profiles.get(contributor, [])
 
-def download_source_data(arguments):
-    """Downloads all documents for given source.
+def download_data(arguments):
+    """
+    Download all documents for the given source.
 
     Arguments:
         arguments - dictionary returned by the validate_arguments function
 
-    The function uses couchdb bulk API for downloading the documents.
     The source name is taken from arguments["source"].
 
-    The file name is set to <source>.gz where <source> is the lower case
-    arguments["source"] string with whitespace replaced by underscores.
+    The file name is set to the lower case arguments["source"] string with
+    whitespace replaced by underscores.
 
-    Then it uploads the file to Rackspace CDN if required.
+    Upload the file to Rackspace CDN, if required.
     """
-    import urllib
-    s = arguments["source"]
+    source = arguments["source"]
+    try:
+        if source == "all":
+            filename = "dpla.gz"
+            bulk_doc_provider_name = "Complete Repository"
+        else:
+            filename = source.lower().replace(" ", "_") + ".gz"
+            bulk_doc_provider_name = source
+        with gzip.GzipFile(filename, "w") as outfile:
+            outfile.write("[\n")
+            if source == "all":
+                total_rows = download_all_data(outfile)
+            else:
+                total_rows = download_source_data(outfile, source)
+            outfile.write("\n]\n")
+            outfile.close()
+            print "source: %s, total records: %s" % (source, total_rows)
+        if arguments["upload"]:
+            uri = send_file_to_rackspace(filename)
+            statinfo = os.stat(filename)
+            update_bulk_download_document(bulk_doc_provider_name,
+                                          uri,
+                                          convert_bytes(statinfo.st_size))
+    except Exception as e:
+        raise
+        print >> sys.stderr, "Caught %s: %s" % (e.__class__, e.message)
+        print >> sys.stderr, "File %s not uploaded" % filename
 
-    db_url = url_join(
-        DB_URL,
-        ('_design/export_database/_view/all_source_docs?include_docs=true&' +
-          urllib.urlencode({"startkey": '"%s"' % s, "endkey": '"%s"' % s}))
-    )
+def download_all_data(outfile):
+    """
+    Download all item records from the given database and write them to the
+    given file.
+    """
+    total_rows = 0
+    comma = ""  # Comma between item_docs() results, empty before first one
+    for item in item_docs():
+        total_rows += 1
+        outfile.write(comma)
+        if not comma:
+            comma = ",\n"
+        outfile.write(json.dumps(item))
+    return total_rows
 
-    resp = open_db_connection(db_url)
-
-    # Set the file name
-    arguments["file"] = s.lower().replace(" ", "_") + ".gz"
-
-    status, file_size = store_result_into_file(resp, arguments)
-    if status == 0:
-        rs_file_uri = send_file_to_rackspace(arguments)
-        update_bulk_download_document(s, rs_file_uri, file_size)
-    else:
-        print >> sys.stderr, "File %s not uploaded" % arguments["file"]
-
-    return status
+def download_source_data(outfile, source):
+    """
+    Download all item records from the given database, for the given source,
+    and write them tot he given file.
+    """
+    profile_names = profile_names_for_contributor(source)
+    total_rows = 0
+    comma = ""  # Comma between item_docs() results, empty before first one
+    for profile_name in profile_names:
+        for item in item_docs(profile_name):
+            total_rows += 1
+            outfile.write(comma)
+            if not comma:
+                comma = ",\n"
+            outfile.write(json.dumps(item))
+    return total_rows
 
 def download_each_source_data(arguments):
     """Gets a list of all sources in the Couch database and downloads each
@@ -232,65 +259,20 @@ def download_each_source_data(arguments):
        Arguments:
            arguments - dictionary returned by the validate_arguments function
 
-       The function uses the get_all_sources function and extracts the list of
-       sources in the database then passes each source to the
-       download_source_data function.
     """
-    data = get_all_sources()
-
-    for row in data["rows"]:
+    couch = Couch()
+    rows = couch.dpla_view("export_database/all_source_names", group=True)
+    for row in rows:
         arguments["source"] = row["key"]
-        download_source_data(arguments)
-
-
-def get_all_sources():
-    """Gets all source names.
-
-    This function uses javascript couchdb function which you can find
-    in file: couchdb_views/export_database.js.
-
-    Returns:
-        A dictionary containing the rows from the Couch view
-    """
-
-    import json as j
-    db_url = url_join(
-        DB_URL,
-        "_design/export_database/_view/all_source_names?group=true"
-    )
-    msg_404 = """
-Couldn't call the url: %s.
-
-This can be caused by not working couchdb, bad couchdb url, or missing couchdb
-function which you should load before running this script option.
-The file to be loaded can be found at couchdb_views/export_database.js
-""" % db_url
-
-    resp = open_db_connection(db_url, msg_404)
-    data = resp.read()
-    d = j.loads(data)
-
-    return d
-
+        print arguments["source"]
+        download_data(arguments)
 
 def print_all_sources(arguments):
-    """Prints all source names.
-
-    Arguments:
-        arguments - dictionary returned by the validate_arguments function
-    """
-
-    data = get_all_sources()
-
-    print "%(key)s  --  %(value)s" % \
-        {
-         "key": "Collection name",
-         "value": "Count"
-        }
-
-    for row in data["rows"]:
-        print "%(key)s  --  %(value)s" % row
-
+    """Print all source names"""
+    couch = Couch()
+    rows = couch.dpla_view("export_database/all_source_names", group=True)
+    for row in rows:
+        print "%(key)s (count: %(value)d)" % dict(row)
 
 def url_join(*args):
     """Joins and returns given urls.
@@ -303,34 +285,6 @@ def url_join(*args):
 
     """
     return "/".join(map(lambda x: str(x).rstrip("/"), args))
-
-
-def open_db_connection(db_url, msg_on_error=None):
-    """Opens an authenticated connection to the provided db_url.
-
-    Arguments:
-        arguments - the database url
-
-    Returns:
-        opened connection ready for reading data.
-    """
-    import base64
-    import urllib2 as u
-    print "Calling URL " + db_url
-
-    req = u.Request(db_url)
-    base64string = base64.encodestring('%s:%s' %
-                                       (DB_USERNAME, DB_PASSWORD))[:-1]
-    authheader =  "Basic %s" % base64string
-    req.add_header("Authorization", authheader)
-    try:
-        return u.urlopen(req)
-    except Exception as e:
-        print e
-        if msg_on_error:
-            print msg_on_error
-        exit(1)
-
 
 def convert_bytes(byteno):
     """Converts number of bytes into some bigger unit like MB/GB.
@@ -418,77 +372,6 @@ def remove_rackspace_file(arguments):
         print "Successfully deleted the file [%s] from container [%s]." % \
             (fname, RS_CONTAINER_NAME)
 
-
-def download_all_database(arguments):
-    """Downloads data from couchdb database and stores it in the file dpla.gz
-
-    Arguments:
-        arguments - dictionary returned by the validate_arguments function
-
-    Returns:
-        Nothing
-    """
-    from gzip import GzipFile as zipf
-
-    db_url = url_join(DB_URL, "_all_docs?include_docs=true")
-    response = open_db_connection(db_url)
-
-    # Set file name
-    arguments["file"] = "dpla.gz"
-
-    status, file_size = store_result_into_file(response, arguments)
-    if status == 0:
-        rs_file_uri = send_file_to_rackspace(arguments)
-        update_bulk_download_document("Complete Repository", rs_file_uri,
-                                      file_size)
-    else:
-        print >> sys.stderr, "Did not send file %s " % arguments["file"] + \
-                             "to the Rackspace container"
-
-    return status
-
-def store_result_into_file(result, arguments):
-    """Stores given result into a compressed file.
-
-    Arguments:
-        result - opened connection, file like object with read() function
-        arguments - dictionary returned by the validate_arguments function
-
-    Returns:
-        0 for success, -1 for error
-    """
-    from gzip import GzipFile as zipf
-    from httplib import IncompleteRead
-    from tempfile import mkstemp
-    import os
-    import sys
-
-    downloaded_size = 0
-    block_size = 5 * 1024 * 1024
-    with zipf(arguments["file"], "w") as zf:
-        while True:
-            try:
-                buffer = result.read(block_size)
-                if not buffer:
-                    break
-            except IncompleteRead, e:
-                fd, partial_file_name = mkstemp()
-                os.write(fd, e.partial)
-                os.close(fd)
-                print >> sys.stderr, "Incomplete read of stream.  ", \
-                    "Partial block saved to ", partial_file_name
-                return -1
-            except Exception, e:
-                print "Error reading from result: %s" % e
-                return -1
-            downloaded_size += len(buffer)
-            zf.write(buffer)
-            status = "Downloaded " + convert_bytes(downloaded_size)
-            print status
-
-    return (0, convert_bytes(downloaded_size))
-
-
 def print_usage():
     """Prints information about script usage."""
 
@@ -548,7 +431,8 @@ def validate_arguments(argv):
         if not len(argv) in [2, 3]:
             print_usage()
 
-        res["upload"]   = False
+        res["source"] = "all"
+        res["upload"] = False
 
         if len(argv) == 3:
             if argv[2] == "upload":
@@ -619,9 +503,9 @@ def get_action_dispatcher():
     """
 
     res = {
-        "all":    download_all_database,
+        "all":    download_data,
         "list":   print_all_sources,
-        "source": download_source_data,
+        "source": download_data,
         "rsinfo": print_rackspace_info,
         "remove": remove_rackspace_file,
         "each_source":   download_each_source_data,

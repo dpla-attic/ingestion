@@ -15,11 +15,13 @@
         "name": "Harvard Library"
     },
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_mods_to_dpla?provider=HARVARD",
+        "/dpla_mapper?mapper_type=harvard",
+        "/set_context",
         "/set_prop?prop=sourceResource%2Frights&value=Held%20in%20the%20collections%20of%20Harvard%20University%2E",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
@@ -44,7 +46,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

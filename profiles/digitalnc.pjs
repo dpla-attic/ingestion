@@ -9,11 +9,13 @@
         "name": "North Carolina Digital Heritage Center"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_mods_to_dpla_digitalnc",
+        "/dpla_mapper?mapper_type=digitalnc",
+        "/set_context",
         "/shred?prop=sourceResource%2Fdate&delim=%2C",
         "/enrich-subject",
         "/enrich_earliest_date",
@@ -28,7 +30,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=North%20Carolina",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

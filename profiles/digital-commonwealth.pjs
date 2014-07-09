@@ -8,11 +8,13 @@
         "name": "Digital Commonwealth"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id",
-        "/oai-to-dpla",
+        "/dpla_mapper?mapper_type=dublin_core",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
@@ -26,8 +28,8 @@
         "/enrich_date",
         "/enrich-type",
         "/enrich-format",
-	    "/digital_commonwealth_enrich_location",
-	    "/enrich_location",
+	"/digital_commonwealth_enrich_location",
+	"/enrich_location",
         "/geocode",
         "/contentdm_identify_object",
         "/copy_prop?prop=sourceResource%2Fcollection%2Ftitle&to_prop=dataProvider&create=True",
@@ -44,7 +46,7 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema",
+        "/validate_mapv3",
         "/unset_prop?prop=_id&condition_prop=sourceResource%2Ftitle&condition=finding_aid_title"
     ],
     "thresholds": {

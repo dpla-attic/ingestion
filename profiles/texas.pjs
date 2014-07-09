@@ -313,11 +313,13 @@
         "name": "The Portal to Texas History"
     },
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_untl_to_dpla",
+        "/dpla_mapper?mapper_type=untl",
+        "/set_context",
         "/shred?prop=sourceResource%2Fsubject&delim=%20-%20",
         "/cleanup_value",
         "/capitalize_value",
@@ -332,7 +334,7 @@
         "/enrich_language",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,

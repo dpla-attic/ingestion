@@ -9,11 +9,13 @@
         "name": "Digital Commonwealth"
     }, 
     "enrichments_coll": [
-        "/compare_with_schema"
+        "/set_context",
+        "/validate_mapv3"
     ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/oai_mods_to_dpla?provider=BPL",
+        "/dpla_mapper?mapper_type=bpl",
+        "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
@@ -33,7 +35,7 @@
         "/set_prop?prop=provider%2Fname&value=Digital%20Commonwealth",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/compare_with_schema"
+        "/validate_mapv3"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

@@ -78,6 +78,10 @@ class Couch(object):
             db = self.server[name]
         return db
 
+    def dpla_view(self, viewname, **options):
+        """Return the result of the given view in the "dpla" database"""
+        return self.dpla_db.view(viewname, None, **options)
+
     def sync_views(self, db_name):
         """Fetches design documents from the views_directory, saves/updates
            them in the appropriate database, then build the views. 
@@ -151,25 +155,20 @@ class Couch(object):
         }
         return kwargs
 
+    # TODO:  rename these _query* functions to remove "_query_" and remove
+    # leading underscores for methods that don't have to be internal.
+
     def _query_all_docs(self, db):
         view_name = "_all_docs"
         for row in db.iterview(view_name, batch=self.batch_size,
                                include_docs=True):
             yield row["doc"]
 
-    def _query_all_provider_docs(self, db, provider_name):
-        """Fetches all provider docs by provider name. The key for this view
-           is the list [provider_name, doc._id], so we supply "0" as the
-           startkey doc._id and "Z" as the endkey doc._id in order to ensure
-           proper sorting. See collation sequence here:
-           https://wiki.apache.org/couchdb/View_collation
-        """
-        view_name = "all_provider_docs/by_provider_name"
-        for row in db.iterview(view_name,
-                               batch=self.batch_size,
-                               include_docs=True,
-                               startkey=[provider_name, "0"],
-                               endkey=[provider_name, "Z"]):
+    def all_dpla_docs(self):
+        """Yield all documents in the dpla database"""
+        for row in self.dpla_db.iterview("_all_docs",
+                                         batch=self.batch_size,
+                                         include_docs=True):
             yield row["doc"]
 
     def _query_all_prov_docs_by_ingest_seq(self, db, provider_name,
@@ -179,7 +178,7 @@ class Couch(object):
            ingestion_sequence, doc._id], so we supply "0" as the startkey
            doc._id and "Z" as the endkey doc._id in order to ensure proper
            sorting. See collation sequence here:
-           https://wiki.apache.org/couchdb/View_collation
+           http://docs.couchdb.org/en/latest/couchapp/views/collation.html
         """
         view_name = "all_provider_docs/by_provider_name_and_ingestion_sequence"
         startkey = [provider_name, ingestion_sequence, "0"]
@@ -192,7 +191,19 @@ class Couch(object):
             yield row["doc"]
 
     def _query_all_dpla_provider_docs(self, provider_name):
-        return self._query_all_provider_docs(self.dpla_db, provider_name)
+        """Yield all "dpla" database documents for the given provider"""
+        # Regarding the startkey and endkey values that are used to define
+        # the result, and the sort order of the documents, see the following,
+        # and note that _all_docs uses an ASCII collation, such that "."
+        # comes after "-":
+        # http://docs.couchdb.org/en/latest/couchapp/views/collation.html#all-docs
+        # ... and note that our _id values look like "provider--<somtehing>"
+        for row in self.dpla_db.iterview("_all_docs",
+                                         batch=self.batch_size,
+                                         include_docs=True,
+                                         startkey=provider_name,
+                                         endkey=provider_name + "."):
+            yield row["doc"]
 
     def _query_all_dpla_prov_docs_by_ingest_seq(self, provider_name,
                                                 ingestion_sequence):
@@ -201,8 +212,15 @@ class Couch(object):
                                                       ingestion_sequence)
  
     def _query_all_dashboard_provider_docs(self, provider_name):
-        return self._query_all_provider_docs(self.dashboard_db,
-                                                provider_name)
+        """Yield all "dashboard" database documents for the given provider"""
+        # See http://docs.couchdb.org/en/latest/couchapp/views/collation.html
+        view = "all_provider_docs/by_provider_name"
+        for row in self.dashboard_db.iterview(view,
+                                              batch=self.batch_size,
+                                              include_docs=True,
+                                              startkey=[provider_name, "0"],
+                                              endkey=[provider_name, "Z"]):
+            yield row["doc"]
 
     def _query_all_dashboard_prov_docs_by_ingest_seq(self, provider_name,
                                                      ingestion_sequence):
@@ -226,10 +244,13 @@ class Couch(object):
         view_name = "all_docs/by_contributor"
         view = self.bulk_download_db.view(view_name, include_docs=True,
                                            key=contributor)
-
         try:
             return view.rows[0]["doc"]
         except couchdb.http.ResourceNotFound:
+            raise Exception("View all_docs/by_contributor does not exist "
+                            "in bulk_download database.")
+        except IndexError:
+            # Nothing for this contributor yet, so start new document.
             return {"contributor": contributor}
 
     def _prep_for_diff(self, doc):
@@ -479,8 +500,11 @@ class Couch(object):
         if ingestion_doc["ingestionSequence"] != 1:
             try:
                 backup_db_name = self._backup_db(ingestion_doc["provider"])
-            except:
-                print >> sys.stderr, "Error backing up data"
+            except couchdb.http.ServerError as e:
+                self._print_couchdb_server_error(e, "backing up data")
+                return -1
+            except Exception as e:
+                self._print_generic_exception_error(e, "backing up data")
                 return -1
             ingestion_doc["backupDB"] = backup_db_name
             self.dashboard_db.save(ingestion_doc)
@@ -533,54 +557,50 @@ class Couch(object):
 
             delete_docs = []
             dashboard_docs = []
-            for doc in self._query_all_dpla_prov_docs_by_ingest_seq(provider,
-                                                                    prev_seq):
-                delete_docs.append(doc)
-                dashboard_docs.append({"id": doc["_id"],
-                                       "type": "record",
-                                       "status": "deleted",
-                                       "provider": provider,
-                                       "ingestionSequence": curr_seq})
+            alldocs = self._query_all_dpla_prov_docs_by_ingest_seq
+            try:
+                for doc in alldocs(provider, prev_seq):
+                    delete_docs.append(doc)
+                    dashboard_docs.append({"id": doc["_id"],
+                                           "type": "record",
+                                           "status": "deleted",
+                                           "provider": provider,
+                                           "ingestionSequence": curr_seq})
 
-                # So as not to use too much memory at once, do the bulk posts
-                # and deletions in batches of batch_size
-                if len(delete_docs) == self.batch_size:
-                    try:
+                    # So as not to use too much memory at once, do the bulk
+                    # posts and deletions in batches of batch_size
+                    if len(delete_docs) == self.batch_size:
+                        what = "deleting documents (dashboard db)"
                         self._bulk_post_to(self.dashboard_db, dashboard_docs)
-                    except:
-                        print >> sys.stderr, "Error posting to dashboard db"
-                        return (-1, total_deleted)
+                        what = "updating ingestion doc counts"
+                        self._update_ingestion_doc_counts(
+                            ingestion_doc, countDeleted=len(delete_docs)
+                            )
+                        what = "deleting documents (dpla db)"
+                        self._delete_documents(self.dpla_db, delete_docs)
+                        total_deleted += len(delete_docs)
+                        delete_docs = []
+                        dashboard_docs = []
+
+                if delete_docs:
+                    # Last bulk post
+                    what = "deleting documents (dashboard db)"
+                    self._bulk_post_to(self.dashboard_db, dashboard_docs)
+                    what = "syncing dashboard db views"
+                    self.sync_views(self.dashboard_db.name)
+                    what = "updating ingestion doc counts"
                     self._update_ingestion_doc_counts(
                         ingestion_doc, countDeleted=len(delete_docs)
                         )
-                    try:
-                        self._delete_documents(self.dpla_db, delete_docs)
-                    except:
-                        print >> sys.stderr, "Error deleting from dpla db"
-                        return (-1, total_deleted)
-                    total_deleted += len(delete_docs)
-                    delete_docs = []
-                    dashboard_docs = []
-
-            if delete_docs:
-                # Last bulk post
-                try:
-                    self._bulk_post_to(self.dashboard_db, dashboard_docs)
-                    self.sync_views(self.dashboard_db.name)
-                except Exception as e:
-                    print >> sys.stderr, \
-                        "Error posting to dashboard db: %s" % e.message
-                    return (-1, total_deleted)
-                self._update_ingestion_doc_counts(
-                    ingestion_doc, countDeleted=len(delete_docs)
-                    )
-                try:
+                    what = "deleting documents (dpla db)"
                     self._delete_documents(self.dpla_db, delete_docs)
-                except Exception as e:
-                    print >> sys.stderr, \
-                        "Error deleting from dpla db: %s" % e.message
-                    return (-1, total_deleted)
-                total_deleted += len(delete_docs)
+                    total_deleted += len(delete_docs)
+            except couchdb.http.ServerError as e:
+                self._print_couchdb_server_error(e, what)
+                return (-1, total_deleted)
+            except Exception as e:
+                self._print_generic_exception_error(e, what)
+                return (-1, total_deleted)
         return (0, total_deleted)
 
     def dashboard_cleanup(self, ingestion_doc):
@@ -595,6 +615,7 @@ class Couch(object):
         provider = ingestion_doc["provider"]
         sequences = [doc["ingestionSequence"] for doc in
                      self._get_sorted_ingestion_docs_for(provider)]
+        what = ""  # Description for error reporting
         if len(sequences) <= 3:
             msg = "Ingestion docs do not exceed 3. No dashboard documents " + \
                   "or backup databases will be deleted."
@@ -602,40 +623,39 @@ class Couch(object):
             return (0, total_deleted)
         else:
             delete_docs = []
-            for seq in sequences[:len(sequences) - 3]:
-                for doc in self._query_all_dashboard_prov_docs_by_ingest_seq(
-                                                              provider, seq
-                                                              ):
-                    if not doc.get("type") == "ingestion":
-                        delete_docs.append(doc)
-                    else:
-                        # Delete this ingestion document's backup database
-                        backup_db = doc.get("backupDB")
-                        if backup_db and backup_db in self.server:
-                            del self.server[backup_db]
+            alldocs = self._query_all_dashboard_prov_docs_by_ingest_seq
+            try:
+                for seq in sequences[:len(sequences) - 3]:
+                    what = "querying dashboard documents"
+                    for doc in alldocs(provider, seq):
+                        if not doc.get("type") == "ingestion":
+                            delete_docs.append(doc)
+                        else:
+                            # Delete this ingestion document's backup database
+                            what = "deleting backup database"
+                            backup_db = doc.get("backupDB")
+                            if backup_db and backup_db in self.server:
+                                del self.server[backup_db]
 
-                    # So as not to use too much memory at once, do the bulk
-                    # posts and deletions in batches of batch_size
-                    if len(delete_docs) == self.batch_size:
-                        try:
+                        # So as not to use too much memory at once, do the bulk
+                        # posts and deletions in batches of batch_size
+                        if len(delete_docs) == self.batch_size:
+                            what = "deleting provider dashboard documents"
                             self._delete_documents(self.dashboard_db,
                                                    delete_docs)
-                        except:
-                            print >> sys.stderr, "Error deleting from " + \
-                                                 "dashboard db"
-                            return (-1, total_deleted)
-                        total_deleted += len(delete_docs)
-                        delete_docs = []
-
-            if delete_docs:
-                # Last bulk post
-                try:
+                            total_deleted += len(delete_docs)
+                            delete_docs = []
+                if delete_docs:
+                    # Last bulk post
+                    what = "deleting provider dashboard documents"
                     self._delete_documents(self.dashboard_db, delete_docs)
-                except:
-                    print >> sys.stderr, "Error deleting from dashboard db"
-                    return (-1, total_deleted)
-                total_deleted += len(delete_docs)
-
+                    total_deleted += len(delete_docs)
+            except couchdb.http.ServerError as e:
+                self._print_couchdb_server_error(e, what)
+                return (-1, total_deleted)
+            except Exception as e:
+                self._print_generic_exception_error(e, what)
+                return (-1, total_deleted)
         return (0, total_deleted)
 
     def process_and_post_to_dpla(self, harvested_docs, ingestion_doc):
@@ -701,31 +721,24 @@ class Couch(object):
         for id in duplicate_doc_ids:
             del harvested_docs[id]
         
-        status = -1
-        error_msg = None
         try:
+            what = "posting to dashboard db"
             self._bulk_post_to(self.dashboard_db, added_docs + changed_docs)
-        except Exception, e:
-            error_msg = "Error posting to the dashboard database: %s" % e
-            print error_msg
-            return (status, error_msg)
-        try:
+            what = "updating ingestion document counts"
             self._update_ingestion_doc_counts(ingestion_doc,
                                               countAdded=len(added_docs),
                                               countChanged=len(changed_docs))
-        except Exception, e:
-            error_msg = "Error updating ingestion document counts: %s" % e
-            print error_msg
-            return (status, error_msg)
-        try:
+            what = "posting to dpla database"
             self._bulk_post_to(self.dpla_db, harvested_docs.values())
-        except Exception, e:
-            error_msg = "Error posting to the dpla database: %s" % e
-            print error_msg
-            return (status, error_msg)
-
-        status = 0
-        return (status, error_msg)
+        except couchdb.http.ServerError as e:
+            error_msg = self._couchdb_server_error_msg(e, what)
+            print >> sys.stderr, self._ts_for_err(), error_msg
+            return (-1, error_msg)
+        except Exception as e:
+            error_msg = self._generic_exception_error_msg(e, what)
+            print >> sys.stderr, self._ts_for_err(), error_msg
+            return (-1, error_msg)
+        return (0, None)
 
     def rollback(self, provider, ingest_sequence):
         """ Rolls back the provider documents by:
@@ -744,74 +757,88 @@ class Couch(object):
                                                                ingest_sequence)
         backup_db_name = ingest_doc["backupDB"] if ingest_doc else None
         if backup_db_name:
-            print "Deleting DPLA provider documents..."
+            what = "Deleting DPLA provider documents"
+            print what
             count = 0
             delete_docs = []
-            for doc in self._query_all_dpla_provider_docs(provider):
-                delete_docs.append(doc)
-                # Delete in batches of batch_size so as not to use too much
-                # memory
-                if len(delete_docs) == self.batch_size:
-                    count += len(delete_docs)
-                    print "%s documents deleted" % count
-                    self._delete_documents(self.dpla_db, delete_docs)
-                    delete_docs = []
-            # Last delete
-            if delete_docs:
-                    count += len(delete_docs)
-                    print "%s documents deleted" % count
-                    self._delete_documents(self.dpla_db, delete_docs)
+            try:
+                for doc in self._query_all_dpla_provider_docs(provider):
+                    delete_docs.append(doc)
+                    # Delete in batches of batch_size so as not to use too much
+                    # memory
+                    if len(delete_docs) == self.batch_size:
+                        count += len(delete_docs)
+                        print "%s documents deleted" % count
+                        self._delete_documents(self.dpla_db, delete_docs)
+                        delete_docs = []
+                # Last delete
+                if delete_docs:
+                        count += len(delete_docs)
+                        print "%s documents deleted" % count
+                        self._delete_documents(self.dpla_db, delete_docs)
+            except couchdb.http.ServerError as e:
+                return self._couchdb_server_error_msg(e, what)
+            except Exception as e:
+                return self._generic_exception_error_msg(e, what)
 
             # Bulk post backup database documents without revision
-            print "Retrieving documents from database %s" % backup_db_name
+            what = "Retrieving documents from database %s" % backup_db_name
+            print what
             count = 0
             docs = []
-            for doc in self._query_all_docs(self.server[backup_db_name]):
-                if "_rev" in doc:
-                    del doc["_rev"]
-                docs.append(doc)
-                if len(docs) == self.batch_size:
+            try:
+                for doc in self._query_all_docs(self.server[backup_db_name]):
+                    if "_rev" in doc:
+                        del doc["_rev"]
+                    docs.append(doc)
+                    if len(docs) == self.batch_size:
+                        count += len(docs)
+                        print "%s documents rolled back" % count
+                        self._bulk_post_to(self.dpla_db, docs)
+                        docs = []
+                # Last POST
+                if docs:
                     count += len(docs)
                     print "%s documents rolled back" % count
                     self._bulk_post_to(self.dpla_db, docs)
-                    docs = []
-            # Last POST
-            if docs:
-                count += len(docs)
-                print "%s documents rolled back" % count
-                self._bulk_post_to(self.dpla_db, docs)
-                self.sync_views(self.dpla_db.name)
+                    self.sync_views(self.dpla_db.name)
+            except couchdb.http.ServerError as e:
+                return self._couchdb_server_error_msg(e, what)
+            except Exception as e:
+                return self._generic_exception_error_msg(e, what)
 
-            msg = "Rollback complete"
-            self.logger.debug(msg)
         else:
-            msg = "Attempted to rollback but no ingestion document with " + \
-                  "ingestionSequence of %s was found" % ingest_sequence
-            self.logger.error(msg)
+            return "Attempted to rollback but no ingestion document with " + \
+                   "ingestionSequence of %s was found" % ingest_sequence
 
         # Delete dashboard "record" documents for the ingestionSequence rolled
         # back from
-        print "Deleting ingestionSequence %s dashboard record documents" % \
-              ingest_sequence
+        what = "Deleting ingestionSequence %s dashboard documents" % \
+               ingest_sequence
+        print what
         count = 0
         delete_docs = []
-        for doc in self._query_all_dashboard_prov_docs_by_ingest_seq(
-                                                    provider, ingest_sequence
-                                                    ):
-            if doc.get("type") == "record":
-                delete_docs.append(doc)
-            if len(delete_docs) == self.batch_size:
+        try:
+            alldocs = self._query_all_dashboard_prov_docs_by_ingest_seq
+            for doc in alldocs(provider, ingest_sequence):
+                if doc.get("type") == "record":
+                    delete_docs.append(doc)
+                if len(delete_docs) == self.batch_size:
+                    count += len(delete_docs)
+                    print "%s documents deleted" % count
+                    self._delete_documents(self.dashboard_db, delete_docs)
+                    delete_docs = []
+            # Last delete
+            if delete_docs:
                 count += len(delete_docs)
                 print "%s documents deleted" % count
                 self._delete_documents(self.dashboard_db, delete_docs)
-                delete_docs = []
-        # Last delete
-        if delete_docs:
-            count += len(delete_docs)
-            print "%s documents deleted" % count
-            self._delete_documents(self.dashboard_db, delete_docs)
+        except couchdb.http.ServerError as e:
+            return self._couchdb_server_error_msg(e, what)
+        except Exception as e:
+            return self._generic_exception_error_msg(e, what)
 
-        return msg
+        return "Rollback complete"
 
     def update_bulk_download_document(self, contributor, file_path,
                                       file_size):
@@ -827,3 +854,29 @@ class Couch(object):
             })
 
         return self.bulk_download_db.save(bulk_download_doc)[0]
+
+    def _couchdb_server_error_msg(self, e, what):
+        """Return error message for couchdb.http.ServerError"""
+        # couchdb.http.ServerError.message is a tuple.
+        status = e.message[0]
+        message = e.message[1]
+        return "HTTP error %d from CouchDB while %s: %s" % \
+               (status, what, message)
+
+    def _print_couchdb_server_error(self, e, what):
+        """Print message for couchdb.http.ServerError"""
+        print >> sys.stderr, self._ts_for_err(), \
+                 self._couchdb_server_error_msg(e, what)
+
+    def _generic_exception_error_msg(self, e, what):
+        """Return message for unexpected Exception"""
+        return "Caught %s %s: %s" % (e.__class__, what, e)
+
+    def _print_generic_exception_error(self, e, what):
+        """Print message for unexpected Exception"""
+        print >> sys.stderr, self._ts_for_err(), \
+                 self._generic_exception_error_msg(e, what)
+
+    def _ts_for_err(self):
+        return "[%s]" % datetime.now().isoformat()
+

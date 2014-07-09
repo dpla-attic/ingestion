@@ -35,7 +35,10 @@ def out_of_range(d):
 
     return ret
 
-DATE_8601 = '%Y-%m-%d'
+# EDTF: http://www.loc.gov/standards/datetime/pre-submission.html
+# (like ISO-8601 but doesn't require timezone)
+edtf_date_and_time = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+
 def robust_date_parser(d):
     """
     Robust wrapper around some date parsing libs, making a best effort to return
@@ -51,25 +54,36 @@ def robust_date_parser(d):
 
     Returns None if it fails
     """
-    dd = dateparser.to_iso8601(d)
-    if dd is None or out_of_range(d):
+    # Function for a formatted date string, since datetime.datetime.strftime()
+    # only works with years >= 1900.
+    return_date = lambda d: "%d-%02d-%02d" % (d.year, d.month, d.day)
+
+    # Check for EDTF timestamp first, because it is simple.
+    if edtf_date_and_time.match(d):
         try:
-            dd = dateutil_parse(d, fuzzy=True, default=DEFAULT_DATETIME)
-            if dd.year == DEFAULT_DATETIME.year:
-                dd = None
+            dateinfo = dateutil_parse(d)
+            return return_date(dateinfo)
+        except TypeError:
+            # not parseable by dateutil_parse()
+            dateinfo = None
+    isodate = dateparser.to_iso8601(d)
+    if isodate is None or out_of_range(d):
+        try:
+            dateinfo = dateutil_parse(d, fuzzy=True, default=DEFAULT_DATETIME)
+            if dateinfo.year == DEFAULT_DATETIME.year:
+                dateinfo = None
         except Exception:
             try:
-                dd = timelib.strtodatetime(d, now=DEFAULT_DATETIME_SECS)
+                dateinfo = timelib.strtodatetime(d, now=DEFAULT_DATETIME_SECS)
             except ValueError:
-                pass
+                dateinfo = None
             except Exception as e:
                 logger.error("Exception %s in %s" % (e, __name__))
 
-        if dd:
-            ddiso = dd.isoformat()
-            return ddiso[:ddiso.index('T')]
+        if dateinfo:
+            return return_date(dateinfo)
 
-    return dd
+    return isodate
 
 # ie 1970/1971
 year_range = re.compile("(?P<year1>^\d{4})[-/](?P<year2>\d{4})$")
@@ -94,12 +108,32 @@ def parse_date_or_range(d):
 
     if re.search("B\.?C\.?|A\.?D\.?|A\.?H\.?", d.upper()):
         pass
-    elif year_range.match(d):
+    is_edtf_timestamp = edtf_date_and_time.match(d)
+    hyphen_split = d.split("-")
+    slash_split = d.split("/")
+    ellipse_split = d.split("..")
+    is_hyphen_split = (len(hyphen_split) % 2 == 0)
+    is_slash_split = (len(slash_split) % 2 == 0)
+    is_ellipse_split = (len(ellipse_split) % 2 == 0)
+    if year_range.match(d):
         match = year_range.match(d)
         a, b = sorted((match.group("year1"), match.group("year2")))
-    elif len(d.split("-"))%2 == 0 or len(d.split("/"))%2 == 0:
+    elif (is_hyphen_split or is_slash_split or is_ellipse_split) \
+            and not is_edtf_timestamp:
+        # We passed over EDTF timestamps because they contain hyphens and we
+        # can handle them below.  Note that we don't deal with ranges of
+        # timestamps.
+        #
         # Handle ranges
-        delim = "-" if len(d.split("-"))%2 == 0 else "/"
+        if is_hyphen_split:
+            delim = "-"
+            split_result = hyphen_split
+        elif is_slash_split:
+            delim = "/"
+            split_result = slash_split
+        elif is_ellipse_split:
+            delim = ".."
+            split_result = ellipse_split
         if day_range.match(d):
             # ie 1970-08-01/02
             match = day_range.match(d)
@@ -111,8 +145,9 @@ def parse_date_or_range(d):
             match = decade_date.match(d)
             a = match.group("year") + "0"
             b = match.group("year") + "9"
-        elif any([0 < len(s) < 4 for s in d.split(delim) if
-                  len(d.split(delim)) == 2]):
+        elif any([0 < len(s) < 4
+                  for s in split_result
+                  if len(split_result) == 2]):
             # ie 1970-90, 1970/90, 1970-9, 1970/9, 9/1979
             match = circa_range.match(d)
             if match:
@@ -124,7 +159,7 @@ def parse_date_or_range(d):
                     b = robust_date_parser(year_end)
                 else:
                     # ie 1970-9
-                    (y, m) = d.split(delim)
+                    (y, m) = split_result
                     # If the second number is a month, format it to two digits
                     # and use "-" as the delim for consistency in the
                     # dateparser.to_iso8601 result
@@ -143,9 +178,9 @@ def parse_date_or_range(d):
                     d = "%s-%02d" % (match.group("year"), int(match.group("month")))
                     a = robust_date_parser(d)
                     b = robust_date_parser(d)
-        elif "" in d.split(delim):
+        elif "" in split_result:
             # ie 1970- or -1970 (but not 19uu- nor -19uu)
-            s = d.split(delim)
+            s = split_result
             if len(s[0]) == 4 and "u" not in s[0]:
                 a, b = s[0], None
             elif len(s[1]) == 4 and "u" not in s[1]:
@@ -191,6 +226,7 @@ def parse_date_or_range(d):
         year2 = int(match.group("year2"))
         a, b = str(min(year1, year2)), str(max(year1, year2))
     else:
+        # This picks up a variety of things, in addition to timestamps.
         parsed = robust_date_parser(d)
         a, b = parsed, parsed
 
