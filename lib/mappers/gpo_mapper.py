@@ -1,3 +1,4 @@
+import re
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.marc_mapper import MARCMapper
@@ -35,8 +36,7 @@ class GPOMapper(MARCMapper):
             lambda t: t in ("700", "710",
                             "711"):         [(self.map_contributor, None)],
             lambda t: t in ("100", "110",
-                            "111", "700",
-                            "710", "711"):  [(self.map_creator, None)],
+                            "111"):         [(self.map_creator, None)],
             lambda t: t in ("260", "264"):  [(self.map_date, "c"),
                                              (self.map_publisher, "ab")],
             lambda t: t == "362":           [(self.map_date, None)],
@@ -94,6 +94,35 @@ class GPOMapper(MARCMapper):
             "z": "Other"
         }
 
+    def _get_subfield_e(self, _dict):
+        """
+        Returns the '#text' value for subfield with code 'e', if it exists
+        """
+        for subfield in self._get_subfields(_dict):
+            if ("code" in subfield and "#text" in subfield and
+                subfield["code"] == "e"):
+                return subfield["#text"]
+        return None
+
+    def map_contributor(self, _dict, tag, codes):
+        prop = "sourceResource/contributor"
+        values = self._get_values(_dict, codes)
+        subfield_e = self._get_subfield_e(_dict)
+        # Use values only if subfield 'e' exists and its value is not
+        # 'author'
+        if subfield_e and subfield_e != "author":
+            self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_creator(self, _dict, tag, codes):
+        prop = "sourceResource/creator"
+        values = self._get_values(_dict, codes)
+        if tag in ("700", "710", "711"):
+            subfield_e = self._get_subfield_e(_dict)
+            # Use values only if subfield 'e' exists and its value is 'author'
+            if not subfield_e or not subfield_e != "author":
+                return
+        self.extend_prop(prop, _dict, codes, values=values)
+
     def map_is_shown_at(self, _dict, tag, codes):
         values = self._get_values(_dict, codes)
         if "u" in codes:
@@ -122,6 +151,11 @@ class GPOMapper(MARCMapper):
     def map_title(self, _dict, tag, codes):
         prop = "sourceResource/title"
         values = self._get_contributor_values(_dict, codes)
+        self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_extent(self, _dict, tag, codes):
+        prop = "sourceResource/title"
+        values = [re.sub(":$", "", v) for v in self._get_values(_dict, codes)]
         self.extend_prop(prop, _dict, codes, values=values)
 
     def update_title(self):
@@ -166,8 +200,7 @@ class GPOMapper(MARCMapper):
             self.update_source_resource({"description": description})
 
     def update_rights(self):
-        prop = "sourceResource/rights"
-        rights = self._get_mapped_value(prop)
+        rights = self._get_mapped_value("sourceResource/rights")
         if not rights:
             r = "Pursuant to Title 17 Section 105 of the United States " + \
                 "Code, this file is not subject to copyright protection " + \
