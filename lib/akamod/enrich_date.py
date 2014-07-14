@@ -8,7 +8,8 @@ from amara.thirdparty import json
 from dateutil.parser import parse as dateutil_parse
 from zen import dateparser
 from dplaingestion.selector import getprop, setprop, delprop, exists
-from dplaingestion.utilities import iterify
+from dplaingestion.utilities import iterify, clean_date, \
+                                    remove_brackets_and_strip
 
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
@@ -232,10 +233,6 @@ def parse_date_or_range(d):
 
     return a, b
 
-def remove_brackets_and_strip(d):
-    """Removed brackets from the date (range)."""
-    return d.replace("[", "").replace("]", "").strip()
-
 def test_parse_date_or_range():
     DATE_TESTS = {
         "ca. July 1896": ("1896-07", "1896-07"), # fuzzy dates
@@ -254,14 +251,6 @@ def test_parse_date_or_range():
         res = parse_date_or_range(i)
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
-def clean_date(d):
-    regex = [("\s*to\s*|\s[-/]\s", "-"), ("[\?\(\)]|\s*ca\.?\s*|~|x", "")]
-    if not "circa" in d and not "century" in d:
-        regex.append(("\s*c\.?\s*", ""))
-    for p, r in regex:
-        d = re.sub(p, r, d)
-    return d.strip()
-
 def convert_dates(data, prop, earliest):
     """Converts dates.
 
@@ -274,11 +263,10 @@ def convert_dates(data, prop, earliest):
     Returns:
     Nothing, the replacement is done in place.
     """
-    dates = []
     for p in prop.split(','):
+        dates = []
         if exists(data, p):
             v = getprop(data, p)
-
             if not isinstance(v, dict):
                 for s in (v if not isinstance(v, basestring) else [v]):
                     for part in s.split(";"):
@@ -287,24 +275,26 @@ def convert_dates(data, prop, earliest):
                         if len(stripped) < 4:
                             continue
                         a, b = parse_date_or_range(stripped)
-                        if b != '3000-01-01':
+                        if b != DEFAULT_DATETIME_STR:
                             dates.append( {
                                     "begin": a,
                                     "end": b,
                                     "displayDate" : display_date
                                 })
+            else:
+                # Already filled in, probably by mapper
+                continue
 
-    dates.sort(key=lambda d: d["begin"] if d["begin"] is not None else DEFAULT_DATETIME_STR)
-
-    value_to_set = dates
-    if earliest and dates:
-        value_to_set = dates[0]
-
-    if value_to_set:
-        setprop(data, p, value_to_set)
-    else:
-        if exists(data, p):
-            delprop(data, p)
+            dates.sort(key=lambda d: d["begin"] if d["begin"] is not None
+                                                else DEFAULT_DATETIME_STR)
+            if dates:
+                if earliest:
+                    value_to_set = dates[0]
+                else:
+                    value_to_set = dates
+                setprop(data, p, value_to_set)
+            else:
+                delprop(data, p)
 
 def check_date_format(data, prop):
     """Checks that the begin and end dates are in the proper format"""

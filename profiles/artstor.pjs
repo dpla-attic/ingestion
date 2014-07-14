@@ -3,6 +3,9 @@
     "type": "oai_verbs",
     "endpoint_url": "http://oai.artstor.org/oaicatmuseum/OAIHandler",
     "sets": [
+        "SSDPLABrynMawr",
+        "SSDPLACornell",
+        "SSDPLAUCSD",
         "SSDPLAWashington",
         "SSDelwareAtlas",
         "SSDelwareGeorge",
