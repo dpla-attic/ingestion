@@ -71,7 +71,7 @@ MAPV3_SCHEMAS = {
                 "oneOf": array_or_item({"$ref": "#/definitions/hasView"})
             },
             "id": {"type": "string"},
-            "ingestionSequence": {"type": "number"},
+            "ingestionSequence": {"type": ["number", "null"]},
             # do not check ingestDate as the 'date-time' json-schema
             # format, since it requires RFC 3339 conformance and not
             # ISO 8601 conformance
@@ -164,6 +164,7 @@ MAPV3_SCHEMAS = {
                     "extent": {"$ref": "#/definitions/arrayOrString"},
                     "format": {"$ref": "#/definitions/arrayOrString"},
                     "identifier": {"$ref": "#/definitions/arrayOrString"},
+                    "isPartOf": {"$ref": "#/definitions/arrayOrString"},
                     "language": {
                         "type": "array",
                         "items": {
