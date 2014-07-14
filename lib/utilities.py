@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import tarfile
+import re
 from functools import wraps
 
 def iterify(iterable):
@@ -94,3 +95,19 @@ def with_retries(attempts_num=3, delay_sec=1, print_args_if_error=False):
         return func_with_retries
 
     return apply_with_retries
+
+def clean_date(d):
+    """Return a given date string without certain characters and expressions"""
+    regex = [("\s*to\s*|\s[-/]\s", "-"), ("[\?\(\)]|\s*ca\.?\s*|~|x", "")]
+    if not "circa" in d and not "century" in d:
+        regex.append(("\s*c\.?\s*", ""))
+    for p, r in regex:
+        d = re.sub(p, r, d)
+    return d.strip()
+
+def remove_brackets_and_strip(d):
+    """Return a given date-range string without square brackets"""
+    return d.replace("[", "").replace("]", "").strip(". ")
+
+def strip_unclosed_brackets(s):
+    return re.sub(r'\[(?![^\]]*?\])', '', s)
