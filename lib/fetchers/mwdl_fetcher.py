@@ -29,9 +29,11 @@ class MWDLFetcher(AbsoluteURLFetcher):
     def mwdl_extract_records(self, content):
         error = None
         if not self.total_records:
-            total_records_prop = "SEGMENTS/JAGROOT/RESULT/DOCSET/TOTALHITS"
+            total_records_prop = "sear:SEGMENTS/sear:JAGROOT/sear:RESULT" \
+                                 "/sear:DOCSET/TOTALHITS"
             self.total_records = getprop(content, total_records_prop)
-        records = getprop(content, "SEGMENTS/JAGROOT/RESULT/DOCSET/DOC")
+        records = getprop(content, "sear:SEGMENTS/sear:JAGROOT/sear:RESULT"
+                                   "/sear:DOCSET/sear:DOC")
 
         if records:
             records = iterify(records)
@@ -40,6 +42,7 @@ class MWDLFetcher(AbsoluteURLFetcher):
                                         "PrimoNMBib/record/control/recordid")
         else:
             records = []
+            # Elements in the error response are not namespaced
             error = getprop(content, "SEGMENTS/JAGROOT/RESULT/ERROR/MESSAGE")
             if not error:
                 error = "No records found in MWDL content: %s" % content
