@@ -119,7 +119,7 @@ class GPOMapper(MARCMapper):
         if tag in ("700", "710", "711"):
             subfield_e = self._get_subfield_e(_dict)
             # Use values only if subfield 'e' exists and its value is 'author'
-            if not subfield_e or not subfield_e != "author":
+            if not subfield_e or subfield_e != "author":
                 return
         self.extend_prop(prop, _dict, codes, values=values)
 
