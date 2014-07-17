@@ -98,15 +98,16 @@ class DigitalNCMapper(OAIMODSMapper):
         prop = self.root_key + "note"
 
         if exists(self.provider_data, prop):
+            description = []
             for s in iterify(getprop(self.provider_data, prop)):
                 try:
                     if s.get("type") == "content":
-                        self.update_source_resource({"description":
-                                                     s.get("#text")})
-                        break
+                        description.append(s.get("#text"))
                 except:
                     logger.error("Error getting note/type from record %s" %
                                  self.provider_data["_id"])
+
+            self.update_source_resource({"description": description})
 
     def map_title(self):
         prop = self.root_key + "titleInfo"

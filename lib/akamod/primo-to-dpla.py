@@ -12,8 +12,8 @@ from dplaingestion.selector import getprop, exists
 
 GEOPROP = None
 RECORD = "PrimoNMBib/record/"
-LINKS = "LINKS/"
-URL = "http://thoth.library.utah.edu:1701/primo_library/libweb/action/dlDisplay.do?vid=MWDL&afterPDS=true&docId="
+LINKS = "sear:LINKS/"
+URL = "http://utah-primoprod.hosted.exlibrisgroup.com/primo_library/libweb/action/dlDisplay.do?vid=MWDL&afterPDS=true&docId="
 
 #FIXME not format specific, move to generic module
 CONTEXT = {
@@ -81,7 +81,7 @@ CHO_TRANSFORMER = {
     RECORD + "display/lds09"        : lambda d, p: {"temporal": getprop(d, p)},
     RECORD + "facets/rsrctype"      : lambda d, p: {"type": getprop(d, p)},
     RECORD + "search/lsr03"         : lambda d, p: {"stateLocatedIn": getprop(d, p)},
-    LINKS + "linktorsrc"             : lambda d, p: {"identifier": getprop(d, p)}
+    LINKS + "sear:linktorsrc"       : lambda d, p: {"identifier": getprop(d, p)}
 }
 
 AGGREGATION_TRANSFORMER = {
@@ -91,7 +91,7 @@ AGGREGATION_TRANSFORMER = {
     "ingestType"                 : lambda d, p: {"ingestType": getprop(d, p)},
     "ingestDate"                 : lambda d, p: {"ingestDate": getprop(d, p)},
     RECORD + "control/recordid"  : lambda d, p: {"isShownAt": URL + getprop(d, p)},
-    LINKS + "thumbnail"          : lambda d, p: {"object": getprop(d, p)},
+    LINKS + "sear:thumbnail"     : lambda d, p: {"object": getprop(d, p)},
     "provider"                   : lambda d, p: {"provider": getprop(d, p)}
 }
 

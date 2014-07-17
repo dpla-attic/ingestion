@@ -9,8 +9,9 @@ class PrimoMapper(Mapper):
             self.root_key = "PrimoNMBib/record/"
         else:
             self.root_key = ""
-        self.links_key = "LINKS/"
-        self.is_shown_at_url = "http://thoth.library.utah.edu:1701/" + \
+        self.links_key = "sear:LINKS/"
+        self.is_shown_at_url = "http://utah-primoprod.hosted." + \
+                               "exlibrisgroup.com/" + \
                                "primo_library/libweb/action/" + \
                                "dlDisplay.do?vid=MWDL&afterPDS=true&docId="
 
@@ -66,7 +67,7 @@ class PrimoMapper(Mapper):
 
     def map_identifier(self):
         self._map_source_resource_prop("identifier",
-                                       self.links_key + "linktorsrc")
+                                       self.links_key + "sear:linktorsrc")
 
     def map_spatial(self):
         prop = self.root_key + "display/lds08"
@@ -109,8 +110,8 @@ class PrimoMapper(Mapper):
                                                   record_id})
 
     def map_object(self):
-        prop = self.links_key + "thumbnail"
-        if exists(self.provier_data, prop):
+        prop = self.links_key + "sear:thumbnail"
+        if exists(self.provider_data, prop):
             self.mapped_data.update({"object":
                                      getprop(self.provider_data, prop)})
 
