@@ -31,8 +31,6 @@ class GPOMapper(MARCMapper):
         # prefix it with a "!": [("format", "!cd")] will exclude the "c"
         # "d" codes (see method _get_values).
         self.mapping_dict = {
-            lambda t: t == "856":           [(self.map_is_shown_at, "u"),
-                                             (self.map_is_shown_at, "z")],
             lambda t: t in ("700", "710",
                             "711"):         [(self.map_contributor, None)],
             lambda t: t in ("100", "110",
@@ -123,15 +121,6 @@ class GPOMapper(MARCMapper):
                 return
         self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_is_shown_at(self, _dict, tag, codes):
-        values = self._get_values(_dict, codes)
-        if "u" in codes:
-            # Use only first 856u
-            if not self.is_shown_at["856u"]:
-                self.is_shown_at["856u"] = values
-        else:
-            self.is_shown_at["856z3"].extend(values)
-
     def map_date(self, _dict, tag, codes):
         values = self._get_values(_dict, codes)
         self.date[tag].extend(values)
@@ -165,14 +154,9 @@ class GPOMapper(MARCMapper):
             self.update_source_resource({"title": " ".join(title)})
   
     def update_is_shown_at(self):
-        isa = [v for values in self.is_shown_at.values() for v in values if v]
-
-        uri = "http://catalog.gpo.gov/F/?func=direct&doc_number=%s&format=999"
+        uri = "http://catalog.gpo.gov/F/?func=direct&doc_number=%s"
         if self.control_001:
-            isa.append(uri % self.control_001)
-
-        if isa:
-            self.mapped_data.update({"isShownAt": isa})
+            self.mapped_data.update({"isShownAt": url % self.control_001})
 
     def update_date(self):
         date = None
