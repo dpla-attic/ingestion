@@ -143,7 +143,7 @@ class GPOMapper(MARCMapper):
         self.extend_prop(prop, _dict, codes, values=values)
 
     def map_extent(self, _dict, tag, codes):
-        prop = "sourceResource/title"
+        prop = "sourceResource/extent"
         values = [re.sub(":$", "", v) for v in self._get_values(_dict, codes)]
         self.extend_prop(prop, _dict, codes, values=values)
 
