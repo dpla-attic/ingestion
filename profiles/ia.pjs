@@ -29,6 +29,9 @@
         },
         "getty": {
             "title": "Getty Research Institute"
+        },
+        "medicalheritagelibrary": {
+            "title": "Medical Heritage Library"
         }
     },
     "contributor": {

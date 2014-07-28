@@ -105,6 +105,7 @@ class Mapper(object):
         self.map_base()
         self.map_provider()
         self.map_data_provider()
+        self.map_intermediate_provider()
         self.map_is_shown_at()
         self.map_has_view()
         self.map_object()
@@ -241,6 +242,9 @@ class Mapper(object):
         pass
 
     def map_spec_type(self):
+        pass
+
+    def map_intermediate_provider(self):
         pass
 
     def map_multiple_fields(self):

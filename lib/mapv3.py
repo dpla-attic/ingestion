@@ -91,6 +91,7 @@ MAPV3_SCHEMAS = {
                     "name": {"type": "string"}
                 }
             },
+            "intermediateProvider": {"type": "string"},
             "sourceResource": {"$ref": "#/definitions/sourceResource"}
         },
         "additionalProperties": False,
