@@ -2,7 +2,7 @@
     "name": "digitalnc",
     "type": "oai_verbs",
     "metadata_prefix": "MODS",
-    "endpoint_url": "http://brevard.lib.unc.edu:8080/repox/OAIHandler",
+    "endpoint_url": "http://repox.lib.unc.edu:8080/repox/OAIHandler",
     "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/digitalnc",

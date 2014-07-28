@@ -2,6 +2,12 @@ from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mapper import Mapper
 
+
+intermediate_providers = {
+    "medicalheritagelibrary": "Medical Heritage Library"
+}
+
+
 class IAMapper(Mapper):
     def __init__(self, provider_data):
         super(IAMapper, self).__init__(provider_data)
@@ -61,6 +67,17 @@ class IAMapper(Mapper):
 
     def map_is_shown_at(self):
         self._map_meta("isShownAt", "identifier-access", False)
+
+    def map_intermediate_provider(self):
+        coll_key = self.meta_key + "collection"
+        # Get all of the "collection" elements from the provider's record.
+        # We only want the first one that matches one of our identifiers.
+        cols = list(getprop(self.provider_data, coll_key))
+        for c in cols:
+            if c in intermediate_providers:
+                p = intermediate_providers[c]
+                self.mapped_data.update({"intermediateProvider": p})
+                return
 
     def map_has_view(self):
         _id = getprop(self.provider_data, "originalRecord/_id", True)
