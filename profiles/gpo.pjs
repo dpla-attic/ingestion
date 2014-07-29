@@ -2,7 +2,7 @@
     "name": "gpo",
     "type": "oai_verbs",
     "metadata_prefix": "marc21",
-    "endpoint_url": "http://test.catalog.gpo.gov:80/OAI",
+    "endpoint_url": "http://catalog.gpo.gov/OAI",
     "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/gpo",
