@@ -7,6 +7,64 @@ class GPOMapper(MARCMapper):
     def __init__(self, provider_data, key_prefix="marc:"):
         super(GPOMapper, self).__init__(provider_data, key_prefix)
 
+        self.exclude_rights = [
+            "Access may require a library card.",
+
+            "Access restricted to U.S. military service members and Dept. " + \
+            "of Defense employees; the only issues available are those " + \
+            "from Monday of the prior week through Friday of current week.",
+
+            "Access to data provided for a fee except for requests " + \
+            "generated from Internet domains of .gov, .edu, .k12, .us, " + \
+            "and .mil.",
+
+            "Access to issues published prior to 2001 restricted to " + \
+            "Picatinny Arsenal users.",
+
+            "Access to some volumes or items may be restricted",
+            "Document removed from the GPO Permanent Access Archive at " + \
+            "agency request",
+
+            "FAA employees only.",
+            "First nine issues (Apr.-Dec. 2002) were law enforcement " + \
+            "restricted publications and are not available to the general " + \
+            "public.",
+
+            "Free to users at U.S. Federal depository libraries; other " + \
+            "users are required to pay a fee.",
+
+            "Full text available to subscribers only.",
+            "Login and password required to access web page where " + \
+            "electronic files may be downloaded.",
+
+            "Login and password required to access web page where " + \
+            "electronic formats may be downloaded.",
+
+            "Not available for external use as of Monday, Oct. 20, 2003.",
+            "Personal registration and/or payment required to access some " + \
+            "features.",
+
+            "Restricted access for security reasons",
+            "Restricted to Federal depository libraries and other users " + \
+            "with valid user accounts.",
+
+            "Restricted to federal depository libraries with valid user " + \
+            "IDs and passwords.",
+
+            "Restricted to institutions with a site license to the USA " + \
+            "trade online database. Free to users at federal depository " + \
+            "libraries.",
+
+            "Some components of this directory may not be publicly " + \
+            "accessible.",
+
+            "Some v. are for official use only, i.e. distribution of Oct. " + \
+            "1998 v. 2 is restricted.",
+
+            "Special issue for Oct./Dec. 2007 for official use only.",
+            "Subscription required for access."
+        ]
+
         self.leader = getprop(self.provider_data, "leader")
         self.date = {
             "260": [],
@@ -193,6 +251,13 @@ class GPOMapper(MARCMapper):
                 "public_domain_copyright_notice.htm"
             self.update_source_resource({"rights": r})
 
+    def remove_record_if_excluded_rights(self):
+        rights = self._get_mapped_value("sourceResource/rights")
+        if any(right in self.excluded_rights for right in rights):
+            logger.debug("Rights value excluded. Unsetting _id %s" %
+                         self.mapped_data["_id"])
+            del self.mapped_data["_id"]
+
     def update_mapped_fields(self):
         super(GPOMapper, self).update_mapped_fields()
         self.update_date()
@@ -205,3 +270,4 @@ class GPOMapper(MARCMapper):
         self.map_datafield_tags()
         self.map_controlfield_tags()
         self.update_mapped_fields()
+        self.remove_record_if_excluded_rights()
