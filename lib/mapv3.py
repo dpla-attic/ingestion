@@ -9,10 +9,11 @@ MAPV3_SCHEMAS = {
         # Do not include the ID until this can be dereferenced
         # "id": "http://api.dp.la/schemas/mapv3/collection#",
         "type": "object",
-        "required": ["@id", "title"],
+        "required": ["@id"],
         "properties": {
             "@context": {"type": ["string", "object"]},
             "@id": {"type": "string", "format": "uri"},
+            "@type": {"type": "string"},
             "_id": {"type": "string"},
             "_rev": {"type": "string"},
             "admin": {
@@ -92,7 +93,8 @@ MAPV3_SCHEMAS = {
                 }
             },
             "intermediateProvider": {"type": "string"},
-            "sourceResource": {"$ref": "#/definitions/sourceResource"}
+            "sourceResource": {"$ref": "#/definitions/sourceResource"},
+            "rights": {"type": "string", "format": "uri"}
         },
         "additionalProperties": False,
         "definitions": {
@@ -103,10 +105,11 @@ MAPV3_SCHEMAS = {
             "arrayOrString": {"oneOf": array_or_item({"type": "string"})},
             "collection": {
                 "type": "object",
-                "required": ["@id", "title"],
+                "required": ["@id"],
                 "properties": {
                     "@context": {"type": ["string", "object"]},
                     "@id": {"type": "string", "format": "uri"},
+                    "@type": {"type": "string"},
                     "_id": {"type": "string"},
                     "_rev": {"type": "string"},
                     "admin": {
@@ -127,18 +130,20 @@ MAPV3_SCHEMAS = {
             },
             "date": {
                 "type": "object",
+                "required": ["displayDate"],
                 "properties": {
                     "begin": { "type": ["string", "null"] },
-                    "displayDate": { "type": ["string", "null"] },
+                    "displayDate": { "type": "string" },
                     "end": { "type": ["string", "null"] }
                 },
                 "additionalProperties": False
             },
             "hasView": {
                 "type": "object",
-                "required": ["@id", "format"],
+                "required": ["@id"],
                 "properties": {
                     "@id": {"type": "string", "format": "uri"},
+                    "edmRights": {"type": ["string"]},
                     "format": {"type": ["string", "null"]},
                     "rights": {"$ref": "#/definitions/arrayOrString"}
                 },
@@ -216,6 +221,7 @@ MAPV3_SCHEMAS = {
             },
             "spatial": {
                 "type": "object",
+                "required": ["name"],
                 "properties": {
                     "city": {"type": "string"},
                     "coordinates": {"type": "string"},
