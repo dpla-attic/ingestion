@@ -7,7 +7,7 @@ class GPOMapper(MARCMapper):
     def __init__(self, provider_data, key_prefix="marc:"):
         super(GPOMapper, self).__init__(provider_data, key_prefix)
 
-        self.exclude_rights = [
+        self.excluded_rights = [
             "Access may require a library card.",
 
             "Access restricted to U.S. military service members and Dept. " + \
