@@ -8134,7 +8134,10 @@ ISO639_3_2 = {
 "bcp": "Bali (Democratic Republic of Congo)"
 }
 
+# TODO: Remove this
 LANGUAGE_NAME_REGEXES = [re.compile(r"\b{0}\b".format(val.lower())) for
                          val in ISO639_3_2.values()]
 
 ISO639_3_SUBST = dict(ISO639_3_1, **ISO639_3_2)
+ISO639_3_SUBST_REGEXES = {k: re.compile(r"\b{0}\b".format(v.lower())) for
+                          (k, v) in ISO639_3_SUBST.items()}
