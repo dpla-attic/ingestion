@@ -139,10 +139,7 @@ def test_absolute_url_fetcher_ia():
         break
 
 # Exclude the MWDL test in Travis as access to the feed is restricted
-# @attr(travis_exclude='yes', uses_network='yes')
-# TEMPORARY:  disable this test because the recent MWDL upgrade introduced
-#             data errors that have yet to be resolved.
-@nottest
+@attr(travis_exclude='yes', uses_network='yes')
 def test_absolute_url_fetcher_mwdl():
     profile_path = "profiles/mwdl.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -153,7 +150,6 @@ def test_absolute_url_fetcher_mwdl():
         assert response["records"]
         break
 
-@nottest
 @attr(uses_network="yes")
 def test_all_oai_verb_fetchers():
     # Profiles that are representative of each type and are not restricted:
@@ -275,7 +271,6 @@ def test_marc_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_marc_fields == expected_marc_fields
 
-@nottest
 @attr(uses_network="yes")
 def test_untl_field_conversion():
     """
