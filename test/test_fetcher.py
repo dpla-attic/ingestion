@@ -253,7 +253,6 @@ def test_mods_field_conversion():
     for f in expected_record_fields:
         assert f in actual_record_fields
 
-@nottest
 @attr(uses_network="yes")
 def test_marc_field_conversion():
     """
@@ -261,7 +260,7 @@ def test_marc_field_conversion():
     """
     svc = oaiservice(
         # uiuc_book profile
-        "http://quest.library.illinois.edu/OCA-OAIProvider/oai.asp",
+        "http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp",
         logger)
     lr_result = svc.list_records(set_id="UC", metadataPrefix="marc")
     record = first_non_collection_record(lr_result["records"])
