@@ -120,13 +120,14 @@ class OAIVerbsFetcher(Fetcher):
                             del sets[set]
                 self.collections = sets
 
-    def fetch_all_data(self, one_set=None):
+    def fetch_all_data(self, one_set=None, limit=None):
         """A generator to yield batches (responses) of records fetched, and any
            errors encountered in the process, via the self.response dicitonary.
 
            Records can be for collections or items.
 
            one_set is ignored for now.
+           limit is for testing:  the total number of records to fetch.
         """
         # Set self.collections
         self.set_collections()
@@ -146,6 +147,9 @@ class OAIVerbsFetcher(Fetcher):
             for k, v in self.collections.items():
                 for prop in ["_id", "ingestType"]:
                     del v[prop]
+
+        # total_rec_count is for use with limit argument.
+        total_rec_count = 0
 
         # Fetch all records for each set
         for set in self.collections.keys():
@@ -189,6 +193,10 @@ class OAIVerbsFetcher(Fetcher):
                 if len(self.response["records"]) >= self.batch_size:
                     yield self.response
                     self.reset_response()
+
+                total_rec_count += len(self.response["records"])
+                if limit and total_rec_count >= limit:
+                    raise StopIteration
 
         # Last yield
         if self.response["errors"] or self.response["records"]:

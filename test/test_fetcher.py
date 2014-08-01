@@ -97,7 +97,8 @@ def test_absolute_url_fetcher_nypl():
     assert fetcher.__class__.__name__ == "NYPLFetcher"
 
     for response in fetcher.fetch_all_data(
-            "cd4c3430-c6cb-012f-ccf3-58d385a7bc34"
+            "cd4c3430-c6cb-012f-ccf3-58d385a7bc34",
+            limit=5
             ):
         assert not response["errors"]
         assert response["records"]
@@ -109,7 +110,7 @@ def test_absolute_url_fetcher_uva1():
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "UVAFetcher"
 
-    for response in fetcher.fetch_all_data():
+    for response in fetcher.fetch_all_data(limit=5):
         assert not response["errors"]
         assert response["records"]
         break
@@ -120,20 +121,19 @@ def test_absolute_url_fetcher_uva2():
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "UVAFetcher"
 
-    for response in fetcher.fetch_all_data():
+    for response in fetcher.fetch_all_data(limit=5):
         assert not response["errors"]
         assert response["records"]
         break
 
-@nottest
 @attr(uses_network="yes")
 def test_absolute_url_fetcher_ia():
     profile_path = "profiles/ia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "IAFetcher"
 
-    fetcher.endpoint_url_params["rows"] = 10
-    for response in fetcher.fetch_all_data():
+    fetcher.endpoint_url_params["rows"] = 1
+    for response in fetcher.fetch_all_data(limit=5):
         assert not response["errors"]
         assert response["records"]
         break
@@ -145,7 +145,7 @@ def test_absolute_url_fetcher_mwdl():
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "MWDLFetcher"
 
-    for response in fetcher.fetch_all_data():
+    for response in fetcher.fetch_all_data(limit=5):
         assert not response["errors"]
         assert response["records"]
         break
@@ -171,7 +171,7 @@ def test_all_oai_verb_fetchers():
                                           uri_base,
                                           config_file)
                 assert fetcher.__class__.__name__ == "OAIVerbsFetcher"
-                for response in fetcher.fetch_all_data():
+                for response in fetcher.fetch_all_data(limit=5):
                     if response['errors']:
                         print >> sys.stderr, response['errors']
                     assert not response["errors"]

@@ -43,16 +43,19 @@ class FileFetcher(Fetcher):
                 "ingestType": "collection"
             }
 
-    def fetch_all_data(self, set=None):
+    def fetch_all_data(self, set=None, limit=None):
         """A generator to yield batches of records fetched, and any errors
            encountered in the process, via the self.response dicitonary.
 
            set is ignored, for now.
+           limit is for testing, to limit the total number of records fetched.
         """
         # The endpoint URL is actually a file path and should have the form:
         # file:/path/to/files/
         if self.endpoint_url.startswith("file:/"):
             path = self.endpoint_url[5:]
+            # total_rec_count is for use with limit
+            total_rec_count = 0
             for (root, dirs, files) in os.walk(path):
                 filtered_files = fnmatch.filter(files, self.file_filter)
                 total_files = len(files)
@@ -71,6 +74,9 @@ class FileFetcher(Fetcher):
                         if len(self.response["records"]) >= self.batch_size:
                             yield self.response
                             self.reset_response()
+                        total_rec_count += len(self.response["records"])
+                        if limit and total_rec_count >= limit:
+                            raise StopIteration
             # Last yield
             if self.response["errors"] or self.response["records"]:
                 yield self.response

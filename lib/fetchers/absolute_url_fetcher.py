@@ -57,9 +57,11 @@ class AbsoluteURLFetcher(Fetcher):
             for record in records:
                 record["collection"] = collection
 
-    def fetch_all_data(self, set_id=None):
-        """A generator to yield batches of records fetched, and any errors
-           encountered in the process, via the self.response dicitonary.
+    def fetch_all_data(self, set_id=None, limit=None):
+        """A generator to yield batches of records fetched, errors
+
+           Errors are reported via the self.response dicitonary.
+           limit -- For testing, limits the total number of records fetched.
         """
 
         if set_id:
@@ -92,6 +94,9 @@ class AbsoluteURLFetcher(Fetcher):
                 for prop in ["_id", "ingestType"]:
                     del v[prop]
 
+        # Total record count, in case limit is used
+        total_rec_count = 0
+
         # Request records for each set
         for set_id in self.collections.keys():
 
@@ -114,6 +119,9 @@ class AbsoluteURLFetcher(Fetcher):
                     self.response["errors"].append(error)
                     continue
 
+                total_rec_count += 1
+                if limit and total_rec_count == limit:
+                    raise StopIteration
                 error, content = self.extract_content(content, url)
                 if error is not None:
                     request_more = False
