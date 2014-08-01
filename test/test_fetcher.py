@@ -295,7 +295,6 @@ def test_untl_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_untl_fields == expected_untl_fields
 
-@attr(uses_network="yes")
 def test_file_fetcher_nara():
     profile_path = "profiles/nara.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -307,7 +306,6 @@ def test_file_fetcher_nara():
         assert response["records"]
         break
 
-@attr(uses_network="yes")
 def test_file_fetcher_smithsonian():
     profile_path = "profiles/smithsonian.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
