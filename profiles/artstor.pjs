@@ -77,7 +77,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_type_from_physical_format",
-        "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider&create=True",
+        "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider",
         "/unset_prop?prop=sourceResource%2Frelation",
         "/validate_mapv3"
     ],

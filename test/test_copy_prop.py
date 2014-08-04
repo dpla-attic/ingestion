@@ -7,738 +7,213 @@ CT_JSON = {"Content-Type": "application/json"}
 
 H = httplib2.Http()
 
-def _get_server_response(body, prop=None, to_prop=None, create=None, key=None,
-    remove=None, no_replace=None, no_overwrite=None):
+def _get_server_response(body, prop=None, to_prop=None, skip_if_exists=None):
     url = server() + "copy_prop?prop=%s&to_prop=%s" % (prop, to_prop)
-    if create:
-        url = "%s&create=%s" % (url, create)
-    if key:
-        url = "%s&key=%s" % (url, key)
-    if remove:
-        url = "%s&remove=%s" % (url, remove)
-    if no_replace:
-        url = "%s&no_replace=%s" % (url, no_replace)
-    if no_overwrite:
-        url = "%s&no_overwrite=%s" % (url, no_overwrite)
+    if skip_if_exists:
+        url = "%s&skip_if_exists=%s" % (url, skip_if_exists)
     return H.request(url, "POST", body=body, headers=CT_JSON)
 
-def test_copy_prop_rights1():
-    """Should do nothing"""
+def test_copy_prop1():
+    """Should do nothing since from_prop does not exists"""
     prop = "sourceResource/rights"
-    to_prop = "isShownAt"
-    key = "rights"
+    to_prop = "hasView/rights"
 
     INPUT = {
-        "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
             "key2": "value2"
-        },
-        "key2": "value2"
+        }
     }
 
     resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, key=key)
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_copy_prop_rights2():
-    """Should do nothing"""
+def test_copy_prop2():
+    """Should do nothing since to_prop parent property does not exist"""
     prop = "sourceResource/rights"
-    to_prop = "isShownAt"
-    key = "rights"
+    to_prop = "hasView/rights"
 
     INPUT = {
-        "key1": "value1",
         "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights"
-        },
-        "key2": "value2"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "key1" : "value1",
+            "key2": "value2",
+            "rights": "These are the rights"
+        }
     }
 
     resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
-        to_prop=to_prop, key=key)
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
-def test_copy_prop_rights3():
-    """Should copy sourceResource/rights to isShownAt"""
+def test_copy_prop_create_to_prop():
+    """Should create to_prop and set its value to that of from_prop"""
     prop = "sourceResource/rights"
-    to_prop = "isShownAt"
-    key = "rights"
+    to_prop = "hasView/rights"
 
     INPUT = {
-        "key1": "value1",
-        "isShownAt": {
-            "key1": "value1",
-            "key2": "value2",
-            "rights": ""
-        },
         "sourceResource": {
             "key1" : "value1",
             "key2": "value2",
             "rights": "These are the rights"
         },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "isShownAt": {
-            "key1": "value1",
-            "key2": "value2",
-            "rights": "These are the rights"
-        },
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2",
-            "rights": "These are the rights"
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, key=key)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_copy_prop_rights4():
-    """Should copy sourceResource/rights to isShownAt then remove
-       sourceResource/rights
-    """
-    prop = "sourceResource/rights"
-    to_prop = "isShownAt"
-    key = "rights"
-    remove = True
-
-    INPUT = {
-        "key1": "value1",
-        "isShownAt": {
-            "key1": "value1",
-            "key2": "value2",
-            "rights": ""
-        },
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2",
-            "rights": "These are the rights"
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "isShownAt": {
-            "key1": "value1",
-            "key2": "value2",
-            "rights": "These are the rights"
-        },
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, key=key, remove=remove)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_copy_prop_rights5():
-    """Should copy sourceResource/rights to sourceResource/hasView items"""
-    prop = "sourceResource/rights"
-    to_prop = "sourceResource/hasView"
-    key = "rights"
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2",
-            "rights": "These are the rights",
-            "hasView": [
-                {
-                    "key1": "value1",
-                    "rights": ""
-                },
-                {
-                    "key1": "value1",
-                    "rights": ""
-                }
-            ]
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2",
-            "rights": "These are the rights",
-            "hasView": [
-                {
-                    "key1": "value1",
-                    "rights": "These are the rights"
-                },
-                {
-                    "key1": "value1",
-                    "rights": "These are the rights"
-                }
-            ]
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, key=key)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_copy_prop_rights6():
-    """Should copy sourceResource/rights to sourceResource/hasView items
-       then remove sourceResource/rights
-    """
-    prop = "sourceResource/rights"
-    to_prop = "sourceResource/hasView"
-    key = "rights"
-    remove = True
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2",
-            "rights": "These are the rights",
-            "hasView": [
-                {
-                    "key1": "value1",
-                    "rights": ""
-                },
-                {
-                    "key1": "value1",
-                    "rights": ""
-                }
-            ]
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1" : "value1",
-            "key2": "value2",
-            "hasView": [
-                {
-                    "key1": "value1",
-                    "rights": "These are the rights"
-                },
-                {
-                    "key1": "value1",
-                    "rights": "These are the rights"
-                }
-            ]
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, key=key, remove=remove)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_copy_prop_contributor1():
-    """Should copy sourceResource/contributor to dataProvider"""
-    prop = "sourceResource/contributor"
-    to_prop = "dataProvider"
-    create = True
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
+        "hasView": {
+            "@id": "id"
         }
     }
     EXPECTED = {
-        "key1": "value1",
         "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
+            "key1" : "value1",
+            "key2": "value2",
+            "rights": "These are the rights"
         },
-        "dataProvider": "Natural History Museum Library, London"
+        "hasView": {
+            "@id": "id",
+            "rights": "These are the rights"
+        }
     }
-       
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, create=create)
+
+    resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_copy_prop_contributor2():
-    """Should copy sourceResource/contributor to dataProvider then remove
-        sourceResource/contributor
-    """
-    prop = "sourceResource/contributor"
-    to_prop = "dataProvider"
-    create = True
-    remove = True
+def test_copy_prop_str_to_str():
+    """Should extend to_prop"""
+    prop = "note"
+    to_prop = "sourceResource/description"
 
     INPUT = {
-        "key1": "value1",
+        "note": "This is a note",
         "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
+            "description": "This is a description"
         }
     }
     EXPECTED = {
-        "key1": "value1",
+        "note": "This is a note",
         "sourceResource": {
-            "key1": "value1"
-        },
-        "dataProvider": "Natural History Museum Library, London"
+            "description": ["This is a description", "This is a note"]
+        }
     }
-       
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, create=create, remove=remove)
+
+    resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_copy_prop_contributor3():
-    """Should overwrite dataProvider (create = False)"""
-    prop = "sourceResource/contributor"
-    to_prop = "dataProvider"
+def test_copy_prop_str_to_list():
+    """Should extend to_prop"""
+    prop = "note"
+    to_prop = "sourceResource/description"
 
     INPUT = {
-        "key1": "value1",
+        "note": "This is a note",
         "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
-        },
-        "dataProvider" : "Taken from source"
+            "description": [
+                "This is a description",
+                "This is another description"
+            ]
+        }
     }
     EXPECTED = {
-        "key1": "value1",
+        "note": "This is a note",
         "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
-        },
-        "dataProvider": "Natural History Museum Library, London"
+            "description": [
+                "This is a description",
+                "This is another description",
+                "This is a note"
+            ]
+        }
     }
-       
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop)
+
+    resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_copy_prop_contributor4():
-    """Should overwrite dataProvider (create = False) then remove
-       sourceResource/contributor
-    """
-    prop = "sourceResource/contributor"
-    to_prop = "dataProvider"
-    remove = True
+def test_copy_prop_list_to_str():
+    """Should extend to_prop"""
+    prop = "note"
+    to_prop = "sourceResource/description"
 
     INPUT = {
-        "key1": "value1",
+        "note": ["This is a note", "This is another note"],
         "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
-        },
-        "dataProvider" : "Taken from source"
+            "description": "This is a description"
+        }
     }
     EXPECTED = {
-        "key1": "value1",
+        "note": ["This is a note", "This is another note"],
         "sourceResource": {
-            "key1": "value1"
-        },
-        "dataProvider": "Natural History Museum Library, London"
+            "description": [
+                "This is a description",
+                "This is a note",
+                "This is another note"
+            ]
+        }
     }
-       
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, remove=remove)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-  
-def test_copy_prop_contributor5():
-    """Should overwrite dataProvider (create = True)"""
-    prop = "sourceResource/contributor"
-    to_prop = "dataProvider"
-    create = True
 
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
-        },
-        "dataProvider" : "Taken from source"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
-        },
-        "dataProvider": "Natural History Museum Library, London"
-    }
-       
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, create=create)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_copy_prop_contributor6():
-    """Should overwrite dataProvider (create = True) then remove
-       sourceResource/contributor
-    """
-    prop = "sourceResource/contributor"
-    to_prop = "dataProvider"
-    create = True
-    remove = True
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "contributor": "Natural History Museum Library, London"
-        },
-        "dataProvider" : "Taken from source"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1"
-        },
-        "dataProvider": "Natural History Museum Library, London"
-    }
-       
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, create=create, remove=remove)
+    resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
 def test_copy_prop_list_to_list():
-    """Should join prop into to_prop"""
-    prop = "sourceResource/from_list"
-    to_prop = "sourceResource/to_list"
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_list": ["1", "2", "3"],
-            "to_list" : ["a", "b", "c"],
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_list": ["1", "2", "3"],
-            "to_list" : ["a", "b", "c", "1", "2", "3"],
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop)
-    assert resp.status == 200
-    assert json.loads(content) ==  EXPECTED
-
-def test_copy_prop_string_to_list():
-    """Should append to to_prop"""
-    prop = "sourceResource/from_string"
-    to_prop = "sourceResource/to_list"
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_string": "stringy",
-            "to_list" : ["a", "b", "c"],
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_string": "stringy",
-            "to_list" : ["a", "b", "c", "stringy"],
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop)
-    assert resp.status == 200
-    assert json.loads(content) ==  EXPECTED
-
-def test_copy_prop_dict_to_list():
-    """Should append to to_prop"""
-    prop = "sourceResource/from_dict"
-    to_prop = "sourceResource/to_list"
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_dict": {"key1": "value1"},
-            "to_list" : ["a", "b", "c"],
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_dict": {"key1": "value1"},
-            "to_list" : ["a", "b", "c", {"key1": "value1"}],
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop)
-    assert resp.status == 200
-    assert json.loads(content) ==  EXPECTED
-
-def test_copy_prop_to_prop_dict_no_key():
-    """Should overwrite to_prop with prop"""
-    prop = "sourceResource/from_dict"
-    to_prop = "sourceResource/to_dict"
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_dict": {"key1": "value1"},
-            "to_dict" : {"key2": "value2"},
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key1": "value1",
-            "from_dict": {"key1": "value1"},
-            "to_dict" : {"key1": "value1"},
-            "key2": "value2"
-        },
-        "key2": "value2"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop)
-    assert resp.status == 200
-    assert json.loads(content) ==  EXPECTED
-
-def test_copy_prop_no_replace1():
-    """Should create list of prop string and append to_prop"""
-    prop = "sourceResource/source"
+    """Should extend to_prop"""
+    prop = "note"
     to_prop = "sourceResource/description"
-    no_replace = True
 
     INPUT = {
-        "sourceResource": {
-            "description" : "Description string.",
-            "source": "Source string."
-        }
-    }
-    EXPECTED = {
+        "note": ["This is a note", "This is another note"],
         "sourceResource": {
             "description": [
-                "Description string.",
-                "Source string."
-            ],
-            "source": "Source string."
+                "This is a description",
+                "This is another description"
+            ]
+        }
+    }
+    EXPECTED = {
+        "note": ["This is a note", "This is another note"],
+        "sourceResource": {
+            "description": [
+                "This is a description",
+                "This is another description",
+                "This is a note",
+                "This is another note"
+            ]
         }
     }
 
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, no_replace=no_replace)
+    resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
+                                        to_prop=to_prop)
     assert resp.status == 200
     assert json.loads(content) == EXPECTED
 
-def test_copy_prop_no_replace2():
-    """Should create list of prop string and append to_prop"""
-    prop = "sourceResource/source"
+def test_copy_prop_skip():
+    """Should do nothing since to_prop exists and skip_if_exists is True"""
+    prop = "note"
     to_prop = "sourceResource/description"
-    no_replace = True
 
     INPUT = {
+        "note": "This is a note",
         "sourceResource": {
-            "description" : "Description string.",
-            "source": ["Source string1.", "Source string2."]
-        }
-    }
-    EXPECTED = {
-        "sourceResource": {
-            "description": [
-                "Description string.",
-                "Source string1.",
-                "Source string2."
-            ],
-            "source": ["Source string1.", "Source string2."]
+            "description": "This is a description"
         }
     }
 
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, no_replace=no_replace)
+    resp,content = _get_server_response(json.dumps(INPUT),prop=prop,
+                                        to_prop=to_prop, skip_if_exists=True)
     assert resp.status == 200
-    assert json.loads(content) == EXPECTED
-
-def test_copy_prop_no_replace3():
-    """Should create list of prop string and append to_prop"""
-    prop1 = "sourceResource/source1"
-    prop2 = "sourceResource/source2"
-    to_prop = "sourceResource/description"
-    no_replace = True
-
-    INPUT = {
-        "sourceResource": {
-            "description" : "Description string.",
-            "source1": "Source1 string1.",
-            "source2": ["Source2 string1.", "Source2 string2."]
-        }
-    }
-    EXPECTED1 = {
-        "sourceResource": {
-            "description": [
-                "Description string.",
-                "Source1 string1."
-            ],
-            "source1": "Source1 string1.",
-            "source2": ["Source2 string1.", "Source2 string2."]
-        }
-    }
-    EXPECTED2 = {
-        "sourceResource": {
-            "description": [
-                "Description string.",
-                "Source1 string1.",
-                "Source2 string1.",
-                "Source2 string2."
-            ],
-            "source1": "Source1 string1.",
-            "source2": ["Source2 string1.", "Source2 string2."]
-        }
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop1,
-        to_prop=to_prop, no_replace=no_replace)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED1
-
-    resp,content = _get_server_response(json.dumps(EXPECTED1), prop=prop2,
-        to_prop=to_prop, no_replace=no_replace)
-    assert resp.status == 200
-    assert json.loads(content) == EXPECTED2
-
-def test_copy_prop_to_prop_create_dict_key1():
-    """Should copy to_prop into new dict with key"""
-    prop1 = "key1"
-    prop2 = "sourceResource/key2"
-    to_prop = "sourceResource/to_dict"
-    key1 = "key1"
-    key2 = "key2" 
-    create = True
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key2": "value2",
-            "key3": "value3"
-        },
-        "key4": "value4"
-    }
-    EXPECTED1 = {
-        "key1": "value1",
-        "sourceResource": {
-            "key2": "value2",
-            "key3": "value3",
-            "to_dict" : {"key1": "value1"}
-        },
-        "key4": "value4"
-    }
-    EXPECTED2 = {
-        "key1": "value1",
-        "sourceResource": {
-            "key2": "value2",
-            "key3": "value3",
-            "to_dict" : {
-                "key1": "value1",
-                "key2": "value2"
-            }
-        },
-        "key4": "value4"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop1,
-        to_prop=to_prop, key=key1, create=create)
-    assert resp.status == 200
-    assert json.loads(content) ==  EXPECTED1
-
-    resp,content = _get_server_response(json.dumps(EXPECTED1), prop=prop2,
-        to_prop=to_prop, key=key2, create=create)
-    assert resp.status == 200
-    assert json.loads(content) ==  EXPECTED2
-
-def test_copy_prop_no_overwrite1():
-    """Should not overwrite to_prop since it exists"""
-    prop = "sourceResource/key2"
-    to_prop = "sourceResource/key3"
-    create = True
-    no_overwrite = True
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key2": "value2",
-            "key3": "value3"
-        },
-        "key4": "value4"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, create=create, no_overwrite=no_overwrite)
-    assert resp.status == 200
-    assert json.loads(content) ==  INPUT
-
-def test_copy_prop_no_overwrite2():
-    """Should copy prop into to_prop since to_prop does not exist"""
-    prop = "sourceResource/key2"
-    to_prop = "sourceResource/key3"
-    create = True
-    no_overwrite = True
-
-    INPUT = {
-        "key1": "value1",
-        "sourceResource": {
-            "key2": "value2",
-        },
-        "key4": "value4"
-    }
-    EXPECTED = {
-        "key1": "value1",
-        "sourceResource": {
-            "key2": "value2",
-            "key3": "value2",
-        },
-        "key4": "value4"
-    }
-
-    resp,content = _get_server_response(json.dumps(INPUT), prop=prop,
-        to_prop=to_prop, create=create, no_overwrite=no_overwrite)
-    assert json.loads(content) ==  EXPECTED
+    assert json.loads(content) == INPUT
 
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")

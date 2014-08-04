@@ -41,7 +41,7 @@
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
         "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/mwdl_cleanup_field",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/unset_prop?prop=%5Fid&condition=mwdl%5Fexclude&condition_prop=originalRecord%2FPrimoNMBib%2Frecord%2Fsearch%2Frsrctype",
         "/unset_prop?prop=sourceResource%2Fformat",
         "/validate_mapv3"
