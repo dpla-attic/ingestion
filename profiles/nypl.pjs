@@ -32,10 +32,7 @@
         "/enrich-format",
         "/enrich_location",
         "/geocode",
-        "/cleanup_language",
         "/enrich_language",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/validate_mapv3"
     ],

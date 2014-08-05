@@ -72,6 +72,8 @@ def enrich_language(body, ctype, action="enrich_language",
                         (code in seen or seen.add(code))]
             setprop(data, prop, language)
         else:
+            logger.warning("Did not find language code in [%s] for record %s" %
+                           (language_strings, data["_id"]))
             delprop(data, prop)
 
     return json.dumps(data)
