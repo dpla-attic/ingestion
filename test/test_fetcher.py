@@ -145,7 +145,7 @@ def test_absolute_url_fetcher_mwdl():
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "MWDLFetcher"
 
-    for response in fetcher.fetch_all_data():
+    for response in fetcher.fetch_all_data(set=None):
         assert not response["errors"]
         assert response["records"]
         break
