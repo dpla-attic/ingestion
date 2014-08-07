@@ -4,7 +4,8 @@ from dplaingestion.mappers.mapper import Mapper
 
 
 intermediate_providers = {
-    "medicalheritagelibrary": "Medical Heritage Library"
+    "medicalheritagelibrary": "Medical Heritage Library",
+    "blc": "Boston Library Consortium"
 }
 
 

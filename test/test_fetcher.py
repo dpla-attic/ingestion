@@ -139,21 +139,17 @@ def test_absolute_url_fetcher_ia():
         break
 
 # Exclude the MWDL test in Travis as access to the feed is restricted
-# @attr(travis_exclude='yes', uses_network='yes')
-# TEMPORARY:  disable this test because the recent MWDL upgrade introduced
-#             data errors that have yet to be resolved.
-@nottest
+@attr(travis_exclude='yes', uses_network='yes')
 def test_absolute_url_fetcher_mwdl():
     profile_path = "profiles/mwdl.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
     assert fetcher.__class__.__name__ == "MWDLFetcher"
 
-    for response in fetcher.fetch_all_data():
+    for response in fetcher.fetch_all_data(set=None):
         assert not response["errors"]
         assert response["records"]
         break
 
-@nottest
 @attr(uses_network="yes")
 def test_all_oai_verb_fetchers():
     # Profiles that are representative of each type and are not restricted:
@@ -253,7 +249,6 @@ def test_mods_field_conversion():
     for f in expected_record_fields:
         assert f in actual_record_fields
 
-@nottest
 @attr(uses_network="yes")
 def test_marc_field_conversion():
     """
@@ -261,7 +256,7 @@ def test_marc_field_conversion():
     """
     svc = oaiservice(
         # uiuc_book profile
-        "http://quest.library.illinois.edu/OCA-OAIProvider/oai.asp",
+        "http://ratri.grainger.illinois.edu/oca-oaiprovider/oai.asp",
         logger)
     lr_result = svc.list_records(set_id="UC", metadataPrefix="marc")
     record = first_non_collection_record(lr_result["records"])
@@ -276,7 +271,6 @@ def test_marc_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_marc_fields == expected_marc_fields
 
-@nottest
 @attr(uses_network="yes")
 def test_untl_field_conversion():
     """
@@ -301,7 +295,6 @@ def test_untl_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_untl_fields == expected_untl_fields
 
-@attr(uses_network="yes")
 def test_file_fetcher_nara():
     profile_path = "profiles/nara.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -313,7 +306,6 @@ def test_file_fetcher_nara():
         assert response["records"]
         break
 
-@attr(uses_network="yes")
 def test_file_fetcher_smithsonian():
     profile_path = "profiles/smithsonian.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)

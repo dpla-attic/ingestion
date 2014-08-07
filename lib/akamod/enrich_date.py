@@ -251,6 +251,11 @@ def test_parse_date_or_range():
         res = parse_date_or_range(i)
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
+def is_sequential_year_range_list(value):
+    return isinstance(value, list) and \
+           all(v.isdigit() for v in value) and \
+           range(int(value[0]), int(value[-1]) + 1) == [int(v) for v in value]
+
 def convert_dates(data, prop, earliest):
     """Converts dates.
 
@@ -268,19 +273,26 @@ def convert_dates(data, prop, earliest):
         if exists(data, p):
             v = getprop(data, p)
             if not isinstance(v, dict):
-                for s in (v if not isinstance(v, basestring) else [v]):
-                    for part in s.split(";"):
-                        display_date = remove_brackets_and_strip(part)
-                        stripped = clean_date(display_date)
-                        if len(stripped) < 4:
-                            continue
-                        a, b = parse_date_or_range(stripped)
-                        if b != DEFAULT_DATETIME_STR:
-                            dates.append( {
-                                    "begin": a,
-                                    "end": b,
-                                    "displayDate" : display_date
-                                })
+                if is_sequential_year_range_list(v):
+                    dates.append( {
+                        "begin": v[0],
+                        "end": v[-1],
+                        "displayDate": "%s-%s" % (v[0], v[-1])
+                    })
+                else:
+                    for s in (v if not isinstance(v, basestring) else [v]):
+                        for part in s.split(";"):
+                            display_date = remove_brackets_and_strip(part)
+                            stripped = clean_date(display_date)
+                            if len(stripped) < 4:
+                                continue
+                            a, b = parse_date_or_range(stripped)
+                            if b != DEFAULT_DATETIME_STR:
+                                dates.append( {
+                                        "begin": a,
+                                        "end": b,
+                                        "displayDate" : display_date
+                                    })
             else:
                 # Already filled in, probably by mapper
                 continue
