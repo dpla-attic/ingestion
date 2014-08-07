@@ -1,0 +1,41 @@
+{
+    "name": "getty",
+    "type": "getty",
+    "endpoint_url": "http://primose1.getty.edu:1701/PrimoWebServices/xservice/search/brief?institution=01GRI&loc=local,scope:%28GETTY_OCP,GETTY_ROSETTA%29&query=facet_local5,exact,DPLA",
+    "endpoint_url_params": {
+        "indx": 1,
+        "bulkSize": 500
+    },
+    "sets": "NotSupported",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/getty",
+        "name": "J. Paul Getty Trust"
+    }, 
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ], 
+    "enrichments_item": [
+        "/select-id?prop=_id",
+        "/dpla_mapper?mapper_type=getty",
+        "/set_context",
+        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fidentifier%2CsourceResource%2Flanguage",
+        "/shred?prop=sourceResource%2Fpublisher%2CsourceResource%2Frelation%2CsourceResource%2Fsubject%2CsourceResource%2Ftitle",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject",
+        "/set_spec_type",
+        "/enrich-type",
+        "/cleanup_language",
+        "/enrich_language",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
+        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
+        "/set_type_from_physical_format",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}

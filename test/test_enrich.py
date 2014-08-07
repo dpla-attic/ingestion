@@ -251,6 +251,34 @@ def test_shred14():
     FETCHED = json.loads(content)
     assert FETCHED == EXPECTED, DictDiffer(EXPECTED, FETCHED).diff()
 
+def test_shred15():
+    INPUT = {
+        "m": [
+           "Crivelli, Vittorio",
+           "Alberti, Antonio (Antonio da Ferrara)",
+           "Pietro da Rimini",
+           "Marche school (14th century)",
+           "Luca di Tomme",
+           "Gentile da Fabriano (Gentile di Niccolo di Giovanni)",
+           "Antoniazzo Romano (Antonio di Benedetto Aquilo)",
+           "Rimini School",
+           "Viviani, Antonio Maria (Il Sordo d'Urbino)",
+           "Ridolfi, Claudio",
+           "Giusto di Gand (Josse van Wassenhove)",
+           "Berruguete, Pedro",
+           "Florence school (15th century)",
+           "Rosselli, Domenico di Giovanni di Bartolomeo",
+           "School of Umbria, 15th century)",
+           "Foligno School (15th century)",
+           "Brandani, Federigo"
+       ]
+    }
+    url = server() + "shred?prop=m"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert str(resp.status).startswith("2"), content
+    FETCHED = json.loads(content)
+    assert FETCHED == INPUT, DictDiffer(INPUT, FETCHED).diff()
+
 def test_unshred1():
     "Valid unshredding"
 

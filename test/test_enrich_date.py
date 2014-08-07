@@ -844,5 +844,19 @@ def test_date_with_ellipses():
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert_same_jsons(EXPECTED, content)
 
+def test_year_range_list():
+    """Date values are extracted from a list of year values"""
+    INPUT = {"date": ["2000", "2001", "2002", "2003", "2004", "2005"]}
+    EXPECTED = {
+        "date": {
+            "displayDate": "2000-2005",
+            "end": "2005",
+            "begin": "2000"
+        }
+    }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert_same_jsons(EXPECTED, content)
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetests")
