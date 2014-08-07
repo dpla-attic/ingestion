@@ -279,35 +279,6 @@ def test_dc_data_provider():
         assert resp.status == 200
         assert_same_jsons(content, EXPECTED_OUTPUT)
 
-def test_iso639_3_substitution():
-    """
-    Should add "name" to language
-    """
-    INPUT = {
-        "sourceResource": {
-            "language": [
-                {"iso639_3": "eng"},
-                {"iso639_3": "ara"}
-            ]
-        }
-    }
-    EXPECTED = {
-        "sourceResource": {
-            "language": [
-                {"iso639_3": "eng", "name": "English"},
-                {"iso639_3": "ara", "name": "Arabic"}
-            ]
-        }
-    }
-
-    prop = "sourceResource%2Flanguage%2Fiso639_3"
-    targ = "sourceResource%2Flanguage%2Fname"
-    subs = "iso639_3"
-    resp, content = _get_server_response(json.dumps(INPUT), prop, targ, subs)
-    print_error_log()
-    assert resp.status == 200
-    assert_same_jsons(content, EXPECTED)
-
 
 def test_substitution_with_missing_value_and_the_same_field():
     """Should remove the field if value is missing from dict."""
