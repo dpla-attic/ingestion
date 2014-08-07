@@ -26,10 +26,7 @@
         "/enrich-subject",
         "/set_spec_type",
         "/enrich-type",
-        "/cleanup_language",
         "/enrich_language",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
         "/set_type_from_physical_format",
         "/validate_mapv3"
     ],
