@@ -22,7 +22,10 @@ def setspectype(body, ctype, prop="sourceResource/type"):
     TYPE_TO_SPEC_TYPE = {
         "book": "Book",
         "government": "Government Document",
-        "periodical": "Serial"
+        "periodical": "Serial",
+        "nonmusic": "Nonmusic",
+        "still image": "Photograph/Pictorial Works",
+        "mixed material": "Mixed Material"
     }
 
     if exists(data, prop):

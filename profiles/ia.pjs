@@ -29,6 +29,9 @@
         },
         "getty": {
             "title": "Getty Research Institute"
+        },
+        "medicalheritagelibrary": {
+            "title": "Medical Heritage Library"
         }
     },
     "contributor": {
@@ -54,11 +57,8 @@
         "/enrich-type",
         "/enrich_location",
         "/geocode",
-        "/cleanup_language",
         "/enrich_language",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fname&substitution=iso639_3",
-        "/lookup?prop=sourceResource%2Flanguage%2Fname&target=sourceResource%2Flanguage%2Fiso639_3&substitution=iso639_3&inverse=True",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&create=True&no_overwrite=True",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
     ],
     "set_provider": [

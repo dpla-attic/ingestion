@@ -391,18 +391,31 @@ def test_enrich_date_parse_format_date_range4():
 
 def test_enrich_date_parse_century_date():
     """Correctly transform a date of format '19th c.'"""
-    INPUT = ["19th c.", "19th century"]
-
     url = server() + "enrich_earliest_date?prop=date"
-
-    for i in INPUT:
-        input = {"date": i}
-        resp,content = H.request(url,"POST",body=json.dumps(input))
-        assert str(resp.status).startswith("2")
-
-        result = json.loads(content)
-        expected = {"date": {"begin": None, "end": None, "displayDate": i}}
-        assert result['date'] == expected[u'date'], "%s != %s" % (result['date'], expected[u'date'])
+    INPUT = {"date": "19th c."}
+    EXPECTED = {
+        "date": {
+            "begin": None,
+            "end": None,
+            "displayDate": "19th c"  # period stripped assumed OK
+        }
+    }
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    result = json.loads(content)
+    assert result["date"] == EXPECTED["date"], \
+           "%s != %s" % (result["date"], EXPECTED["date"])
+    INPUT = {"date": "19th century"}
+    EXPECTED = {
+        "date": {
+            "begin": None,
+            "end": None,
+            "displayDate": "19th century"
+        }
+    }
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    result = json.loads(content)
+    assert result["date"] == EXPECTED["date"], \
+           "%s != %s" % (result["date"], EXPECTED["date"])
 
 
 def test_enrich_date_parse_century_date_with_P():
@@ -414,7 +427,7 @@ def test_enrich_date_parse_century_date_with_P():
         u'date' : {
             u'begin' : None,
             u'end' : None,
-            "displayDate" : "19th c."
+            u"displayDate" : u"19th c"
         }
     }
 
@@ -827,6 +840,20 @@ def test_date_with_ellipses():
                          "begin": "1993-08-05"
                         }
                 }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert_same_jsons(EXPECTED, content)
+
+def test_year_range_list():
+    """Date values are extracted from a list of year values"""
+    INPUT = {"date": ["2000", "2001", "2002", "2003", "2004", "2005"]}
+    EXPECTED = {
+        "date": {
+            "displayDate": "2000-2005",
+            "end": "2005",
+            "begin": "2000"
+        }
+    }
     url = server() + "enrich_earliest_date?prop=date"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert_same_jsons(EXPECTED, content)

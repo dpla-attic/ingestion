@@ -1,9 +1,11 @@
 import re
+import datetime
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, setprop, delprop
 from dplaingestion.selector import getprop
 from collections import OrderedDict
 from dplaingestion.mappers.mapper import Mapper
+from dplaingestion.utilities import strip_unclosed_brackets
 
 class MARCMapper(Mapper):                                                       
 
@@ -41,7 +43,7 @@ class MARCMapper(Mapper):
         self.mapping_dict = {
             lambda t: t == "856":               [(self.map_is_shown_at, "u")],
             lambda t: t == "041":               [(self.map_language, "a")],
-            lambda t: t == "260":               [(self.map_date, "c"),
+            lambda t: t == "260":               [(self.map_display_date, "c"),
                                                  (self.map_publisher, "ab")],
 
             lambda t: t == "300":               [(self.map_extent, "ac")],
@@ -224,6 +226,19 @@ class MARCMapper(Mapper):
 
         return values
 
+    def _get_one_subfield(self, _dict, code):
+        """Get one MARC subfield having the given code
+
+        _dict: a dictionary of one element of the "datafield" list
+        code:  one MARC subfield character code
+        """
+        try:
+            subfields = [sf["#text"] for sf in self._get_subfields(_dict)
+                         if sf["code"] == code]
+            return subfields[0]  # assume there's just one
+        except (KeyError, IndexError):
+            return None
+
     def _get_subject_values(self, _dict, tag):
         """
         Extracts the "#text" values from _dict for the subject field and
@@ -296,9 +311,16 @@ class MARCMapper(Mapper):
         prop = "sourceResource/language"
         self.extend_prop(prop, _dict, codes)
 
-    def map_date(self, _dict, tag, codes):
-        prop = "sourceResource/date"
-        self.extend_prop(prop, _dict, codes)
+    def map_display_date(self, _dict, tag, code):
+        """Map what will be the displayDate to sourceResource/date.
+
+        This will be further processed down the pipeline, or recreated as
+        a dictionary by the Control Field 008 mapping.
+        """
+        date_given = self._get_one_subfield(_dict, code) or ""
+        semi_stripped = date_given.strip(";. ")
+        date = strip_unclosed_brackets(semi_stripped)
+        self.mapped_data["sourceResource"]["date"] = date
 
     def map_publisher(self, _dict, tag, codes):
         prop = "sourceResource/publisher"
@@ -507,7 +529,103 @@ class MARCMapper(Mapper):
                                 func, index, codes = func_tuple
                                 func(_dict, tag, index, codes)
 
+    ### MARC control field 008 date-parsing functions
+    #   http://www.loc.gov/marc/archive/2000/concise/ecbd008s.html
+
+    def cf8_multiple_dates(self, s):
+        """Begin and end dates for MARC control field 008, Type of Date "m" """
+        begin = s[7:11]
+        end   = s[11:15]
+        return (begin, end)
+
+    def cf8_detailed_date(self, s):
+        """Begin and end dates for MARC control field 008, Type of Date "e"
+
+        Since this contains one date, begin and end are the same.
+        """
+        year  = s[7:11]
+        month = s[11:13]
+        day   = s[13:15]
+        date  = "%s-%s-%s" % (year, month, day)
+        return (date, date)
+
+    def cf8_single_date(self, s):
+        """Begin and end dates for MARC control field 008, Type of Date "s"
+
+        Since this contains one date, begin and end are the same.
+        """
+        year = s[7:11]
+        return (year, year)
+
+    def cf8_reissue_date(self, s):
+        """Begin and end dates for MARC control field 008, Type of Date "r"
+
+        Reissue date contains date reissued, and original date, if known.
+        Use the reissue date for both begin and end, because we're representing
+        one date.
+        """
+        year = s[7:11]
+        return (year, year)
+
+    def cf8_pub_copy_date(self, s):
+        """Begin and end dates for MARC control field 008, Type of Date "t"
+
+        Publication and copyright date.  We only represent the publication
+        date.
+        """
+        year = s[7:11]
+        return (year, year)
+
+    def cf8_serial_item_current(self, s):
+        """Begin and end dates, MARC control field 008, type "c"
+
+        Serial item in current publication
+        """
+        begin = s[7:11]
+        # The MARC spec says the end year is supposed to be "9999", but I've
+        # seen otherwise, and the current year looks better.  Since "9999" is
+        # a bogus value, anyway, I'm using the current year.
+        end   = str(datetime.datetime.today().year)
+        return (begin, end)
+
+    def cf8_serial_item_ceased_pub(self, s):
+        """Begin and end dates, MARC control field 008, type "d"
+
+        Serial item that has ceased publication
+        """
+        begin = s[7:11]
+        end   = s[11:15]
+        return (begin, end)
+
+    def display_date_for_none_given(self, begin, end):
+        """Construct a display date if none was given in subfield 260"""
+        if begin != end:
+            return "%s-%s" % (begin, end)
+        else:
+            return begin
+
+    def set_begin_end_dates(self, begin, end):
+        """Given begin and end, set sourceResource/date properties"""
+        display_date = getprop(self.mapped_data, "sourceResource/date", True)
+        date = {
+                "displayDate": display_date or \
+                               self.display_date_for_none_given(begin, end),
+                "begin": begin,
+                "end": end
+               }
+        setprop(self.mapped_data, "sourceResource/date", date)
+
     def map_controlfield_tags(self):
+        date_func = {
+                     "m": "cf8_multiple_dates",
+                     "q": "cf8_multiple_dates",
+                     "s": "cf8_single_date",
+                     "e": "cf8_detailed_date",
+                     "r": "cf8_reissue_date",
+                     "t": "cf8_pub_copy_date",
+                     "d": "cf8_serial_item_ceased_pub",
+                     "c": "cf8_serial_item_current"
+                    }
         for item in iterify(getprop(self.provider_data, "controlfield")):
             if "#text" in item and "tag" in item:
                 if item["tag"] == "001":
@@ -521,6 +639,11 @@ class MARCMapper(Mapper):
                         pass
                 elif item["tag"] == "008":
                     text = item["#text"]
+                    type_of_date = text[6]
+                    if type_of_date in date_func:
+                        f = getattr(self, date_func[type_of_date])
+                        (begin, end) = f(text)
+                        self.set_begin_end_dates(begin, end)
                     if len(text) > 18:
                         self.control_008_18 = text[18]
                     if len(text) > 21:

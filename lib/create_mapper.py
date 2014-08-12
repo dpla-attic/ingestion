@@ -48,13 +48,17 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.uiuc_mapper import UIUCMapper
         return UIUCMapper(data)
 
+    def _create_mwdl_mapper(data):
+        from dplaingestion.mappers.mwdl_mapper import MWDLMapper
+        return MWDLMapper(data)
+
     def _create_hathi_mapper(data):
         from dplaingestion.mappers.hathi_mapper import HathiMapper
         return HathiMapper(data)
 
-    def _create_primo_mapper(data):
-        from dplaingestion.mappers.primo_mapper import PrimoMapper
-        return PrimoMapper(data)
+    def _create_getty_mapper(data):
+        from dplaingestion.mappers.getty_mapper import GettyMapper
+        return GettyMapper(data)
 
     def _create_harvard_mapper(data):
         from dplaingestion.mappers.harvard_mapper import HarvardMapper
@@ -84,8 +88,9 @@ def create_mapper(mapper_type, data):
         'nypl':         lambda d: _create_nypl_mapper(d),
         'untl':         lambda d: _create_untl_mapper(d),
         'uiuc':         lambda d: _create_uiuc_mapper(d),
+        'mwdl':         lambda d: _create_mwdl_mapper(d),
         'hathi':        lambda d: _create_hathi_mapper(d),
-        'primo':        lambda d: _create_primo_mapper(d),
+        'getty':        lambda d: _create_getty_mapper(d),
         'harvard':      lambda d: _create_harvard_mapper(d),
         'digitalnc':    lambda d: _create_digitalnc_mapper(d),
         'uiuc_marc':    lambda d: _create_uiuc_marc_mapper(d),

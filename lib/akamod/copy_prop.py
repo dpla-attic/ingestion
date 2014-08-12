@@ -2,25 +2,28 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import delprop, getprop, setprop, exists
+from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.utilities import iterify
 
 @simple_service('POST', 'http://purl.org/la/dp/copy_prop', 'copy_prop',
     'application/json')
-def copyprop(body, ctype, prop=None, to_prop=None, create=False, key=None,
-    remove=None, no_replace=None, no_overwrite=None):
-    """Copies value in one prop to another prop.
+def copyprop(body, ctype, prop=None, to_prop=None, skip_if_exists=None):
+    """Copies value in one prop to another prop. For use with string and/or
+       list prop value types. If to_prop exists, its value is iterified then
+       extended with the iterified value of prop. If the to_prop parent prop
+       (ie hasView in hasView/rights) does not exist, the from_prop value is
+       not copied and an error is logged.
 
     Keyword arguments:
     body -- the content to load
     ctype -- the type of content
     prop -- the prop to copy from (default None)
     to_prop -- the prop to copy into (default None)
-    create -- creates to_prop if True (default False)
-    key -- the key to use if to_prop is a dict (default None)
-    remove  -- removes prop if True (default False)
-    no_replace -- creates list of to_prop string and appends prop if True
-    
+    skip_if_exists -- set to True to not copy if to_prop exists
     """
+
+    def is_string_or_list(value):
+        return (isinstance(value, basestring) or isinstance(value, list))
 
     try:
         data = json.loads(body)
@@ -29,50 +32,34 @@ def copyprop(body, ctype, prop=None, to_prop=None, create=False, key=None,
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    if exists(data, to_prop) and no_overwrite:
+
+    if exists(data, to_prop) and skip_if_exists:
         pass
     else:
-        if exists(data, prop) and create and not exists(data, to_prop):
-            val = {} if key else ""
-            setprop(data, to_prop, val)
+        if exists(data, prop):
+            if exists(data, to_prop):
+                from_value = getprop(data, prop)
+                if not is_string_or_list(from_value):
+                    msg = "Prop %s " % prop + \
+                          "is not a string/list for record %s" % data["id"]
+                    logger.error(msg)
+                    return body
 
-        if exists(data, prop) and exists(data, to_prop):
-            val = getprop(data, prop)
-            to_element = getprop(data, to_prop)
+                to_value = getprop(data, to_prop)
+                if not is_string_or_list(to_value):
+                    msg = "Prop %s " % to_prop + \
+                          "is not a string/list for record %s" % data["id"]
+                    logger.error(msg)
+                    return body
 
-            if isinstance(to_element, basestring):
-                if no_replace:
-                    el = [to_element] if to_element else []
-                    el.append(val)
-                    # Flatten
-                    val = [e for s in el for e in (s if not isinstance(s, basestring) else [s])]
-                setprop(data, to_prop, val)
+                to_value = iterify(to_value)
+                to_value.extend(iterify(from_value))
+                setprop(data, to_prop, to_value)
             else:
-                # If key is set, assume to_element is dict or list of dicts
-                if key:
-                    if not isinstance(to_element, list):
-                        to_element = [to_element]
-                    for dict in to_element:
-                        if exists(dict, key) or create:
-                            setprop(dict, key, val)
-                        else:
-                            logger.error("Key %s does not exist in %s" %
-                                         (key, to_prop))
-                else:
-                    # Handle case where to_element is a list
-                    if isinstance(to_element, list):
-                        if isinstance(val, list):
-                            to_element = to_element + val
-                        else:
-                            to_element.append(val)
-                        setprop(data, to_prop, to_element) 
-                    else:
-                        # to_prop is dictionary but no key was passed.
-                        logger.warn("%s is a dict but no key was passed" %
-                                    to_prop)
-                        setprop(data, to_prop, val)
-
-            if remove:
-                delprop(data, prop)
+                try:
+                    setprop(data, to_prop, getprop(data, prop))
+                except Exception, e:
+                    logger.error("Could not copy %s to %s: %s" %
+                                 (prop, to_prop, e))
 
     return json.dumps(data)

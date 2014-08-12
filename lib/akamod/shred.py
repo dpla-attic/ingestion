@@ -26,11 +26,36 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON\n" + str(e)
 
-    def single_parens(s):
-        return (s.count("(") == 0 or s.count(")") == 0)
+    def index_for_first_open_paren(_list):
+        for v in _list:
+            if v.count("(") > v.count(")"):
+                return _list.index(v)
+        return None
 
-    def mismatch_parens(s):
-        return s.count("(") != s.count(")")
+    def index_for_matching_close_paren(_list):
+        index = None
+        for v in _list:
+            if index is not None and v.count("(") > v.count(")"):
+                return index
+            elif v.count(")") > v.count("("):
+                index = _list.index(v)
+        return index
+
+    def rejoin_partials(_list, delim):
+        index1 = index_for_first_open_paren(_list)
+        index2 = index_for_matching_close_paren(_list)
+        if index1 is not None and index2 is not None:
+            if index1 == 0 and index2 == len(_list) - 1:
+                return [delim.join(_list)]
+            elif index1 == 0:
+                _list = [delim.join(_list[:index2+1])] + _list[index2+1:]
+            elif index2 == len(_list) - 1:
+                _list = _list[:index1] + [delim.join(_list[index1:])]
+            else:
+                _list = _list[:index1] + [delim.join(_list[index1:index2+1])] + _list[index2+1:]
+            return rejoin_partials(_list, delim)
+        else:
+            return _list
 
     for p in prop.split(','):
         if exists(data, p):
@@ -50,10 +75,8 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
 
                 shredded = [""]
                 for s in re.split(re.escape(delim), v):
-                    if not single_parens(v) and mismatch_parens(shredded[-1]):
-                        shredded[-1] += "%s%s" % (delim, s)
-                    else:
-                        shredded.append(s)
+                    shredded.append(s)
+                shredded = rejoin_partials(shredded, delim)
                 shredded = [i.strip() for i in shredded if i.strip()]
  
                 if not keepdup:

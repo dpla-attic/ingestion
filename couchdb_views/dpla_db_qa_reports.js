@@ -107,6 +107,13 @@
            "map": "function(doc) { provider = doc._id.split('--').shift(); v = doc.provider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { if ('name' in v[i]) {emit([provider, v[i].name], 1);} else {emit([provider, '__MISSING_PROVIDER_NAME__'], 1); }}} else {emit([provider, '__MISSING_PROVIDER__'], 1); }}",
            "reduce": "_count"
        },
+       "intermediate_provider": {
+           "map": "function(doc) { provider = doc._id.split('--').shift(); v = doc.intermediateProvider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit([provider, doc['id']], v[i]); }} else { emit([provider, doc['id']], '__MISSING_INTERMEDIATE_PROVIDER__'); }}"
+       },
+       "intermediate_provider_count": {
+           "map": "function(doc) { provider = doc._id.split('--').shift(); v = doc.intermediateProvider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) { emit([provider, v[i]], 1); }} else { emit([provider, '__MISSING_INTERMEDIATE_PROVIDER__'], 1); }}",
+           "reduce": "_count"
+       },
        "data_provider": {
            "map": "function(doc) { provider = doc._id.split('--').shift(); v = doc.dataProvider; if (v) { if (v.constructor.toString().indexOf('Array') == -1) { v = new Array(v); } for (i=0; i<v.length; i++) {emit([provider, doc['id']], v[i]);}} else {emit([provider, doc['id']], '__MISSING_DATAPROVIDER__'); }}"
        },
