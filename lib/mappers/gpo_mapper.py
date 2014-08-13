@@ -1,4 +1,5 @@
 import re
+from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.marc_mapper import MARCMapper
@@ -160,7 +161,7 @@ class GPOMapper(MARCMapper):
                 return subfield["#text"]
         return None
 
-    def map_contributor(self, _dict, tag, codes):
+    def map_contributor(self, _dict, tag, codes, ind1, ind2):
         prop = "sourceResource/contributor"
         values = self._get_values(_dict, codes)
         subfield_e = self._get_subfield_e(_dict)
@@ -169,7 +170,7 @@ class GPOMapper(MARCMapper):
         if subfield_e and subfield_e != "author":
             self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_creator(self, _dict, tag, codes):
+    def map_creator(self, _dict, tag, codes, ind1, ind2):
         prop = "sourceResource/creator"
         values = self._get_values(_dict, codes)
         if tag in ("700", "710", "711"):
@@ -179,31 +180,37 @@ class GPOMapper(MARCMapper):
                 return
         self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_date(self, _dict, tag, codes):
+    def map_date(self, _dict, tag, codes, ind1, ind2):
         values = self._get_values(_dict, codes)
         self.date[tag].extend(values)
 
-    def map_description(self, _dict, tag, codes):
+    def map_description(self, _dict, tag, codes, ind1, ind2):
         values = self._get_values(_dict, codes)
         if tag in ("310", "583"):
             self.description[tag].extend(values)
         else:
             self.description["5xx"].extend(values)
 
-    def map_type(self, _dict, tag, codes):
+    def map_type(self, _dict, tag, codes, ind1, ind2):
         prop = "sourceResource/type"
         values = self._get_contributor_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_title(self, _dict, tag, codes):
+    def map_title(self, _dict, tag, codes, ind1, ind2):
         prop = "sourceResource/title"
         values = self._get_contributor_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_extent(self, _dict, tag, codes):
+    def map_extent(self, _dict, tag, codes, ind1, ind2):
         prop = "sourceResource/extent"
         values = [re.sub(":$", "", v) for v in self._get_values(_dict, codes)]
         self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_publisher(self, _dict, tag, codes, ind1, ind2):
+        prop = "sourceResource/publisher"
+        if tag == "264" and ind2 != "1":
+          return
+        self.extend_prop(prop, _dict, codes)
 
     def update_title(self):
         prop = "sourceResource/title"

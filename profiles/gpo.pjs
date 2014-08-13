@@ -16,7 +16,7 @@
         "/select-id?prop=header%2Fidentifier",
         "/dpla_mapper?mapper_type=gpo",
         "/set_context",
-        "/dedup_value?prop=sourceResource%2Ftemporal", 
+        "/dedup_value?prop=sourceResource%2Ftemporal%2CsourceResource%2Fspatial",
         "/cleanup_value",
         "/enrich_earliest_date",
         "/enrich-subject",
