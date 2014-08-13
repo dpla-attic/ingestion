@@ -9,7 +9,8 @@ from dateutil.parser import parse as dateutil_parse
 from zen import dateparser
 from dplaingestion.selector import getprop, setprop, delprop, exists
 from dplaingestion.utilities import iterify, clean_date, \
-                                    remove_brackets_and_strip
+                                    remove_all_brackets_and_strip, \
+                                    remove_single_brackets_and_strip
 
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
@@ -282,8 +283,12 @@ def convert_dates(data, prop, earliest):
                 else:
                     for s in (v if not isinstance(v, basestring) else [v]):
                         for part in s.split(";"):
-                            display_date = remove_brackets_and_strip(part)
-                            stripped = clean_date(display_date)
+                            display_date = remove_single_brackets_and_strip(
+                                            part
+                                            )
+                            stripped = clean_date(
+                                        remove_all_brackets_and_strip(part)
+                                        )
                             if len(stripped) < 4:
                                 continue
                             a, b = parse_date_or_range(stripped)
@@ -291,7 +296,7 @@ def convert_dates(data, prop, earliest):
                                 dates.append( {
                                         "begin": a,
                                         "end": b,
-                                        "displayDate" : display_date
+                                        "displayDate": display_date
                                     })
             else:
                 # Already filled in, probably by mapper
