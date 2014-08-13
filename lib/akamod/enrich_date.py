@@ -251,10 +251,12 @@ def test_parse_date_or_range():
         res = parse_date_or_range(i)
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
-def is_sequential_year_range_list(value):
+def is_year_range_list(value):
+    """Returns True if value is a list of years in increasing order, else False
+    """
     return isinstance(value, list) and \
            all(v.isdigit() for v in value) and \
-           range(int(value[0]), int(value[-1]) + 1) == [int(v) for v in value]
+           value == sorted(value, key=int)
 
 def convert_dates(data, prop, earliest):
     """Converts dates.
@@ -273,7 +275,7 @@ def convert_dates(data, prop, earliest):
         if exists(data, p):
             v = getprop(data, p)
             if not isinstance(v, dict):
-                if is_sequential_year_range_list(v):
+                if is_year_range_list(v):
                     dates.append( {
                         "begin": v[0],
                         "end": v[-1],
