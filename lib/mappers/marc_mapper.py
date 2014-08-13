@@ -303,11 +303,11 @@ class MARCMapper(Mapper):
 
         return values
 
-    def map_is_shown_at(self, _dict, tag, codes, ind1, ind2):
+    def map_is_shown_at(self, _dict, tag, codes):
         prop = "isShownAt"
         self.extend_prop(prop, _dict, codes)
 
-    def map_language(self, _dict, tag, codes, ind1, ind2):
+    def map_language(self, _dict, tag, codes):
         def _extract_codes(values):
             """Splits the language values every third character"""
             language = []
@@ -322,7 +322,7 @@ class MARCMapper(Mapper):
           values = _extract_codes(values)
         self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_display_date(self, _dict, tag, codes, ind1, ind2):
+    def map_display_date(self, _dict, tag, codes):
         """Map what will be the displayDate to sourceResource/date.
 
         This will be further processed down the pipeline, or recreated as
@@ -333,44 +333,44 @@ class MARCMapper(Mapper):
         date = strip_unclosed_brackets(semi_stripped)
         self.mapped_data["sourceResource"]["date"] = date
 
-    def map_publisher(self, _dict, tag, codes, ind1, ind2):
+    def map_publisher(self, _dict, tag, codes):
         prop = "sourceResource/publisher"
         self.extend_prop(prop, _dict, codes)
 
-    def map_extent(self, _dict, tag, codes, ind1, ind2):
+    def map_extent(self, _dict, tag, codes):
         prop = "sourceResource/extent"
         self.extend_prop(prop, _dict, codes)
 
-    def map_format(self, _dict, tag, codes, ind1, ind2):
+    def map_format(self, _dict, tag, codes):
         prop = "sourceResource/format"
         self.extend_prop(prop, _dict, codes)
 
-    def map_identifier(self, _dict, tag, codes, ind1, ind2):
+    def map_identifier(self, _dict, tag, codes):
         prop = "sourceResource/identifier"
         label = self.identifier_tag_labels.get(tag)
         self.extend_prop(prop, _dict, codes, label)
 
-    def map_creator(self, _dict, tag, codes, ind1, ind2):
+    def map_creator(self, _dict, tag, codes):
         prop = "sourceResource/creator"
         self.extend_prop(prop, _dict, codes)
 
-    def map_relation(self, _dict, tag, codes, ind1, ind2):
+    def map_relation(self, _dict, tag, codes):
         prop = "sourceResource/relation"
         self.extend_prop(prop, _dict, codes)
 
-    def map_description(self, _dict, tag, codes, ind1, ind2):
+    def map_description(self, _dict, tag, codes):
         prop = "sourceResource/description"
         self.extend_prop(prop, _dict, codes)
 
-    def map_rights(self, _dict, tag, codes, ind1, ind2):
+    def map_rights(self, _dict, tag, codes):
         prop = "sourceResource/rights"
         self.extend_prop(prop, _dict, codes)
 
-    def map_temporal(self, _dict, tag, codes, ind1, ind2):
+    def map_temporal(self, _dict, tag, codes):
         prop = "sourceResource/temporal"
         self.extend_prop(prop, _dict, codes)
 
-    def map_spatial(self, _dict, tag, codes, ind1, ind2):
+    def map_spatial(self, _dict, tag, codes):
         prop = "sourceResource/spatial"
         values = [re.sub("\.$", "", v) for v in
                   self._get_values(_dict, codes)]
@@ -378,12 +378,12 @@ class MARCMapper(Mapper):
         [non_dupes.append(v) for v in values if v not in non_dupes]
         self.extend_prop(prop, _dict, codes, values=non_dupes)
     
-    def map_subject(self, _dict, tag, codes, ind1, ind2):
+    def map_subject(self, _dict, tag, codes):
         prop = "sourceResource/subject"
         values = self._get_subject_values(_dict, tag)
         self.extend_prop(prop, _dict, codes, values=values)
 
-    def map_contributor(self, _dict, tag, codes, ind1, ind2):
+    def map_contributor(self, _dict, tag, codes):
         prop = "sourceResource/contributor"
         values = self._get_contributor_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
@@ -404,7 +404,7 @@ class MARCMapper(Mapper):
             title[index] = values
             setprop(self.mapped_data, prop, title)
 
-    def map_type_and_spec_type(self, _dict, tag, codes, ind1, ind2):
+    def map_type_and_spec_type(self, _dict, tag, codes):
         ret_dict = {"type": None, "specType": None}
         for v in self._get_values(_dict, codes):
             if v in self.type_mapping["datafield"]:
@@ -511,8 +511,6 @@ class MARCMapper(Mapper):
         for item in iterify(getprop(self.provider_data, "datafield")):
             for _dict in iterify(item):
                 tag = _dict.get("tag", None)
-                ind1 = _dict.get("ind1", None)
-                ind2 = _dict.get("ind2", None)
                 # Skip cases where there is no tag or where tag == "ERR"
                 try:
                     int(tag)
@@ -522,15 +520,18 @@ class MARCMapper(Mapper):
                 if tag == "086" or tag == "087":
                     self.datafield_086_or_087 = True
 
+                if tag == "264" and _dict.get("ind2") != "1":
+                    continue
+
                 for match, func_tuples in self.mapping_dict.items():
                     if match(tag):
                         for func_tuple in func_tuples:
                             if len(func_tuple) == 2:
                                 func, codes = func_tuple
-                                func(_dict, tag, codes, ind1, ind2)
+                                func(_dict, tag, codes)
                             elif len(func_tuple) == 3:
                                 func, index, codes = func_tuple
-                                func(_dict, tag, index, codes, ind1, ind2)
+                                func(_dict, tag, index, codes)
 
     ### MARC control field 008 date-parsing functions
     #   http://www.loc.gov/marc/archive/2000/concise/ecbd008s.html
