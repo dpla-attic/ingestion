@@ -3,7 +3,9 @@
    "language": "javascript",
    "views": {
        "by_contributor": {
-           "map": "function(doc) { emit(doc.contributor, null) }"
+           "map": "function(doc) {
+                       emit(doc.contributor, null);
+                   }"
        }
    }
 }

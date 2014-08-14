@@ -103,7 +103,8 @@ class Couch(object):
             if file.startswith(db_name):
                 fname = os.path.join(self.views_directory, file)
                 with open(fname, "r") as f:
-                    design_doc = json.load(f)
+                    s = f.read().replace("\n", "")
+                    design_doc = json.loads(s)
 
                 # Check if the design doc has changed
                 prev_design_doc = db.get(design_doc["_id"], {})
@@ -118,7 +119,8 @@ class Couch(object):
                 # Build views
                 if file in build_views_from_file:
                     design_doc_name = design_doc["_id"].split("_design/")[-1]
-                    for view in design_doc["views"]:
+                    real_views = (v for v in design_doc["views"] if v != "lib")
+                    for view in real_views:
                         view_path = "%s/%s" % (design_doc_name, view)
                         start = time.time()
                         try:
