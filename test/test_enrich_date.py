@@ -242,6 +242,33 @@ def test_enrich_date_parse_format_date_range1():
     assert result['date'] == EXPECTED[u'date']
 
 
+def test_date_with_single_brackets():
+    """Should transform date with brackets and remove single bracket from
+       displayDate
+    """
+
+    ranges = [
+        "1960-05-01]",
+        "[  1960-05-01  "
+    ]
+
+    for r in ranges:
+        INPUT = {"date": r}
+        EXPECTED = {
+            u'date' : {
+                u'begin' : u'1960-05-01',
+                u'end' : u'1960-05-01',
+                "displayDate" : u'1960-05-01'
+            }
+        }
+
+        url = server() + "enrich_earliest_date?prop=date"
+
+        resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+        assert str(resp.status).startswith("2")
+        assert_same_jsons(EXPECTED, content)
+
+
 def test_date_with_brackets():
     """Should transform date with brackets."""
 
@@ -256,7 +283,7 @@ def test_date_with_brackets():
             u'date' : {
                 u'begin' : u'1960-05-01',
                 u'end' : u'1960-05-01',
-                "displayDate" : "1960-05-01"
+                "displayDate" : r
             }
         }
 
@@ -270,19 +297,19 @@ def test_date_with_brackets():
 def test_range_years_with_brackets():
     """Should transform dates range with brackets."""
     ranges = [
-            ("1960 - 1963]",    "1960 - 1963"),
-            ("[ 1960 - 1963 ]", "1960 - 1963"),
-            ("[1960 / 1963]",   "1960 / 1963"),
-            ("[ 1960 / 1963 ]", "1960 / 1963"),
+        "[1960 - 1963]",
+        "[ 1960 - 1963 ]",
+        "[1960 / 1963]",
+        "[ 1960 / 1963 ]"
     ]
 
     for r in ranges:
-        INPUT = {"date": r[0]}
+        INPUT = {"date": r}
         EXPECTED = {
             u'date' : {
                 u'begin' : u'1960',
                 u'end' : u'1963',
-                "displayDate" : r[1]
+                "displayDate" : r
             }
         }
 
@@ -297,20 +324,20 @@ def test_range_with_brackets():
     """Should transform date range with brackets."""
 
     ranges = [
-            ("1960-05-01 - 1960-05-15",     "1960-05-01 - 1960-05-15"),
-            ("[ 1960-05-01 - 1960-05-15 ]", "1960-05-01 - 1960-05-15"),
-            ("[1960-05-01 - 1960-05-15]",   "1960-05-01 - 1960-05-15"),
-            ("[1960-05-01 / 1960-05-15]",   "1960-05-01 / 1960-05-15"),
-            ("[1960-05-01/1960-05-15]",   "1960-05-01/1960-05-15"),
+        "1960-05-01 - 1960-05-15",
+        "[ 1960-05-01 - 1960-05-15 ]",
+        "[1960-05-01 - 1960-05-15]",
+        "[1960-05-01 / 1960-05-15]",
+        "[1960-05-01/1960-05-15]"
     ]
 
     for r in ranges:
-        INPUT = {"date": r[0]}
+        INPUT = {"date": r}
         EXPECTED = {
             u'date' : {
                 u'begin' : u'1960-05-01',
                 u'end' : u'1960-05-15',
-                "displayDate" : r[1]
+                "displayDate" : r
             }
         }
 
@@ -795,7 +822,7 @@ def test_invalid_end_dates():
 def test_enrich_dates_square_brackets():
     """Should remove square brackets"""
     INPUT = {"date": "[199?]-"}
-    EXPECTED = {"date": {"begin": "1990", "end": "1999", "displayDate": "199?-"}}
+    EXPECTED = {"date": {"begin": "1990", "end": "1999", "displayDate": "[199?]-"}}
 
     url = server() + "enrich_earliest_date?prop=date"
 
@@ -835,7 +862,7 @@ def test_date_with_ellipses():
     INPUT = {"date": "[1993-08-05..1993-08-08]"}
     EXPECTED = {
                 "date": {
-                         "displayDate": "1993-08-05..1993-08-08",
+                         "displayDate": INPUT["date"],
                          "end": "1993-08-08",
                          "begin": "1993-08-05"
                         }
@@ -846,11 +873,27 @@ def test_date_with_ellipses():
 
 def test_year_range_list():
     """Date values are extracted from a list of year values"""
-    INPUT = {"date": ["2000", "2001", "2002", "2003", "2004", "2005"]}
+    INPUT = {"date": ["2000", "2002", "2004", "2010"]}
     EXPECTED = {
         "date": {
-            "displayDate": "2000-2005",
-            "end": "2005",
+            "displayDate": "2000-2010",
+            "end": "2010",
+            "begin": "2000"
+        }
+    }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert_same_jsons(EXPECTED, content)
+
+def test_non_increasing_year_list():
+    """Should extract earliest date since list values are not in increasing
+       order
+    """
+    INPUT = {"date": ["2000", "2002", "2004", "2010", "2009"]}
+    EXPECTED = {
+        "date": {
+            "displayDate": "2000",
+            "end": "2000",
             "begin": "2000"
         }
     }

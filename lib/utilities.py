@@ -105,7 +105,18 @@ def clean_date(d):
         d = re.sub(p, r, d)
     return d.strip()
 
-def remove_brackets_and_strip(d):
+def remove_single_brackets_and_strip(d):
+    """
+    Return a given date-range string without single, unmatched square brackets
+    """
+    bracket = ""
+    if d.count("[") == 1 and d.count("]") == 0:
+        bracket = "["
+    elif d.count("]") == 1 and d.count("[") == 0:
+        bracket = "]"
+    return d.replace(bracket, "").strip(". ")
+
+def remove_all_brackets_and_strip(d):
     """Return a given date-range string without square brackets"""
     return d.replace("[", "").replace("]", "").strip(". ")
 

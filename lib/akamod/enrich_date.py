@@ -9,7 +9,8 @@ from dateutil.parser import parse as dateutil_parse
 from zen import dateparser
 from dplaingestion.selector import getprop, setprop, delprop, exists
 from dplaingestion.utilities import iterify, clean_date, \
-                                    remove_brackets_and_strip
+                                    remove_all_brackets_and_strip, \
+                                    remove_single_brackets_and_strip
 
 HTTP_INTERNAL_SERVER_ERROR = 500
 HTTP_TYPE_JSON = 'application/json'
@@ -251,10 +252,12 @@ def test_parse_date_or_range():
         res = parse_date_or_range(i)
         assert res == DATE_TESTS[i], "For input '%s', expected '%s' but got '%s'"%(i,DATE_TESTS[i],res)
 
-def is_sequential_year_range_list(value):
+def is_year_range_list(value):
+    """Returns True if value is a list of years in increasing order, else False
+    """
     return isinstance(value, list) and \
            all(v.isdigit() for v in value) and \
-           range(int(value[0]), int(value[-1]) + 1) == [int(v) for v in value]
+           value == sorted(value, key=int)
 
 def convert_dates(data, prop, earliest):
     """Converts dates.
@@ -273,7 +276,7 @@ def convert_dates(data, prop, earliest):
         if exists(data, p):
             v = getprop(data, p)
             if not isinstance(v, dict):
-                if is_sequential_year_range_list(v):
+                if is_year_range_list(v):
                     dates.append( {
                         "begin": v[0],
                         "end": v[-1],
@@ -282,8 +285,12 @@ def convert_dates(data, prop, earliest):
                 else:
                     for s in (v if not isinstance(v, basestring) else [v]):
                         for part in s.split(";"):
-                            display_date = remove_brackets_and_strip(part)
-                            stripped = clean_date(display_date)
+                            display_date = remove_single_brackets_and_strip(
+                                            part
+                                            )
+                            stripped = clean_date(
+                                        remove_all_brackets_and_strip(part)
+                                        )
                             if len(stripped) < 4:
                                 continue
                             a, b = parse_date_or_range(stripped)
@@ -291,7 +298,7 @@ def convert_dates(data, prop, earliest):
                                 dates.append( {
                                         "begin": a,
                                         "end": b,
-                                        "displayDate" : display_date
+                                        "displayDate": display_date
                                     })
             else:
                 # Already filled in, probably by mapper
