@@ -873,11 +873,27 @@ def test_date_with_ellipses():
 
 def test_year_range_list():
     """Date values are extracted from a list of year values"""
-    INPUT = {"date": ["2000", "2001", "2002", "2003", "2004", "2005"]}
+    INPUT = {"date": ["2000", "2002", "2004", "2010"]}
     EXPECTED = {
         "date": {
-            "displayDate": "2000-2005",
-            "end": "2005",
+            "displayDate": "2000-2010",
+            "end": "2010",
+            "begin": "2000"
+        }
+    }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert_same_jsons(EXPECTED, content)
+
+def test_non_increasing_year_list():
+    """Should extract earliest date since list values are not in increasing
+       order
+    """
+    INPUT = {"date": ["2000", "2002", "2004", "2010", "2009"]}
+    EXPECTED = {
+        "date": {
+            "displayDate": "2000",
+            "end": "2000",
             "begin": "2000"
         }
     }
