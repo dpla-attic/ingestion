@@ -327,7 +327,7 @@ class UNTLMapper(Mapper):
                     title.append(s["#text"])
 
             if title:
-                self.update_source_resource({"title": title})
+                self.update_source_resource({"title": self._striptags(title)})
 
     def map_rights(self):
         prop = self.root_key + "rights"

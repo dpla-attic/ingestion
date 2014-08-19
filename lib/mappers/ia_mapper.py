@@ -22,7 +22,8 @@ class IAMapper(Mapper):
         for prop in iterify(from_props):
             from_prop = self.meta_key + prop
             if exists(self.provider_data, from_prop):
-                prop_value.append(getprop(self.provider_data, from_prop))
+                s = getprop(self.provider_data, from_prop)
+                prop_value.append(self._striptags(s))
 
         if len(prop_value) == 1:
             prop_value = prop_value[0]

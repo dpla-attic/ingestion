@@ -23,7 +23,7 @@ class NYPLMapper(MODSMapper):
             # Title is in the last titleInfo element
             title = None
             try:
-                title = title_info[-1].get("title")
+                title = self._striptags(title_info[-1].get("title"))
             except:
                 logger.error("Error setting sourceResource.title for %s" %
                              self.provider_data["_id"])

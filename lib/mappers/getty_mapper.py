@@ -84,7 +84,7 @@ class GettyMapper(PrimoMapper):
                 [title.append(v) for v in iterify(values) if v not in title]
 
         if title:
-            self.update_source_resource({"title": title})
+            self.update_source_resource({"title": self._striptags(title)})
 
     def map_is_shown_at(self):
         record_id = getprop(self.provider_data,

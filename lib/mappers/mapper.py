@@ -1,5 +1,7 @@
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists
+from markupsafe import Markup
+
 
 class Mapper(object):
     """The base class for all mappers.
@@ -252,3 +254,13 @@ class Mapper(object):
 
     def update_mapped_fields(self):
         pass
+
+    def _striptags(o):
+        if isinstance(o, basestring):
+            return Markup(o).striptags()
+        elif isinstance(o, list):
+            return [self._striptags(e) for e in o]
+        elif isinstance(o, dict):
+            return {k: self._striptags(o[k]) for k in o}
+        else:
+            return o

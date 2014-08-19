@@ -99,7 +99,9 @@ class UVAMapper(MODSMapper):
             title = filter(None, title)
 
             if title:
-                self.update_source_resource({"title": title[-1]})
+                self.update_source_resource(
+                        {"title": self._striptags(title[-1])}
+                        )
 
     def map_date(self):
         prop = "originInfo"

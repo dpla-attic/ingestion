@@ -402,7 +402,7 @@ class MARCMapper(Mapper):
                 t[0] = re.sub("\.$", "", t[0].strip())
                 values = ["; ".join(t)]
             title[index] = values
-            setprop(self.mapped_data, prop, title)
+            setprop(self.mapped_data, prop, self._striptags(title))
 
     def map_type_and_spec_type(self, _dict, tag, codes):
         ret_dict = {"type": None, "specType": None}

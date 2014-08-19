@@ -168,6 +168,7 @@ class OAIMODSMapper(Mapper):
 
             title = re.sub("\.\.", "\.", title)
             title = re.sub(",,", ",", title)
+            title = self._striptags(title)
 
             if title:
                 self.update_source_resource({"title": title})

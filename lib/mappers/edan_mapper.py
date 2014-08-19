@@ -264,7 +264,7 @@ class EDANMapper(Mapper):
                 title = s.get("#text")
 
         if title:
-            self.update_source_resource({"title": title})
+            self.update_source_resource({"title": self._striptags(title)})
 
     def map_rights(self):
         rights = []

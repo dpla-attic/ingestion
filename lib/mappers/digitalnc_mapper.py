@@ -115,7 +115,7 @@ class DigitalNCMapper(OAIMODSMapper):
 
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
-                _dict["title"].append(s.get("title"))
+                _dict["title"].append(self._striptags(s.get("title")))
 
             self.update_source_resource(self.clean_dict(_dict))
 

@@ -35,7 +35,8 @@ class NARAMapper(Mapper):
         prop = "title-only"
 
         if prop in self.provider_data:
-            self.update_source_resource({"title": self.provider_data[prop]})
+            title = self._striptags(self.provider_data[prop])
+            self.update_source_resource({"title": title})
 
     def map_language(self):
         language = self.extract_xml_items("languages", "language")

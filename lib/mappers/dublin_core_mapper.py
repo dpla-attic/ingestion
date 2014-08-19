@@ -18,7 +18,9 @@ class DublinCoreMapper(Mapper):
     # sourceResource mapping
     def source_resource_prop_to_prop(self, prop):
         if exists(self.provider_data, prop):
-            self.update_source_resource({prop: self.provider_data.get(prop)})
+            self.update_source_resource(
+                {prop: self._striptags(self.provider_data.get(prop))}
+                )
             
     def map_collection(self):
         self.source_resource_prop_to_prop("collection")
