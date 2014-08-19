@@ -60,9 +60,6 @@ class MARCMapper(Mapper):
                             "111"):             [(self.map_creator, None)],
             lambda t: (760 <= int(t) <= 787):   [(self.map_relation, None)],
 
-            lambda t: (t != "538" and
-                       t.startswith("5")):      [(self.map_description, "a")],
-
             lambda t: t in ("506", "540"):      [(self.map_rights, None)],
             lambda t: t == "648":               [(self.map_temporal, None)],
 
@@ -82,6 +79,7 @@ class MARCMapper(Mapper):
                                                  (self.map_format, "v"),
                                                  (self.map_temporal, "y"),
                                                  (self.map_spatial, "z")],
+            is_description_tag:                 [(self.map_description, "a")],
         }
 
         self.type_mapping = {
@@ -143,6 +141,9 @@ class MARCMapper(Mapper):
                 ("o.*", (None, "Collection"))
             ])
         }
+
+    def is_description_tag(tag):
+        return t.startswith("5") and t != "538"
 
     def extend_prop(self, prop, _dict, codes, label=None, values=None):
         if values is None:

@@ -29,7 +29,7 @@ class HathiFetcher(FileFetcher):
         with open(filepath, "r") as f:
             first_group = True
             for key, group in it.groupby(f, lambda line:
-                                         line.startswith("<record>")):
+                                         line.strip().startswith("<record>")):
                 if not key:
                     try:
                         grouped_records.append("".join(list(group)))
