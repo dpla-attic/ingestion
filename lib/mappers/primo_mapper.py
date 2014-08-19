@@ -13,9 +13,8 @@ class PrimoMapper(Mapper):
 
     def _map_source_resource_prop(self, prop, provider_prop):
         if exists(self.provider_data, provider_prop):
-            self.update_source_resource({prop:
-                                         getprop(self.provider_data,
-                                                 provider_prop)})
+            p = self._striptags(getprop(self.provider_data, provider_prop))
+            self.update_source_resource({prop: p})
 
     def map_creator(self):
         self._map_source_resource_prop("creator",

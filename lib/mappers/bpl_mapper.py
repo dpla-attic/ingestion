@@ -120,7 +120,7 @@ class BPLMapper(OAIMODSMapper):
         desc = filter(None, desc)
 
         if desc:
-            self.update_source_resource({"description": desc})
+            self.update_source_resource({"description": self._striptags(desc)})
 
     def map_format(self):
         return super(BPLMapper, self).map_format(authority_condition=False)

@@ -31,7 +31,9 @@ class GettyMapper(PrimoMapper):
                  description]
 
         if description:
-            self.update_source_resource({"description": description})
+            self.update_source_resource(
+                    {"description": self._striptags(description)}
+                    )
 
     def map_extent(self):
         self._map_source_resource_prop("extent",

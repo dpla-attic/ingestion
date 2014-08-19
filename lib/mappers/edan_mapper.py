@@ -221,7 +221,9 @@ class EDANMapper(Mapper):
         description = [s for s in self.extract_xml_items("freetext", "notes",
                                                          "#text")]
         if description:
-            self.update_source_resource({"description": description})
+            self.update_source_resource(
+                    {"description": self._striptags(description)}
+                    )
    
     def map_identifier(self):
         identifier = []

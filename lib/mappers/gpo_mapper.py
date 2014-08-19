@@ -184,7 +184,7 @@ class GPOMapper(MARCMapper):
         self.date[tag].extend(values)
 
     def map_description(self, _dict, tag, codes):
-        values = self._get_values(_dict, codes)
+        values = self._striptags(self._get_values(_dict, codes))
         if tag in ("310", "583"):
             self.description[tag].extend(values)
         else:

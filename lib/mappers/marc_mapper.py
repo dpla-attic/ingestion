@@ -224,7 +224,7 @@ class MARCMapper(Mapper):
             if "#text" in subfield:
                 values.append(subfield["#text"])
 
-        return values
+        return self._striptags(values)
 
     def _get_one_subfield(self, _dict, code):
         """Get one MARC subfield having the given code
@@ -402,7 +402,7 @@ class MARCMapper(Mapper):
                 t[0] = re.sub("\.$", "", t[0].strip())
                 values = ["; ".join(t)]
             title[index] = values
-            setprop(self.mapped_data, prop, self._striptags(title))
+            setprop(self.mapped_data, prop, title)
 
     def map_type_and_spec_type(self, _dict, tag, codes):
         ret_dict = {"type": None, "specType": None}

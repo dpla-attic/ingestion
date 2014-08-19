@@ -210,7 +210,7 @@ class UVAMapper(MODSMapper):
                             break
 
             if out:
-                self.update_source_resource(out)
+                self.update_source_resource(self._striptags(out))
 
     def map_is_show_at_object_has_view_and_dataprovider(self):
         def _get_media_type(d):

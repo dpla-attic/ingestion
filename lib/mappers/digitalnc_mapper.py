@@ -107,7 +107,9 @@ class DigitalNCMapper(OAIMODSMapper):
                     logger.error("Error getting note/type from record %s" %
                                  self.provider_data["_id"])
 
-            self.update_source_resource({"description": description})
+            self.update_source_resource(
+                    {"description": self._striptags(description)}
+                    )
 
     def map_title(self):
         prop = self.root_key + "titleInfo"

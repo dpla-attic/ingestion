@@ -136,7 +136,7 @@ class HarvardMapper(OAIMODSMapper):
 
         desc = getprop(self.provider_data, prop, True)
         if isinstance(desc, dict):
-            desc = desc["#text"] if "#text" in desc else None
+            desc = self._striptags(desc["#text"]) if "#text" in desc else None
 
         if desc:
             self.update_source_resource({"description": desc})

@@ -478,7 +478,9 @@ class UNTLMapper(Mapper):
                     description.append(s["#text"])
 
             if description:
-                self.update_source_resource({"description": description})
+                self.update_source_resource(
+                        {"description": self._striptags(description)}
+                        )
 
     def map_language(self):
         prop = self.root_key + "language"

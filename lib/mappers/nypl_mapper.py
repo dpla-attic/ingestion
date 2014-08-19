@@ -69,7 +69,7 @@ class NYPLMapper(MODSMapper):
 
         desc = note or pnote
         if desc:
-            self.update_source_resource({"description": desc})
+            self.update_source_resource({"description": self._striptags(desc)})
 
     def map_is_shown_at(self):
         prop = "tmp_item_link"

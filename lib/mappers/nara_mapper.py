@@ -99,7 +99,9 @@ class NARAMapper(Mapper):
         description = self.extract_xml_items("general-notes", "general-note")
 
         if description:
-            self.update_source_resource({"description": description})
+            self.update_source_resource(
+                    {"description": self._striptags(description)}
+                    )
 
     def map_state_located_in(self):
         for phys in self.extract_xml_items("physical-occurrences",
