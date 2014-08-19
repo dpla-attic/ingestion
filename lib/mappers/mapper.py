@@ -255,7 +255,7 @@ class Mapper(object):
     def update_mapped_fields(self):
         pass
 
-    def _striptags(o):
+    def _striptags(self, o):
         if isinstance(o, basestring):
             return Markup(o).striptags()
         elif isinstance(o, list):
