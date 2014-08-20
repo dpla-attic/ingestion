@@ -24,6 +24,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.gpo_mapper import GPOMapper
         return GPOMapper(data)
 
+    def _create_ufl_mapper(data):
+        from dplaingestion.mappers.ufl_mapper import UFLMapper
+        return UFLMapper(data)
+
     def _create_scdl_mapper(data):
         from dplaingestion.mappers.scdl_mapper import SCDLMapper
         return SCDLMapper(data)
@@ -82,6 +86,7 @@ def create_mapper(mapper_type, data):
         'uva':          lambda d: _create_uva_mapper(d),
         'mdl':          lambda d: _create_mdl_mapper(d),
         'gpo':          lambda d: _create_gpo_mapper(d),
+        'ufl':          lambda d: _create_ufl_mapper(d),
         'scdl':         lambda d: _create_scdl_mapper(d),
         'edan':         lambda d: _create_edan_mapper(d),
         'nara':         lambda d: _create_nara_mapper(d),
