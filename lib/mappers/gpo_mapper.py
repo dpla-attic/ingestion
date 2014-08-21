@@ -127,7 +127,7 @@ class GPOMapper(MARCMapper):
                          "740", "830"])):   [(self.map_relation, None)],
             lambda t: t == "337":           [(self.map_type, "a")],
             lambda t: t == "655":           [(self.map_type, None)],
-            lambda t: t == "245":           [(self.map_title, None)],
+            lambda t: t == "245":           [(self.map_title, "!ch")],
         }
 
         self.desc_frequency = {
