@@ -95,8 +95,11 @@ class UFLMapper(MARCMapper):
             setprop(self.mapped_data, "object", values)
 
     def map_provider(self):
-        setprop(self.mapped_data, "provider",
-                "University of Florida Libraries")
+        provider = {
+            "@id": "http://dp.la/api/contributor/ufl",
+            "name": "University of Florida Libraries"
+        }
+        setprop(self.mapped_data, "provider", provider)
 
     def map(self):
         super(UFLMapper, self).map()
