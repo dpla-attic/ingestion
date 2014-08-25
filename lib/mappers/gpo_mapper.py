@@ -193,12 +193,12 @@ class GPOMapper(MARCMapper):
 
     def map_type(self, _dict, tag, codes):
         prop = "sourceResource/type"
-        values = self._get_contributor_values(_dict, codes)
+        values = self._get_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
 
     def map_title(self, _dict, tag, codes):
         prop = "sourceResource/title"
-        values = self._get_contributor_values(_dict, codes)
+        values = self._get_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
 
     def map_extent(self, _dict, tag, codes):
