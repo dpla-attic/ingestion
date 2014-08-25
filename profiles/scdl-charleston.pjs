@@ -2,8 +2,8 @@
     "name": "scdl-charleston",
     "type": "oai_verbs",
     "metadata_prefix": "qdc",
-    "endpoint_url": "http://lowcountrydigital.library.cofc.edu/cgi-bin/oai.exe",
-    "sets": [],
+    "endpoint_url": "http://lcdl.library.cofc.edu/lcdl/oai",
+    "sets": "NotSupported",
     "contributor": {
         "@id": "http://dp.la/api/contributor/scdl-charleston",
         "name": "South Carolina Digital Library"
@@ -14,7 +14,7 @@
     ],
     "enrichments_item": [
         "/select-id", 
-        "/dpla_mapper?mapper_type=scdl",
+        "/dpla_mapper?mapper_type=charleston",
         "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
@@ -36,7 +36,6 @@
         "/shred?prop=sourceResource%2Fformat",
         "/enrich-format",
         "/scdl_format_to_type",
-        "/contentdm_identify_object",
         "/enrich_location",
         "/scdl_enrich_location",
         "/geocode",
