@@ -22,7 +22,7 @@ from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
-from dplaingestion.utilities import make_tarfile
+from dplaingestion.utilities import make_tarfile, iso_utc_with_tz
 
 config = ConfigParser.ConfigParser()
 config.readfp(open('akara.ini'))
@@ -172,7 +172,7 @@ def main(argv):
     kwargs = {
         "enrich_process/status": status,
         "enrich_process/data_dir": enrich_dir,
-        "enrich_process/start_time": datetime.now().isoformat(),
+        "enrich_process/start_time": iso_utc_with_tz(),
         "enrich_process/end_time": None,
         "enrich_process/error": None,
         "enrich_process/total_items": None,
@@ -258,7 +258,7 @@ def main(argv):
         couch_kwargs = {
             "enrich_process/status": status,
             "enrich_process/error": dashboard_errors,
-            "enrich_process/end_time": datetime.now().isoformat(),
+            "enrich_process/end_time": iso_utc_with_tz(),
             "enrich_process/total_items": stats['enriched_items'],
             "enrich_process/total_collections": stats['enriched_colls'],
             "enrich_process/missing_id": stats['missing_id'],

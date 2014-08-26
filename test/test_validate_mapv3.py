@@ -86,7 +86,7 @@ def test_validate_mapv3_valid_item():
             "type": "image"
         },
         "object": "http://texashistory.unt.edu/ark:/67531/metapth245858/thumbnail/",
-        "ingestDate": "2014-02-26T07:47:43.391637",
+        "ingestDate": "2014-02-26T07:47:43.391637Z",
         "originalRecord": {
             "provider": {
                 "name": "The Portal to Texas History",
@@ -127,7 +127,7 @@ def test_validate_mapv3_valid_coll():
         "@id": "http://dp.la/api/collections/6814902bd6e5f107185a764123c18dda",
         "ingestType": "collection",
         "ingestionSequence": 7,
-        "ingestDate": "2014-04-29T17:58:39.828429",
+        "ingestDate": "2014-04-29T17:58:39.828429Z",
         "title": "Gillespie County Historical Society",
         "description": "",
         "_id": "texas--partner:GCHS"
@@ -195,7 +195,7 @@ def test_validate_mapv3_invalid_item():
             },
         },
         "object": "http://texashistory.unt.edu/ark:/67531/metapth245858/thumbnail/",
-        "ingestDate": "2014-02-26T07:47:43.391637",
+        "ingestDate": "2014-02-26T07:47:43.391637Z",
         "ingestionSequence": 5,
         "isShownAt": "http://texashistory.unt.edu/ark:/67531/metapth245858/"
     }

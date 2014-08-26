@@ -5,6 +5,7 @@ import time
 import tarfile
 import re
 from functools import wraps
+from datetime import datetime
 
 def iterify(iterable):
     """Treat iterating over a single item or an iterator seamlessly"""
@@ -122,3 +123,7 @@ def remove_all_brackets_and_strip(d):
 
 def strip_unclosed_brackets(s):
     return re.sub(r'\[(?![^\]]*?\])', '', s)
+
+def iso_utc_with_tz(dt=datetime.utcnow()):
+    """Given a UTC datetime, return an ISO 8601-conformant string w/ timezone"""
+    return dt.isoformat() + "Z"
