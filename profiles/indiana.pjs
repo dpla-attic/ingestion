@@ -1,0 +1,33 @@
+{
+    "name": "indiana", 
+    "type": "oai_verbs",
+    "endpoint_url": "https://digital.library.in.gov/OAI/Server",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/indiana",
+        "name": "Indiana Memory"
+    }, 
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ], 
+    "enrichments_item": [
+        "/select-id",
+        "/dpla_mapper?mapper_type=dublin_core",
+        "/set_context",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
