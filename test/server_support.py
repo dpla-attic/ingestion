@@ -152,6 +152,7 @@ MODULES = [
     "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
     "dplaingestion.akamod.lookup",
+    "dplaingestion.akamod.indiana_identify_object",
     "dplaingestion.akamod.kentucky_identify_object",
     "dplaingestion.akamod.georgia_identify_object",
     "dplaingestion.akamod.bhl_contributor_to_collection",
@@ -212,6 +213,9 @@ class identify_object:
     PENDING = 1
 
 class contentdm_identify_object(identify_object):
+    pass
+
+class indiana_identify_object(identify_object):
     pass
 
 class kentucky_identify_object(identify_object):
