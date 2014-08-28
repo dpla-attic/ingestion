@@ -68,7 +68,7 @@ class UFLMapper(MARCMapper):
         non_dupes = []
         [non_dupes.append(v) for v in values if v not in non_dupes]
         if tag == "752":
-            non_dupes = "--".join(non_dupes)
+            non_dupes = ["--".join(non_dupes)]
         self.extend_prop(prop, _dict, codes, values=non_dupes)
 
     def map_collection_title(self, _dict, tag, codes):
