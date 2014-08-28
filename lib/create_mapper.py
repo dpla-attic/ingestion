@@ -32,6 +32,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.scdl_mapper import SCDLMapper
         return SCDLMapper(data)
 
+    def _create_charleston_mapper(data):
+        from dplaingestion.mappers.charleston_mapper import SCDLCharlestonMapper
+        return SCDLCharlestonMapper(data)
+
     def _create_edan_mapper(data):
         from dplaingestion.mappers.edan_mapper import EDANMapper
         return EDANMapper(data)
@@ -88,6 +92,7 @@ def create_mapper(mapper_type, data):
         'gpo':          lambda d: _create_gpo_mapper(d),
         'ufl':          lambda d: _create_ufl_mapper(d),
         'scdl':         lambda d: _create_scdl_mapper(d),
+        'charleston':   lambda d: _create_charleston_mapper(d),
         'edan':         lambda d: _create_edan_mapper(d),
         'nara':         lambda d: _create_nara_mapper(d),
         'nypl':         lambda d: _create_nypl_mapper(d),

@@ -42,18 +42,22 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
         for v in iterify(value):
-            if not isinstance(v, dict) or ("name" not in v and
-                                           "coordinates" not in v):
-                logger.error("Spatial value must be a dictionary with " +
-                             "either a \"name\" or \"coordinates\" " +
-                             "property; record %s" % data["_id"])
+            if not isinstance(v, dict):
+                logger.error("Spatial value must be a dictionary; record %s" %
+                             data["_id"])
                 continue
+
+            set_name(v)
+            if "coordinates" not in v and "name" not in v:
+                logger.error("Spatial dictionary must have 'coordinates' " +
+                             "or 'name' property; record %s" % data["_id"])
+
             if v.get("state") is not None:
                 # Do not geocode if dictionary has a "state" value
                 continue
 
             # Likewise, skip generic "United States"
-            pattern = " *(United States(?!-)|États-Unis)".decode("utf-8")
+            pattern = ur" *(United States(?!-)|États-Unis)"
             if re.search(pattern, v.get("name", "")) or \
                re.search(pattern, v.get("country", "")):
                     continue
@@ -126,6 +130,15 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
         setprop(data, prop, value)
 
     return json.dumps(data)
+
+def set_name(spatial_dict):
+    if "name" not in spatial_dict:
+        key_order = ["coordinates", "city", "county", "state", "country",
+                     "region"]
+        for key in key_order:
+            if key in spatial_dict:
+                spatial_dict["name"] = spatial_dict[key]
+                return
 
 def get_coordinates(value):
     try:
