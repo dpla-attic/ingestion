@@ -22,10 +22,7 @@ MAPV3_SCHEMAS = {
             },
             "description": {"$ref": "#/definitions/arrayOrString"},
             "ingestionSequence": {"type": "number"},
-            # do not check ingestDate as the 'date-time' json-schema
-            # format, since it requires RFC 3339 conformance and not
-            # ISO 8601 conformance
-            "ingestDate": {"type": "string"},
+            "ingestDate": {"type": "string", "format": "date-time"},
             "ingestType": {"type": "string", "enum": ["collection"]},
             "id": {"type": "string"},
             "title": {"$ref": "#/definitions/arrayOrString"}
@@ -73,10 +70,7 @@ MAPV3_SCHEMAS = {
             },
             "id": {"type": "string"},
             "ingestionSequence": {"type": ["number", "null"]},
-            # do not check ingestDate as the 'date-time' json-schema
-            # format, since it requires RFC 3339 conformance and not
-            # ISO 8601 conformance
-            "ingestDate": {"type": "string"},
+            "ingestDate": {"type": "string", "format": "date-time"},
             "ingestType": {"type": "string", "enum": ["item"]},
             "isShownAt": {"type": "string", "format": "uri"},
             "object": {"type": "string", "format": "uri"},
@@ -118,10 +112,7 @@ MAPV3_SCHEMAS = {
                     },
                     "description": {"$ref": "#/definitions/arrayOrString"},
                     "ingestionSequence": {"type": "number"},
-                    # do not check ingestDate as the 'date-time' json-schema
-                    # format, since it requires RFC 3339 conformance and not
-                    # ISO 8601 conformance
-                    "ingestDate": {"type": "string"},
+                    "ingestDate": {"type": "string", "format": "date-time"},
                     "ingestType": {"type": "string", "enum": ["collection"]},
                     "id": {"type": "string"},
                     "title": {"$ref": "#/definitions/arrayOrString"}

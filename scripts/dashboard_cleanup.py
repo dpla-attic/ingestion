@@ -10,10 +10,10 @@ import os
 import sys
 import argparse
 from akara import logger
-from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
+from dplaingestion.utilities import iso_utc_with_tz
 
 def define_arguments():
     """Defines command line arguments for the current script"""
@@ -36,7 +36,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "dashboard_cleanup_process/status": "running",
-        "dashboard_cleanup_process/start_time": datetime.now().isoformat(),
+        "dashboard_cleanup_process/start_time": iso_utc_with_tz(),
         "dashboard_cleanup_process/end_time": None,
         "dashboard_cleanup_process/error": None
     }
@@ -59,7 +59,7 @@ def main(argv):
     kwargs = {
         "dashboard_cleanup_process/status": status,
         "dashboard_cleanup_process/error": error_msg,
-        "dashboard_cleanup_process/end_time": datetime.now().isoformat()
+        "dashboard_cleanup_process/end_time": iso_utc_with_tz()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)

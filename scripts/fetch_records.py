@@ -19,7 +19,7 @@ from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
-from dplaingestion.utilities import iterify
+from dplaingestion.utilities import iterify, iso_utc_with_tz
 from dplaingestion.create_fetcher import create_fetcher
 
 
@@ -167,7 +167,7 @@ def main(argv):
     kwargs = {
         "fetch_process/status": "running",
         "fetch_process/data_dir": fetch_dir,
-        "fetch_process/start_time": datetime.now().isoformat(),
+        "fetch_process/start_time": iso_utc_with_tz(),
         "fetch_process/end_time": None,
         "fetch_process/error": None,
         "fetch_process/total_items": None,
@@ -268,7 +268,7 @@ def main(argv):
     kwargs = {
         "fetch_process/status": status,
         "fetch_process/error": error_msg,
-        "fetch_process/end_time": datetime.now().isoformat(),
+        "fetch_process/end_time": iso_utc_with_tz(),
         "fetch_process/total_items": stats["total_items"],
         "fetch_process/total_collections": stats["total_collections"]
     }

@@ -260,26 +260,6 @@ def test_missing_value_in_dict():
     assert_same_jsons(content, INPUT)
 
 
-def test_dc_data_provider():
-    """Should convert data providers for Digital Commonwealth."""
-    data = [
-        ("Beverly High School", "Beverly High School Digital Collection"),
-        ("Brookline Public Library", "Brookline Photograph Collection"),
-        ("C/W MARS", "Amherst Collection"),
-        ("Essex Agricultural and Technical High School", "Essex Aggie Digital Collection"),
-        ("Framingham State University", "Henry Whittemore Library"),
-    ]
-    for d in data:
-        INPUT = {"a": d[1]}
-        EXPECTED_OUTPUT = {"a": d[1], "b": d[0]}
-        resp, content = _get_server_response(json.dumps(INPUT), "a", "b", "dc_data_provider")
-        print_error_log()
-        pinfo(resp, content)
-
-        assert resp.status == 200
-        assert_same_jsons(content, EXPECTED_OUTPUT)
-
-
 def test_substitution_with_missing_value_and_the_same_field():
     """Should remove the field if value is missing from dict."""
     data = {

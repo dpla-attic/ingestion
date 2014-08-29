@@ -18,6 +18,7 @@ import smtplib
 from email.mime.text import MIMEText
 from dateutil import parser as dateparser
 import ConfigParser
+from dplaingestion.utilities import iso_utc_with_tz
 
 
 def define_arguments():
@@ -41,7 +42,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "check_counts_process/status": "running",
-        "check_counts_process/start_time": datetime.now().isoformat()
+        "check_counts_process/start_time": iso_utc_with_tz()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -93,7 +94,7 @@ def main(argv):
     kwargs = {
         "check_counts_process/status": status,
         "check_counts_process/error": error_msg,
-        "check_counts_process/end_time": datetime.now().isoformat()
+        "check_counts_process/end_time": iso_utc_with_tz()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)

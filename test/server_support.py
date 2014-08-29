@@ -133,7 +133,6 @@ MODULES = [
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.dpla-list-sets",
-    "dplaingestion.akamod.digital_commonwealth_enrich_location",
     "dplaingestion.akamod.harvard_enrich_location",
     "dplaingestion.akamod.mdl-enrich-location",
     "dplaingestion.akamod.mwdl_enrich_location",
@@ -208,7 +207,6 @@ class lookup:
     lookup_mapping = {
         'test': 'test_subst',
         'test2': 'test_2_subst',
-        'dc_data_provider': 'DC_DATA_PROVIDER',
         'iso639_3': 'iso639_3_subst',
         'scdl_fix_format': 'SCDL_FIX_FORMAT'
     }

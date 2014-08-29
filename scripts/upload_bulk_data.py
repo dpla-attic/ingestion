@@ -15,6 +15,7 @@ from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
+from dplaingestion.utilities import iso_utc_with_tz
 
 def define_arguments():
     """Defines command line arguments for the current script"""
@@ -38,8 +39,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "upload_bulk_data_process/status": "running",
-        "upload_bulk_data_process/start_time": datetime.now()\
-                                                                .isoformat(),
+        "upload_bulk_data_process/start_time": iso_utc_with_tz(),
         "upload_bulk_data_process/end_time": None,
         "upload_bulk_data_process/error": None,
     }
@@ -66,8 +66,7 @@ def main(argv):
     kwargs = {
         "upload_bulk_data_process/status": status,
         "upload_bulk_data_process/error": error_msg,
-        "upload_bulk_data_process/end_time": datetime.now()\
-                                                              .isoformat()
+        "upload_bulk_data_process/end_time": iso_utc_with_tz()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)

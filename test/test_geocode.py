@@ -5,6 +5,7 @@ from server_support import server, H, print_error_log
 from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
+from dplaingestion.selector import setprop, getprop, exists
 
 @attr(travis_exclude='yes')    
 def test_geocode():
@@ -228,6 +229,192 @@ def test_geocode_with_existing_props():
     assert_same_jsons(EXPECTED, json.loads(content))
 
 @attr(travis_exclude='yes')
+def test_geocode_set_name_coordinates():
+    """Should set the name property to the coordinates value"""
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "coordinates": "37.7771186829, -122.419639587",
+                "city": "Bananas"
+            }
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                    "coordinates": "37.7771186829, -122.419639587",
+                    "city": "Bananas",
+                    "state": "California",
+                    "name": "37.7771186829, -122.419639587",
+                    "county": "San Francisco County", 
+                    "country": "United States" 
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_set_name_city():
+    """Should set the name property to the city value"""
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "city": "Los Angeles",
+                "state": "California"
+            }
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "city": "Los Angeles",
+                "state": "California",
+                "name": "Los Angeles"
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_set_name_county():
+    """Should set the name property to the county value"""
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "county": "Los Angeles County",
+                "country": "Bananas"
+            }
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "county": "Los Angeles County",
+                "country": "Bananas",
+                "name": "Los Angeles County",
+                "state": "California",
+                "coordinates": "33.9934997559, -118.29750824"
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_set_name_region():
+    """Should set the name property to the region value"""
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "region": "Ecuador"
+            }
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "region": "Ecuador",
+                "name": "Ecuador",
+                "coordinates": "-1.42152893543, -78.8710403442",
+                "country": "Republic of Ecuador",
+                "state": u"Provincia de Bolívar"
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_set_name_state():
+    """Should set the name property to the state value"""
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "state": "California"
+            }
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "state": "California",
+                "name": "California"
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_set_name_country():
+    """Should set the name property to the country value"""
+    INPUT = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "country": "Canada",
+                "region": "Bananas"
+            }
+        }
+    }
+    EXPECTED = {
+        "id": "12345",
+        "_id": "12345",
+        "sourceResource": {
+            "spatial": {
+                "country": "Canada",
+                "region": "Bananas",
+                "name": "Canada",
+                "state": "Nunavut",
+                "coordinates": "62.8329086304, -95.9133224487"
+            }
+        }
+    }
+
+    url = server() + "geocode"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
 def test_geocode_skip_united_states():
     """Should not geocode when name or country value is 'United States' or
        États-Unis
@@ -241,14 +428,13 @@ def test_geocode_skip_united_states():
     }
 
     url = server() + "geocode"
-    for v in ["United States", "United States.", "États-Unis", "États-Unis."]:
+    for v in ["United States", "United States.", u"États-Unis", u"États-Unis."]:
         for field in ["name", "country"]:
-            INPUT["sourceResource"]["spatial"] = {field: v}
+            setprop(INPUT, "sourceResource/spatial", {field: v})
             resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-            print_error_log()
             assert resp.status == 200
-            INPUT["sourceResource"]["spatial"].update({field:
-                                                       v.decode("utf-8")})
+            if not exists(INPUT, "sourceResource/spatial/name"):
+                setprop(INPUT, "sourceResource/spatial/name", v)
             assert_same_jsons(INPUT, json.loads(content))
 
 @attr(travis_exclude='yes')
@@ -277,6 +463,5 @@ def test_geocode_do_not_skip_united_states():
 
     url = server() + "geocode"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    print_error_log()
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))

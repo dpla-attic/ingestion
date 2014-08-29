@@ -1,4 +1,4 @@
-The DPLA Ingestion
+The DPLA Ingestion System
 -------------------
 
 Build Status
@@ -45,6 +45,7 @@ Configure an akara.ini file appropriately for your environment;
 
     [Sitemap]
     SitemapURI=<Sitemap URI>
+    SitemapPath=<Path to local directory for sitemap files>
     
     [Alert]
     To=<Comma-separated email addresses to receive alert email>

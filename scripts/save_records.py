@@ -15,7 +15,8 @@ from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
-from dplaingestion.utilities import make_tarfile
+from dplaingestion.utilities import make_tarfile, iso_utc_with_tz
+
 
 def define_arguments():
     """Defines command line arguments for the current script"""
@@ -43,7 +44,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "save_process/status": "running",
-        "save_process/start_time": datetime.now().isoformat(),
+        "save_process/start_time": iso_utc_with_tz(),
         "save_process/end_time": None,
         "save_process/error": None,
         "save_process/total_saved": None
@@ -62,7 +63,7 @@ def main(argv):
             # Fatal error, do not continue with save process
             kwargs = {
                 "save_process/status": "error",
-                "save_process/end_time": datetime.now().isoformat(),
+                "save_process/end_time": iso_utc_with_tz(),
                 "save_process/error": "Error backing up DPLA records"
             }
             couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -131,7 +132,7 @@ def main(argv):
     kwargs = {
         "save_process/status": status,
         "save_process/error": error_msg,
-        "save_process/end_time": datetime.now().isoformat(),
+        "save_process/end_time": iso_utc_with_tz(),
         "save_process/total_items": total_items,
         "save_process/total_collections": total_collections
     }
