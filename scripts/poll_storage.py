@@ -31,6 +31,7 @@ import check_ingestion_counts
 from datetime import datetime
 from dplaingestion.couch import Couch
 from amara.thirdparty import json, httplib2
+from dplaingestion.utilities import iso_utc_with_tz
 
 ENRICH = "/enrich_storage"
 H = httplib2.Http()
@@ -102,7 +103,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "poll_storage_process/status": "running",
-        "poll_storage_process/start_time": datetime.now().isoformat(),
+        "poll_storage_process/start_time": iso_utc_with_tz(),
         "poll_storage_process/end_time": None,
     }
     try:
@@ -118,7 +119,7 @@ def main(argv):
         # Fatal error, do not continue with save process
         kwargs = { 
             "poll_storage_process/status": "error",
-            "poll_storage_process/end_time": datetime.now().isoformat(),
+            "poll_storage_process/end_time": iso_utc_with_tz(),
             "poll_storage_process/error": "Error backing up DPLA records"
         }   
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -199,7 +200,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "poll_storage_process/status": "complete",
-        "poll_storage_process/end_time": datetime.now().isoformat(),
+        "poll_storage_process/end_time": iso_utc_with_tz(),
         "poll_storage_process/total_items": enriched_items,
         "poll_storage_process/total_collections":  enriched_colls,
         "poll_storage_process/missing_id": missing_id,

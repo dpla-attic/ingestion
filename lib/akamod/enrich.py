@@ -1,4 +1,3 @@
-import datetime
 import re
 from akara import logger
 from akara import request
@@ -6,6 +5,7 @@ from amara.lib.iri import is_absolute
 from akara.services import simple_service
 from akara.util import copy_headers_to_dict
 from amara.thirdparty import json, httplib2
+from dplaingestion.utilities import iso_utc_with_tz
 
 H = httplib2.Http()
 H.force_exception_as_status_code = True
@@ -73,7 +73,8 @@ def enrich(body, ctype):
             record["originalRecord"] = record.copy()         
             record["ingestType"] = "item"
 
-        record["ingestDate"] = datetime.datetime.now().isoformat()
+        # Explicitly populate ingestDate as UTC
+        record["ingestDate"] = iso_utc_with_tz()
 
         error, enriched_record_text = pipe(record, ctype, enrichments,
                                            wsgi_header)

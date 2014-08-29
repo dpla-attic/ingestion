@@ -13,6 +13,7 @@ from datetime import datetime
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
+from dplaingestion.utilities import iso_utc_with_tz
 
 def define_arguments():
     """Defines command line arguments for the current script"""
@@ -35,7 +36,7 @@ def main(argv):
     # Update ingestion document
     kwargs = {
         "delete_process/status": "running",
-        "delete_process/start_time": datetime.now().isoformat()
+        "delete_process/start_time": iso_utc_with_tz()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
@@ -59,7 +60,7 @@ def main(argv):
     kwargs = {
         "delete_process/status": status,
         "delete_process/error": error_msg,
-        "delete_process/end_time": datetime.now().isoformat()
+        "delete_process/end_time": iso_utc_with_tz()
     }
     try:
         couch.update_ingestion_doc(ingestion_doc, **kwargs)
