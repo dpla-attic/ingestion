@@ -421,7 +421,6 @@ def all_transform(d, p):
         lambda t: t in ("041", "546"):         [("language", None)],
         lambda t: t == "650":                  [("spatial", "z")],
         lambda t: t == "651":                  [("spatial", "a")],
-        lambda t: t in ("034"):                [("spatial", None)],
         lambda t: int(t) in (range(760, 787) +
                              ["490", "730",
                               "740", "830"]):  [("relation", None)],
@@ -758,5 +757,14 @@ def marc_to_dpla_gpo(body, ctype, geoprop=None):
     if out["sourceResource"]["title"]:
         title = " ".join(out["sourceResource"]["title"])
         out["sourceResource"]["title"] = title
+
+    # Handle rights
+    if not out["sourceResource"]["rights"]:
+        rights = "Pursuant to Title 17 Section 105 of the United States " + \
+                 "Code, this file is not subject to copyright protection " + \
+                 "and is in the public domain. For more information " + \
+                 "please see http://www.gpo.gov/help/index.html#" + \
+                 "public_domain_copyright_notice.htm"
+        out["sourceResource"]["rights"] = rights
 
     return json.dumps(out)

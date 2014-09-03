@@ -205,7 +205,7 @@ class oaiservice(object):
                 if metadataPrefix in ['marc', 'marc21', 'mods', 'untl']:
                     md = full_rec['metadata']
                     if metadataPrefix in ('marc', 'marc21'):
-                        rec_field = md['record']
+                        rec_field = md.get('record') or md.get('marc:record')
                     elif metadataPrefix == 'untl':
                         rec_field = md['untl:metadata']
                     else:

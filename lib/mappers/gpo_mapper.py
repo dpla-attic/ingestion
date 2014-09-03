@@ -1,3 +1,5 @@
+import re
+from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.marc_mapper import MARCMapper
@@ -5,6 +7,64 @@ from dplaingestion.mappers.marc_mapper import MARCMapper
 class GPOMapper(MARCMapper):
     def __init__(self, provider_data, key_prefix="marc:"):
         super(GPOMapper, self).__init__(provider_data, key_prefix)
+
+        self.excluded_rights = [
+            "Access may require a library card.",
+
+            "Access restricted to U.S. military service members and Dept. " + \
+            "of Defense employees; the only issues available are those " + \
+            "from Monday of the prior week through Friday of current week.",
+
+            "Access to data provided for a fee except for requests " + \
+            "generated from Internet domains of .gov, .edu, .k12, .us, " + \
+            "and .mil.",
+
+            "Access to issues published prior to 2001 restricted to " + \
+            "Picatinny Arsenal users.",
+
+            "Access to some volumes or items may be restricted",
+            "Document removed from the GPO Permanent Access Archive at " + \
+            "agency request",
+
+            "FAA employees only.",
+            "First nine issues (Apr.-Dec. 2002) were law enforcement " + \
+            "restricted publications and are not available to the general " + \
+            "public.",
+
+            "Free to users at U.S. Federal depository libraries; other " + \
+            "users are required to pay a fee.",
+
+            "Full text available to subscribers only.",
+            "Login and password required to access web page where " + \
+            "electronic files may be downloaded.",
+
+            "Login and password required to access web page where " + \
+            "electronic formats may be downloaded.",
+
+            "Not available for external use as of Monday, Oct. 20, 2003.",
+            "Personal registration and/or payment required to access some " + \
+            "features.",
+
+            "Restricted access for security reasons",
+            "Restricted to Federal depository libraries and other users " + \
+            "with valid user accounts.",
+
+            "Restricted to federal depository libraries with valid user " + \
+            "IDs and passwords.",
+
+            "Restricted to institutions with a site license to the USA " + \
+            "trade online database. Free to users at federal depository " + \
+            "libraries.",
+
+            "Some components of this directory may not be publicly " + \
+            "accessible.",
+
+            "Some v. are for official use only, i.e. distribution of Oct. " + \
+            "1998 v. 2 is restricted.",
+
+            "Special issue for Oct./Dec. 2007 for official use only.",
+            "Subscription required for access."
+        ]
 
         self.leader = getprop(self.provider_data, "leader")
         self.date = {
@@ -30,13 +90,10 @@ class GPOMapper(MARCMapper):
         # prefix it with a "!": [("format", "!cd")] will exclude the "c"
         # "d" codes (see method _get_values).
         self.mapping_dict = {
-            lambda t: t == "856":           [(self.map_is_shown_at, "u"),
-                                             (self.map_is_shown_at, "z")],
             lambda t: t in ("700", "710",
                             "711"):         [(self.map_contributor, None)],
             lambda t: t in ("100", "110",
-                            "111", "700",
-                            "710", "711"):  [(self.map_creator, None)],
+                            "111"):         [(self.map_creator, None)],
             lambda t: t in ("260", "264"):  [(self.map_date, "c"),
                                              (self.map_publisher, "ab")],
             lambda t: t == "362":           [(self.map_date, None)],
@@ -70,7 +127,7 @@ class GPOMapper(MARCMapper):
                          "740", "830"])):   [(self.map_relation, None)],
             lambda t: t == "337":           [(self.map_type, "a")],
             lambda t: t == "655":           [(self.map_type, None)],
-            lambda t: t == "245":           [(self.map_title, None)],
+            lambda t: t == "245":           [(self.map_title, "!ch")],
         }
 
         self.desc_frequency = {
@@ -94,14 +151,34 @@ class GPOMapper(MARCMapper):
             "z": "Other"
         }
 
-    def map_is_shown_at(self, _dict, tag, codes):
+    def _get_subfield_e(self, _dict):
+        """
+        Returns the '#text' value for subfield with code 'e', if it exists
+        """
+        for subfield in self._get_subfields(_dict):
+            if ("code" in subfield and "#text" in subfield and
+                subfield["code"] == "e"):
+                return subfield["#text"]
+        return None
+
+    def map_contributor(self, _dict, tag, codes):
+        prop = "sourceResource/contributor"
         values = self._get_values(_dict, codes)
-        if "u" in codes:
-            # Use only first 856u
-            if not self.is_shown_at["856u"]:
-                self.is_shown_at["856u"] = values
-        else:
-            self.is_shown_at["856z3"].extend(values)
+        subfield_e = self._get_subfield_e(_dict)
+        # Use values only if subfield 'e' exists and its value is not
+        # 'author'
+        if subfield_e and subfield_e != "author":
+            self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_creator(self, _dict, tag, codes):
+        prop = "sourceResource/creator"
+        values = self._get_values(_dict, codes)
+        if tag in ("700", "710", "711"):
+            subfield_e = self._get_subfield_e(_dict)
+            # Use values only if subfield 'e' exists and its value is 'author'
+            if not subfield_e or subfield_e != "author":
+                return
+        self.extend_prop(prop, _dict, codes, values=values)
 
     def map_date(self, _dict, tag, codes):
         values = self._get_values(_dict, codes)
@@ -116,13 +193,22 @@ class GPOMapper(MARCMapper):
 
     def map_type(self, _dict, tag, codes):
         prop = "sourceResource/type"
-        values = self._get_contributor_values(_dict, codes)
+        values = self._get_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
 
     def map_title(self, _dict, tag, codes):
         prop = "sourceResource/title"
-        values = self._get_contributor_values(_dict, codes)
+        values = self._get_values(_dict, codes)
         self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_extent(self, _dict, tag, codes):
+        prop = "sourceResource/extent"
+        values = [re.sub(":$", "", v) for v in self._get_values(_dict, codes)]
+        self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_publisher(self, _dict, tag, codes):
+        prop = "sourceResource/publisher"
+        self.extend_prop(prop, _dict, codes)
 
     def update_title(self):
         prop = "sourceResource/title"
@@ -131,14 +217,9 @@ class GPOMapper(MARCMapper):
             self.update_source_resource({"title": " ".join(title)})
   
     def update_is_shown_at(self):
-        isa = [v for values in self.is_shown_at.values() for v in values if v]
-
         uri = "http://catalog.gpo.gov/F/?func=direct&doc_number=%s&format=999"
         if self.control_001:
-            isa.append(uri % self.control_001)
-
-        if isa:
-            self.mapped_data.update({"isShownAt": isa})
+            self.mapped_data.update({"isShownAt": uri % self.control_001})
 
     def update_date(self):
         date = None
@@ -151,6 +232,10 @@ class GPOMapper(MARCMapper):
                 date = self.date["264"]
         if date:
             self.update_source_resource({"date": date})
+
+    def update_data_provider(self):
+        data_provider = self._get_mapped_value("provider/name")
+        self.mapped_data.update({"dataProvider": data_provider})
 
     def update_description(self):
         description = []
@@ -166,8 +251,7 @@ class GPOMapper(MARCMapper):
             self.update_source_resource({"description": description})
 
     def update_rights(self):
-        prop = "sourceResource/rights"
-        rights = self._get_mapped_value(prop)
+        rights = self._get_mapped_value("sourceResource/rights")
         if not rights:
             r = "Pursuant to Title 17 Section 105 of the United States " + \
                 "Code, this file is not subject to copyright protection " + \
@@ -176,11 +260,19 @@ class GPOMapper(MARCMapper):
                 "public_domain_copyright_notice.htm"
             self.update_source_resource({"rights": r})
 
+    def remove_record_if_excluded_rights(self):
+        rights = self._get_mapped_value("sourceResource/rights")
+        if any(right in self.excluded_rights for right in rights):
+            logger.debug("Rights value excluded. Unsetting _id %s" %
+                         self.mapped_data["_id"])
+            del self.mapped_data["_id"]
+
     def update_mapped_fields(self):
         super(GPOMapper, self).update_mapped_fields()
         self.update_date()
         self.update_description()
         self.update_rights()
+        self.update_data_provider()
 
     def map(self):
         self.map_base()
@@ -188,3 +280,4 @@ class GPOMapper(MARCMapper):
         self.map_datafield_tags()
         self.map_controlfield_tags()
         self.update_mapped_fields()
+        self.remove_record_if_excluded_rights()
