@@ -32,6 +32,7 @@ Configure an akara.ini file appropriately for your environment;
     Url=<URL to CouchDB instance, including trailing forward-slash>
     Username=<CouchDB username>
     Password=<CouchDB password>
+    SyncQAViews=<True or False; consider False on production>
 
     [Geonames]
     Username=<Geonames username>
