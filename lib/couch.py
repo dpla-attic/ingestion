@@ -83,18 +83,19 @@ class Couch(object):
         """Return the result of the given view in the "dpla" database"""
         return self.dpla_db.view(viewname, None, **options)
 
-    def sync_views(self, db_name):
+    def sync_views(self, db_name, sync_qa_views=True):
         """Fetches design documents from the views_directory, saves/updates
            them in the appropriate database, then build the views. 
         """
         build_views_from_file = ["dpla_db_all_provider_docs.js",
-                                 "dpla_db_qa_reports.js",
                                  "dashboard_db_all_provider_docs.js",
                                  "dashboard_db_all_ingestion_docs.js",
                                  "dpla_db_export_database.js",
                                  "bulk_download_db_all_contributor_docs.js"]
         if db_name == "dpla":
             db = self.dpla_db
+            if sync_qa_views:
+                build_views_from_file.append("dpla_db_qa_reports.js")
         elif db_name == "dashboard":
             db = self.dashboard_db
         elif db_name == "bulk_download":
