@@ -119,7 +119,7 @@ class OAIMODSMapper(Mapper):
 
             self.update_source_resource(ret_dict)
 
-    def map_format(self, authority_condition=None):
+    def map_format(self, authority_condition):
         prop = self.root_key + "genre"
 
         if exists(self.provider_data, prop):
@@ -128,7 +128,7 @@ class OAIMODSMapper(Mapper):
                 if isinstance(s, basestring):
                     format.append(s)
                 else:
-                    if authority_condition is not None:
+                    if authority_condition:
                         if "authority" in s and (s["authority"] == "marc" or
                                                  s["authority"] == ""):
                             format.append(s["#text"])
