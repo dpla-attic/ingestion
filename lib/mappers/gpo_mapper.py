@@ -217,7 +217,7 @@ class GPOMapper(MARCMapper):
             self.update_source_resource({"title": " ".join(title)})
   
     def update_is_shown_at(self):
-        uri = "http://catalog.gpo.gov/F/?func=direct&doc_number=%s"
+        uri = "http://catalog.gpo.gov/F/?func=direct&doc_number=%s&format=999"
         if self.control_001:
             self.mapped_data.update({"isShownAt": uri % self.control_001})
 
