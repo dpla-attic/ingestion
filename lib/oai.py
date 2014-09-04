@@ -180,10 +180,10 @@ class oaiservice(object):
         try:
             content = urllib2.urlopen(url).read()
         except urllib2.URLError as e:
-            raise OAIHTTPError("list_sets could not make request: %s" % \
+            raise OAIHTTPError("list_records could not make request: %s" % \
                                e.reason)
         except urllib2.HTTPError as e:
-            raise OAIHTTPError("list_sets got status %d: %s" % \
+            raise OAIHTTPError("list_records got status %d: %s" % \
                                (e.code, e.reason))
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
