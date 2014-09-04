@@ -37,7 +37,13 @@ class HathiFetcher(FileFetcher):
                             # First item is not a record
                             grouped_records = grouped_records[1:]
                             first_group = False
+                        
                         if len(grouped_records) == self.batch_size:
+                            if "</collection>" in grouped_records[-1]:
+                                # Strip "</collection>" from last item
+                                last_record = grouped_records[-1].split("</collection>")[0]
+                                grouped_records[-1] = last_record
+
                             error, parsed_docs = self.parse(grouped_records,
                                                             filepath)
                             yield error, parsed_docs
