@@ -64,16 +64,14 @@ config_root = None
 config_filename = None
 server_pid = None
 server_did_not_start = False
-thumbs_root = None
 
 # Create a temporary directory structure for Akara.
 # Needs a configuration .ini file and the logs subdirectory.
 def create_server_dir(port):
-    global config_root, config_filename, thumbs_root
+    global config_root, config_filename
     
     config_root = tempfile.mkdtemp(prefix="akara_test_")
     config_filename = os.path.join(config_root, "akara_test.config")
-    thumbs_root=os.path.join(config_root, "thumbs_root")
 
     ini = ConfigParser.ConfigParser()
     ini.optionxform=str  # Maintain case for configuration keys 
@@ -89,8 +87,6 @@ def create_server_dir(port):
             geonames_username = ini.get("Geonames", "Username")
         if ini.has_option("Geonames", "Token"): 
             geonames_token = ini.get("Geonames", "Token")
-
-    print thumbs_root
 
     f = open(config_filename, "w")
     f.write("""
@@ -121,6 +117,16 @@ MODULES = [
     "dplaingestion.fetchers.nara_fetcher",
     "dplaingestion.fetchers.edan_fetcher",
     "dplaingestion.fetchers.hathi_fetcher",
+    "dplaingestion.create_mapper",
+    "dplaingestion.mappers.mapper",
+    "dplaingestion.mappers.dublin_core_mapper",
+    "dplaingestion.mappers.mods_mapper",
+    "dplaingestion.mappers.harvard_mapper",
+    "dplaingestion.mappers.bpl_mapper",
+    "dplaingestion.mappers.mwdl_mapper",
+    "dplaingestion.mappers.getty_mapper",
+    "dplaingestion.akamod.dpla_mapper",
+    "dplaingestion.akamod.set_context",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",
@@ -129,7 +135,6 @@ MODULES = [
     "dplaingestion.akamod.select-id",
     "dplaingestion.akamod.shred",
     "dplaingestion.akamod.geocode",
-    "dplaingestion.akamod.oai-to-dpla",
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.dpla-list-sets",
@@ -154,24 +159,18 @@ MODULES = [
     "dplaingestion.akamod.cleanup_value",
     "dplaingestion.akamod.set_prop",
     "dplaingestion.akamod.enrich_language",
-    "dplaingestion.akamod.arc-to-dpla",
-    "dplaingestion.akamod.mods_to_dpla",
-    "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_enrich_state_located_in",
     "dplaingestion.akamod.artstor_cleanup",
     "dplaingestion.akamod.nypl_identify_object",
     "dplaingestion.akamod.nypl_coll_title",
     "dplaingestion.akamod.nypl_select_hasview",
     "dplaingestion.akamod.mwdl_cleanup_field",
-    "dplaingestion.akamod.ia_to_dpla",
     "dplaingestion.akamod.ia_identify_object",
     "dplaingestion.akamod.ia_set_rights",
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.edan_select_id",
-    "dplaingestion.akamod.edan_to_dpla",
     "dplaingestion.akamod.cleanup_language",
     "dplaingestion.akamod.dc_clean_invalid_dates",
-    "dplaingestion.akamod.oai_mods_to_dpla",
     "dplaingestion.akamod.decode_html",
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",
     "dplaingestion.akamod.david_rumsey_identify_object",
@@ -182,16 +181,12 @@ MODULES = [
     "dplaingestion.akamod.replace_substring",
     "dplaingestion.akamod.uiuc_cleanup_spatial_name",
     "dplaingestion.akamod.remove_list_values",
-    "dplaingestion.akamod.marc_to_dpla",
     "dplaingestion.akamod.usc_enrich_location",
     "dplaingestion.akamod.hathi_identify_object",
-    "dplaingestion.akamod.oai_untl_to_dpla",
     "dplaingestion.akamod.texas_enrich_location",
     "dplaingestion.akamod.set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
-    "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
     "dplaingestion.akamod.compare_with_schema",
-    "dplaingestion.akamod.qdc_to_dpla",
     "dplaingestion.akamod.mdl_state_located_in",
     "dplaingestion.akamod.scdl_format_to_type",
     "dplaingestion.marc_code_to_relator",
@@ -237,17 +232,17 @@ class hathi_identify_object(identify_object):
     pass
 
 class type_conversion:
-    # Map of "physical description" substring to sourceResource.type.
-    # freetext/physicalDescription is considered first, and these values
-    # should be as specific as possible, to avoid false assignments, because
-    # physicalDescription is pretty free-form, unlike the object type fields.
+    # Map of "format" or "physical description" substring to
+    # sourceResource.type.  This format field is considered first, and these
+    # values should be as specific as possible, to avoid false assignments,
+    # because this field is usually pretty free-form, unlike the type fields.
     type_for_phys_keyword = [
         ('holiday card', 'image'),
         ('christmas card', 'image'),
         ('mail art', 'image'),
         ('postcard', 'image'),
     ]
-    # Map of "object type" substring to desired sourceResource.type.
+    # Map of type-related substring to desired sourceResource.type.
     # For simple "if substr in str" matching.  Place more specific
     # patterns higher up, before more general ones.
     # Items labeled as physical objects are "images of physical objects."
@@ -271,6 +266,8 @@ class type_conversion:
         ('furniture', 'image'),
         # Keep "moving image" above "image"
         ('moving image', 'moving image'),
+        # And, yes, "MovingImage" is a valid DC type.
+        ('movingimage', 'moving image'),
         ('image', 'image'),
         ('drawing', 'image'),
         ('print', 'image'),
@@ -289,8 +286,11 @@ class type_conversion:
         ('manuscript', 'text'),
         # keep "equipment" above "audio" ("Audiovisual equipment")
         ('equipment', 'image'),
+        ('cartographic', 'image'),
+        ('notated music', 'image'),
+        ('mixed material', 'image'),
         ('audio', 'sound'),
-        ('sound recording', 'sound'),
+        ('sound', 'sound'),
         ('oral history recording', 'sound'),
         ('finding aid', 'collection'),
         ('online collection', 'collection'),
@@ -301,15 +301,11 @@ class type_conversion:
         ('video', 'moving image')
     ]
 
-class edan_to_dpla(type_conversion):
-    pass
-
 class enrich_type(type_conversion):
     pass
 
 """ % dict(config_root = config_root,
            port = port,
-           thumbs_root = thumbs_root,
            bing_apikey = bing_apikey,
            geonames_username = geonames_username,
            geonames_token = geonames_token
@@ -317,9 +313,6 @@ class enrich_type(type_conversion):
     f.close()
 
     os.mkdir(os.path.join(config_root, "logs"))
-    os.mkdir(thumbs_root)
-
-    print thumbs_root
 
 #FIXME: add back config for:
 #[collection]
@@ -450,15 +443,3 @@ def print_error_log():
         for line in errfile:
             sys.stdout.write(line)
     print "END OF ERROR LOG\n"
-
-def get_thumbs_root():
-    """
-    Function returns thumbs_root variable.
-
-    This is just a small workaround, as I need ot have the value of thumbs_root in
-    one of the tests. However simple importing the variable in the test file gets
-    None value all the time, as it is copied at the moment of importing.
-
-    This function solves the problem.
-    """
-    return thumbs_root

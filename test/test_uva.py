@@ -267,7 +267,7 @@ def test_uva_creator():
 
     EXPECTED_CREATOR = ["Holsinger, Rufus W., 1866-1930"]
 
-    url = server() + "mods-to-dpla?provider=UVA"
+    url = server() + "dpla_mapper?mapper_type=uva"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2"), str(resp) + "\n" + content
 
