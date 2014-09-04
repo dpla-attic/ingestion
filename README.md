@@ -8,6 +8,9 @@ Build Status
 
 Documentation
 -------------------
+
+Please see the [release notes](https://github.com/dpla/ingestion/wiki/Release-History) regarding changes and upgrade steps.
+
 Setting up the ingestion server:
 
 Install Python 2.7 if not already installed (http://www.python.org/download/releases/2.7/);
@@ -32,6 +35,7 @@ Configure an akara.ini file appropriately for your environment;
     Url=<URL to CouchDB instance, including trailing forward-slash>
     Username=<CouchDB username>
     Password=<CouchDB password>
+    SyncQAViews=<True or False; consider False on production>
 
     [Geonames]
     Username=<Geonames username>
@@ -42,6 +46,9 @@ Configure an akara.ini file appropriately for your environment;
     ApiKey=<Rackspace API key>
     DPLAContainer=<Rackspace container for bulk download data>
     SitemapContainer=<Rackspace container for sitemap files>
+
+    [APITokens]
+    NYPL=<Your NYPL API token>
 
     [Sitemap]
     SitemapURI=<Sitemap URI>
