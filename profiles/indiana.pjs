@@ -24,6 +24,9 @@
         "/enrich-format",
         "/enrich_location",
         "/enrich_language",
+        "/set_spec_type",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Indiana",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/validate_mapv3"
     ],
     "thresholds": {
