@@ -16,7 +16,8 @@ def enrichtype(body, ctype,
                action="enrich-type",
                prop="sourceResource/type",
                format_field="sourceResource/format",
-               default=None):
+               default=None,
+               use_format_if_invalid=False):
     """   
     Service that accepts a JSON document and enriches the "type" field of that
     document by: 
@@ -74,5 +75,11 @@ def enrichtype(body, ctype,
                 del data['sourceResource']['type']
             except:
                 pass
+    finally:
+        if use_format_if_invalid and type_strings:
+            sr_format.extend(itemtype.rejects([(type_strings,
+                                                type_for_type_keyword)
+                                              ]))
+            data['sourceResource']['format'] = sr_format
 
     return json.dumps(data)
