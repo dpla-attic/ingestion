@@ -22,22 +22,14 @@ def dedup_value(body, ctype, action="dedup_value", prop=None):
             response.add_header('content-type', 'text/plain')
             return "Unable to parse body as JSON"
 
-    try:
-        data = json.loads(body)
-    except:
-        response.code = 500
-        response.add_header('content-type', 'text/plain')
-        return "Unable to parse body as JSON"
-
-    for p in prop.split(","):
-        if exists(data, p):
-            v = getprop(data, p)
-            if isinstance(v, list):
-                # Remove whitespace, periods, parens, brackets
-                clone = [re.sub("[ \.\(\)\[\]\{\}]", "", s).lower() for s in v]
-                # Get index of unique values
-                index = list(set([clone.index(s) for s in list(set(clone))]))
-            
-                setprop(data, p, [v[i] for i in index])
+        for p in prop.split(","):
+            if exists(data, p):
+                v = getprop(data, p)
+                if isinstance(v, list):
+                    # Remove whitespace, periods, parens, brackets
+                    clone = [re.sub("[ \.\(\)\[\]\{\}]", "", s).lower() for s in v]
+                    # Get index of unique values
+                    index = list(set([clone.index(s) for s in list(set(clone))]))
+                    setprop(data, p, [v[i] for i in index])
 
     return json.dumps(data)

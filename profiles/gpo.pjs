@@ -2,7 +2,7 @@
     "name": "gpo",
     "type": "oai_verbs",
     "metadata_prefix": "marc21",
-    "endpoint_url": "http://test.catalog.gpo.gov/OAI",
+    "endpoint_url": "http://catalog.gpo.gov/OAI",
     "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/gpo",
@@ -16,7 +16,7 @@
         "/select-id?prop=header%2Fidentifier",
         "/dpla_mapper?mapper_type=gpo",
         "/set_context",
-        "/dedup_value?prop=sourceResource%2Ftemporal", 
+        "/dedup_value?prop=sourceResource%2Ftemporal%2CsourceResource%2Fspatial",
         "/cleanup_value",
         "/enrich_earliest_date",
         "/enrich-subject",
