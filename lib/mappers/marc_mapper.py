@@ -308,16 +308,27 @@ class MARCMapper(Mapper):
         self.extend_prop(prop, _dict, codes)
 
     def map_language(self, _dict, tag, codes):
-        prop = "sourceResource/language"
-        self.extend_prop(prop, _dict, codes)
+        def _extract_codes(values):
+            """Splits the language values every third character"""
+            language = []
+            for lang_str in values:
+                language.extend([lang_str[i:i+3] for i in
+                                 range(0, len(lang_str), 3)])
+            return language
 
-    def map_display_date(self, _dict, tag, code):
+        prop = "sourceResource/language"
+        values = self._get_values(_dict, codes)
+        if tag == "041":
+          values = _extract_codes(values)
+        self.extend_prop(prop, _dict, codes, values=values)
+
+    def map_display_date(self, _dict, tag, codes):
         """Map what will be the displayDate to sourceResource/date.
 
         This will be further processed down the pipeline, or recreated as
         a dictionary by the Control Field 008 mapping.
         """
-        date_given = self._get_one_subfield(_dict, code) or ""
+        date_given = self._get_one_subfield(_dict, codes) or ""
         semi_stripped = date_given.strip(";. ")
         date = strip_unclosed_brackets(semi_stripped)
         self.mapped_data["sourceResource"]["date"] = date
@@ -415,16 +426,6 @@ class MARCMapper(Mapper):
         else:
             delprop(self.mapped_data, prop)
 
-    def update_language(self):
-        """Splits the language values every third character"""
-        prop = "sourceResource/language"
-        language = []
-        for lang_str in self._get_mapped_value(prop):
-            language.extend([lang_str[i:i+3] for i in
-                             range(0, len(lang_str), 3)])
-        if language:
-            setprop(self.mapped_data, prop, language)
-
     def update_format(self):
         control = {
             "a": "Map",
@@ -518,6 +519,9 @@ class MARCMapper(Mapper):
 
                 if tag == "086" or tag == "087":
                     self.datafield_086_or_087 = True
+
+                if tag == "264" and _dict.get("ind2") != "1":
+                    continue
 
                 for match, func_tuples in self.mapping_dict.items():
                     if match(tag):
@@ -659,7 +663,6 @@ class MARCMapper(Mapper):
     def update_mapped_fields(self):
         self.update_title()
         self.update_format()
-        self.update_language()
         self.update_is_shown_at()
         self.update_type_and_spec_type()
 
