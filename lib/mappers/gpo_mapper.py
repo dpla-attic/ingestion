@@ -249,6 +249,11 @@ class GPOMapper(MARCMapper):
         if description:
             self.update_source_resource({"description": description})
 
+    def update_object(self):
+        object_uri = self._get_mapped_value("object")
+        if not object_uri:
+            self.mapped_data.update({"object": "http://fdlp.gov/images/gpo-tn.jpg"})
+
     def update_rights(self):
         rights = self._get_mapped_value("sourceResource/rights")
         if not rights:
@@ -272,6 +277,7 @@ class GPOMapper(MARCMapper):
         self.update_description()
         self.update_rights()
         self.update_data_provider()
+        self.update_object()
 
     def map(self):
         self.map_base()
