@@ -16,6 +16,7 @@
         "/strip",
         "/indiana_identify_object",
         "/set_context",
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Fspatial",
         "/cleanup_value",
         "/capitalize_value",
         "/enrich_earliest_date",
