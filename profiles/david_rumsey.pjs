@@ -29,7 +29,7 @@
         "/enrich_earliest_date",  
         "/enrich_date",
         "/enrich-subject",
-        "/copy_prop?prop=sourceResource%2F&to_prop=sourceResource%2Fformat",
+        "/copy_prop?prop=sourceResource%2Ftype&to_prop=sourceResource%2Fformat",
         "/enrich-type", 
         "/enrich-format", 
         "/enrich_location",
