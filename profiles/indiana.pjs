@@ -20,7 +20,7 @@
         "/enrich_earliest_date",
         "/enrich-subject",
         "/enrich_date",
-        "/enrich-type?use_format_if_invalid=true",
+        "/enrich-type?send_rejects_to_format=true",
         "/enrich-format",
         "/enrich_location",
         "/enrich_language",
