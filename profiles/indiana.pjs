@@ -13,6 +13,7 @@
     "enrichments_item": [
         "/select-id",
         "/dpla_mapper?mapper_type=dublin_core",
+        "/strip",
         "/indiana_identify_object",
         "/set_context",
         "/cleanup_value",
