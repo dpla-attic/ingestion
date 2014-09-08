@@ -33,6 +33,11 @@ def main(argv):
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
 
+    # ConfigParser.ConfigParser().getboolean() expects a string
+    config = ConfigParser.ConfigParser({"SyncQAViews": "True"})
+    config.readfp(open('akara.ini'))
+    sync_qa_views = config.getboolean('CouchDb', 'SyncQAViews')
+
     batch_size = 500
 
     couch = Couch()
@@ -101,7 +106,7 @@ def main(argv):
 
             if total_items > sync_point:
                 print "Syncing views"
-                couch.sync_views(couch.dpla_db.name)
+                couch.sync_views(couch.dpla_db.name, sync_qa_views)
                 sync_point = total_items + 10000
 
             # Set docs for the next iteration
@@ -120,7 +125,7 @@ def main(argv):
             total_collections += len(docs) - items
             print "Saved %s documents" % (total_items + total_collections)
             print "Syncing views"
-            couch.sync_views(couch.dpla_db.name)
+            couch.sync_views(couch.dpla_db.name, sync_qa_views)
 
     print "Total items: %s" % total_items
     print "Total collections: %s" % total_collections
