@@ -29,6 +29,10 @@
         "/set_spec_type",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Indiana",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/unset_prop?prop=dataProvider",
+        "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider",
+        "/unset_prop?prop=sourceResource%2Fcontributor",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
     ],
     "thresholds": {
