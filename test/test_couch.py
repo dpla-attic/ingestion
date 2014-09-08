@@ -14,9 +14,10 @@ H = httplib2.Http()
 headers = {
     "Content-Type": "application/json",
     "Pipeline-Coll": u"/oai-set-name?sets_service=/oai.listsets.json?endpoint=http://repository.clemson.edu/cgi-bin/oai.exe",
-    "Pipeline-Item": u"/select-id,/oai-to-dpla",
+    "Pipeline-Item": u"/select-id,/dpla_mapper?mapper_type=scdl",
     "Source": u"clemson"
 }
+
 
 DATA_PATH = "test/test_data/"
 DATA = DATA_PATH + "clemson_ctm"
@@ -75,8 +76,8 @@ class CouchTest(Couch):
         del self.server[TEST_DASHBOARD_DB]
         self.dpla_db = self.server.create(TEST_DPLA_DB)
         self.dashboard_db = self.server.create(TEST_DASHBOARD_DB)
-        self.sync_views("dpla")
-        self.sync_views("dashboard")
+        self.sync_views("dpla", True)
+        self.sync_views("dashboard", True)
 
     def get_provider_backups(self):
         return [db for db in self.server if db.startswith(PROVIDER + "_")]
@@ -112,8 +113,8 @@ def couch_setup():
     couch = CouchTest(server_url=SERVER_URL,
                       dpla_db_name=TEST_DPLA_DB,
                       dashboard_db_name=TEST_DASHBOARD_DB)
-    couch.sync_views("dpla")
-    couch.sync_views("dashboard")
+    couch.sync_views("dpla", True)
+    couch.sync_views("dashboard", True)
     couch._sync_test_views()
 
 @nottest
@@ -194,7 +195,7 @@ def test_deleted_docs():
 def test_changed_docs():
     DOCS_CHANGED = {
         "clemson--http://repository.clemson.edu/u?/ctm,161": {"changed": ["originalRecord/title", "sourceResource/title"]},
-        "clemson--http://repository.clemson.edu/u?/ctm,169": {"changed": ["originalRecord/coverage", "sourceResource/spatial"]},
+        "clemson--http://repository.clemson.edu/u?/ctm,169": {"changed": ["originalRecord/coverage"]},
         "clemson--http://repository.clemson.edu/u?/ctm,179": {"changed": ["originalRecord/subject", "sourceResource/subject"]}
     }
     

@@ -139,7 +139,6 @@ MODULES = [
     "dplaingestion.akamod.select-id",
     "dplaingestion.akamod.shred",
     "dplaingestion.akamod.geocode",
-    "dplaingestion.akamod.oai-to-dpla",
     "dplaingestion.akamod.oai-set-name",
     "dplaingestion.akamod.dpla-list-records",
     "dplaingestion.akamod.dpla-list-sets",
@@ -164,23 +163,17 @@ MODULES = [
     "dplaingestion.akamod.cleanup_value",
     "dplaingestion.akamod.set_prop",
     "dplaingestion.akamod.enrich_language",
-    "dplaingestion.akamod.arc-to-dpla",
-    "dplaingestion.akamod.mods_to_dpla",
-    "dplaingestion.akamod.primo-to-dpla",
     "dplaingestion.akamod.mwdl_enrich_state_located_in",
     "dplaingestion.akamod.artstor_cleanup",
     "dplaingestion.akamod.nypl_identify_object",
     "dplaingestion.akamod.nypl_coll_title",
     "dplaingestion.akamod.nypl_select_hasview",
     "dplaingestion.akamod.mwdl_cleanup_field",
-    "dplaingestion.akamod.ia_to_dpla",
     "dplaingestion.akamod.ia_identify_object",
     "dplaingestion.akamod.ia_set_rights",
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.edan_select_id",
-    "dplaingestion.akamod.edan_to_dpla",
     "dplaingestion.akamod.dc_clean_invalid_dates",
-    "dplaingestion.akamod.oai_mods_to_dpla",
     "dplaingestion.akamod.decode_html",
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",
     "dplaingestion.akamod.david_rumsey_identify_object",
@@ -191,20 +184,15 @@ MODULES = [
     "dplaingestion.akamod.replace_substring",
     "dplaingestion.akamod.uiuc_cleanup_spatial_name",
     "dplaingestion.akamod.remove_list_values",
-    "dplaingestion.akamod.marc_to_dpla",
     "dplaingestion.akamod.usc_enrich_location",
     "dplaingestion.akamod.hathi_identify_object",
-    "dplaingestion.akamod.oai_untl_to_dpla",
     "dplaingestion.akamod.texas_enrich_location",
     "dplaingestion.akamod.set_spec_type",
     "dplaingestion.akamod.usc_set_dataprovider",
-    "dplaingestion.akamod.oai_mods_to_dpla_digitalnc",
     "dplaingestion.akamod.compare_with_schema",
-    "dplaingestion.akamod.qdc_to_dpla",
     "dplaingestion.akamod.mdl_state_located_in",
     "dplaingestion.akamod.scdl_format_to_type",
     "dplaingestion.marc_code_to_relator",
-    "dplaingestion.akamod.marc_to_dpla_gpo",
     "dplaingestion.akamod.validate_mapv3",
     "dplaingestion.akamod.dpla_mapper",
     "dplaingestion.akamod.set_context",
@@ -221,11 +209,6 @@ class geocode:
     bing_api_key = "${Bing__ApiKey}"
     geonames_username = "${Geonames__Username}"
     geonames_token = "${Geonames__Token}"
-
-class dpla_thumbs:
-    couch_database = "${CouchDb__Url}dpla"
-    couch_database_username = "${CouchDb__Username}"
-    couch_database_password = "${CouchDb__Password}"
 
 class lookup:
     # Key is passed in query param.
@@ -338,8 +321,6 @@ class type_conversion:
         ('video', 'moving image')
     ]
 
-class edan_to_dpla(type_conversion):
-    pass
 
 class enrich_type(type_conversion):
     pass

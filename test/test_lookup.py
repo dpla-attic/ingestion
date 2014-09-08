@@ -2,8 +2,7 @@ import os
 import sys
 import re
 import hashlib
-from server_support import server, print_error_log, get_thumbs_root, H
-from dplaingestion.akamod.download_test_image import image_png, image_jpg
+from server_support import server, print_error_log, H
 from amara.thirdparty import json
 from dict_differ import DictDiffer, assert_same_jsons, pinfo
 from nose.tools import nottest

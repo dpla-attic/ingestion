@@ -73,12 +73,13 @@ class IAMapper(Mapper):
         coll_key = self.meta_key + "collection"
         # Get all of the "collection" elements from the provider's record.
         # We only want the first one that matches one of our identifiers.
-        cols = list(getprop(self.provider_data, coll_key))
-        for c in cols:
-            if c in intermediate_providers:
-                p = intermediate_providers[c]
-                self.mapped_data.update({"intermediateProvider": p})
-                return
+        cols = getprop(self.provider_data, coll_key, keyErrorAsNone=True)
+        if cols is not None:
+            for c in list(cols):
+                if c in intermediate_providers:
+                    p = intermediate_providers[c]
+                    self.mapped_data.update({"intermediateProvider": p})
+                    return
 
     def map_has_view(self):
         _id = getprop(self.provider_data, "originalRecord/_id", True)

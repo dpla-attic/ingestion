@@ -324,7 +324,7 @@ def test_oaitodpla_date_parse_format_ca_string():
                       }]
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "dpla_mapper?mapper_type=dublin_core"
 
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")
@@ -340,7 +340,7 @@ def test_oaitodpla_date_parse_format_bogus_string():
         "date": "BOGUS!"
     }
 
-    url = server() + "oai-to-dpla"
+    url = server() + "dpla_mapper?mapper_type=dublin_core"
 
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert str(resp.status).startswith("2")

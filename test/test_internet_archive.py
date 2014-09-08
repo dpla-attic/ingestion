@@ -392,7 +392,7 @@ def test_marc_processor():
 
 }
     """
-    url = server() + "ia-to-dpla"
+    url = server() + "dpla_mapper?mapper_type=ia"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2"), str(resp) + "\n" + content
     doc = json.loads(content)
@@ -827,7 +827,7 @@ def test_spatial_mapping():
    }
 }
     """
-    url = server() + "ia-to-dpla"
+    url = server() + "dpla_mapper?mapper_type=ia"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2"), str(resp) + "\n" + content
     doc = json.loads(content)
@@ -888,7 +888,7 @@ def test_multi_spatial_mapping():
    "_id": "yournewhealthins00mass"
 }
     """
-    url = server() + "ia-to-dpla"
+    url = server() + "dpla_mapper?mapper_type=ia"
     resp, content = H.request(url, "POST", body=INPUT_JSON)
     assert str(resp.status).startswith("2"), str(resp) + "\n" + content
     doc = json.loads(content)
@@ -1675,7 +1675,7 @@ def test_ia_set_rights():
         return content
 
     for i in INPUT:
-        content = ia_pipeline("ia-to-dpla", i["json"])
+        content = ia_pipeline("dpla_mapper?mapper_type=ia", i["json"])
         content = ia_pipeline("ia-set-rights", content)
         doc = json.loads(content)
         assert "sourceResource" in doc, "sourceResource field is absent"
