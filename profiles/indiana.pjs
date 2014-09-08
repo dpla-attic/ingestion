@@ -26,6 +26,7 @@
         "/enrich-type?send_rejects_to_format=true",
         "/enrich-format",
         "/enrich_location",
+        "/geocode",
         "/enrich_language",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Indiana",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
