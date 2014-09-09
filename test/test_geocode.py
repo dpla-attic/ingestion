@@ -40,7 +40,7 @@ def test_geocode():
         },
         "creator": "David"
     }
-        
+
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
@@ -417,7 +417,7 @@ def test_geocode_set_name_country():
 @attr(travis_exclude='yes')
 def test_geocode_skip_united_states():
     """Should not geocode when name or country value is 'United States' or
-       États-Unis
+       'États-Unis' or 'USA'
     """
     INPUT = {
         "id": "12345",
@@ -428,7 +428,7 @@ def test_geocode_skip_united_states():
     }
 
     url = server() + "geocode"
-    for v in ["United States", "United States.", u"États-Unis", u"États-Unis."]:
+    for v in ["United States", "United States.", u"États-Unis", u"États-Unis.", "USA"]:
         for field in ["name", "country"]:
             setprop(INPUT, "sourceResource/spatial", {field: v})
             resp, content = H.request(url, "POST", body=json.dumps(INPUT))

@@ -57,7 +57,7 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
                 continue
 
             # Likewise, skip generic "United States"
-            pattern = ur" *(United States(?!-)|États-Unis)"
+            pattern = ur" *(United States(?!-)|États-Unis|USA)"
             if re.search(pattern, v.get("name", "")) or \
                re.search(pattern, v.get("country", "")):
                     continue
