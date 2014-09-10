@@ -34,11 +34,12 @@ class Couch(object):
                              are located.
             batch_size: The batch size to use with iterview
         """
-        config = ConfigParser.ConfigParser()
+        config = ConfigParser.ConfigParser({"LogLevel": "INFO"})
         config.readfp(open(config_file))
         url = config.get("CouchDb", "Url")
         username = config.get("CouchDb", "Username")
         password = config.get("CouchDb", "Password")
+        log_level = config.get("CouchDb", "LogLevel")
 
         if not kwargs:
             dpla_db_name = "dpla"
@@ -67,7 +68,7 @@ class Couch(object):
             "%b %d %H:%M:%S")
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        self.logger.setLevel("DEBUG")
+        self.logger.setLevel(log_level)
 
     def _get_db(self, name):
         """Return a database given the database name, creating the database
