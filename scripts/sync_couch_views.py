@@ -15,10 +15,6 @@ import argparse
 import ConfigParser
 from dplaingestion.couch import Couch
 
-# ConfigParser.ConfigParser().getboolean() expects a string
-config = ConfigParser.ConfigParser({"SyncQAViews": "True"})
-config.readfp(open('akara.ini'))
-
 def define_arguments():
     """Defines command line arguments for the current script"""
     parser = argparse.ArgumentParser()
@@ -32,11 +28,10 @@ def define_arguments():
 def main(argv):
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
-    sync_qa_views = config.getboolean('CouchDb', 'SyncQAViews')
     couch = Couch()
     database_names = ["dpla", "dashboard", "bulk_download"]
     if args.database_name in database_names:
-        couch.sync_views(args.database_name, sync_qa_views)
+        couch.sync_views(args.database_name)
     else:
         print >> sys.stderr, "The database_name parameter should be " + \
                              "either %s" % " or ".join(database_names)
