@@ -196,6 +196,7 @@ MODULES = [
     "dplaingestion.akamod.validate_mapv3",
     "dplaingestion.akamod.dpla_mapper",
     "dplaingestion.akamod.set_context",
+    "dplaingestion.akamod.strip_html"
     ]
 
 ### Section 3: Other module configuration goes here

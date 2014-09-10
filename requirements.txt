@@ -15,3 +15,4 @@ geopy
 python-cloudfiles
 ordereddict
 jsonschema==2.3.0
+MarkupSafe==0.23
