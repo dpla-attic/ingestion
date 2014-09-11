@@ -78,5 +78,53 @@ def test_type_for_type_keyword():
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
+def test_type_set_format():
+    """Format gets set correctly given invalid type value
+
+    When send_rejects_to_format is true, format should get populated with the
+    type strings that don't exactly match a valid type.
+    """
+    url = server() + "enrich-type?send_rejects_to_format=true"
+    INPUT = {
+        "sourceResource": {
+            "type": "digital photograph"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "type": "image",
+            "format": ["digital photograph"]
+        }
+    }
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+    INPUT = {
+        "sourceResource": {
+            "type": "text"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "type": "text"
+        }
+    }
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+    INPUT = {
+        "sourceResource": {
+            "type": "weird thing"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "format": ["weird thing"]
+        }
+    }
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
