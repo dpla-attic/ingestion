@@ -1,10 +1,17 @@
 {
     "name": "mwdl",
     "type": "mwdl",
-    "endpoint_url": "http://utah-primoprod.hosted.exlibrisgroup.com/PrimoWebServices/xservice/search/brief?institution=MWDL&loc=local,scope:%28mw%29&query=facet_tlevel,exact,online_resources&query_exc=facet_rtype,exact,collections",
+    "endpoint_url": "http://utah-primoprod.hosted.exlibrisgroup.com/PrimoWebServices/xservice/search/brief",
     "endpoint_url_params": {
         "indx": 1,
-        "bulkSize": 500
+        "bulkSize": 500,
+        "institution": "MWDL",
+        "loc": "local,scope:(mw)",
+        "query": "facet_tlevel,exact,online_resources",
+        "query_exc": [
+            "facet_rtype,exact,collections",
+            "lsr04,exact,2082"
+        ]
     },
     "sets": "NotSupported",
     "contributor": {

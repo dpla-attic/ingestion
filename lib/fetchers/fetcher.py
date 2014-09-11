@@ -77,9 +77,9 @@ class Fetcher(object):
         req_uri = m.group(2)
         if params:
             if "?" in req_uri:
-                req_uri += "&" + urlencode(params)
+                req_uri += "&" + urlencode(params, True)
             else:
-                req_uri += "?" + urlencode(params)
+                req_uri += "?" + urlencode(params, True)
 
         for i in range(attempts):
             try:

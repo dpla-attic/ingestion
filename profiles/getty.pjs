@@ -1,10 +1,13 @@
 {
     "name": "getty",
     "type": "getty",
-    "endpoint_url": "http://primose1.getty.edu:1701/PrimoWebServices/xservice/search/brief?institution=01GRI&loc=local,scope:%28GETTY_OCP,GETTY_ROSETTA%29&query=facet_local5,exact,DPLA",
+    "endpoint_url": "http://primose1.getty.edu:1701/PrimoWebServices/xservice/search/brief",
     "endpoint_url_params": {
         "indx": 1,
-        "bulkSize": 500
+        "bulkSize": 500,
+        "institution": "01GRI",
+        "loc": "local,scope:(GETTY_OCP,GETTY_ROSETTA)",
+        "query": "facet_local5,exact,DPLA"
     },
     "sets": "NotSupported",
     "contributor": {

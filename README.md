@@ -36,6 +36,8 @@ Configure an akara.ini file appropriately for your environment;
     Username=<CouchDB username>
     Password=<CouchDB password>
     SyncQAViews=<True or False; consider False on production>
+    ; Recommended LogLevel is INFO for production; defaults to INFO if not set
+    LogLevel=<priority>
 
     [Geonames]
     Username=<Geonames username>

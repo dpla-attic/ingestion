@@ -1,4 +1,5 @@
 from dplaingestion.fetchers.fetcher import *
+from urllib import urlencode
 import threading
 
 class PrimoFetcher(Fetcher):
@@ -152,8 +153,9 @@ class PrimoFetcher(Fetcher):
             error, content = self.request_content_from(
                 self.endpoint_url, self.endpoint_url_params
                 )
-            print "requesting %s %s" % (self.endpoint_url,
-                                        self.endpoint_url_params)
+            print "Requesting %s?%s" % (self.endpoint_url,
+                                        urlencode(self.endpoint_url_params,
+                                                  True))
 
             if error is not None:
                 # Stop requesting from this set
