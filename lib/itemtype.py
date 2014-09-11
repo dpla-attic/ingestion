@@ -40,4 +40,4 @@ def rejects(string_map_combos):
     """
     return [s for strings, mappings in string_map_combos
             for s in strings
-            if not _type_for_keyword(s, mappings)]
+            if not s == _type_for_keyword(s, mappings)]
