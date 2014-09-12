@@ -41,93 +41,55 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
     else:
         logger.debug("Geocoding %s" % data["_id"])
         value = getprop(data, prop)
+        places = []
         for v in iterify(value):
+            geocode = True
             if not isinstance(v, dict):
                 logger.error("Spatial value must be a dictionary; record %s" %
                              data["_id"])
                 continue
 
-            set_name(v)
-            if "coordinates" not in v and "name" not in v:
+            place = Place(v)
+            if not place.validate():
                 logger.error("Spatial dictionary must have 'coordinates' " +
                              "or 'name' property; record %s" % data["_id"])
 
-            if v.get("state") is not None:
+            if Place.get_coordinates(place.name):
+                place.coordinates = Place.get_coordinates(place.name)
+                place.name = ''
+                place.set_name()
+
+            #TODO: i think we *do* want to enrich even if state is given;
+            # enrich + check against state
+            if not place.state == '':
                 # Do not geocode if dictionary has a "state" value
-                continue
+                geocode = False
 
-            # Likewise, skip generic "United States"
+            # Don't enrich with geodata if place is 'United States'
+            # the 'country' part of this seems to make assumptions about
+            # incoming data.
             pattern = ur" *(United States(?!-)|États-Unis|USA)"
-            if re.search(pattern, v.get("name", "")) or \
-               re.search(pattern, v.get("country", "")):
-                    continue
+            if re.search(pattern, place.name) or re.search(pattern, place.country):
+                geocode = False
 
-            if "coordinates" in v:
-                if get_coordinates(v["coordinates"]):
-                    result = get_coordinates(v["coordinates"])
-                else:
-                    logger.error("Value %s " % v["coordinates"] +
-                                 "for property \"coordinates\" is not a " +
-                                 "valid coordinate value; record %s" %
-                                 data["_id"])
-                    continue
-            elif get_coordinates(v["name"]):
-                result = get_coordinates(v["name"])
-            else:
+            if geocode:
                 # Attempt to find this item's lat/lng coordinates
-                api_key = module_config().get("bing_api_key")
-                result = DplaBingGeocoder(api_key=api_key).geocode_spatial(v)
+                if not place.coordinates:
+                    api_key = module_config().get("bing_api_key")
+                    place.enrich_geodata(DplaBingGeocoder(api_key=api_key))
 
-            if (result):
-                lat, lng = result
-                if newprop not in v:
-                    v[newprop] = "%s, %s" % (lat, lng,)
+                place.enrich_geodata(DplaGeonamesGeocoder())
 
-                # Reverse-geocode this location to find country, state, and
-                # county parent places
-                hierarchy = DplaGeonamesGeocoder().reverse_geocode_hierarchy(
-                                                            lat,
-                                                            lng,
-                                                            ["PCLI", # Country
-                                                             "ADM1", # State
-                                                             "ADM2"] # County
-                                                             )
-                spatial = {}
-                for place in hierarchy:
-                    fcode = place["fcode"]
-                    if ("PCLI" == place["fcode"]):
-                        spatial["country"] = place["toponymName"]
-                    elif ("ADM1" == place["fcode"]):
-                        spatial["state"] = place["toponymName"]
-                    elif ("ADM2" == place["fcode"]):
-                        spatial["county"] = place["toponymName"]
+            if not place.validate():
+                if place.set_name() == '':
+                    logger.error("Spatial dictionary must have a " +
+                                 "'name' property; record %s" % data["_id"])
+                    place.name = place.coordinates
 
-                    # Deterine how close we are to the original coordinates, to
-                    # see if this is the place that was geocoded and we should
-                    # stop adding more specificity (e.g. if the record
-                    # specified "South Carolina", we don't want to include the
-                    # county that is located at the coordinates of South
-                    # Carolina. We use increasing tolerance levels to account
-                    # for differences between Bing and Geonames coordinates.
-                    d = haversine((lat, lng), (place["lat"], place["lng"]))
-
-                    # Country tolerance (Bing/Geonames 49.9km off)
-                    country_tolerance_met = ("PCLI" == place["fcode"] and
-                                             d < 50)
-                    # State tolerance
-                    state_tolerance_met = ("ADM1" == place["fcode"] and d < 15)
-
-                    if (country_tolerance_met or state_tolerance_met):
-                        break
-
-                # Add only non-existing properties to v
-                for k in spatial.keys():
-                    if k not in v:
-                        v[k] = spatial[k]
-            else:
-                logger.debug("No geocode result found for %s" % v)
-
-        setprop(data, prop, value)
+            places.append(place)
+            
+        values = map(lambda x: x.to_json(), places)
+        setprop(data, prop, values)
 
     return json.dumps(data)
 
@@ -222,7 +184,6 @@ class Address:
         return ", ".join(searchTokens)
 
 
-
 class DplaBingGeocoder(geocoders.Bing):
     countryBBoxCache = {}
     resultCache = {}
@@ -230,7 +191,26 @@ class DplaBingGeocoder(geocoders.Bing):
     def __init__(self, **kwargs):
         super(DplaBingGeocoder, self).__init__(**kwargs)
 
+    # In a better implementation of this geocoder
+    # this function would try to return a fully updated
+    # version of the place.
+    # 
+    # As it stands, it simply provides a wrapper around the
+    # geocode_spatial function to provide a common interface
+    # between geocoders and places.
+    def enrich_place(self, place):
+        coords = self.geocode_spatial(place.to_json())
+        if coords:
+            place.coordinates = Place.floats_to_coordinates(coords)
+
+        return place
+
     def geocode_spatial(self, spatial):
+        '''
+        Accepts a dictionary and attempts to return a set
+        of coordinates in format [latitude, longitude] that
+        match the place.
+        '''
         if (not self.api_key):
             logger.warn("No API key set for Bing " +
                         "(use bing_api_key configuration key)")
@@ -297,7 +277,7 @@ class DplaBingGeocoder(geocoders.Bing):
         coordinates = [(x[gpoints][0][coords][0], x[gpoints][0][coords][1]) for
                        x in results]
         for combination in itertools.combinations(coordinates, 2):
-            if (TOLERANCE_KM < haversine(combination[0], combination[1])):
+            if (TOLERANCE_KM < Place.haversine(combination[0], combination[1])):
                 return False
 
         return True
@@ -351,6 +331,17 @@ class DplaBingGeocoder(geocoders.Bing):
 class DplaGeonamesGeocoder(object):
     resultCache = {}
 
+    def enrich_place(self, place):
+        if place.coordinates:
+            try:            
+                lat, lng = place.coordinates.split(',')
+            except:
+                return place
+            new_place = self._place_from_coordinates(lat, lng)
+            if new_place:
+                return new_place
+        return place
+
     def reverse_geocode(self, lat, lng):
         params = { "lat": lat,
                    "lng": lng,
@@ -390,3 +381,128 @@ class DplaGeonamesGeocoder(object):
                     hierarchy.append(place)
                     
         return hierarchy 
+        
+    def _place_from_coordinates(self, lat, lng):
+        place = Place()
+
+        # Reverse-geocode this location to find country, state, and
+        # county parent places
+        hierarchy = self.reverse_geocode_hierarchy(lat,
+                                                   lng,
+                                                   ["PCLI", # Country
+                                                    "ADM1", # State
+                                                    "ADM2"]) # County
+        for feature in hierarchy:
+            fcode = feature["fcode"]
+            if ("PCLI" == feature["fcode"]):
+                place.country = feature["toponymName"]
+            elif ("ADM1" == feature["fcode"]):
+                place.state = feature["toponymName"]
+            elif ("ADM2" == feature["fcode"]):
+                place.county = feature["toponymName"]
+
+            # Deterine how close we are to the original coordinates, to
+            # see if this is the place that was geocoded and we should
+            # stop adding more specificity (e.g. if the record
+            # specified "South Carolina", we don't want to include the
+            # county that is located at the coordinates of South
+            # Carolina. We use increasing tolerance levels to account
+            # for differences between input and Geonames coordinates.
+            d = Place.haversine((lat, lng), (feature["lat"], feature["lng"]))
+
+            # Country tolerance (input/Geonames 49.9km off)
+            country_tolerance_met = ("PCLI" == feature["fcode"] and
+                                             d < 50)
+            # State tolerance
+            state_tolerance_met = ("ADM1" == feature["fcode"] and d < 15)
+
+            if (country_tolerance_met or state_tolerance_met):
+                return place
+
+        return place
+
+
+class Place:
+    def __init__(self, spatial={}):
+        self.name = spatial["name"] if ("name" in spatial) else ''
+        self.city = spatial["city"] if ("city" in spatial) else ''
+        self.state = spatial["state"] if ("state" in spatial) else ''
+        self.county = spatial["county"] if ("county" in spatial) else ''
+        self.region = spatial["region"] if ("region" in spatial) else ''
+        self.country = spatial["country"] if ("country" in spatial) else ''
+        self.coordinates = spatial["coordinates"] if ("coordinates" in spatial) else ''
+
+    def set_name(self):
+        if self.name:
+            return self.name
+
+        prop_order = ["city", "county", "state", "country", "region"]
+        for prop in prop_order:
+            if getattr(self, prop):
+                self.name = getattr(self, prop)
+                return self.name
+        return self.name
+
+    def to_json(self):
+        return dict((k,v) for k,v in self.__dict__.iteritems() if v is not '')
+
+    def validate(self):
+        if self.name == '':
+            return False
+        return True
+
+    def refine_coordinates(self):
+        coords = Place.get_coordinates(self.coordinates)
+        self.coordinates = coords if coords else ''
+        return self.coordinates
+
+    def enrich_geodata(self, geocoder):
+        coded_place = geocoder.enrich_place(self)
+        
+        # Add only non-existing properties 
+        # TODO: get more sophisticated about update
+        for prop in coded_place.to_json().keys():
+            if getattr(self, prop) == '':
+                setattr(self, prop, getattr(coded_place, prop))
+        
+    @staticmethod
+    def get_coordinates(value):
+        if Place._is_coordinate(value):
+            coords = map(float, value.split(','))
+        elif Place._is_transposed_coordinate(value):
+            lon, lat = value.split(',')
+            coords = map(float, [lat, lon])
+        else:
+            return 
+        return Place.floats_to_coordinates(coords)
+
+    @staticmethod
+    def floats_to_coordinates(floats):
+        lat, lon = floats
+        return str(lat) + ', ' + str(lon)
+
+    @staticmethod
+    def haversine(origin, destination):
+        '''
+        Distance in km between two lat/lng coordinates.
+        '''
+        lat1, lon1 = map(float, origin)
+        lat2, lon2 = map(float, destination)
+        radius = 6371 # Radius of the earth in km
+        
+        dlat = math.radians(lat2-lat1)
+        dlon = math.radians(lon2-lon1)
+        a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+            * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        d = radius * c
+
+        return d
+
+    @staticmethod
+    def _is_coordinate(value):
+        return re.search(r"^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$", value)
+
+    @staticmethod
+    def _is_transposed_coordinate(value):
+        return re.search(r"^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?),\s*[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$", value)

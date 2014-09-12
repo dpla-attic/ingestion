@@ -6,6 +6,7 @@ from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
 from dplaingestion.selector import setprop, getprop, exists
+from dplaingestion.akamod.geocode import Place, DplaBingGeocoder
 
 @attr(travis_exclude='yes')    
 def test_geocode():
@@ -44,7 +45,6 @@ def test_geocode():
     url = server() + "geocode"
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
-    print json.loads(content)
     assert_same_jsons(EXPECTED, json.loads(content))
 
 
@@ -137,7 +137,7 @@ def test_geocode_coordinate_provided1():
                 {
                     "state": "Massachusetts",
                     "country": "United States",
-                    "name": "42.358631134, -71.0567016602",
+                    "name": "Massachusetts",
                     "coordinates": "42.358631134, -71.0567016602"
                 }
             ]
@@ -230,7 +230,7 @@ def test_geocode_with_existing_props():
 
 @attr(travis_exclude='yes')
 def test_geocode_set_name_coordinates():
-    """Should set the name property to the coordinates value"""
+    """Should set the name property to the lowest hierarchy value"""
     INPUT = {
         "id": "12345",
         "_id": "12345",
@@ -245,14 +245,16 @@ def test_geocode_set_name_coordinates():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
-                    "coordinates": "37.7771186829, -122.419639587",
+            "spatial": [
+                {
+                "coordinates": "37.7771186829, -122.419639587",
                     "city": "Bananas",
                     "state": "California",
-                    "name": "37.7771186829, -122.419639587",
+                    "name": "Bananas",
                     "county": "San Francisco County", 
                     "country": "United States" 
-            }
+                }
+            ]
         }
     }
 
@@ -278,11 +280,13 @@ def test_geocode_set_name_city():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
-                "city": "Los Angeles",
-                "state": "California",
-                "name": "Los Angeles"
-            }
+            "spatial": [
+                {
+                    "city": "Los Angeles",
+                    "state": "California",
+                    "name": "Los Angeles"
+                }
+            ]
         }
     }
 
@@ -308,13 +312,15 @@ def test_geocode_set_name_county():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
+            "spatial": [
+                {
                 "county": "Los Angeles County",
-                "country": "Bananas",
-                "name": "Los Angeles County",
-                "state": "California",
-                "coordinates": "33.9934997559, -118.29750824"
-            }
+                    "country": "Bananas",
+                    "name": "Los Angeles County",
+                    "state": "California",
+                    "coordinates": "33.9934997559, -118.29750824"
+                }
+            ]
         }
     }
 
@@ -339,13 +345,15 @@ def test_geocode_set_name_region():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
-                "region": "Ecuador",
-                "name": "Ecuador",
-                "coordinates": "-1.42152893543, -78.8710403442",
-                "country": "Republic of Ecuador",
-                "state": u"Provincia de Bolívar"
-            }
+            "spatial": [
+                {
+                    "region": "Ecuador",
+                    "name": "Ecuador",
+                    "coordinates": "-1.42152893543, -78.8710403442",
+                    "country": "Republic of Ecuador", # find a way to remove these from the tests, this is BAD DATA
+                    "state": u"Provincia de Bolívar" # find a way to remove these from the tests, this is BAD DATA
+                }
+            ]
         }
     }
 
@@ -370,10 +378,10 @@ def test_geocode_set_name_state():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
+            "spatial": [{
                 "state": "California",
                 "name": "California"
-            }
+            }]
         }
     }
 
@@ -384,7 +392,7 @@ def test_geocode_set_name_state():
 
 @attr(travis_exclude='yes')
 def test_geocode_set_name_country():
-    """Should set the name property to the country value"""
+    """Should set the name property to the smallest available feature value"""
     INPUT = {
         "id": "12345",
         "_id": "12345",
@@ -399,13 +407,13 @@ def test_geocode_set_name_country():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
+            "spatial": [{
                 "country": "Canada",
                 "region": "Bananas",
-                "name": "Canada",
+                "name": "Nunavut",
                 "state": "Nunavut",
                 "coordinates": "62.8329086304, -95.9133224487"
-            }
+            }]
         }
     }
 
@@ -416,15 +424,12 @@ def test_geocode_set_name_country():
 
 @attr(travis_exclude='yes')
 def test_geocode_skip_united_states():
-    """Should not geocode when name or country value is 'United States' or
-       'États-Unis' or 'USA'
+    """Should not geocode when name or country value is 'United States' or 'États-Unis' or 'USA'
     """
     INPUT = {
         "id": "12345",
         "_id": "12345",
-        "sourceResource": {
-            "spatial": ""
-        }
+        "sourceResource": { "spatial": "" }
     }
 
     url = server() + "geocode"
@@ -452,12 +457,12 @@ def test_geocode_do_not_skip_united_states():
         "id": "12345",
         "_id": "12345",
         "sourceResource": {
-            "spatial": {
+            "spatial": [{
                 "coordinates": "37.2551002502, -119.617523193",
                 "country": "United States",
                 "name": "United States--California",
                 "state": "California"
-            }
+            }]
         }
     }
 
@@ -465,3 +470,43 @@ def test_geocode_do_not_skip_united_states():
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
+
+def test_geocode_place_validation():
+    """Should validate place for presence of name value
+    """
+    place = Place()
+    assert not place.validate()
+    place.name = 'place name'
+    assert place.validate()
+
+def test_geocode_place_get_coodinates():
+    """Should check for and build coordinates from string even when in reverse order
+    """
+    assert Place.get_coordinates('not coordinate') == None
+    assert Place.get_coordinates('999.84, 123.33') == None
+    assert Place.get_coordinates('33.33, 123.33') == '33.33, 123.33'
+    assert Place.get_coordinates('123.33,33.33') == '33.33, 123.33'
+    
+
+def test_geocode_floats_to_coodinates():
+    """Should translate a list of floats to a coordinate string
+    """
+    assert Place.floats_to_coordinates([39.1234, 123.1234]) == "39.1234, 123.1234"
+
+def test_geocode_place_to_json():
+    """Should convert Place to a dict and drop empty fields
+    """
+    INPUT = {'name': u'blah', 'coordinates': 'my coordinates'}
+    assert Place(INPUT).to_json() == INPUT
+
+def test_geocode_place_set_name():
+    """Should get Place name from field other than coordinates if name is empty 
+    """
+    pl = Place({'city': 'Portland', 'country': 'Oregon', 'coordinates': 'my coordinates'})
+    pl.set_name()
+    assert pl.name == 'Portland'
+    pl.name = ''
+    pl.city = ''
+    pl.country = ''
+    assert pl.name == ''
+
