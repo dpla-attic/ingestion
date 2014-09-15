@@ -32,6 +32,9 @@
         },
         "medicalheritagelibrary": {
             "title": "Medical Heritage Library"
+        },
+        "MontanaStateLibrary": {
+            "title": "Montana State Library"
         }
     },
     "contributor": {
