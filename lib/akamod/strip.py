@@ -11,7 +11,7 @@ from akara.services import simple_service
                 'http://purl.org/la/dp/strip',
                 'strip',
                 'application/json')
-def strip(body, ctype_ignored):
+def post_endpoint(body, ctype_ignored):
     """Strip whitespace from any strings found within the given object"""
     try:
         d = json.loads(body)
