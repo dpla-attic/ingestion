@@ -66,6 +66,7 @@ metadata_field_map = {
         "dcterms:alternative": lambda (v): {"alternative": v},
         "dcterms:created": lambda (v): {"created": v},
         "dcterms:extent": lambda (v): {"extent": v},
+        "dcterms:hasFormat": lambda (v): {"hasFormat": v},
         "dcterms:isPartOf": lambda (v): {"isPartOf": v},
         "dcterms:medium": lambda (v): {"medium": v},
         "dcterms:spatial": lambda (v): {"spatial": v},
