@@ -13,6 +13,7 @@
     "enrichments_item": [
         "/select-id",
         "/dpla_mapper?mapper_type=dublin_core",
+        "/strip_html",
         "/indiana_identify_object",
         "/set_context",
         "/move_date_values?prop=sourceResource%2Fspatial&to_prop=sourceResource%2Fdate",
