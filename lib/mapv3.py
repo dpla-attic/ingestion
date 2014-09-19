@@ -233,7 +233,8 @@ MAPV3_SCHEMAS = {
                     "moving image",
                     "service",
                     "sound",
-                    "text"
+                    "text",
+                    "physical object"
                 ]
             }
         }
