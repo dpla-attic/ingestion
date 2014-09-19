@@ -60,3 +60,25 @@ def test_dedup_value2():
     resp, content = _get_server_response(json.dumps(INPUT), props)
     assert resp.status == 200
     assert_same_jsons(INPUT, content)
+
+def test_dedup_value_with_nonstring_vals():
+    """dedup_value handles list elements that are not strings"""
+
+    props = "subject"
+    INPUT = {
+        "subject": [
+            "The subject",
+            None,
+            {"name": "Another subject"},
+            "[The subject]"]
+    }
+    EXPECTED = {
+        "subject": [
+            "The subject",
+            None,
+            {"name": "Another subject"}
+        ]
+    }
+    resp, content = _get_server_response(json.dumps(INPUT), props)
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, content)
