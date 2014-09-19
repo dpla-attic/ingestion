@@ -124,6 +124,9 @@ def remove_all_brackets_and_strip(d):
 def strip_unclosed_brackets(s):
     return re.sub(r'\[(?![^\]]*?\])', '', s)
 
-def iso_utc_with_tz(dt=datetime.utcnow()):
-    """Given a UTC datetime, return an ISO 8601-conformant string w/ timezone"""
+def iso_utc_with_tz(dt=None):
+    """Given a UTC datetime, return an ISO 8601-conformant string w/ timezone
+    If None, use datetime.datetime.utcnow() as the default."""
+    if not dt:
+        dt = datetime.utcnow()
     return dt.isoformat() + "Z"
