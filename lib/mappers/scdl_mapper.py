@@ -10,18 +10,23 @@ class SCDLMapper(QDCMapper):
         self.mapped_data.update({"object": self.provider_data.get("hasFormat")})
 
     def map_data_provider(self):
+        # By default, "prime" edm:dataProvider with the the provider's name
+        data_provider = getprop(self.mapped_data, "provider/name")
         if exists(self.provider_data, "publisher"):
             publisher = getprop(self.provider_data, "publisher")
+            # Sometimes SCDL records have more than 1 dc:publisher
             if isinstance(publisher, list):
-                if ([p for p in publisher if "georgetown" in p.lower()]) \
-                    or (len(publisher) == 1):
+                # Georgetown County Library/Georgetown County Museum
+                # records should probably use the first dc:publisher as
+                # edm:dataProvider
+                if ([p for p in publisher if "georgetown" in p.lower()]):
                     data_provider = publisher[0]
+                # Otherwise use the last dc:publisher. This will work with
+                # cases even when publisher is a one-element list.
                 else:
                     data_provider = publisher[-1]
             else:
                 data_provider = publisher
-        else:
-            data_provider = getprop(self.mapped_data, "provider/name")
         self.mapped_data.update({"dataProvider": data_provider})
 
     def map_relation(self):
