@@ -10,8 +10,7 @@ class SCDLMapper(QDCMapper):
         self.mapped_data.update({"object": self.provider_data.get("hasFormat")})
 
     def map_data_provider(self):
-        # By default, "prime" edm:dataProvider with the the provider's name
-        data_provider = getprop(self.mapped_data, "provider/name")
+        data_provider = None
         if exists(self.provider_data, "publisher"):
             publisher = getprop(self.provider_data, "publisher")
             # Sometimes SCDL records have more than 1 dc:publisher, so make
@@ -27,7 +26,8 @@ class SCDLMapper(QDCMapper):
             # cases even when publisher is a one-element list.
             else:
                 data_provider = publisher[-1]
-        self.mapped_data.update({"dataProvider": data_provider})
+        if data_provider:
+            self.mapped_data.update({"dataProvider": data_provider})
 
     def map_relation(self):
         relation = []
