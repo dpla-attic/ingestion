@@ -16,7 +16,7 @@ class SCDLMapper(QDCMapper):
             # Sometimes SCDL records have more than 1 dc:publisher, so make
             # ones that have only 1 into a single-element list
             if not isinstance(publisher, list):
-                publisher = list(publisher)
+                publisher = [publisher]
             # Georgetown County Library/Georgetown County Museum
             # records should probably use the first dc:publisher as
             # edm:dataProvider
