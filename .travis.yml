@@ -6,5 +6,11 @@ python:
 install:
   - pip install -r requirements.txt --use-mirrors
   - python setup.py install
+
+# use ENVs to isolate network tests, which, if slow, can cause build errors
+env:
+  - TRAVIS_NOSE_CONFIG='!travis_exclude,!uses_network'
+  - TRAVIS_NOSE_CONFIG='!travis_exclude,uses_network'
+
 # command to run tests
-script: nosetests -v -a '!travis_exclude'
+script: nosetests -v -a $TRAVIS_NOSE_CONFIG
