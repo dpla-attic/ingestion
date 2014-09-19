@@ -277,7 +277,7 @@ class type_conversion:
         ('text', 'text'),
         ('frame', 'image'),
         ('costume', 'image'),
-        ('object', 'image'),
+        ('object', 'physical object'),
         ('statue', 'image'),
         ('sculpture', 'image'),
         ('container', 'image'),
