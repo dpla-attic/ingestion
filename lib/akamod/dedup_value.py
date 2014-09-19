@@ -9,9 +9,8 @@ import re
                 'application/json')
 def dedup_value(body, ctype, action="dedup_value", prop=None):
     '''
-    Service that accepts a JSON document and enriches the prop field of that document by:
-
-    a) Removing duplicates
+    Service that accepts a JSON document and enriches the prop field of that
+    document by removing duplicate array elements
     '''
 
     if prop:
@@ -27,9 +26,16 @@ def dedup_value(body, ctype, action="dedup_value", prop=None):
                 v = getprop(data, p)
                 if isinstance(v, list):
                     # Remove whitespace, periods, parens, brackets
-                    clone = [re.sub("[ \.\(\)\[\]\{\}]", "", s).lower() for s in v]
+                    clone = [_stripped(s) for s in v if _stripped(s)]
                     # Get index of unique values
-                    index = list(set([clone.index(s) for s in list(set(clone))]))
+                    index = list(set([clone.index(s)
+                                      for s in list(set(clone))]))
                     setprop(data, p, [v[i] for i in index])
 
     return json.dumps(data)
+
+def _stripped(thing):
+    if isinstance(thing, basestring):
+        return re.sub("[ \.\(\)\[\]\{\}]", "", thing).lower()
+    else:
+        return str(thing)
