@@ -246,7 +246,6 @@ class type_conversion:
     # Map of type-related substring to desired sourceResource.type.
     # For simple "if substr in str" matching.  Place more specific
     # patterns higher up, before more general ones.
-    # Items labeled as physical objects are "images of physical objects."
     type_for_ot_keyword = [
         ('photograph', 'image'),
         ('sample book', 'image'),
@@ -258,7 +257,7 @@ class type_conversion:
         ('text', 'text'),
         ('frame', 'image'),
         ('costume', 'image'),
-        ('object', 'image'),
+        ('object', 'physical object'),
         ('statue', 'image'),
         ('sculpture', 'image'),
         ('container', 'image'),
