@@ -59,6 +59,9 @@ class DigitalNCMapper(OAIMODSMapper):
 
             self.update_source_resource(self.clean_dict(_dict))
 
+    def map_format(self):
+        pass
+
     def map_format_and_spec_type(self):
         prop = self.root_key + "physicalDescription"
         _dict = {
