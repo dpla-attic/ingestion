@@ -6,6 +6,7 @@ import tarfile
 import re
 from functools import wraps
 from datetime import datetime
+from urllib2 import urlopen
 
 def iterify(iterable):
     """Treat iterating over a single item or an iterator seamlessly"""
@@ -96,6 +97,10 @@ def with_retries(attempts_num=3, delay_sec=1, print_args_if_error=False):
         return func_with_retries
 
     return apply_with_retries
+
+@with_retries(4, 2)
+def urlopen_with_retries(url):
+    return urlopen(url)
 
 def clean_date(d):
     """Return a given date string without certain characters and expressions"""
