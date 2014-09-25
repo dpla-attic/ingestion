@@ -18,6 +18,7 @@
     "enrichments_item": [
         "/select-id?prop=_id",
         "/dpla_mapper?mapper_type=uva",
+        "/strip_html",
         "/set_context",
         "/copy_prop?prop=sourceResource%2Frights&to_prop=hasView%2Frights",
         "/cleanup_value",

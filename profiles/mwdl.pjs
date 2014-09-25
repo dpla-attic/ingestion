@@ -25,6 +25,7 @@
     "enrichments_item": [
         "/select-id?prop=_id", 
         "/dpla_mapper?mapper_type=mwdl",
+        "/strip_html",
         "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
@@ -35,6 +36,7 @@
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/capitalize_value",
         "/enrich_earliest_date",
+        "/enrich_date",
         "/enrich-subject",
         "/enrich-type",
         "/enrich-format",
