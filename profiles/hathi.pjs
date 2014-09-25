@@ -13,6 +13,7 @@
     "enrichments_item": [
         "/select-id?prop=_id",
         "/dpla_mapper?mapper_type=hathi",
+        "/strip_html",
         "/set_context",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fspatial",
         "/dedup_value?prop=sourceResource%2Fspatial",

@@ -15,6 +15,7 @@
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
         "/dpla_mapper?mapper_type=digitalnc",
+        "/strip_html",
         "/set_context",
         "/shred?prop=sourceResource%2Fdate&delim=%2C",
         "/enrich-subject",
