@@ -346,7 +346,7 @@ class DplaBingGeocoder(geocoders.Bing):
 
 class DplaGeonamesGeocoder(object):
     resultCache = {}
-    base_uri = 'http://sw.geonames.net/'
+    base_uri = 'http://ws.geonames.net/'
 
     def enrich_place(self, place):
         """
