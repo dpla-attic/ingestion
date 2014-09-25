@@ -416,10 +416,10 @@ class DplaGeonamesGeocoder(object):
 
         for geoname in geonames_json:
             candidate_place = Place({
-                'name': geoname['name'],
-                'uri': geoname['geonameId'],
-                'country': geoname['countryName'],
-                'feature_type': geoname['fcode'],
+                'name': geoname.get('name'),
+                'uri': geoname.get('geonameId'),
+                'country': geoname.get('countryName'),
+                'feature_type': geoname.get('fcode'),
                 'coordinates': geoname['lat'] + ', ' + geoname['lng']
             })
             parent_features = self.build_hierarchy(geoname['geonameId'],
@@ -428,13 +428,13 @@ class DplaGeonamesGeocoder(object):
                                                     "ADM2", # County
                                                     "PPLA"]) # City
             for feature in parent_features:
-                if ("PCLI" == feature["fcode"]):
+                if ("PCLI" == feature.get("fcode")):
                     candidate_place.country = feature["name"]
                     candidate_place.country_uri = feature["geonameId"]
-                elif ("ADM1" == feature["fcode"]):
+                elif ("ADM1" == feature.get("fcode")):
                     candidate_place.state = feature["name"]
                     candidate_place.state_uri = feature["geonameId"]
-                elif ("ADM2" == feature["fcode"]):
+                elif ("ADM2" == feature.get("fcode")):
                     candidate_place.county = feature["name"]
                     candidate_place.county_uri = feature["geonameId"]
 
@@ -549,19 +549,19 @@ class DplaGeonamesGeocoder(object):
                                           "PPLA"])# City
 
         for feature in hierarchy:
-            fcode = feature["fcode"]
-            if ("PCLI" == feature["fcode"]):
-                place.country = feature["name"]
-                place.uri = feature["geonameId"]
-            elif ("ADM1" == feature["fcode"]):
-                place.state = feature["name"]
-                place.uri = feature["geonameId"]
-            elif ("ADM2" == feature["fcode"]):
-                place.county = feature["name"]
-                place.uri = feature["geonameId"]
-            elif ("ADM2" == feature["fcode"]):
-                place.city = feature["name"]
-                place.uri = feature["geonameId"]
+            if feature.get("fcode"):
+                if ("PCLI" == feature["fcode"]):
+                    place.country = feature["name"]
+                    place.uri = feature["geonameId"]
+                elif ("ADM1" == feature["fcode"]):
+                    place.state = feature["name"]
+                    place.uri = feature["geonameId"]
+                elif ("ADM2" == feature["fcode"]):
+                    place.county = feature["name"]
+                    place.uri = feature["geonameId"]
+                elif ("ADM2" == feature["fcode"]):
+                    place.city = feature["name"]
+                    place.uri = feature["geonameId"]
 
             # Deterine how close we are to the original coordinates, to
             # see if this is the place that was geocoded and we should
@@ -573,10 +573,10 @@ class DplaGeonamesGeocoder(object):
             d = haversine((lat, lng), (feature["lat"], feature["lng"]))
 
             # Country tolerance (input/Geonames 49.9km off)
-            country_tolerance_met = ("PCLI" == feature["fcode"] and
+            country_tolerance_met = ("PCLI" == feature.get("fcode") and
                                              d < 50)
             # State tolerance
-            state_tolerance_met = ("ADM1" == feature["fcode"] and d < 15)
+            state_tolerance_met = ("ADM1" == feature.get("fcode") and d < 15)
 
             if (country_tolerance_met or state_tolerance_met):
                 return place
@@ -658,7 +658,12 @@ class Place:
         Calls the enrichment method for the geocoder passed and
         attempts to merge the place returned into self.
         """
-        coded_place = geocoder.enrich_place(self)
+        try:
+            coded_place = geocoder.enrich_place(self)
+        except Exception, e:
+            logger.error("%s failed on place '%s', error: %s" %
+                (str(geocoder), self.name, e))
+            return
 
         # Add only non-existing properties
         # TODO: get more sophisticated about update
@@ -671,7 +676,6 @@ class Place:
             self.state_uri = coded_place.state_uri
             self.county_uri = coded_place.county_uri
 
-
     @staticmethod
     def merge_related(places):
         """
@@ -683,6 +687,8 @@ class Place:
         removed "merging" it into Los Angeles.
         """
         for place in places:
+            if not place in places:
+                next
             for compare_place in places:
                 if compare_place == place:
                     continue
