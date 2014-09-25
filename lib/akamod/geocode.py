@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 from akara import module_config, response
 from akara import logger
@@ -9,9 +10,8 @@ import itertools
 import math
 import re
 from urllib import urlencode
-from urllib2 import urlopen
-from dplaingestion.utilities import iterify
-
+from urllib2 import URLError
+from dplaingestion.utilities import iterify, urlopen_with_retries
 
 @simple_service('POST', 'http://purl.org/la/dp/geocode', 'geocode',
                 'application/json')
@@ -22,9 +22,9 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
     1. If the coordinates property does not exist, attempt to extract it from
        name.
     2. Run GeoNames enrichment, reverse encoding coordinate values to identify,
-       parent features, or (if none exist) searching for name values. Put 
+       parent features, or (if none exist) searching for name values. Put
        parent features in appropriate state/country values.
-    3. If we still haven't identified the place, use Bing to get lat/long 
+    3. If we still haven't identified the place, use Bing to get lat/long
        values. If one is found, pass the coordinates through Geonames again
        to identify parent features.
     4. Add any non-existing features to the spatial dictionary.
@@ -130,13 +130,13 @@ def floats_to_coordinates(floats):
 
 def _match_for_coordinate(value):
     return re.search(r"^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?"
-                     r"(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$", 
+                     r"(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$",
                      value)
 
 
 def _match_for_transposed_coordinate(value):
     return re.search(r"^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))"
-                     r"(\.\d+)?),\s*[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$", 
+                     r"(\.\d+)?),\s*[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$",
                      value)
 
 
@@ -209,7 +209,7 @@ class DplaBingGeocoder(geocoders.Bing):
         In a better implementation of this geocoder
         this function would try to return a fully updated
         version of the place.
-        
+
         As it stands, it simply provides wrapper around the
         geocode_spatial function to provide a common interface
         between geocoders and places.
@@ -310,7 +310,7 @@ class DplaBingGeocoder(geocoders.Bing):
             url = "%s?%s" % (self.api, urlencode(params))
 
         try:
-            page = urlopen(url)
+            page = urlopen_with_retries(url)
         except Exception, e:
             logger.error("Geocode error, could not open URL: %s, error: %s" %
                          (url, e))
@@ -346,14 +346,14 @@ class DplaBingGeocoder(geocoders.Bing):
 
 class DplaGeonamesGeocoder(object):
     resultCache = {}
-    base_uri = 'http://sw.geonames.net/'
-    
+    base_uri = 'http://ws.geonames.net/'
+
     def enrich_place(self, place):
         """
         Accepts a Place and attempts to return a geonames enhanced
         replacement. If no enhancement is possible, returns the original
         place. (Fulfills Dpla Geocoder interface.)
-        
+
         Performs reverse geocoding if a coordinate property is set on Place,
         othewise calls geocode_place to search against name.
         """
@@ -376,10 +376,10 @@ class DplaGeonamesGeocoder(object):
     def geocode_place(self, place):
         """
         Accepts a Place and searches Geonames for a matching location.
-        
+
         Privledges states (first-order administrative divisions) and countries,
         with exactly matching text, then privledges US places.
-        
+
         Enhances Place with geonames hierarchies using geonameId values for
         identifiers of places in the hierarchy. If some hierarchical values
         are already present, will attempt to validate them before accepting
@@ -400,15 +400,18 @@ class DplaGeonamesGeocoder(object):
             params['countryBias'] = 'US'
         else:
             params['countryBias'] = 'US'
-            
+
         geonames_json = self._name_search(place.name, params)
 
         if not 'featureClass' in params.keys():
             states_json = self._name_search(place.name, {'featureCode': 'ADM1'})
-            countries_json = self._name_search(place.name, 
+            countries_json = self._name_search(place.name,
                                                {'featureCode': 'PCLI'})
             geonames_json = states_json + countries_json + geonames_json
-        
+
+        if not geonames_json:
+            return place
+
         candidates = []
 
         for geoname in geonames_json:
@@ -419,7 +422,7 @@ class DplaGeonamesGeocoder(object):
                 'feature_type': geoname['fcode'],
                 'coordinates': geoname['lat'] + ', ' + geoname['lng']
             })
-            parent_features = self.build_hierarchy(geoname['geonameId'], 
+            parent_features = self.build_hierarchy(geoname['geonameId'],
                                                    ["PCLI", # Country
                                                     "ADM1", # State
                                                     "ADM2", # County
@@ -451,7 +454,7 @@ class DplaGeonamesGeocoder(object):
             if geoname['name'].lower() == place.name.lower():
                 return candidate_place
             candidates.append(candidate_place)
-            
+
         if len(candidates) == 1:
             return candidates[0]
         elif len(candidates) > 1:
@@ -459,9 +462,9 @@ class DplaGeonamesGeocoder(object):
                 if candidate.feature_type and \
                    ("PCL" in candidate.feature_type):
                     return candidate
-                    
+
             return candidates[0]
-            
+
         return place
 
     def reverse_geocode(self, lat, lng):
@@ -476,7 +479,7 @@ class DplaGeonamesGeocoder(object):
         url = DplaGeonamesGeocoder.base_uri + \
               "findNearbyJSON?%s" % urlencode(params)
         if (url not in DplaGeonamesGeocoder.resultCache):
-            result = json.loads(util.decode_page(urlopen(url)))
+            result = DplaGeonamesGeocoder._get_result(url)
             if ("geonames" in result \
                 and len(result["geonames"]) > 0):
                 DplaGeonamesGeocoder.resultCache[url] = result["geonames"][0]
@@ -499,11 +502,13 @@ class DplaGeonamesGeocoder(object):
         url = DplaGeonamesGeocoder.base_uri + \
               "hierarchyJSON?%s" % urlencode(params)
         if (url not in DplaGeonamesGeocoder.resultCache):
-            result = json.loads(util.decode_page(urlopen(url)))
-            DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
-
+            result = DplaGeonamesGeocoder._get_result(url)
+            if result.get('geonames'):
+                DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
+            else:
+                return hierarchy
         # Return only the requested fcodes
-        for feature in DplaGeonamesGeocoder.resultCache[url]:
+        for feature in DplaGeonamesGeocoder.resultCache.get(url):
             if (("fcode" in feature and feature["fcode"] in fcodes) or
                 fcodes is None):
                 hierarchy.append(feature)
@@ -516,12 +521,15 @@ class DplaGeonamesGeocoder(object):
                      "username": module_config().get("geonames_username"),
                      "token": module_config().get("geonames_token") }
         params = dict(defaults.items() + params.items())
-        
+
         url = DplaGeonamesGeocoder.base_uri + "searchJSON?%s" % \
               urlencode(params)
         if (url not in DplaGeonamesGeocoder.resultCache):
-            result = json.loads(util.decode_page(urlopen(url)))
-            DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
+            result = DplaGeonamesGeocoder._get_result(url)
+            if result.get('geonames'):
+                DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
+            else:
+                return []
         return DplaGeonamesGeocoder.resultCache[url]
 
     def _place_from_coordinates(self, lat, lng):
@@ -529,10 +537,12 @@ class DplaGeonamesGeocoder(object):
         Reverse-geocode this location to find country, state, and
         county parent places.
         """
-        
+
         place = Place()
         geonames_item = self.reverse_geocode(lat, lng)
-        hierarchy = self.build_hierarchy(geonames_item['geonameId'], 
+        if not geonames_item:
+            return
+        hierarchy = self.build_hierarchy(geonames_item['geonameId'],
                                          ["PCLI", # Country
                                           "ADM1", # State
                                           "ADM2", # County
@@ -573,6 +583,15 @@ class DplaGeonamesGeocoder(object):
 
         return place
 
+    @staticmethod
+    def _get_result(url):
+        try:
+            result = json.loads(util.decode_page(urlopen_with_retries(url)))
+            return result
+        except URLError, e:
+            logger.error("GeoNames error, could not open URL: %s, error: %s" %
+                         (url, e))
+            return {}
 
 class Place:
     def __init__(self, spatial={}):
@@ -591,7 +610,7 @@ class Place:
 
     def map_fields(self):
         """
-        Returns a list of the fields to be included in DPLA MAP's 
+        Returns a list of the fields to be included in DPLA MAP's
         serializations of Place.
         """
         fields = ['name', 'city', 'state', 'country', 'region', 'county']
@@ -601,7 +620,7 @@ class Place:
 
     def set_name(self):
         """
-        Returns the name property. If none is set, sets it to the smallest 
+        Returns the name property. If none is set, sets it to the smallest
         available geographic division label.
         """
         if self.name:
@@ -659,7 +678,7 @@ class Place:
         Removes places that are included redundantly.
         Accepts a list of Place objects and uses their URIs to remove
         places that are redundant in light of a smaller geographic division.
-        
+
         e.g. given 'Los Angeles' and 'Los Angeles County', the latter will be
         removed "merging" it into Los Angeles.
         """
@@ -676,7 +695,7 @@ class Place:
         """
         Accepts two Place objects and checks whether the first is
         a parent in the location hierarchy of the second.
-        
+
         Returns a boolean.
         """
         if not ((not p1.uri) or (not p2.uri)):
