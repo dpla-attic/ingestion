@@ -169,7 +169,6 @@ MODULES = [
     "dplaingestion.akamod.ia_set_rights",
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.edan_select_id",
-    "dplaingestion.akamod.cleanup_language",
     "dplaingestion.akamod.dc_clean_invalid_dates",
     "dplaingestion.akamod.decode_html",
     "dplaingestion.akamod.artstor_spatial_to_dataprovider",

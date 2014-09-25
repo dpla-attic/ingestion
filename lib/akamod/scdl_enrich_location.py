@@ -30,9 +30,14 @@ def scdl_enrich_location(body, ctype, action="scdl_enrich_location", prop="sourc
             if " county " in name.lower(): 
                 # "XXX County (S.C.)" => county: XXX
                 v["county"] = name[0:name.lower().index("county")].strip()
+                if "(S.C.)" in name:
+                    v["state"] = "South Carolina"
+                    v["country"] = "United States"
             elif "(S.C.)" in name:
                 # "XXX (S.C)" => city: XXX
                 v["city"] = name[0:name.index("(S.C.)")].strip()
+                v["state"] = "South Carolina"
+                v["country"] = "United States"
 
     return json.dumps(data)
 
