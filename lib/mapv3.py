@@ -203,7 +203,9 @@ MAPV3_SCHEMAS = {
                             },
                         }
                     },
-                    "temporal": {"$ref": "#/definitions/arrayOrString"},
+                    "temporal": {
+                        "oneOf": array_or_item({"$ref": "#/definitions/date"})
+                    },
                     "title": {"$ref": "#/definitions/arrayOrString"},
                     "type": {
                         "oneOf": array_or_item({"$ref": "#/definitions/type"})
