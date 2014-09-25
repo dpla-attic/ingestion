@@ -35,6 +35,7 @@
         "/move_date_values?prop=sourceResource%2Fspatial",
         "/capitalize_value",
         "/enrich_earliest_date",
+        "/enrich_date",
         "/enrich-subject",
         "/enrich-type",
         "/enrich-format",
