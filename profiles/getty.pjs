@@ -21,6 +21,7 @@
     "enrichments_item": [
         "/select-id?prop=_id",
         "/dpla_mapper?mapper_type=getty",
+        "/strip_html",
         "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fidentifier%2CsourceResource%2Flanguage",
         "/shred?prop=sourceResource%2Fpublisher%2CsourceResource%2Frelation%2CsourceResource%2Fsubject%2CsourceResource%2Ftitle",

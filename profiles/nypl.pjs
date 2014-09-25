@@ -22,6 +22,7 @@
     "enrichments_item": [
         "/select-id?prop=_id",
         "/dpla_mapper?mapper_type=nypl",
+        "/strip_html",
         "/set_context",
         "/nypl_identify_object",
         "/cleanup_value",
