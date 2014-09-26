@@ -686,14 +686,17 @@ class Place:
         e.g. given 'Los Angeles' and 'Los Angeles County', the latter will be
         removed "merging" it into Los Angeles.
         """
-        for place in places:
+        for place in places[:]:
             if not place in places:
-                next
-            for compare_place in places:
+                continue
+            for compare_place in places[:]:
                 if compare_place == place:
                     continue
                 if Place._is_parent_of(place, compare_place):
-                    places.remove(place)
+                    try:
+                        places.remove(place)
+                    except ValueError:
+                        pass
         return places
 
     @staticmethod
