@@ -77,6 +77,7 @@
         "/remove_list_values?prop=sourceResource%2Ftype&values=item",
         "/dedup_value?prop=sourceResource%2Ftype",
         "/unset_prop?prop=sourceResource%2Fcollection",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
     ],
     "thresholds": {

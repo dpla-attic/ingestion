@@ -32,6 +32,7 @@
         "/enrich-type",
         "/enrich_language",
         "/set_type_from_physical_format",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
     ],
     "thresholds": {
