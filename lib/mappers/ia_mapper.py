@@ -1,6 +1,7 @@
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mapper import Mapper
+from itertools import cycle
 
 
 intermediate_providers = {
@@ -14,16 +15,27 @@ class IAMapper(Mapper):
         super(IAMapper, self).__init__(provider_data)
         self.meta_key = "metadata/"
 
+    def _get_ia_prop(self, prop=None):
+        values = []
+        if not prop:
+            return None
+        from_prop = self.meta_key + prop
+        if exists(self.provider_data, from_prop):
+            data = getprop(self.provider_data, from_prop)
+            if isinstance(data, list):
+                values.extend(data)
+            else:
+                values.append(data)
+        if len(values) == 1:
+            values = values[0]
+        return values
+
     def _map_meta(self, to_prop, from_props=None, source_resource=True):
         if from_props is None:
             from_props = [to_prop]
-
         prop_value = []
         for prop in iterify(from_props):
-            from_prop = self.meta_key + prop
-            if exists(self.provider_data, from_prop):
-                prop_value.append(getprop(self.provider_data, from_prop))
-
+            prop_value.append(self._get_ia_prop(prop))
         if len(prop_value) == 1:
             prop_value = prop_value[0]
         if prop_value:
@@ -61,12 +73,11 @@ class IAMapper(Mapper):
         self._map_meta("identifier", ["identifier", "call_number"])
 
     def map_title(self):
-        self._map_meta("title", ["title", "volume"])
-        # Handle nested lists
-        title = getprop(self.mapped_data, "sourceResource/title", True)
-        if isinstance(title, list):
-            self.update_source_resource({"title": [t for sublist in title for
-                                                   t in iterify(sublist)]})
+        titles = self._get_ia_prop("title")
+        volumes = self._get_ia_prop("volume")
+        if volumes:
+            titles = [", ".join(t) for t in zip(titles, cycle(volumes))]
+        self.update_source_resource({"title": titles})
 
     def map_data_provider(self):
         self._map_meta("dataProvider", "contributor", False)
