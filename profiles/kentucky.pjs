@@ -38,6 +38,7 @@
         "/unset_prop?prop=dataProvider",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider",
         "/unset_prop?prop=sourceResource%2Fpublisher",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/geocode",
         "/validate_mapv3"
     ],

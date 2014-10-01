@@ -232,10 +232,6 @@ class GPOMapper(MARCMapper):
         if date:
             self.update_source_resource({"date": date})
 
-    def update_data_provider(self):
-        data_provider = self._get_mapped_value("provider/name")
-        self.mapped_data.update({"dataProvider": data_provider})
-
     def update_description(self):
         description = []
         if (not self.description["310"] and self.leader[7] == "s" and
@@ -276,7 +272,6 @@ class GPOMapper(MARCMapper):
         self.update_date()
         self.update_description()
         self.update_rights()
-        self.update_data_provider()
         self.update_object()
 
     def map(self):
