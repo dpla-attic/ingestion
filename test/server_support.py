@@ -127,6 +127,8 @@ MODULES = [
     "dplaingestion.mappers.getty_mapper",
     "dplaingestion.akamod.dpla_mapper",
     "dplaingestion.akamod.set_context",
+    "dplaingestion.mappers.primo_mapper",
+    "dplaingestion.mappers.missouri_mapper",
     "dplaingestion.akamod.enrich",
     "dplaingestion.akamod.enrich-subject",
     "dplaingestion.akamod.enrich-type",

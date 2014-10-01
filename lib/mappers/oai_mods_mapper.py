@@ -95,6 +95,9 @@ class OAIMODSMapper(Mapper):
                 if "hierarchicalGeographic" in s:
                     for h in iterify(s["hierarchicalGeographic"]):
                         if isinstance(h, dict):
+                            # TODO:  use set logic and declarative style, as
+                            # in MissouriMapper, instead of deleting list
+                            # elements
                             for k in h.keys():
                                 if k not in ["city", "county", "state",
                                              "country", "coordinates"]:
