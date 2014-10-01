@@ -27,7 +27,7 @@ uri_base = server()[:-1]
 # Test config file
 config_file = "test/test_data/test.conf"
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_oai_fetcher_valid_set():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -41,7 +41,7 @@ def test_oai_fetcher_valid_set():
 
     assert fetcher.collections.keys() == ["gmb"]
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_oai_fetcher_invalid_set():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -54,7 +54,7 @@ def test_oai_fetcher_invalid_set():
 
     assert fetcher.collections.keys() == []
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_oai_fetcher_all_sets():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -71,7 +71,7 @@ def test_oai_fetcher_all_sets():
             s not in fetcher.collections]
     assert diff == []
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_oai_fetcher_with_blacklist():
     profile_path = "profiles/clemson.pjs"
     fetcher = create_fetcher(profile_path, uri_base, config_file)
@@ -103,7 +103,7 @@ def test_absolute_url_fetcher_nypl():
         assert response["records"]
         break
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_absolute_url_fetcher_uva1():
     profile_path = "profiles/virginia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -114,7 +114,7 @@ def test_absolute_url_fetcher_uva1():
         assert response["records"]
         break
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_absolute_url_fetcher_uva2():
     profile_path = "profiles/virginia_books.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -126,7 +126,7 @@ def test_absolute_url_fetcher_uva2():
         break
 
 @nottest
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_absolute_url_fetcher_ia():
     profile_path = "profiles/ia.pjs"
     fetcher =  create_fetcher(profile_path, uri_base, config_file)
@@ -150,7 +150,7 @@ def test_absolute_url_fetcher_mwdl():
         assert response["records"]
         break
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_all_oai_verb_fetchers():
     # Profiles that are representative of each type and are not restricted:
     profiles = [
@@ -194,7 +194,7 @@ def first_non_collection_record(records_list):
         if "ingestType" not in record:
             return record
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_oai_qdc_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for QDC-format XML
@@ -212,7 +212,7 @@ def test_oai_qdc_field_conversion():
             "\n%s\ndoes not match expected:\n%s\n" % (actual_fields,
                                                       expected_fields)
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_oai_dc_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for DC-format XML
@@ -229,7 +229,7 @@ def test_oai_dc_field_conversion():
                        'type']
     assert actual_fields == expected_fields
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_mods_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for MODS-format XML
@@ -249,7 +249,7 @@ def test_mods_field_conversion():
     for f in expected_record_fields:
         assert f in actual_record_fields
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_marc_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for MARC-format XML
@@ -271,7 +271,7 @@ def test_marc_field_conversion():
     assert actual_record_fields == expected_record_fields
     assert actual_marc_fields == expected_marc_fields
 
-@attr(uses_network="yes")
+@attr(uses_network="yes", travis_exclude="yes")
 def test_untl_field_conversion():
     """
     oai.oaiservice returns dict with correct fields for UNTL-format XML
