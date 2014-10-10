@@ -62,6 +62,11 @@ class IAMapper(Mapper):
 
     def map_title(self):
         self._map_meta("title", ["title", "volume"])
+        # Handle nested lists
+        title = getprop(self.mapped_data, "sourceResource/title", True)
+        if isinstance(title, list):
+            self.update_source_resource({"title": [t for sublist in title for
+                                                   t in iterify(sublist)]})
 
     def map_data_provider(self):
         self._map_meta("dataProvider", "contributor", False)
