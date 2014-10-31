@@ -1,3 +1,4 @@
+from itertools import cycle
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mapper import Mapper
@@ -14,20 +15,63 @@ class IAMapper(Mapper):
         super(IAMapper, self).__init__(provider_data)
         self.meta_key = "metadata/"
 
-    def _map_meta(self, to_prop, from_props=None, source_resource=True):
+    def _add_to_list(self, lst, item):
+        """Allows a list to be appended or extended conditionally in place.
+
+        In Python, the `list.extend()` method can be used to combine two
+        lists. However, if `list.extend()` is used to extend a list with 
+        a string, the string will be iterated over as if it were a list. 
+        For example, consider the following:
+
+        >>> lst = ["1", "2", "3"]
+        >>> lst.extend("abc")
+        >>> lst
+        ["1", "2", "3", "a", "b", "c"]
+
+        When working with strings, `list.append()` uses the desired behavior.
+        """
+        if isinstance(item, list):
+            lst.extend(item)
+        else:
+            lst.append(item)
+
+    def _generate_map_dict(self, to_prop, from_props=None,
+                           prevent_single_item_lists=True):
+        """Generates a dict used for mapping metadata.
+
+        to_prop specifies the name of the key in the resulting dict.
+        from_props specifies the name of the key(s) in the incoming data.
+        If from_props is None, it is set to the value of to_prop.
+        prevent_single_item_lists will modify prop_values (the returned 
+        property values from from_props) to return a single string if it is
+        a single item list.
+        """
         if from_props is None:
             from_props = [to_prop]
 
-        prop_value = []
+        prop_values = []
         for prop in iterify(from_props):
             from_prop = self.meta_key + prop
             if exists(self.provider_data, from_prop):
-                prop_value.append(getprop(self.provider_data, from_prop))
+                self._add_to_list(prop_values, getprop(self.provider_data,
+                                                       from_prop))
+        if len(prop_values) == 1 and prevent_single_item_lists:
+            prop_values = prop_values[0]
+        if prop_values:
+            return {to_prop: prop_values}
+        else:
+            return {}
 
-        if len(prop_value) == 1:
-            prop_value = prop_value[0]
-        if prop_value:
-            _dict = {to_prop: prop_value}
+    def _map_meta(self, to_prop, from_props=None, source_resource=True):
+        """Helper function to update the `mapped_data` in a IAMapper object.
+
+        to_prop and from_props are described in IAMapper_generate_map_dict().
+        source_resource indicates whether to_prop should be updated in the
+        context of source_resource (if True) or the top-level object (if
+        False). 
+        """
+        _dict = self._generate_map_dict(to_prop, from_props)
+        if _dict:
             if source_resource:
                 self.update_source_resource(_dict)
             else:
@@ -61,7 +105,21 @@ class IAMapper(Mapper):
         self._map_meta("identifier", ["identifier", "call_number"])
 
     def map_title(self):
-        self._map_meta("title", ["title", "volume"])
+        ia_titles = self._generate_map_dict("title", from_props=None,
+                                            prevent_single_item_lists=False)
+        volumes = self._generate_map_dict("volume", from_props=None,
+                                            prevent_single_item_lists=False)
+        print volumes
+        if volumes:
+            if len(ia_titles.get("title")) > len(volumes.get("volume")):
+                titles = [", ".join(t) for t in zip(ia_titles["title"],
+                                                    cycle(volumes["volume"]))]
+            else:
+                titles = [", ".join(t) for t in zip(cycle(ia_titles["title"]),
+                                                    volumes["volume"])]
+            self.update_source_resource({"title": titles})
+        else:
+            self.update_source_resource(ia_titles)
 
     def map_data_provider(self):
         self._map_meta("dataProvider", "contributor", False)

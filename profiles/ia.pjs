@@ -35,6 +35,9 @@
         },
         "MontanaStateLibrary": {
             "title": "Montana State Library"
+        },
+        "yivoinstitutelibrary": {
+            "title": "YIVO Institute Library"
         }
     },
     "contributor": {

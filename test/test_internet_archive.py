@@ -2,6 +2,18 @@
 
 from server_support import server, H
 from amara.thirdparty import json
+from dplaingestion.mappers.ia_mapper import IAMapper
+
+def test_ia_add_to_list():
+    """Test IAMapper._add_to_list() method"""
+    mapper = IAMapper(None)
+    lst = ["a", "b", "c"]
+    EXPECTED_FIRST = ["a", "b", "c", "123"]
+    EXPECTED_SECOND = ["a", "b", "c", "123", "x", "y", "z"]
+    mapper._add_to_list(lst, "123")
+    assert lst == EXPECTED_FIRST, "%s != %s" (lst, EXPECTED_FIRST)
+    mapper._add_to_list(lst, ["x", "y", "z"])
+    assert lst == EXPECTED_SECOND, "%s != %s" (lst, EXPECTED_SECOND)
 
 
 def test_ia_spatial_cleanup():
@@ -25,6 +37,80 @@ def test_ia_spatial_cleanup():
     FETCHED = doc[u"sourceResource"][u"spatial"]
     assert FETCHED == EXPECTED, "%s != %s" % (FETCHED, EXPECTED)
 
+
+def test_ia_title_and_volume_mapping():
+    "Ensure `title` and `volume` are mapped appropriately from IA metadata"
+    INPUT_JSON = """
+    {
+  "files": {
+    "shown_at": "http://archive.org/details/annualreportd1985mass",
+    "marc": "annualreportd1985mass_marc.xml",
+    "dc": "annualreportd1985mass_dc.xml",
+    "gif": "annualreportd1985mass.gif",
+    "meta": "annualreportd1985mass_meta.xml",
+    "pdf": "annualreportd1985mass.pdf"
+  },
+  "_id": "annualreportd1985mass",
+  "metadata": {
+    "title": [
+      "Annual report",
+      "Annual report - Department of Public Welfare"
+    ],
+    "volume": "1985",
+    "creator": "Massachusetts. Dept. of Public Welfare",
+    "subject": [
+      "Massachusetts. Dept. of Public Welfare",
+      "Public welfare administration"
+    ],
+    "description": "Title varies slightly",
+    "publisher": "Boston, Mass. : The Department",
+    "language": "eng",
+    "page-progression": "lr",
+    "sponsor": "Boston Library Consortium Member Libraries",
+    "contributor": "UMass Amherst Libraries",
+    "scanningcenter": "boston",
+    "mediatype": "texts",
+    "collection": [
+      "umass_amherst_libraries",
+      "blc",
+      "americana"
+    ],
+    "call_number": "MASS. HS 20.1:",
+    "repub_state": "4",
+    "updatedate": "2013-02-20 20:34:48",
+    "updater": "associate-nicholas-delancey",
+    "identifier": "annualreportd1985mass",
+    "uploader": "associate-nicholas-delancey@archive.org",
+    "addeddate": "2013-02-20 20:34:50",
+    "publicdate": "2013-02-20 20:34:55",
+    "scanner": "scribe2.boston.archive.org",
+    "notes": "No title page found. No copyright page found. No table-of-contents pages found.",
+    "repub_seconds": "126",
+    "ppi": "300",
+    "camera": "Canon EOS 5D Mark II",
+    "operator": "associate-lauren-dunn@archive.org",
+    "scandate": "20130305135754",
+    "republisher": "associate-emilie-pagano@archive.org",
+    "imagecount": "26",
+    "foldoutcount": "0",
+    "identifier-access": "http://archive.org/details/annualreportd1985mass",
+    "identifier-ark": "ark:/13960/t9b57xd66",
+    "ocr": "ABBYY FineReader 8.0",
+    "scanfee": "200",
+    "sponsordate": "20130331"
+  }
+}
+    """
+    EXPECTED = [u'Annual report, 1985',
+                u'Annual report - Department of Public Welfare, 1985']
+    url = server() + "dpla_mapper?mapper_type=ia"
+    resp, content = H.request(url, "POST", body=INPUT_JSON)
+    assert str(resp.status).startswith("2"), str(resp) + "\n" + content
+    doc = json.loads(content)
+    assert "sourceResource" in doc, "sourceResource field is absent"
+    assert "title" in doc["sourceResource"], "title field is absent"
+    title = doc["sourceResource"]["title"]
+    assert title == EXPECTED, "%s != %s" % (title, EXPECTED)
 
 def test_ia_identify_object():
     """Fetching Internet Archive document thumbnail"""
