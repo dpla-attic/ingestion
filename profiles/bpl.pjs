@@ -33,6 +33,7 @@
         "/set_prop?prop=provider%2Fname&value=Digital%20Commonwealth",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Massachusetts",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/unset_prop?prop=_id&condition_prop=sourceResource%2Ftitle&condition=finding_aid_title",
         "/validate_mapv3"
     ],

@@ -2,7 +2,7 @@
     "name": "minnesota", 
     "type": "oai_verbs",
     "metadata_prefix": "qdc",
-    "endpoint_url": "http://reflections.mndigital.org/oai/oai2.php",
+    "endpoint_url": "http://reflections.mndigital.org/oai/oai.php",
     "contributor": {
         "@id": "http://dp.la/api/contributor/mdl", 
         "name": "Minnesota Digital Library"
@@ -36,6 +36,7 @@
         "/enrich_language",
         "/mdl_state_located_in",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
     ],
     "thresholds": {
