@@ -135,3 +135,15 @@ def iso_utc_with_tz(dt=None):
     if not dt:
         dt = datetime.utcnow()
     return dt.isoformat() + "Z"
+
+def url_join(*args):
+    """Joins and returns given urls.
+
+    Arguments:
+        list of elements to join
+
+    Returns:
+        string with all elements joined with '/' inserted between
+
+    """
+    return "/".join(map(lambda x: str(x).rstrip("/"), args))
