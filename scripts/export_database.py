@@ -41,6 +41,7 @@ import sys
 import json
 import gzip
 from dplaingestion.couch import Couch
+from dplaingestion.utilities import url_join
 
 
 def set_global_variables(container):
@@ -273,18 +274,6 @@ def print_all_sources(arguments):
     rows = couch.dpla_view("export_database/all_source_names", group=True)
     for row in rows:
         print "%(key)s (count: %(value)d)" % dict(row)
-
-def url_join(*args):
-    """Joins and returns given urls.
-
-    Arguments:
-        list of elements to join
-
-    Returns:
-        string with all elements joined with '/' inserted between
-
-    """
-    return "/".join(map(lambda x: str(x).rstrip("/"), args))
 
 def convert_bytes(byteno):
     """Converts number of bytes into some bigger unit like MB/GB.
