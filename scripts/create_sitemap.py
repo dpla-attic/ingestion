@@ -6,33 +6,25 @@ from datetime import date, datetime
 from dateutil.parser import parse as dateutil_parse
 import ConfigParser
 from dplaingestion.couch import Couch
-from dplaingestion.utilities import iso_utc_with_tz
-from export_database import set_global_variables
-from export_database import get_rackspace_connection
-from export_database import get_rackspace_container
-from export_database import file_is_in_container
-from export_database import url_join
+from dplaingestion.utilities import iso_utc_with_tz, url_join
+import pyrax
 
 # TODO: Make a generalized config loader for all the scripts.
 config_file = "akara.ini"
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.readfp(open(config_file))
-set_global_variables("SitemapContainer")
-CONTAINER = get_rackspace_container()
 
 def send_sitemap_to_rackspace(sitemap_files_path):
-    global CONTAINER
+    global CONFIG
+    RS_USERNAME = CONFIG.get("Rackspace", "Username")
+    RS_APIKEY = CONFIG.get("Rackspace", "ApiKey")
+    RS_CONTAINER_NAME = CONFIG.get("Rackspace", "SitemapContainer")
 
     print "Loading files from %s to Rackspace CDN." % sitemap_files_path
-    for item in os.listdir(sitemap_files_path):
-        f = CONTAINER.create_object(item)
-        f.load_from_filename(os.path.join(sitemap_files_path, item))
-
-        if file_is_in_container(item, CONTAINER):
-            rs_file_uri = url_join(CONTAINER.public_uri(), item)
-            print "File loaded, it is available at: %s" % rs_file_uri
-        else:
-            print "Couldn't upload file to Rackspace CDN."
+    pyrax.set_setting("identity_type", "rackspace")
+    pyrax.set_credentials(RS_USERNAME, RS_APIKEY)
+    pyrax.cloudfiles.sync_folder_to_container(sitemap_files_path,
+                                              RS_CONTAINER_NAME)
 
 def create_sitemap_files(path, urls, count):
     fpath = os.path.join(path, "all_item_urls_%s.xml" % count)
@@ -47,6 +39,7 @@ def create_sitemap_files(path, urls, count):
             line += "\t\t<changefreq>monthly</changefreq>\n\t</url>\n"
             f.write(line)
         f.write("</urlset>")
+        print "Saving as %s ..." % fpath
 
 def create_sitemap_index(path):
     global CONFIG
@@ -95,7 +88,7 @@ for doc in c._query_all_docs(c.dpla_db):
     if doc.get("ingestType") == "item":
         # Handle older ingestDates, which do not have timezone info.
         lm_dt = dateutil_parse(doc["ingestDate"])
-        if lm_dt.utcoffset():
+        if lm_dt.utcoffset() is not None:
             lm = lm_dt.isoformat()
         else:
             lm = lm_dt.isoformat() + "Z"

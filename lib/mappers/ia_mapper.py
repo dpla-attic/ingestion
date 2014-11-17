@@ -109,7 +109,6 @@ class IAMapper(Mapper):
                                             prevent_single_item_lists=False)
         volumes = self._generate_map_dict("volume", from_props=None,
                                             prevent_single_item_lists=False)
-        print volumes
         if volumes:
             if len(ia_titles.get("title")) > len(volumes.get("volume")):
                 titles = [", ".join(t) for t in zip(ia_titles["title"],
