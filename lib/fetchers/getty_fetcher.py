@@ -8,9 +8,9 @@ class GettyFetcher(PrimoFetcher):
     def get_collection_for_record(self, record):
         source_id = getprop(record, self.root_key + "control/sourceid")
         if  source_id == "GETTY_OCP":
-            coll_title = getprop(record, self.root_key + "display/lds31")
+            coll_title = getprop(record, self.root_key + "display/lds43")
         elif source_id == "GETTY_ROSETTA":
-            coll_title = getprop(record, self.root_key + "display/lds32")
+            coll_title = getprop(record, self.root_key + "display/lds34")
         else:
             coll_title = None
 
