@@ -99,3 +99,10 @@ class MWDLMapper(PrimoMapper):
             [dp.append(v) for v in iterify(values) if v not in dp]
 
             self.mapped_data.update({"dataProvider": "; ".join(dp)})
+
+    def map_intermediate_provider(self):
+        prop = self.root_key + "search/lsr10"
+        value = getprop(self.provider_data, prop, True)
+        if value == "Montana Memory Project" \
+                or value == "Arizona Memory Project":
+            self.mapped_data.update({"intermediateProvider": value})
