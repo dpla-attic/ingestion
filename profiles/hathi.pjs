@@ -1,10 +1,10 @@
 {
     "name": "hathitrust", 
     "type": "hathi",
-    "endpoint_url": "file:/home/dpla/data/hathi/",
+    "endpoint_url": "file:/v1/provider-data/hathi/",
     "contributor": {
         "@id": "http://dp.la/api/contributor/hathitrust", 
-        "name": "HathiTrust Digital Library"
+        "name": "HathiTrust"
     }, 
     "enrichments_coll": [
         "/set_context",
