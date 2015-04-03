@@ -1,14 +1,15 @@
 """
-NYPL specific module for setting title for given collection;
+NYPL specific module for setting title for given collection
 """
-
-__author__ = 'aleksey'
 
 from akara import logger
 from akara import response
+from akara import module_config
 from akara.services import simple_service
 from amara.thirdparty import json, httplib2
 import xmltodict
+
+CACHE_DIR = module_config().get('CACHE_DIR')
 
 @simple_service('POST', 'http://purl.org/la/dp/nypl-coll-title',
                 'nypl-coll-title', 'application/json')
@@ -21,7 +22,7 @@ def nypl_identify_object(body, ctype, list_sets=None):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    H = httplib2.Http('/tmp/.cache')
+    H = httplib2.Http(CACHE_DIR)
     H.force_exception_as_status_code = True
     resp, content = H.request(list_sets)
     if not resp[u'status'].startswith('2'):

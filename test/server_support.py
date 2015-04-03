@@ -208,6 +208,21 @@ class lookup:
         'scdl_fix_format': 'SCDL_FIX_FORMAT'
     }
 
+class httplib2_cacheable:
+    # Httplib2CacheDir: directory used for any Httplib2-specific caches
+    # NOTE: This must be explicitly passed to any modules or functions
+    # that call Httplib2
+    CACHE_DIR = "/tmp/testcache"
+
+class listrecords(httplib2_cacheable):
+    pass
+
+class listsets(httplib2_cacheable):
+    pass
+
+class oaisetname(httplib2_cacheable):
+    pass
+
 class identify_object:
     IGNORE = 0
     PENDING = 1
@@ -224,14 +239,18 @@ class artstor_identify_object(identify_object):
 class georgia_identify_object(identify_object):
     pass
 
-class nypl_identify_object(identify_object):
+class nypl_identify_object(identify_object, httplib2_cacheable):
     pass
 
 class ia_identify_object(identify_object):
     pass
 
+class david_rumsey_identify_object(identify_object):
+    pass
+
 class hathi_identify_object(identify_object):
     pass
+
 
 class type_conversion:
     # Map of "format" or "physical description" substring to
