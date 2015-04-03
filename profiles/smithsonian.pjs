@@ -1,7 +1,7 @@
 {
     "name": "smithsonian",
     "type": "edan",
-    "endpoint_url": "file:/home/dpla/data/smithsonian/",
+    "endpoint_url": "file:/v1/provider-data/smithsonian/",
     "contributor": {
         "@id": "http://dp.la/api/contributor/smithsonian",
         "name": "Smithsonian Institution"

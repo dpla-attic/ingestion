@@ -38,6 +38,12 @@
         },
         "yivoinstitutelibrary": {
             "title": "YIVO Institute Library"
+        },
+        "guggenheimlibrary": {
+            "title": "Guggenheim Library"
+        },
+        "lbiperiodicals": {
+            "title": "Leo Baeck Institute Library at the Center for Jewish History"
         }
     },
     "contributor": {

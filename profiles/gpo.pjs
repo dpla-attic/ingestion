@@ -6,7 +6,7 @@
     "sets": [],
     "contributor": {
         "@id": "http://dp.la/api/contributor/gpo",
-        "name": "United States Government Printing Office (GPO)"
+        "name": "United States Government Publishing Office (GPO)"
     },
     "enrichments_coll": [
         "/set_context",

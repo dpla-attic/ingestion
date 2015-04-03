@@ -124,9 +124,11 @@ class AbsoluteURLFetcher(Fetcher):
                                                  set_id=set_id):
                         if error is not None:
                             self.response["errors"].extend(iterify(error))
-                        self.add_provider_to_item_records(records)
-                        self.add_collection_to_item_records(set_id, records)
-                        self.response["records"].extend(records)
+                        if records:
+                            self.add_provider_to_item_records(records)
+                            self.add_collection_to_item_records(set_id,
+                                                                records)
+                            self.response["records"].extend(records)
                         if len(self.response["records"]) >= self.batch_size:
                             yield self.response
                             self.reset_response()
