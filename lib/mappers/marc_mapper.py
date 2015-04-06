@@ -611,6 +611,8 @@ class MARCMapper(Mapper):
     def set_begin_end_dates(self, begin, end):
         """Given begin and end, set sourceResource/date properties"""
         display_date = getprop(self.mapped_data, "sourceResource/date", True)
+        if isinstance(display_date, dict):
+            display_date = display_date.get("displayDate")
         date = {
                 "displayDate": display_date or \
                                self.display_date_for_none_given(begin, end),
