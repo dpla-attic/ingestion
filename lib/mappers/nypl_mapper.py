@@ -15,6 +15,16 @@ class NYPLMapper(MODSMapper):
             "technical director", "woodcutter"
             ]
 
+    def txt(self, n):
+        if not n:
+            return ""
+        elif type(n) == dict:
+            return n.get("#text") or ""
+        elif isinstance(n, basestring):
+            return n
+        else:
+            return ""
+
     def map_title(self):
         prop = "titleInfo"
 
@@ -48,24 +58,14 @@ class NYPLMapper(MODSMapper):
             if identifier:
                 self.update_source_resource({"identifier": identifier})
 
-    def map_description(self):
-        def txt(n):
-            if not n:
-                return ""
-            elif type(n) == dict:
-                return n.get("#text") or ""
-            elif isinstance(n, basestring):
-                return n
-            else:
-                return "" 
-
-        note = txt(getprop(self.provider_data, "note", True))
+    def map_description(self): 
+        note = self.txt(getprop(self.provider_data, "note", True))
         pd = getprop(self.provider_data, "physicalDescription", True)
         pnote = None
         if type(pd) == list:
-            pnote = [e["note"] for e in pd if "note" in e] # Yes, a list.
+            pnote = [self.txt(e["note"]) for e in pd if "note" in e] # Yes, a list.
         elif type(pd) == dict and "note" in pd:
-            pnote = txt(pd["note"]) # Yes, a string.
+            pnote = self.txt(pd["note"]) # Yes, a string.
 
         desc = note or pnote
         if desc:
@@ -227,7 +227,7 @@ class NYPLMapper(MODSMapper):
             # Map publisher
             if ("publisher" in origin_info and origin_info["publisher"] not in
                 ret_dict["publisher"]):
-                ret_dict["publisher"].append(origin_info["publisher"])
+                ret_dict["publisher"].append(self.txt(origin_info["publisher"]))
             # Map spatial
             if exists(origin_info, "place/placeTerm"):
                 for place_term in iterify(getprop(origin_info,
