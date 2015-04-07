@@ -44,7 +44,7 @@ def movedatevalues(body, ctype, action="move_date_values", prop=None,
         return "Unable to parse body as JSON"
 
     if exists(data, prop):
-        values = getprop(data, prop)
+        values = iterify(getprop(data, prop))
         remove = []
         toprop = iterify(getprop(data, to_prop)) if exists(data, to_prop) \
                  else []
