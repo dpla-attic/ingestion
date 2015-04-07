@@ -1,0 +1,32 @@
+{
+    "name": "minnesota", 
+    "type": "mdl",
+    "endpoint_url": "http://hub-client.lib.umn.edu/api/v1/records",
+    "endpoint_url_params": {
+        "q": "tags_ssim:dpla",
+        "start": 0,
+        "per_page": 1000
+    },
+    "fetcher_threads": 4,
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/mdl", 
+        "name": "Minnesota Digital Library"
+    }, 
+    "sets": "NotSupported", 
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ], 
+    "enrichments_item": [
+        "/select-id",
+        "/dpla_mapper?mapper_type=mdljson",
+        "/strip_html",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
