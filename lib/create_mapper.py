@@ -20,6 +20,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.mdl_mapper import MDLMapper
         return MDLMapper(data)
 
+    def _create_mdl_json_mapper(data):
+        from dplaingestion.mappers.mdl_json_mapper import MDLJSONMapper
+        return MDLJSONMapper(data)
+
     def _create_gpo_mapper(data):
         from dplaingestion.mappers.gpo_mapper import GPOMapper
         return GPOMapper(data)
@@ -99,7 +103,8 @@ def create_mapper(mapper_type, data):
         'digitalnc':    lambda d: _create_digitalnc_mapper(d),
         'uiuc_marc':    lambda d: _create_uiuc_marc_mapper(d),
         'dublin_core':  lambda d: _create_dublin_core_mapper(d),
-        'missouri':     lambda d: _create_missouri_mapper(d)
+        'missouri':     lambda d: _create_missouri_mapper(d),
+        'mdljson':      lambda d: _create_mdl_json_mapper(d)
     }
 
     return mappers.get(mapper_type)(data)
