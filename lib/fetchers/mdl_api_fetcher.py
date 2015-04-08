@@ -42,6 +42,7 @@ class MDLAPIFetcher(Fetcher):
             records = iterify(records)
             for record in records:
                 record["_id"] = getprop(record, "record_id")
+                self.get_collection_for_record(record)
         else:
             records = []
             if not error:
@@ -62,7 +63,7 @@ class MDLAPIFetcher(Fetcher):
             self.endpoint_url_params["start"] += bulk_size
         else:
             self.endpoint_url_params["start"] += len(records)
-            print "Fetched %s of %s" % (self.endpoint_url_params["start"] - 1,
+            print "Fetched %s of %s" % (self.endpoint_url_params["start"],
                                         self.total_records)
         request_more = (int(self.total_records) >=
                         int(self.endpoint_url_params["start"]))
@@ -101,13 +102,82 @@ class MDLAPIFetcher(Fetcher):
                     if error is not None:
                         self.response["errors"].extend(iterify(error))
                     self.add_provider_to_item_records(records)
+                    self.add_collection_to_item_records(records)
                     self.response["records"].extend(records)
                     if len(self.response["records"]) >= self.batch_size:
                         yield self.response
                         self.reset_response()
 
         # Last yield
+        self.add_collection_records_to_response()
         if self.response["errors"] or self.response["records"]:
             yield self.response
             self.reset_response()
 
+    def add_collection_records_to_response(self):
+        # Create records of ingestType "collection"
+        if self.collections:
+            self.response["records"].extend(self.collections.values())
+
+    def get_collection_for_record(self, record):
+        coll = getprop(record, "record/sourceResource/collection")
+        coll_title = getprop(coll, "title")
+        data_provider = getprop(record, "record/sourceResource/dataProvider")
+
+        if coll_title:
+            collections = []
+            for title in filter(None, iterify(coll_title)):
+                if title not in self.collections:
+                    self.add_to_collections(coll, data_provider)
+                collections.append(self.collections[title])
+            if len(collections) == 1:
+                return collections[0]
+            else:
+                return collections
+        else:
+            return None
+
+    def add_to_collections(self, coll, data_provider=None):
+        def _normalize(value):
+            """Replaced whitespace with underscores"""
+            return value.replace(" ", "__")
+
+        if data_provider is None:
+            data_provider = self.contributor["name"]
+
+        couch_id_str = "%s--%s" % (data_provider, coll["title"])
+        _id = _normalize(
+            couch_id_builder(self.provider, couch_id_str)
+            )
+        id = hashlib.md5(_id.encode("utf-8")).hexdigest()
+        at_id = "http://dp.la/api/collections/" + id
+
+        coll_to_update = coll.copy()
+        coll_to_update.update({
+            "_id" : _id,
+            "id": id,
+            "@id": at_id,
+            "ingestType": "collection"
+        })
+        self.collections[coll_to_update["title"]] = coll_to_update
+
+
+    def add_collection_to_item_records(self, records):
+        def _clean_collection(collection):
+            exclude = ("_id", "ingestType")
+            if isinstance(collection, list):
+                clean_collection = []
+                for coll in collection:
+                    clean_collection.append(
+                        {k:v for k, v in coll.items() if k not in exclude}
+                        )
+            else:
+              clean_collection = {k:v for k, v in collection.items() if
+                                  k not in exclude}
+            return clean_collection
+
+        for record in records:
+            collection = self.get_collection_for_record(record)
+            if collection:
+                record["collection"] = _clean_collection(collection)
+                _clean_collection(record)

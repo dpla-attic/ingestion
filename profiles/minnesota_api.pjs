@@ -4,7 +4,7 @@
     "endpoint_url": "http://hub-client.lib.umn.edu/api/v1/records",
     "endpoint_url_params": {
         "q": "tags_ssim:dpla",
-        "start": 1,
+        "start": 0,
         "per_page": 1000
     },
     "fetcher_threads": 4,
