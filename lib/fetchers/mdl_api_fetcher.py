@@ -72,7 +72,7 @@ class MDLAPIFetcher(Fetcher):
 
     def fetch_all_data(self, set):
         """A generator to yield batches of records fetched, and any errors
-           encountered in the process, via the self.response dicitonary.
+           encountered in the process, via the self.response dictonary.
         """
 
         request_more = True
@@ -162,6 +162,11 @@ class MDLAPIFetcher(Fetcher):
             "@id": at_id,
             "ingestType": "collection"
         })
+
+        desc = coll_to_update.get("description")
+        if desc and isinstance(desc, dict):
+            if 'dc' in desc.keys():
+                coll_to_update["description"] = getprop(coll_to_update, "description/dc/description")
         self.collections[coll_to_update["title"]] = coll_to_update
 
 
