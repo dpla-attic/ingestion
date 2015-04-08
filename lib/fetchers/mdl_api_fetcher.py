@@ -65,7 +65,7 @@ class MDLAPIFetcher(Fetcher):
             self.endpoint_url_params["start"] += len(records)
             print "Fetched %s of %s" % (self.endpoint_url_params["start"],
                                         self.total_records)
-        request_more = (int(self.total_records) >=
+        request_more = (int(self.total_records) >
                         int(self.endpoint_url_params["start"]))
 
         yield error, records, request_more
