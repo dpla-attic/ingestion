@@ -18,12 +18,11 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id",
+        "/select-id?prop=record%2FisShownAt",
         "/dpla_mapper?mapper_type=mdljson",
         "/set_context",
         "/cleanup_value",
-        "/enrich_earliest_date",
-        "/enrich_date",
+        "/enrich_date?prop=sourceResource%2Fdate",
         "/enrich-type",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"

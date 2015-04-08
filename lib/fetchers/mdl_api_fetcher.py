@@ -65,7 +65,7 @@ class MDLAPIFetcher(Fetcher):
             self.endpoint_url_params["start"] += len(records)
             print "Fetched %s of %s" % (self.endpoint_url_params["start"],
                                         self.total_records)
-        request_more = (int(self.total_records) >=
+        request_more = (int(self.total_records) >
                         int(self.endpoint_url_params["start"]))
 
         yield error, records, request_more
@@ -121,19 +121,22 @@ class MDLAPIFetcher(Fetcher):
 
     def get_collection_for_record(self, record):
         coll = getprop(record, "record/sourceResource/collection")
-        coll_title = getprop(coll, "title")
         data_provider = getprop(record, "record/sourceResource/dataProvider")
+        if coll:
+            coll_title = getprop(coll, "title")
 
-        if coll_title:
-            collections = []
-            for title in filter(None, iterify(coll_title)):
-                if title not in self.collections:
-                    self.add_to_collections(coll, data_provider)
-                collections.append(self.collections[title])
-            if len(collections) == 1:
-                return collections[0]
+            if coll_title:
+                collections = []
+                for title in filter(None, iterify(coll_title)):
+                    if title not in self.collections:
+                        self.add_to_collections(coll, data_provider)
+                    collections.append(self.collections[title])
+                if len(collections) == 1:
+                    return collections[0]
+                else:
+                    return collections
             else:
-                return collections
+                return None
         else:
             return None
 
