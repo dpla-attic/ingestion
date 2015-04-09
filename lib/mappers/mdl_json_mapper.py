@@ -98,7 +98,7 @@ class MDLJSONMapper(Mapper):
                 if isinstance(d, dict):
                     if not d.get('displayDate'):
                         if d.get('begin'):
-                            d['displayDate'] = begin
+                            d['displayDate'] = d.get('begin')
                             if d.get('end') and d.get('begin') != d.get('end'):
                                 d['displayDate'] += '-%s' % d.get('end')
                         else:
