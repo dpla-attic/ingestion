@@ -1,15 +1,16 @@
 {
-    "name": "minnesota", 
-    "type": "mdl",
-    "endpoint_url": "http://hub-client.lib.umn.edu/api/v1/records",
+    "name": "cdl", 
+    "type": "cdl",
+    "endpoint_url": "http://52.11.194.40/couchdb/ucldc/_all_docs",
     "endpoint_url_params": {
-        "q": "tags_ssim:dpla",
-        "start": 0
+        "include_docs": "true",
+        "skip": 0,
+        "limit": 1000
     },
     "fetcher_threads": 4,
     "contributor": {
-        "@id": "http://dp.la/api/contributor/mdl", 
-        "name": "Minnesota Digital Library"
+        "@id": "http://dp.la/api/contributor/cdl", 
+        "name": "California Digital Library"
     }, 
     "sets": "NotSupported", 
     "enrichments_coll": [
@@ -17,9 +18,8 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=record%2FisShownAt",
-        "/dpla_mapper?mapper_type=mdljson",
-        "/select-id?prop=isShownAt",
+        "/select-id?prop=doc%2FisShownAt",
+        "/dpla_mapper?mapper_type=cdl_json",
         "/set_context",
         "/cleanup_value",
         "/cleanup_value?prop=sourceResource%2Fsubject%2Fname",
