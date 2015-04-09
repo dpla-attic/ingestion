@@ -19,15 +19,10 @@ class CDLFetcher(Fetcher):
             total_records_prop = "total_rows"
             self.total_records = getprop(parsed_content, total_records_prop)
 
-        if content is None:
-            error = "Error, there is no \"response\" field in content from " \
+        if parsed_content is None:
+            error = "Error, there is no content from " \
                     "URL %s" % url
-        # elif exists(content, "response/headers/code"):
-        #     code = getprop(content, "response/headers/code")
-        #     if code != "200":
-        #         error = "Error, response code %s " % code + \
-        #                 "is not 200 for request to URL %s" % url
-        return error, content
+        return error, parsed
 
     def cdl_extract_records(self, content):
         error = None
