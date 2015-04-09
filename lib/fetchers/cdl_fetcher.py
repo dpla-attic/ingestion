@@ -15,11 +15,9 @@ class CDLFetcher(Fetcher):
             error = "Error parsing content from URL %s: %s" % (url, e)
             return error, content
 
-        content = parsed_content.get("response")
-
         if not self.total_records:
-            total_records_prop = "numFound"
-            self.total_records = getprop(content, total_records_prop)
+            total_records_prop = "total_rows"
+            self.total_records = getprop(parsed_content, total_records_prop)
 
         if content is None:
             error = "Error, there is no \"response\" field in content from " \
