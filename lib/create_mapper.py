@@ -20,6 +20,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.mdl_mapper import MDLMapper
         return MDLMapper(data)
 
+    def _create_mapv3_json_mapper(data):
+        from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
+        return MAPV3JSONMapper(data)
+
     def _create_mdl_json_mapper(data):
         from dplaingestion.mappers.mdl_json_mapper import MDLJSONMapper
         return MDLJSONMapper(data)
@@ -104,6 +108,7 @@ def create_mapper(mapper_type, data):
         'uiuc_marc':    lambda d: _create_uiuc_marc_mapper(d),
         'dublin_core':  lambda d: _create_dublin_core_mapper(d),
         'missouri':     lambda d: _create_missouri_mapper(d),
+        'mapv3_json':   lambda d: _create_mapv3_json_mapper(d),
         'mdljson':      lambda d: _create_mdl_json_mapper(d)
     }
 
