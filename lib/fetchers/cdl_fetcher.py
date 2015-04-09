@@ -22,7 +22,7 @@ class CDLFetcher(Fetcher):
         if parsed_content is None:
             error = "Error, there is no content from " \
                     "URL %s" % url
-        return error, parsed
+        return error, parsed_content
 
     def cdl_extract_records(self, content):
         error = None
