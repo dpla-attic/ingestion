@@ -42,9 +42,13 @@ def create_fetcher(profile_path, uri_base, config_file):
         from dplaingestion.fetchers.oai_verbs_fetcher import OAIVerbsFetcher
         return OAIVerbsFetcher(profile, uri_base, config_file)
 
-    def _create_mdl_fetcher(profile, uri_base, config_file):
+    def _create_mdl_api_fetcher(profile, uri_base, config_file):
         from dplaingestion.fetchers.mdl_api_fetcher import MDLAPIFetcher
         return MDLAPIFetcher(profile, uri_base, config_file)
+
+    def _create_cdl_fetcher(profile, uri_base, config_file):
+        from dplaingestion.fetchers.cdl_fetcher import CDLFetcher
+        return CDLFetcher(profile, uri_base, config_file)
 
     fetchers = {
         'ia':           lambda p, u, c: _create_ia_fetcher(p, u, c),
@@ -56,7 +60,8 @@ def create_fetcher(profile_path, uri_base, config_file):
         'getty':        lambda p, u, c: _create_getty_fetcher(p, u, c),
         'hathi':        lambda p, u, c: _create_hathi_fetcher(p, u, c),
         'oai_verbs':    lambda p, u, c: _create_oai_verbs_fetcher(p, u, c),
-        'mdl':          lambda p, u, c: _create_mdl_fetcher(p, u, c),
+        'mdl':          lambda p, u, c: _create_mdl_api_fetcher(p, u, c),
+        'cdl':          lambda p, u, c: _create_cdl_fetcher(p, u, c)
     }
 
     with open(profile_path, "r") as f:
