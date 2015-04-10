@@ -158,9 +158,8 @@ class CDLFetcher(Fetcher):
         })
 
         desc = coll_to_update.get("description")
-        if desc and isinstance(desc, dict):
-            if 'dc' in desc.keys():
-                coll_to_update["description"] = getprop(coll_to_update, "description/dc/description")
+        if desc and len(desc) == 0:
+            coll_to_update.pop("description", None)
         self.collections[coll_to_update["title"]] = coll_to_update
 
 
@@ -168,12 +167,14 @@ class CDLFetcher(Fetcher):
         for record in records:
             collection = self.get_collection_for_record(record)
             if collection:
-                record["collection"] = self._clean_collection(collection)
+                record["collection"] = self._clean_collection(collection, True)
                 self._clean_collection(record)
 
 
-    def _clean_collection(self, collection):
+    def _clean_collection(self, collection, include_ids=False):
         include = ['description', 'title'] 
+        if include_ids:
+            include.extend(['id', '@id'])
         if isinstance(collection, list):
             clean_collection = []
             for coll in collection:
