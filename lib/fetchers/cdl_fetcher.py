@@ -182,5 +182,5 @@ class CDLFetcher(Fetcher):
                     )
         else:
           clean_collection = {k:v for k, v in collection.items() if
-                              k not in exclude}
+                              k in include}
         return clean_collection
