@@ -21,7 +21,7 @@ def create_mapper(mapper_type, data):
         return MDLMapper(data)
 
     def _create_cdl_json_mapper(data):
-        from dplaingestion.mappers.mdl_mapper import CDLJSONMapper
+        from dplaingestion.mappers.cdl_json_mapper import CDLJSONMapper
         return CDLJSONMapper(data)
 
     def _create_mapv3_json_mapper(data):
