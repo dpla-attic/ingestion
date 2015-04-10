@@ -113,23 +113,24 @@ class CDLFetcher(Fetcher):
             self.response["records"].extend(self.collections.values())
 
     def get_collection_for_record(self, record):
-        coll = getprop(record, "doc/sourceResource/collection")
+        collections = getprop(record, "doc/sourceResource/collection")
         data_provider = getprop(record, "doc/dataProvider")
         if coll:
-            coll_title = getprop(coll, "title")
+            out_collections = []
+            for coll in filter(None, iterify(collections)):
+                coll_title = getprop(coll, "title")
 
-            if coll_title:
-                collections = []
-                for title in filter(None, iterify(coll_title)):
-                    if title not in self.collections:
-                        self.add_to_collections(coll, data_provider)
-                    collections.append(self.collections[title])
-                if len(collections) == 1:
-                    return collections[0]
+                if coll_title:
+                    for title in filter(None, iterify(coll_title)):
+                        if title not in self.collections:
+                            self.add_to_collections(coll, data_provider)
+                        out_collections.append(self.collections[title])
+                    if len(out_collections) == 1:
+                        return out_collections[0]
+                    else:
+                        return out_collections
                 else:
-                    return collections
-            else:
-                return None
+                    return None
         else:
             return None
 
