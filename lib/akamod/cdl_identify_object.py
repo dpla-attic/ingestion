@@ -2,7 +2,7 @@ from akara import logger
 from akara import response
 from akara.services import simple_service
 from amara.thirdparty import json
-from dplaingestion.selector import getprop, setprop, exists
+from dplaingestion.selector import getprop, setprop, exists, delprop
 from akara import module_config
 from amara.lib.iri import is_absolute
 
