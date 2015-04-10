@@ -115,7 +115,7 @@ class CDLFetcher(Fetcher):
     def get_collection_for_record(self, record):
         collections = getprop(record, "doc/sourceResource/collection")
         data_provider = getprop(record, "doc/dataProvider")
-        if coll:
+        if collections:
             out_collections = []
             for coll in filter(None, iterify(collections)):
                 coll_title = getprop(coll, "title")
