@@ -151,6 +151,7 @@ MODULES = [
     "dplaingestion.akamod.artstor_select_isshownat",
     "dplaingestion.akamod.artstor_identify_object",
     "dplaingestion.akamod.contentdm_identify_object",
+    "dplaingestion.akamod.cdl_identify_object",
     "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
     "dplaingestion.akamod.lookup",
