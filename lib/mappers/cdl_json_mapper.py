@@ -9,6 +9,11 @@ class CDLJSONMapper(MAPV3JSONMapper):
         super(CDLJSONMapper, self).__init__(provider_data)
         self.root_key = "doc/"
 
+    # root mapping
+    def map_object(self):
+        if exists(self.provider_data, "isShownBy"):
+            self.mapped_data.update({"object": self.provider_data.get("isShownBy")})
+
     # sourceResource mapping
     def map_collection(self):
         if exists(self.provider_data, "collection"):
