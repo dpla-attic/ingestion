@@ -20,7 +20,7 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.mdl_mapper import MDLMapper
         return MDLMapper(data)
 
-    def _create_cdl_mapper(data):
+    def _create_cdl_json_mapper(data):
         from dplaingestion.mappers.mdl_mapper import MDLMapper
         return CDLMapper(data)
 
