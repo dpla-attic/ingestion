@@ -37,7 +37,7 @@ def cdl_identify_object(body, ctype):
                 break
 
     if url:
-        setprop(data, "object", "url")
+        setprop(data, "object", url)
     else:
         logger.warn("No url found for object in id %s" % data["_id"])
         delprop(data, "object", True)
