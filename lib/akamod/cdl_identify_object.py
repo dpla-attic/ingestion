@@ -39,6 +39,6 @@ def cdl_identify_object(body, ctype):
     if url:
         setprop(data, "object", "url")
     else:
-        logger.warn("No url found for object in id " % getprop(data, "_id"))
+        logger.warn("No url found for object in id " % data["_id"])
         delprop(data, "object", True)
     return json.dumps(data)
