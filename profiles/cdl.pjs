@@ -21,6 +21,7 @@
         "/select-id?prop=doc%2FisShownAt",
         "/dpla_mapper?mapper_type=cdl_json",
         "/set_context",
+        "/cdl_identify_object",
         "/cleanup_value",
         "/cleanup_value?prop=sourceResource%2Fsubject%2Fname",
         "/enrich-type",
