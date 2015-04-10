@@ -29,8 +29,8 @@ def cdl_identify_object(body, ctype):
             if is_absolute(h):
                 url = h
                 break
-    if exists(data, "originalRecord/isShownBy"):
-        handle = getprop(data, "originalRecord/isShownBy")
+    if exists(data, "originalRecord/doc/isShownBy"):
+        handle = getprop(data, "originalRecord/doc/isShownBy")
         for h in (handle if not isinstance(handle, basestring) else [handle]):
             if is_absolute(h):
                 url = h
