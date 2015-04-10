@@ -38,6 +38,7 @@ def cdl_identify_object(body, ctype):
 
     if url:
         if 'content.cdlib.org' in url and 'hi-res' in url:
+            setprop(data, "hasView", {"@id": url})
             url = url.replace('hi-res', 'thumbnail')
         setprop(data, "object", url)
     else:
