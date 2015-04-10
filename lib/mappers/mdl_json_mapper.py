@@ -48,6 +48,14 @@ class MDLJSONMapper(MAPV3JSONMapper):
                               "page=detail&id=%s" % identifier
         self.mapped_data.update({'isShownAt': is_shown_at})
 
+    def update_rights(self):
+        orig_rights = None
+        if not getprop(self.mapped_data, "sourceResource/rights", True):
+            orig_rights = getprop(self.provider_data, "record/rights", True)
+        if orig_rights:
+            self.update_source_resource({"rights": orig_rights}) 
+
     def update_mapped_fields(self):
         self.update_date()
         self.update_is_shown_at()
+        self.update_rights()
