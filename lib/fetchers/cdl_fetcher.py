@@ -48,18 +48,18 @@ class CDLFetcher(Fetcher):
         error, records = self.cdl_extract_records(content)
         if error:
             error = "Error at index %s: %s" % \
-                    (self.endpoint_url_params["offset"],
+                    (self.endpoint_url_params["skip"],
                      error)
 
             # Go on to the next start point
-            bulk_size = self.endpoint_url_params["per_page"]
-            self.endpoint_url_params["offset"] += bulk_size
+            bulk_size = self.endpoint_url_params["limit"]
+            self.endpoint_url_params["skip"] += bulk_size
         else:
-            self.endpoint_url_params["offset"] += len(records)
-            print "Fetched %s of %s" % (self.endpoint_url_params["offset"],
+            self.endpoint_url_params["skip"] += len(records)
+            print "Fetched %s of %s" % (self.endpoint_url_params["skip"],
                                         self.total_records)
         request_more = (int(self.total_records) >
-                        int(self.endpoint_url_params["offset"]))
+                        int(self.endpoint_url_params["skip"]))
 
         yield error, records, request_more
 
