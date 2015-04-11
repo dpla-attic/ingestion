@@ -313,7 +313,6 @@ class type_conversion:
         ('mixed material', 'image'),
         ('audio', 'sound'),
         ('sound', 'sound'),
-        ('news bulletin', 'sound'),
         ('oral history recording', 'sound'),
         ('finding aid', 'collection'),
         ('online collection', 'collection'),
