@@ -37,9 +37,18 @@ def cdl_identify_object(body, ctype):
                 break
 
     if url:
-        if 'content.cdlib.org' in url and 'hi-res' in url:
-            setprop(data, "hasView", {"@id": url})
-            url = url.replace('hi-res', 'thumbnail')
+        if 'content.cdlib.org' in url:
+            base_url, obj_id, object_type = url.rsplit("/", 2)
+            is_shown_at = getprop(data, "isShownAt")
+            is_shown_at_base, is_shown_at_id = is_shown_at.rsplit("/", 1)
+            if obj_id != is_shown_at_id:
+                logger.warn("Object url for %s has ARK value (%s) that does not match isShownAt (%s)" % (data["_id"], obj_id, is_shown_at_id))
+                obj_id = is_shown_at_id
+            url = "/".join([base_url, obj_id, object_type])
+            if object_type == "hi-res":
+                setprop(data, "hasView", {"@id": url})
+                url = url.replace('hi-res', 'thumbnail')
+
         setprop(data, "object", url)
     else:
         logger.warn("No url found for object in id %s" % data["_id"])
