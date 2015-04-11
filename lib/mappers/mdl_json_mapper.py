@@ -62,8 +62,16 @@ class MDLJSONMapper(MAPV3JSONMapper):
         if orig_rights:
             self.update_source_resource({"rights": orig_rights})
 
+    def update_type(self):
+        object_id = None
+        if not getprop(self.mapped_data, "sourceResource/type", True):
+            object_id = getprop(self.provider_data, "sourceResource/object", True)
+        if object_id:
+            self.update_source_resource({"type": "image"})
+
     def update_mapped_fields(self):
         self.update_date()
         self.update_is_shown_at()
         self.update_rights()
         self.update_format()
+        self.update_type()
