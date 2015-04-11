@@ -18,7 +18,7 @@
     ], 
     "enrichments_item": [
         "/select-id?prop=record%2FisShownAt",
-        "/dpla_mapper?mapper_type=mdljson",
+        "/dpla_mapper?mapper_type=mdl_json",
         "/select-id?prop=isShownAt",
         "/set_context",
         "/cleanup_value",
