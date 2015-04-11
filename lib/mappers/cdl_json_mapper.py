@@ -13,3 +13,15 @@ class CDLJSONMapper(MAPV3JSONMapper):
     def map_collection(self):
         if exists(self.provider_data, "collection"):
             self.update_source_resource({"collection": self.provider_data.get("collection")})
+
+    def update_data_provider(self):
+        new_data_provider = None
+        if isinstance(getprop(self.mapped_data, "dataProvider", True), dict): 
+            f = getprop(self.provider_data, "doc/originalRecord/facet-institution")
+            if (isinstance(f, list)):
+                new_data_provider = f[0]
+        if new_data_provider:
+            self.mapped_data.update({"dataProvider": new_data_provider})
+
+    def update_mapped_fields(self):
+        self.update_data_provider()
