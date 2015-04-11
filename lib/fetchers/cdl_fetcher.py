@@ -139,7 +139,7 @@ class CDLFetcher(Fetcher):
             """Replaced whitespace with underscores"""
             return value.replace(" ", "__")
 
-        if data_provider is None:
+        if not isinstance(data_provider, basestring):
             data_provider = self.contributor["name"]
 
         couch_id_str = "%s--%s" % (data_provider, coll["title"])
