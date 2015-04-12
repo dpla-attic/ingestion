@@ -26,6 +26,7 @@
         "/set_spec_type",
         "/enrich-type?send_rejects_to_format=true",
         "/enrich-format",
+        "/enrich-type?default=image",
         "/enrich_location",
         "/geocode",
         "/enrich_language",
