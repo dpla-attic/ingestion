@@ -31,3 +31,13 @@ def type_for_strings_and_mappings(string_map_combos):
                 return t
     raise NoTypeError
 
+def rejects(string_map_combos):
+    """rejects([(list, list_of_tuples), ...])
+
+    Given pairs of strings and mapping tuples, as with
+    type_for_strings_and_mappings, return a list of strings that do _not_
+    map to valid types.
+    """
+    return [s for strings, mappings in string_map_combos
+            for s in strings
+            if not s == _type_for_keyword(s, mappings)]

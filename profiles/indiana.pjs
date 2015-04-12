@@ -1,0 +1,45 @@
+{
+    "name": "indiana", 
+    "type": "oai_verbs",
+    "endpoint_url": "https://digital.library.in.gov/OAI/Server",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/indiana",
+        "name": "Indiana Memory"
+    }, 
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ], 
+    "enrichments_item": [
+        "/select-id",
+        "/dpla_mapper?mapper_type=dublin_core",
+        "/strip_html",
+        "/indiana_identify_object",
+        "/set_context",
+        "/move_date_values?prop=sourceResource%2Fspatial&to_prop=sourceResource%2Fdate",
+        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Fspatial%2CsourceResource%2Ftype",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/set_spec_type",
+        "/enrich-type?send_rejects_to_format=true",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Indiana",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/unset_prop?prop=dataProvider",
+        "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider",
+        "/unset_prop?prop=sourceResource%2Fcontributor",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
