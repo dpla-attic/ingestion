@@ -1,7 +1,7 @@
 from akara import logger
 from amara.lib.iri import is_absolute
 from dplaingestion.utilities import iterify
-from dplaingestion.selector import exists, getprop
+from dplaingestion.selector import exists, getprop, delprop
 from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
 
 class CDLJSONMapper(MAPV3JSONMapper):
@@ -15,13 +15,33 @@ class CDLJSONMapper(MAPV3JSONMapper):
             self.update_source_resource({"collection": self.provider_data.get("collection")})
 
     def update_data_provider(self):
-        new_data_provider = None
-        if isinstance(getprop(self.mapped_data, "dataProvider", True), dict): 
+        new_data_provider = getprop(self.mapped_data, "dataProvider", True)
+        # if unset or dict or list
+        if not isinstance(new_data_provider, basestring): 
             f = getprop(self.provider_data, "doc/originalRecord/facet-institution")
-            if (isinstance(f, list)):
-                new_data_provider = f[0]
+            if isinstance(f, dict):
+                new_data_provider = getprop(f, "text", True)
+            elif isinstance(f, list):
+                new_data_provider = getprop(f[0], "text", True)
+            if not isinstance(new_data_provider, basestring):
+                new_data_provider = None
         if new_data_provider:
             self.mapped_data.update({"dataProvider": new_data_provider})
+        else:
+            delprop(self.mapped_data, "dataProvider", True)
+
+    def update_language(self):
+        out_languages = []
+        for language in iterify(getprop(self.mapped_data, "language", True)):
+            if isinstance(language, dict):
+                out_languages.append(language)
+            elif isinstance(language, basestring):
+                out_languages.append({"name": language})
+        if out_languages:
+            self.update_source_resource({"language": out_languages})
+        else:
+            delprop(self.mapped_data, "language", True)
 
     def update_mapped_fields(self):
         self.update_data_provider()
+        self.update_language()
