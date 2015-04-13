@@ -84,7 +84,12 @@ class NYPLFetcher(AbsoluteURLFetcher):
                 record["tmp_image_id"] = item.get("imageID")
                 record["tmp_item_link"] = item.get("itemLink")
                 record["tmp_high_res_link"] = item.get("highResLink")
-                record["tmp_rights_statement"] = item.get("rightsStatement")
+
+                # NYPL should have item-level rights tatements in most cases
+                if exists(content, "response/rightsStatement"):
+                    record["tmp_rights_statement"] = getprop(content, "response/rightsStatement")
+                else:
+                    record["tmp_rights_statement"] = item.get("rightsStatement")
                 records.append(record)
 
             if error is not None:
