@@ -20,11 +20,11 @@
     "enrichments_item": [
         "/select-id?prop=doc%2FisShownAt",
         "/dpla_mapper?mapper_type=cdl_json",
-        "/shred?prop=sourceResource%2Fformat",
+        "/shred?prop=sourceResource%2Fformat%2CsourceResource%2Fsubject",
         "/set_context",
         "/cdl_identify_object",
         "/cleanup_value",
-        "/cleanup_value?prop=sourceResource%2Fsubject%2Fname",
+        "/enrich-subject",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
