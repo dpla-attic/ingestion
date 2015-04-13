@@ -20,9 +20,9 @@ class CDLJSONMapper(MAPV3JSONMapper):
         if not isinstance(new_data_provider, basestring): 
             f = getprop(self.provider_data, "doc/originalRecord/facet-institution")
             if isinstance(f, dict):
-                new_data_provider = getprop(f, "text", True)
-            elif isinstance(f, list):
-                new_data_provider = getprop(f[0], "text", True)
+                new_data_provider = f.pop("text", None)
+            elif isinstance(f, list) and len(f) > 0:
+                new_data_provider = f[0].pop("text", None)
             if not isinstance(new_data_provider, basestring):
                 new_data_provider = None
         if new_data_provider:
@@ -32,7 +32,7 @@ class CDLJSONMapper(MAPV3JSONMapper):
 
     def update_language(self):
         out_languages = []
-        for language in iterify(getprop(self.mapped_data, "language", True)):
+        for language in iterify(getprop(self.mapped_data, "sourceResource/language", True)):
             if isinstance(language, dict):
                 out_languages.append(language)
             elif isinstance(language, basestring):
@@ -42,6 +42,20 @@ class CDLJSONMapper(MAPV3JSONMapper):
         else:
             delprop(self.mapped_data, "language", True)
 
+    def update_spatial(self):
+        out_spatial = []
+        for spatial in iterify(getprop(self.mapped_data, "sourceResource/spatial", True)):
+            if isinstance(spatial, dict):
+                spatial_text = spatial.pop("text", None)
+                if spatial_text:
+                    spatial["name"] = spatial_text
+                    spatial.pop("attrib", None)
+            if spatial:
+                out_spatial.append(spatial)
+        if out_spatial:
+            self.update_source_resource({"spatial": out_spatial})
+
     def update_mapped_fields(self):
         self.update_data_provider()
         self.update_language()
+        self.update_spatial()
