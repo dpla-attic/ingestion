@@ -309,5 +309,31 @@ def test_move_date_values_non_empty_temporal():
     print >> sys.stderr, EXPECTED
     assert json.loads(content) == EXPECTED
 
+def test_move_date_values_iterify_if_string():
+    """Should iterify as string and append date"""
+    prop = "sourceResource/spatial"
+    INPUT = {
+        "sourceResource": {
+            "spatial": "Asheville",
+            "temporal": "1940"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "spatial": [
+                "Asheville"
+            ],
+            "temporal": [
+                "1940",
+            ]
+        }
+    }
+
+    resp,content = _get_server_response(json.dumps(INPUT), prop=prop) 
+    assert resp.status == 200
+    print >> sys.stderr, json.loads(content)
+    print >> sys.stderr, EXPECTED
+    assert json.loads(content) == EXPECTED
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
