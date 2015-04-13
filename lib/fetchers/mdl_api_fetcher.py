@@ -24,11 +24,6 @@ class MDLAPIFetcher(Fetcher):
         if content is None:
             error = "Error, there is no \"response\" field in content from " \
                     "URL %s" % url
-        # elif exists(content, "response/headers/code"):
-        #     code = getprop(content, "response/headers/code")
-        #     if code != "200":
-        #         error = "Error, response code %s " % code + \
-        #                 "is not 200 for request to URL %s" % url
         return error, content
 
     def mdl_extract_records(self, content):
@@ -178,7 +173,7 @@ class MDLAPIFetcher(Fetcher):
                 for coll in collection:
                     clean_collection.append(
                         {k:v for k, v in coll.items() if k not in exclude}
-                        )
+                    )
             else:
               clean_collection = {k:v for k, v in collection.items() if
                                   k not in exclude}

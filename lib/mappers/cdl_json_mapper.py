@@ -14,6 +14,22 @@ class CDLJSONMapper(MAPV3JSONMapper):
         if exists(self.provider_data, "collection"):
             self.update_source_resource({"collection": self.provider_data.get("collection")})
 
+    def update_subject(self):
+        subjects = []
+        if exists(self.mapped_data, "sourceResource/subject"):
+            for subject in iterify(getprop(self.mapped_data, "sourceResource/subject")):
+                if isinstance(subject, basestring):
+                    subjects.append(subject)
+                elif isinstance(subject, dict):
+                    s = getprop(subject, "name", True)
+                    if s:
+                        subjects.append(s)
+                else:
+                    pass
+            delprop(self.mapped_data, "sourceResource/subject", True)
+        if subjects:
+            self.update_source_resource({"subject": subjects})
+
     def update_data_provider(self):
         new_data_provider = getprop(self.mapped_data, "dataProvider", True)
         # if unset or dict or list
@@ -26,6 +42,7 @@ class CDLJSONMapper(MAPV3JSONMapper):
             if not isinstance(new_data_provider, basestring):
                 new_data_provider = None
         if new_data_provider:
+            new_data_provider = new_data_provider.replace("::", ", ")
             self.mapped_data.update({"dataProvider": new_data_provider})
         else:
             delprop(self.mapped_data, "dataProvider", True)
@@ -56,6 +73,7 @@ class CDLJSONMapper(MAPV3JSONMapper):
             self.update_source_resource({"spatial": out_spatial})
 
     def update_mapped_fields(self):
+        self.update_subject()
         self.update_data_provider()
         self.update_language()
         self.update_spatial()

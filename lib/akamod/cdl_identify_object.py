@@ -21,7 +21,6 @@ def cdl_identify_object(body, ctype):
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
 
-    #handle_field = "originalRecord/handle"
     url = None
     if exists(data, "object"):
         handle = getprop(data, "object")
