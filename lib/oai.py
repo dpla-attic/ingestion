@@ -7,9 +7,8 @@ oaiservice class, for listing OAI sets and records
 import sys
 import time, logging
 import urllib
-
+import urllib2
 from amara.pushtree import pushtree
-from amara.thirdparty import httplib2
 from akara import logger
 from dplaingestion.utilities import iterify
 import xmltodict
@@ -106,13 +105,12 @@ class oaiservice(object):
       - returns dictionary with keys "records", "resumption_token", and
         "error", where records is a list of dictionaries
     """
-    def __init__(self, root, logger=logging, cachedir='/tmp/.cache'):
+    def __init__(self, root, logger=logging):
         '''
         root - root of the OAI service endpoint, e.g. http://dspace.mit.edu/oai/request
         '''
         self.root = root
         self.logger = logger
-        self.h = httplib2.Http(cachedir)
         return
     
     def list_sets(self):
@@ -121,7 +119,14 @@ class oaiservice(object):
         url = self.root + '?' + qstr
         self.logger.debug('OAI request URL: {0}'.format(url))
         start_t = time.time()
-        resp, content = self.h.request(url)
+        try:
+            content = urllib2.urlopen(url).read()
+        except urllib2.URLError as e:
+            raise OAIHTTPError("list_sets could not make request: %s" % \
+                               e.reason)
+        except urllib2.HTTPError as e:
+            raise OAIHTTPError("list_sets got status %d: %s" % \
+                               (e.code, e.reason))
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
         sets = []
@@ -173,10 +178,15 @@ class oaiservice(object):
         url = self.root + '?' + qstr
         self.logger.debug('OAI request URL: {0}'.format(url))
         start_t = time.time()
-        resp, content = self.h.request(url)
+        try:
+            content = urllib2.urlopen(url).read()
+        except urllib2.URLError as e:
+            raise OAIHTTPError("list_records could not make request: %s" % \
+                               e.reason)
+        except urllib2.HTTPError as e:
+            raise OAIHTTPError("list_records got status %d: %s" % \
+                               (e.code, e.reason))
         retrieved_t = time.time()
-        if resp.status != 200:
-            raise OAIHTTPError("Status code: %d" % resp.status)
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
 
         xml_content = XML_PARSE(content)

@@ -133,13 +133,15 @@ class HarvardMapper(OAIMODSMapper):
 
     def map_description(self):
         prop = self.root_key + "note"
+        out_desc = []
+        for desc in iterify(getprop(self.provider_data, prop, True)):
+            if isinstance(desc, dict):
+                desc = desc["#text"] if "#text" in desc else None
+            if desc:
+                out_desc.append(desc)
 
-        desc = getprop(self.provider_data, prop, True)
-        if isinstance(desc, dict):
-            desc = desc["#text"] if "#text" in desc else None
-
-        if desc:
-            self.update_source_resource({"description": desc})
+        if out_desc:
+            self.update_source_resource({"description": out_desc})
 
     def map_format(self):
         return super(HarvardMapper, self).map_format(authority_condition=True)
