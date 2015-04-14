@@ -15,17 +15,19 @@ class CDLJSONMapper(MAPV3JSONMapper):
             self.update_source_resource({"collection": self.provider_data.get("collection")})
 
     def update_subject(self):
-        subjects = []
-        if exists(self.mapped_data, "sourceResource/subject"):
-            for subject in iterify(getprop(self.mapped_data, "sourceResource/subject")):
+        subjects = getprop(self.mapped_data, "sourceResource/subject", True)
+        if subjects:
+            subjects = iterify(subjects)
+            for subject in subjects[:]:
                 if isinstance(subject, basestring):
-                    subjects.append(subject)
+                    pass
                 elif isinstance(subject, dict):
-                    s = getprop(subject, "name", True)
+                    s = subject.get("name")
+                    subjects.remove(subject)
                     if s:
                         subjects.append(s)
                 else:
-                    pass
+                    subjects.remove(subject)
             delprop(self.mapped_data, "sourceResource/subject", True)
         if subjects:
             self.update_source_resource({"subject": subjects})
