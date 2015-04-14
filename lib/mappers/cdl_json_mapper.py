@@ -26,10 +26,9 @@ class CDLJSONMapper(MAPV3JSONMapper):
                         subjects.append(s)
                 else:
                     pass
+            delprop(self.mapped_data, "sourceResource/subject", True)
         if subjects:
             self.update_source_resource({"subject": subjects})
-        else:
-            delprop(self.mapped_data, "subject", True)
 
     def update_data_provider(self):
         new_data_provider = getprop(self.mapped_data, "dataProvider", True)
