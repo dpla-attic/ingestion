@@ -105,6 +105,7 @@ class Mapper(object):
         self.map_base()
         self.map_provider()
         self.map_data_provider()
+        self.map_edm_rights()
         self.map_intermediate_provider()
         self.map_is_shown_at()
         self.map_has_view()
@@ -166,6 +167,9 @@ class Mapper(object):
         if exists(self.provider_data, prop):
             self.mapped_data.update({"dataProvider":
                                      self.provider_data.get(prop)})
+
+    def map_edm_rights(self):
+        pass
 
     def map_ingest_fields(self):
         for prop in ("ingestDate", "ingestType", "ingestionSequence"):
