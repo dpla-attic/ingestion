@@ -23,7 +23,9 @@
         "DPLAKress",
         "DPLAYCBA",
         "DPLAWalters",
-        "DPLAYaleArt"
+        "DPLAYaleArt",
+        "SSDPLAColby",
+        "SSDPLACuny"
     ],
     "set_params": {
         "SSDPLABrynMawr": {"frm": "2015-01-04"},
