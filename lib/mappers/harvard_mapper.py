@@ -9,7 +9,9 @@ class HarvardMapper(OAIMODSMapper):
             "lap": "Widener Library, Harvard University",
             "crimes": "Harvard Law School Library, Harvard University",
             "scarlet": "Harvard Law School Library, Harvard University",
-            "manuscripts": "Houghton Library, Harvard University"
+            "manuscripts": "Houghton Library, Harvard University",
+            "eda": "Emily Dickenson Archive",
+            "cna": "Harvard University Archives"
         }
         super(HarvardMapper, self).__init__(provider_data)
 
@@ -30,18 +32,20 @@ class HarvardMapper(OAIMODSMapper):
             if isinstance(date, list):
                 dd = {}
                 for i in date:
-                    if isinstance(i, basestring):
-                        dd["displayDate"] = i
+                    if is_display_date(i):
+                        dd["displayDate"] = display_date(i)
                     elif "point" in i:
                         if i["point"] == "start":
-                            dd["begin"] = i["point"]
+                            dd["begin"] = i["#text"]
                         else:
-                            dd["end"] = i["point"]
+                            dd["end"] = i["#text"]
                     else:
                         # Odd date? Log error and investigate
                         logger.error("Invalid date in record %s" %
                                      self.provider_data["_id"])
                 date = dd if dd else None
+            else:
+                date = display_date(date)
 
             if date and date != "unknown":
                 date_and_publisher["date"] = date
@@ -86,36 +90,62 @@ class HarvardMapper(OAIMODSMapper):
                         if isinstance(url, dict):
                             usage = getprop(url, "usage", True)
                             if usage == "primary display":
-                                iho["isShownAt"] = getprop(url, "#text")
+                                # Account for bad 'url' elements that are
+                                # not URLs.  Seen in Emily Dickenson collection
+                                # ('eda' set).
+                                # E.g. item b1b694dc65aeb685e7e4b5199bf8dd8f
+                                s = getprop(url, "#text")
+                                if s.startswith('http://'):
+                                    iho["isShownAt"] = s
 
+                            # Most sets use the 'displayLabel' attribute to
+                            # indicate thumbnails and full images, but the
+                            # Colonial North America set uses 'access'.
                             label = getprop(url, "displayLabel", True)
-                            if label == "Full Image":
-                                iho["hasView"] = {"@id": getprop(url,
-                                                                 "#text")}
-                            if label == "Thumbnail":
-                                iho["object"] = getprop(url, "#text")
+                            access = getprop(url, "access", True)
+                            # ... being paranoid about the potential for the
+                            # coexistence of 'displayLabel' and 'access' ...
+                            if label:
+                                if label == "Full Image":
+                                    iho["hasView"] = {"@id": getprop(url,
+                                                                     "#text")}
+                                if label == "Thumbnail":
+                                    iho["object"] = getprop(url, "#text")
+                            elif access:
+                                if access == "preview":
+                                    iho["object"] = getprop(url, "#text")
 
             if iho:
                 self.mapped_data.update(iho)
 
     def map_data_provider(self):
         dp = None
-        set = getprop(self.provider_data, "header/setSpec", True)
+        set_spec = getprop(self.provider_data, "header/setSpec", True)
         location = getprop(self.provider_data, self.root_key + "location",
                            True)
-        if set == "dag" and location is not None:
+        if set_spec == "dag" and location is not None:
             for loc in iterify(location):
                 phys = getprop(loc, "physicalLocation", True)
-                if phys and \
-                    getprop(phys, "displayLabel", True) == "repository":
-                    dp = getprop(phys, "#text").split(";")[0]
-                    dp += ", Harvard University"
+                if phys and is_repository(phys):
+                    dp = getprop(phys, "#text").split(";")[0] \
+                         + ", Harvard University"
 
-        if set in self.set_to_data_provider:
-            dp = self.set_to_data_provider[set]
+        if set_spec in self.set_to_data_provider:
+            dp = self.set_to_data_provider[set_spec]
 
         if dp is not None:
             self.mapped_data.update({"dataProvider": dp})
+
+    def map_rights(self):
+        set_spec = getprop(self.provider_data, "header/setSpec", True)
+        if set_spec == 'eda':
+            rights = 'CC BY-NC-ND 3.0 http://www.edickenson.org/terms'
+        elif set_spec == 'cna':
+            rights = getprop(self.provider_data,
+                             self.root_key + 'accessCondition', True)
+        else:
+            rights = 'Held in the collections of Harvard University.'
+        self.update_source_resource({'rights': rights})
 
     def map_type(self):
         prop = self.root_key + "typeOfResource"
@@ -187,9 +217,9 @@ class HarvardMapper(OAIMODSMapper):
 
         if exists(self.provider_data, prop):
             relation = []
-            for s in iterify(getprop(self.provider_data, prop)):
-                if "type" in s and s["type"] == "series":
-                    relation.append(getprop(s, "titleInfo/title", True))
+            for el in iterify(getprop(self.provider_data, prop)):
+                if is_relation(el):
+                    relation.append(getprop(el, "titleInfo/title", True))
 
             relation = filter(None, relation)
             relation = relation[0] if len(relation) == 1 else relation
@@ -202,3 +232,32 @@ class HarvardMapper(OAIMODSMapper):
         self.map_subject_spatial_and_temporal()
         self.map_date_and_publisher()
         self.map_is_shown_at_has_view_and_object()
+
+
+def is_display_date(element):
+    return isinstance(element, basestring) or 'qualifier' in element
+
+def is_relation(element):
+    return (element.get('type') == 'series') or \
+           (element.get('type') == 'host' and \
+            element.get('displayLabel') == 'collection')
+
+def display_date(element):
+    """Return a display date string, given a suitable object or string"""
+    # Accept either a `getprop` hash for an XML element with only a text node,
+    # or an element with a 'qualifier' attribute.
+    try:
+        if isinstance(element, basestring):
+            date = element
+        elif 'qualifier' in element:
+            date = element['#text']
+            if element['qualifier'] == 'questionable':
+                date = 'ca. ' + date
+    except (KeyError, TypeError):  # shouldn't happen, but be paranoid.
+        date = None
+    return date
+
+def is_repository(element):
+    s = getprop(element, 'displayLabel', True) \
+            or getprop(element, 'type', True)
+    return s == 'repository'
