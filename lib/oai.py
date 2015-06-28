@@ -189,7 +189,12 @@ class oaiservice(object):
         retrieved_t = time.time()
         self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
 
-        xml_content = XML_PARSE(content)
+        try:
+            xml_content = XML_PARSE(content)
+        except:
+            self.logger.error("Could not parse:\n%s" % content)
+            raise
+
         try:
             resumption_token = \
                 xml_content["OAI-PMH"]["ListRecords"].get("resumptionToken",
