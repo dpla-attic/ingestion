@@ -10,7 +10,7 @@ class HarvardMapper(OAIMODSMapper):
             "crimes": "Harvard Law School Library, Harvard University",
             "scarlet": "Harvard Law School Library, Harvard University",
             "manuscripts": "Houghton Library, Harvard University",
-            "eda": "Emily Dickenson Archive",
+            "eda": "Emily Dickinson Archive",
             "cna": "Harvard University Archives"
         }
         super(HarvardMapper, self).__init__(provider_data)
