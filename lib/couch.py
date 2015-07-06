@@ -4,6 +4,7 @@ import json
 import time
 import couchdb
 import logging
+import traceback
 import ConfigParser
 from copy import deepcopy
 from datetime import datetime
@@ -514,9 +515,11 @@ class Couch(object):
                 backup_db_name = self._backup_db(ingestion_doc["provider"])
             except couchdb.http.ServerError as e:
                 self._print_couchdb_server_error(e, "backing up data")
+                print_couch_traceback()
                 return -1
             except Exception as e:
                 self._print_generic_exception_error(e, "backing up data")
+                print_couch_traceback()
                 return -1
             ingestion_doc["backupDB"] = backup_db_name
             self.dashboard_db.save(ingestion_doc)
@@ -609,9 +612,11 @@ class Couch(object):
                     total_deleted += len(delete_docs)
             except couchdb.http.ServerError as e:
                 self._print_couchdb_server_error(e, what)
+                print_couch_traceback()
                 return (-1, total_deleted)
             except Exception as e:
                 self._print_generic_exception_error(e, what)
+                print_couch_traceback()
                 return (-1, total_deleted)
         return (0, total_deleted)
 
@@ -664,9 +669,11 @@ class Couch(object):
                     total_deleted += len(delete_docs)
             except couchdb.http.ServerError as e:
                 self._print_couchdb_server_error(e, what)
+                print_couch_traceback()
                 return (-1, total_deleted)
             except Exception as e:
                 self._print_generic_exception_error(e, what)
+                print_couch_traceback()
                 return (-1, total_deleted)
         return (0, total_deleted)
 
@@ -745,10 +752,12 @@ class Couch(object):
         except couchdb.http.ServerError as e:
             error_msg = self._couchdb_server_error_msg(e, what)
             print >> sys.stderr, self._ts_for_err(), error_msg
+            print_couch_traceback()
             return (-1, error_msg)
         except Exception as e:
             error_msg = self._generic_exception_error_msg(e, what)
             print >> sys.stderr, self._ts_for_err(), error_msg
+            print_couch_traceback()
             return (-1, error_msg)
         return (0, None)
 
@@ -789,8 +798,10 @@ class Couch(object):
                         print "%s documents deleted" % count
                         self._delete_documents(self.dpla_db, delete_docs)
             except couchdb.http.ServerError as e:
+                print_couch_traceback()
                 return self._couchdb_server_error_msg(e, what)
             except Exception as e:
+                print_couch_traceback()
                 return self._generic_exception_error_msg(e, what)
 
             # Bulk post backup database documents without revision
@@ -815,8 +826,10 @@ class Couch(object):
                     self._bulk_post_to(self.dpla_db, docs)
                     self.sync_views(self.dpla_db.name)
             except couchdb.http.ServerError as e:
+                print_couch_traceback()
                 return self._couchdb_server_error_msg(e, what)
             except Exception as e:
+                print_couch_traceback()
                 return self._generic_exception_error_msg(e, what)
 
         else:
@@ -846,8 +859,10 @@ class Couch(object):
                 print "%s documents deleted" % count
                 self._delete_documents(self.dashboard_db, delete_docs)
         except couchdb.http.ServerError as e:
+            print_couch_traceback()
             return self._couchdb_server_error_msg(e, what)
         except Exception as e:
+            print_couch_traceback()
             return self._generic_exception_error_msg(e, what)
 
         return "Rollback complete"
@@ -892,3 +907,7 @@ class Couch(object):
     def _ts_for_err(self):
         return "[%s]" % iso_utc_with_tz()
 
+
+def print_couch_traceback(limit=10):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    traceback.print_tb(exc_traceback, limit=limit, file=sys.stderr)
