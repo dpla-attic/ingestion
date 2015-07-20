@@ -100,5 +100,4 @@ License
 --------
 This application is released under a AGPLv3 license.
 
-* Copyright President and Fellows of Harvard College, 2013
-* Copyright Digital Public Library of America, 2014
+* Copyright Digital Public Library of America, 2015
