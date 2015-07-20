@@ -23,7 +23,9 @@
         "DPLAKress",
         "DPLAYCBA",
         "DPLAWalters",
-        "DPLAYaleArt"
+        "DPLAYaleArt",
+        "SSDPLAColby",
+        "SSDPLACuny"
     ],
     "set_params": {
         "SSDPLABrynMawr": {"frm": "2015-01-04"},
@@ -46,7 +48,9 @@
         "DPLAKress": {"frm": "2015-01-04"},
         "DPLAYCBA": {"frm": "2015-01-04"},
         "DPLAWalters": {"frm": "2015-01-04"},
-        "DPLAYaleArt": {"frm": "2015-01-04"}
+        "DPLAYaleArt": {"frm": "2015-01-04"},
+        "SSDPLAColby": {"frm": "2015-01-04"},
+        "SSDPLACuny": {"frm": "2015-01-04"}
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor", 
