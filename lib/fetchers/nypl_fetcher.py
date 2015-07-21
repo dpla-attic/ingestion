@@ -84,7 +84,8 @@ class NYPLFetcher(AbsoluteURLFetcher):
                 record["tmp_image_id"] = item.get("imageID")
                 record["tmp_item_link"] = item.get("itemLink")
                 record["tmp_high_res_link"] = item.get("highResLink")
-                record["tmp_rights_statement"] = item.get("rightsStatement")
+                record["tmp_rights_statement"] = \
+                        getprop(content, "response/rightsStatement")
                 records.append(record)
 
             if error is not None:
