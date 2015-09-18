@@ -10,7 +10,19 @@
         "query": "facet_tlevel,exact,online_resources",
         "query_exc": [
             "facet_rtype,exact,collections",
-            "lsr04,exact,2082"
+            "lsr04,exact,2082",
+            "lsr04,exact,1053",
+            "lsr04,exact,1067",
+            "lsr04,exact,1099",
+            "lsr04,exact,1100",
+            "lsr04,exact,1101",
+            "lsr04,exact,1249",
+            "lsr04,exact,1250",
+            "lsr04,exact,1276",
+            "lsr04,exact,1283",
+            "lsr04,exact,1617",
+            "lsr04,exact,2019",
+            "lsr04,exact,2064"
         ]
     },
     "sets": "NotSupported",
