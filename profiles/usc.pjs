@@ -75,6 +75,7 @@
         "/dedup_value?prop=sourceResource%2Ftype",
         "/unset_prop?prop=sourceResource%2Fcollection",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
+        "/unset_prop?prop=_id&condition=usc_no_contributor&condition_prop=sourceResource",
         "/validate_mapv3"
     ],
     "thresholds": {
