@@ -372,6 +372,62 @@ def test_unset_prop8():
     assert resp.status == 200
     assert json.loads(content) == INPUT
 
+def test_unset_prop9():
+    """
+    usc_no_contributor unsets property when sourceResource has no contributor
+    """
+    action = "unset"
+    prop = "_id"
+    condition = "usc_no_contributor"
+    condition_prop = "sourceResource"
+
+    INPUT = {
+        "_id": "1",
+        "sourceResource": {
+            "a": "aaa"
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            "a": "aaa"
+        }
+    }
+
+    resp, content = _get_server_response(json.dumps(INPUT), action=action,
+        prop=prop, condition=condition, condition_prop=condition_prop)
+    assert resp.status == 200
+    assert json.loads(content) == EXPECTED
+
+def test_unset_prop10():
+    """
+    usc_no_contributor unsets property when sourceResource has various empty
+    values for the contributor contributor
+    """
+    action = "unset"
+    prop = "_id"
+    condition = "usc_no_contributor"
+    condition_prop = "sourceResource"
+
+    for val in ["", None, []]:
+        INPUT = {
+            "_id": "1",
+            "sourceResource": {
+                "a": "aaa",
+                "contributor": val
+            }
+        }
+        EXPECTED = {
+            "sourceResource": {
+                "a": "aaa",
+                "contributor": val
+            }
+        }
+
+        resp, content = _get_server_response(json.dumps(INPUT), action=action,
+            prop=prop, condition=condition, condition_prop=condition_prop)
+        assert resp.status == 200
+        assert json.loads(content) == EXPECTED
+
 def test_unset_prop_finding_aid():
     """Should unset _id since title starts with 'Finding Aid'"""
     action = "unset"
