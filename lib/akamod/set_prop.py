@@ -81,7 +81,8 @@ def unset_prop(body, ctype, prop=None, condition=None, condition_prop=None):
         "mwdl_exclude": lambda v: (v[0] == "collections" or
                                    v[0] == "findingAids"),
         "hathi_exclude": lambda v: "Minnesota Digital Library" in v,
-        "finding_aid_title": lambda v: v[0].startswith("Finding Aid")
+        "finding_aid_title": lambda v: v[0].startswith("Finding Aid"),
+        "usc_no_contributor": lambda v: not v[0].get("contributor", False)
     }
 
     def condition_met(condition_prop, condition):
