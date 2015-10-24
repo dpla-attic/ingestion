@@ -294,7 +294,7 @@ class type_conversion:
         ('equipment', 'image'),
         ('cartographic', 'image'),
         ('notated music', 'image'),
-        ('mixed material', 'image'),
+        ('mixed material', ['image', 'text']),
         ('audio', 'sound'),
         ('sound', 'sound'),
         ('oral history recording', 'sound'),
