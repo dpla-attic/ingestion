@@ -78,6 +78,23 @@ def test_type_for_type_keyword():
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
+def test_type_for_type_keyword2():
+    INPUT = {
+        "id": "123",
+        "sourceResource": {
+            "type": "Mixed material"
+        }
+    }
+    EXPECTED = {
+        "id": "123",
+        "sourceResource": {
+            "type": ["image", "text"]
+        }
+    }
+    resp, content = _get_server_response(json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
 def test_type_set_format():
     """Format gets set correctly given invalid type value
 
