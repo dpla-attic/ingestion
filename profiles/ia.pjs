@@ -44,6 +44,9 @@
         },
         "lbiperiodicals": {
             "title": "Leo Baeck Institute Library at the Center for Jewish History"
+        },
+        "frickartreferencelibrary": {
+            "title": "Frick Art Reference Library"
         }
     },
     "contributor": {
