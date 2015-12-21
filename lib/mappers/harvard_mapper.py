@@ -123,7 +123,7 @@ class HarvardMapper(OAIMODSMapper):
         set_spec = getprop(self.provider_data, "header/setSpec", True)
         location = getprop(self.provider_data, self.root_key + "location",
                            True)
-        if set_spec == "dag" and location is not None:
+        if set_spec in ["dag", "cna"] and location is not None:
             for loc in iterify(location):
                 phys = getprop(loc, "physicalLocation", True)
                 if phys and is_repository(phys):
