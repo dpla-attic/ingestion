@@ -127,7 +127,7 @@ class BPLMapper(OAIMODSMapper):
 
     def map_title(self):
         return super(BPLMapper, self).map_title(
-                    unsupported_types=[],
+                    unsupported_types=["alternative"],
                     unsupported_subelements=["partNumber", "partName",
                                              "nonSort"]
                     )
