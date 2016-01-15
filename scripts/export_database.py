@@ -502,6 +502,9 @@ def get_action_dispatcher():
     return res
 
 def main(argv):
+    print "WARNING: Bulk data is now exported/maintained using elasticdump."
+    print "See https://github.com/dpla/automation/blob/develop/ansible/roles/exporter/files/export-provider.sh"
+
     set_global_variables("DPLAContainer")
 
     arguments = validate_arguments(argv)
