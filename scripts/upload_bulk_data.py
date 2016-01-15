@@ -26,6 +26,9 @@ def define_arguments():
     return parser
 
 def main(argv):
+    print "WARNING: Bulk data is now exported/maintained using elasticdump."
+    print "See https://github.com/dpla/automation/blob/develop/ansible/roles/exporter/files/export-provider.sh"
+
     parser = define_arguments()
     args = parser.parse_args(argv[1:])
 

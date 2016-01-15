@@ -66,10 +66,12 @@ def main(argv):
             print "Error cleaning up dashboard"
             continue
 
-        resp = upload_bulk_data.main([None, ingestion_doc_id])
-        if not resp == 0:
-            print "Error uploading bulk download data"
-            continue
+        # Bulk data being updated via elasticdump. 
+        #
+        # resp = upload_bulk_data.main([None, ingestion_doc_id])
+        # if not resp == 0:
+        #     print "Error uploading bulk download data"
+        #     continue
 
         print "Ingestion complete!"
 
