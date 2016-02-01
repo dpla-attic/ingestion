@@ -4,7 +4,7 @@
     "endpoint_url": "http://utah-primoprod.hosted.exlibrisgroup.com/PrimoWebServices/xservice/search/brief",
     "endpoint_url_params": {
         "indx": 1,
-        "bulkSize": 500,
+        "bulkSize": 100,
         "institution": "MWDL",
         "loc": "local,scope:(mw)",
         "query": "facet_tlevel,exact,online_resources",
