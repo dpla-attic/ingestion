@@ -385,7 +385,6 @@ def test_map_type():
     mm.map_type()
     assert_equals({'sourceResource': {'type': ['the type']}}, mm.mapped_data)
 
-@nottest
 def test_map_language():
     """MissouriMapper gets language from language or languageTerm"""
     provider_data = {
