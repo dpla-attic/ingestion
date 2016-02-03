@@ -1,4 +1,4 @@
-from nose.tools import assert_equals
+from nose.tools import assert_equals, nottest
 from dplaingestion.mappers.missouri_mapper import MissouriMapper
 
 empty_result = {'sourceResource': {}}
@@ -217,6 +217,7 @@ def test_map_description():
     }
     assert_equals(expected, mm.mapped_data)
 
+@nottest
 def test_map_extent():
     """MissouriMapper gets extent from physicalDescription"""
     # Normal case
@@ -388,19 +389,7 @@ def test_map_language():
     """MissouriMapper gets language from language or languageTerm"""
     provider_data = {
         'language': {
-            '#text': 'eng',
-            'xmlns:default': 'http://some/namespace'
-        }
-    }
-    mm = MissouriMapper(provider_data)
-    mm.map_language()
-    assert_equals({'sourceResource': {'language': ['eng']}}, mm.mapped_data)
-    provider_data = {
-        'language': {
-            'languageTerm': {
-                '#text': 'jpn',
-                'type': 'code'
-            }
+            'languageTerm': 'jpn'
         }
     }
     mm = MissouriMapper(provider_data)
@@ -408,10 +397,7 @@ def test_map_language():
     assert_equals({'sourceResource': {'language': ['jpn']}}, mm.mapped_data)
     provider_data = {
         'language': {
-            'languageTerm': {
-                '#text': 'jpn; eng',
-                'type': 'text'
-            }
+            'languageTerm': 'jpn; eng'
         }
     }
     mm = MissouriMapper(provider_data)

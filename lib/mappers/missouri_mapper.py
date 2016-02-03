@@ -8,6 +8,8 @@ from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 from dplaingestion.textnode import textnode, NoTextNodeError
 from dplaingestion.utilities import iterify
 from dplaingestion.spectype import valid_spec_types
+from dplaingestion.selector import exists, getprop
+
 
 
 class MissouriMapper(OAIMODSMapper):
@@ -20,7 +22,10 @@ class MissouriMapper(OAIMODSMapper):
         In body of mapper request JSON:
             .note
         """
-        note = iterify(self.provider_data.get('note'))
+        prop = self.root_key + 'note'
+        note = None
+        if exists(self.provider_data, prop):
+            note = iterify(getprop(self.provider_data, prop))
         if note:
             try:
                 ownership = [e for e in note
@@ -61,7 +66,10 @@ class MissouriMapper(OAIMODSMapper):
                     # No name with a roleTerm of "creator," but it's not
                     # required.
                     pass
-        name = iterify(self.provider_data.get('name', []))
+        prop = self.root_key + 'name'
+        name = None
+        if exists(self.provider_data, prop):
+            name = iterify(getprop(self.provider_data, prop))
         if name:
             creators = [n for n in creator_names(name)]
             if creators:
@@ -115,8 +123,9 @@ class MissouriMapper(OAIMODSMapper):
                 except NoTextNodeError:
                     # Weird, but date is not required.
                     pass
-        origin_info = iterify(self.provider_data.get('originInfo', []))
-        if origin_info:
+        prop = self.root_key + 'originInfo'
+        if exists(self.provider_data, prop):
+            origin_info = iterify(getprop(self.provider_data, prop))
             date = first_date(origin_info)
             if date:
                 self.update_source_resource({'date': date})
@@ -143,7 +152,10 @@ class MissouriMapper(OAIMODSMapper):
                 return textnode(n)
             except NoTextNodeError:
                 return ''
-        note = iterify(self.provider_data.get('note', []))
+        prop = self.root_key + 'note'
+        note = None
+        if exists(self.provider_data, prop):
+            note = iterify(getprop(self.provider_data, prop))
         if note:
             try:
                 desc = [desc_string(n) for n in note
@@ -154,21 +166,26 @@ class MissouriMapper(OAIMODSMapper):
                 # No appropriate notes.  Not required, so pass.
                 pass
 
-    def map_extent(self):
-        """Map sourceResource.extent
+    ## What happened to extent?
+    # def map_extent(self):
+    #     """Map sourceResource.extent
 
-        In feed XML:
-            //record/metadata/mods/physicalDescription/extent
-        In body of mapper request JSON:
-            .physicalDescription.extent, as in:
-            "physicalDescription": {
-                "extent": "3 files",
-                "xmlns:default": "http://www.loc.gov/mods/v3"
-            }
-        """
-        phys_desc = self.provider_data.get('physicalDescription')
-        if phys_desc and 'extent' in phys_desc:
-            self.update_source_resource({'extent': phys_desc['extent']})
+    #     In feed XML:
+    #         //record/metadata/mods/physicalDescription/extent
+    #     In body of mapper request JSON:
+    #         .physicalDescription.extent, as in:
+    #         "physicalDescription": {
+    #             "extent": "3 files",
+    #             "xmlns:default": "http://www.loc.gov/mods/v3"
+    #         }
+    #     """
+    #     prop = self.root_key + 'physicalDescription'
+    #     phys_desc = None
+    #     if exists(self.provider_data, prop):
+    #         phys_desc = iterify(getprop(self.provider_data, prop))
+    #     if phys_desc:
+    #         if 'extent' in phys_desc:
+    #            self.update_source_resource({'extent': phys_desc['extent']})
 
     def map_format(self):
         """Map sourceResource.format
@@ -199,8 +216,16 @@ class MissouriMapper(OAIMODSMapper):
                         yield textnode(pd['note'])
                     except NoTextNodeError:
                         pass
-        genre = iterify(self.provider_data.get('genre', []))
-        phys_desc = iterify(self.provider_data.get('physicalDescription', []))
+        prop = self.root_key + 'genre'
+        if exists(self.provider_data, prop):
+            genre = iterify(getprop(self.provider_data, prop))
+        else:
+            genre = None
+        pd = self.root_key + 'physicalDescription'
+        if exists(self.provider_data, pd):
+            phys_desc = iterify(getprop(self.provider_data, pd))
+        else:
+            phys_desc = None
         format = None
         if genre:
             format = [f for f in _genre_strings(genre)]
@@ -245,10 +270,14 @@ class MissouriMapper(OAIMODSMapper):
                     yield t
                 except NoTextNodeError:
                     pass
-        identifier_el = iterify(self.provider_data.get('identifier', []))
-        identifiers = [i for i in idstrings(identifier_el)]
-        if identifiers:
-            self.update_source_resource({'identifier': identifiers})
+        prop = self.root_key + 'identifier'
+        identifier_el = None
+        if exists(self.provider_data, prop):
+            identifier_el = iterify(getprop(self.provider_data, prop))
+        if identifier_el:
+            identifiers = [i for i in idstrings(identifier_el)]
+            if identifiers:
+                self.update_source_resource({'identifier': identifiers})
 
     def map_language(self):
         """Map sourceResource.language
@@ -275,12 +304,15 @@ class MissouriMapper(OAIMODSMapper):
             """Extract language terms from different elements"""
             for el in els:
                 try:
-                    s = el.get('#text') or el['languageTerm'].get('#text')
+                    s = el.get('languageTerm')
                     for t in s.split(';'):
                         yield t.strip()
                 except KeyError:
                     pass
-        language = iterify(self.provider_data.get('language', []))
+        prop = self.root_key + 'language'
+        language = None
+        if exists(self.provider_data, prop):
+            language = iterify(getprop(self.provider_data, prop))
         if language:
             languages = [t for t in lang_terms(language)]
             if languages:
@@ -312,7 +344,10 @@ class MissouriMapper(OAIMODSMapper):
                         yield rv
                 except (KeyError, NoTextNodeError):
                     pass
-        origin_info = iterify(self.provider_data.get('originInfo', []))
+        prop = self.root_key + 'originInfo'
+        origin_info = None
+        if exists(self.provider_data, prop):
+            origin_info = iterify(getprop(self.provider_data, prop))
         if origin_info:
             publishers = [p for p in pub_strings(origin_info)]
             if publishers:
@@ -356,7 +391,10 @@ class MissouriMapper(OAIMODSMapper):
                 except (KeyError, TypeError):
                     # Not required, so pass
                     pass
-        related_item = iterify(self.provider_data.get('relatedItem', []))
+        prop = self.root_key + 'relatedItem'
+        related_item = None
+        if exists(self.provider_data, prop):
+            related_item = iterify(getprop(self.provider_data, prop))
         if related_item:
             relations = [r for r in relation_strings(related_item)]
             if relations:
@@ -371,7 +409,10 @@ class MissouriMapper(OAIMODSMapper):
             .accessCondition
         """
         # missing from MHM and FRBSTL collections
-        acc_cond = iterify(self.provider_data.get('accessCondition', []))
+        prop = self.root_key + 'accessCondition'
+        acc_cond = None
+        if exists(self.provider_data, prop):
+            acc_cond = iterify(getprop(self.provider_data, prop))
         if acc_cond:
             try:
                 rights = [textnode(r) for r in acc_cond]
@@ -386,7 +427,10 @@ class MissouriMapper(OAIMODSMapper):
 
         See map_format() and _genre_strings()
         """
-        genre = iterify(self.provider_data.get('genre', []))
+        prop = self.root_key + 'genre'
+        genre = None
+        if exists(self.provider_data, prop):
+            genre = iterify(getprop(self.provider_data, prop))
         if genre:
             spec_types = [g for g in _genre_strings(genre)
                           if g.lower() in valid_spec_types]
@@ -435,7 +479,10 @@ class MissouriMapper(OAIMODSMapper):
                             yield subj.strip()
                 except NoTextNodeError:
                     pass
-        subject = iterify(self.provider_data.get('subject', []))
+        prop = self.root_key + 'subject'
+        subject = None
+        if exists(self.provider_data, prop):
+            subject = iterify(getprop(self.provider_data, prop))
         if subject:
             subjects = [s for s in subject_strings(subject)]
             if subjects:
@@ -468,7 +515,10 @@ class MissouriMapper(OAIMODSMapper):
                 return textnode(el.get('coordinates'))
             except:
                 return ''
-        subjects = iterify(self.provider_data.get('subject', []))
+        prop = self.root_key + 'subject'
+        subjects = None
+        if exists(self.provider_data, prop):
+            subjects = iterify(getprop(self.provider_data, prop))
         if subjects:
             ok_spatial = set(['city', 'county', 'state', 'country',
                               'coordinates'])
@@ -506,7 +556,10 @@ class MissouriMapper(OAIMODSMapper):
                     yield textnode(el.get('temporal'))
                 except:
                     pass
-        subjects = iterify(self.provider_data.get('subject', []))
+        prop = self.root_key + 'subject'
+        subjects = []
+        if exists(self.provider_data, prop):
+            subjects = iterify(getprop(self.provider_data, prop))
         temporal = [t for t in temporal_strings(subjects)]
         if temporal:
             self.update_source_resource({'temporal': temporal})
@@ -528,7 +581,10 @@ class MissouriMapper(OAIMODSMapper):
                 except (TypeError, KeyError):
                     # Not a dict, or no text node
                     pass
-        location = iterify(self.provider_data.get('location', []))
+        prop = self.root_key + 'location'
+        location = None
+        if exists(self.provider_data, prop):
+            location = iterify(getprop(self.provider_data, prop))
         if location:
             url_strings = (first_url_string(loc) for loc in location)
             defined_url_strings = [s for s in url_strings if s]
@@ -588,14 +644,15 @@ class MissouriMapper(OAIMODSMapper):
                     except NoTextNodeError:
                         pass
             return None
+        phys_desc = None
         try:
             if not 'hasView' in self.mapped_data:
                 self.mapped_data['hasView'] = {}
             self.mapped_data['hasView'].update({
                 '@id': self.location_url('access', 'object in context')
                 })
-            phys_desc = iterify(self.provider_data.get('physicalDescription',
-                                                       []))
+            if exists(self.provider_data, self.root_key + 'physicalDescription'):
+                phys_desc = iterify(getprop(self.provider_data, self.root_key + 'physicalDescription'))
             if phys_desc:
                 media_type = first_media_type(phys_desc)
                 if media_type:
@@ -624,7 +681,10 @@ class MissouriMapper(OAIMODSMapper):
                     yield textnode(el)
                 except NoTextNodeError:
                     pass
-        tor = iterify(self.provider_data.get('typeOfResource', []))
+        prop = self.root_key + 'typeOfResource'
+        tor = None
+        if exists(self.provider_data, prop):
+            tor = iterify(getprop(self.provider_data, prop))
         if tor:
             types = [t for t in type_strings(tor)]
             self.update_source_resource({'type': types})
@@ -643,7 +703,10 @@ class MissouriMapper(OAIMODSMapper):
             }
         ... where titleInfo could also be a dict with key 'title'
         """
-        ti = iterify(self.provider_data.get('titleInfo', []))
+        prop = self.root_key + 'titleInfo'
+        ti = None
+        if exists(self.provider_data, prop):
+            ti = iterify(getprop(self.provider_data, prop))
         if ti:
             self.update_source_resource({'title': [textnode(t['title'])
                                                    for t in ti]})
