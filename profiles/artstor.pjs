@@ -53,7 +53,10 @@
         "DPLAWalters": {"frm": "2015-01-04"},
         "DPLAYaleArt": {"frm": "2015-01-04"},
         "SSDPLAColby": {"frm": "2015-01-04"},
-        "SSDPLACuny": {"frm": "2015-01-04"}
+        "SSDPLACuny": {"frm": "2015-01-04"},
+        "SSDPLALawrence": {"frm": "2015-01-04"},
+        "SSDPLASaintMary": {"frm": "2015-01-04"},
+        "SSDPLAPuget": {"frm": "2015-01-04"}
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor",
