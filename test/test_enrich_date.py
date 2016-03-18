@@ -696,21 +696,21 @@ def test_full_date_range():
         assert_same_jsons(expected, content)
 
 def test_delim_with_months():
-    """Should handle date with delim and seasons"""
+    """Should handle date with delim in months"""
     INPUT = ["2004 July/August", "July/August 2004",
              "2004 July-August", "July-August 2004"]
 
     url = server() + "enrich_earliest_date?prop=date"
     for i in range(len(INPUT)):
         input = {"date": INPUT[i]}
-        expected = {"date": {"begin": "2004-07", "end": "2004-08", "displayDate": INPUT[i]}}
+        expected = {"date": {"begin": "2004-07-01", "end": "2004-08-01", "displayDate": INPUT[i]}}
 
         resp, content = H.request(url, "POST", body=json.dumps(input))
         assert str(resp.status).startswith("2")
         assert_same_jsons(expected, content)
    
 def test_delim_with_seasons():
-    """Should handle date with delim seasons"""
+    """Should handle date with delim in seasons"""
     INPUT = ["2004 Fall/Winter", "Fall/Winter 2004",
              "2004 Fall-Winter", "Fall-Winter 2004"]
 
