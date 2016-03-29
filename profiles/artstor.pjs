@@ -1,5 +1,5 @@
 {
-    "name": "artstor", 
+    "name": "artstor",
     "type": "oai_verbs",
     "endpoint_url": "http://oai.artstor.org/oaicatmuseum/OAIHandler",
     "sets": [
@@ -25,7 +25,10 @@
         "DPLAWalters",
         "DPLAYaleArt",
         "SSDPLAColby",
-        "SSDPLACuny"
+        "SSDPLACuny",
+        "SSDPLALawrence",
+        "SSDPLASaintMary",
+        "SSDPLAPuget"
     ],
     "set_params": {
         "SSDPLABrynMawr": {"frm": "2015-01-04"},
@@ -50,16 +53,19 @@
         "DPLAWalters": {"frm": "2015-01-04"},
         "DPLAYaleArt": {"frm": "2015-01-04"},
         "SSDPLAColby": {"frm": "2015-01-04"},
-        "SSDPLACuny": {"frm": "2015-01-04"}
+        "SSDPLACuny": {"frm": "2015-01-04"},
+        "SSDPLALawrence": {"frm": "2015-01-04"},
+        "SSDPLASaintMary": {"frm": "2015-01-04"},
+        "SSDPLAPuget": {"frm": "2015-01-04"}
     },
     "contributor": {
-        "@id": "http://dp.la/api/contributor/artstor", 
+        "@id": "http://dp.la/api/contributor/artstor",
         "name": "ARTstor"
-    }, 
+    },
     "enrichments_coll": [
         "/set_context",
         "/validate_mapv3"
-    ], 
+    ],
     "enrichments_item": [
         "/select-id?prop=id",
         "/dpla_mapper?mapper_type=dublin_core",
@@ -67,7 +73,7 @@
         "/set_context",
         "/unset_prop?prop=sourceResource%2Fspatial",
         "/decode_html?prop=sourceResource%2Fsubject",
-        "/artstor_select_isshownat", 
+        "/artstor_select_isshownat",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
         "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
         "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
@@ -76,7 +82,7 @@
         "/move_date_values?prop=sourceResource%2Fsubject",
         "/capitalize_value",
         "/enrich_earliest_date",
-        "/enrich-subject", 
+        "/enrich-subject",
         "/enrich_date",
         "/enrich-type",
         "/enrich-format",
@@ -94,9 +100,9 @@
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
     ],
-    "thresholds": {                                                             
-        "added": 5000,                                                          
-        "changed": 1000,                                                        
-        "deleted": 1000                                                         
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
     }
 }
