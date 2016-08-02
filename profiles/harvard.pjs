@@ -10,8 +10,11 @@
         "scarlet",
         "manuscripts",
         "eda",
-        "cna"
-    ], 
+        "cna",
+        "ihp",
+        "ward",
+        "rubbings"
+    ],
     "contributor": {
         "@id": "http://dp.la/api/contributor/harvard",
         "name": "Harvard Library"
