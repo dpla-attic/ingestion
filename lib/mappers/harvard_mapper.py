@@ -10,8 +10,7 @@ class HarvardMapper(OAIMODSMapper):
             "crimes": "Harvard Law School Library, Harvard University",
             "scarlet": "Harvard Law School Library, Harvard University",
             "manuscripts": "Houghton Library, Harvard University",
-            "eda": "Emily Dickinson Archive",
-            "cna": "Harvard University Archives"
+            "eda": "Emily Dickinson Archive"
         }
         super(HarvardMapper, self).__init__(provider_data)
 
@@ -49,7 +48,7 @@ class HarvardMapper(OAIMODSMapper):
 
             if date and date != "unknown":
                 date_and_publisher["date"] = date
-            
+
             if "publisher" in origin_info:
                 publisher = []
                 pub = origin_info["publisher"]
@@ -123,15 +122,50 @@ class HarvardMapper(OAIMODSMapper):
         set_spec = getprop(self.provider_data, "header/setSpec", True)
         location = getprop(self.provider_data, self.root_key + "location",
                            True)
-        if set_spec in ["dag", "cna"] and location is not None:
-            for loc in iterify(location):
-                phys = getprop(loc, "physicalLocation", True)
-                if phys and is_repository(phys):
-                    dp = getprop(phys, "#text").split(";")[0] \
-                         + ", Harvard University"
+
+        rel_repo = getprop(self.provider_data, self.root_key+"relatedItem",
+                           True)
+        # Conditional mapping for dataProvider
+        if set_spec in ["ihp", "ward", "rubbings", "dag", "cna"]:
+            for repo in iterify(rel_repo):
+                loc = None
+                phyloc = None
+                # First look for 'host':
+                # <mods:relatedItem type=”host”>
+                #   <location>
+                #       <physicalLocation type=”repository”>
+                if repo.get("type") == "host":                   
+                    loc = getprop(repo, "location", True)
+                    if loc:
+                        phyloc = getprop(loc, "physicalLocation", True)
+                    if phyloc and is_repository(phyloc):
+                        dp = getprop(phyloc, "#text").split(";")[0]
+
+                # if that is not present then use 'constituent'
+                # <mods:relatedItem type=”constituent”>
+                #   <location>
+                #       <physicalLocation type=”repository”>
+                elif repo.get("type") == "cconstituent":
+                    loc = getprop(repo, "location", True)
+                    if loc:
+                        phyloc = getprop(loc, "physicalLocation", True)
+                    if phyloc and is_repository(phyloc):
+                        dp = getprop(phyloc, "#text").split(";")[0]
+
+            # if neither of the above are present use 
+            #   <mods:location><physicalLocation type=”repository”>
+            if dp is None and location is not None:
+                for loc in iterify(location):
+                    phyloc = getprop(loc, "physicalLocation", True)
+                    if phyloc and is_repository(phyloc):
+                        dp = getprop(phyloc, "#text").split(";")[0] 
+                        
 
         if set_spec in self.set_to_data_provider:
             dp = self.set_to_data_provider[set_spec]
+
+        if dp is not None and not dp.endswith(", Harvard University"):
+           dp = dp + ", Harvard University"
 
         if dp is not None:
             self.mapped_data.update({"dataProvider": dp})
@@ -139,10 +173,7 @@ class HarvardMapper(OAIMODSMapper):
     def map_rights(self):
         set_spec = getprop(self.provider_data, "header/setSpec", True)
         if set_spec == 'eda':
-            rights = 'CC BY-NC-ND 3.0 http://www.edickenson.org/terms'
-        elif set_spec == 'cna':
-            rights = getprop(self.provider_data,
-                             self.root_key + 'accessCondition', True)
+            rights = 'CC BY-NC-ND 3.0 http://www.edickinson.org/terms'
         else:
             rights = 'Held in the collections of Harvard University.'
         self.update_source_resource({'rights': rights})
