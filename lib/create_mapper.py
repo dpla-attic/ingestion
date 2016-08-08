@@ -92,6 +92,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.missouri_mapper import MissouriMapper
         return MissouriMapper(data)
 
+    def _create_in_mapper(data):
+        from dplaingestion.mappers.in_mapper import INMapper
+        return INMapper(data)
+
     mappers = {
         'ia':           lambda d: _create_ia_mapper(d),
         'bpl':          lambda d: _create_bpl_mapper(d),
@@ -114,7 +118,8 @@ def create_mapper(mapper_type, data):
         'missouri':     lambda d: _create_missouri_mapper(d),
         'mapv3_json':   lambda d: _create_mapv3_json_mapper(d),
         'mdl_json':     lambda d: _create_mdl_json_mapper(d),
-        'cdl_json':     lambda d: _create_cdl_json_mapper(d)
+        'cdl_json':     lambda d: _create_cdl_json_mapper(d),
+        'in':           lambda d: _create_in_mapper(d)
     }
 
     return mappers.get(mapper_type)(data)
