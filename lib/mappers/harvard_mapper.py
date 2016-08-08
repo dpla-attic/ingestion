@@ -164,7 +164,7 @@ class HarvardMapper(OAIMODSMapper):
         if set_spec in self.set_to_data_provider:
             dp = self.set_to_data_provider[set_spec]
 
-        if dp is not None and not dp.endswith(", Harvard University")
+        if dp is not None and not dp.endswith(", Harvard University"):
            dp = dp + ", Harvard University"
 
         if dp is not None:
