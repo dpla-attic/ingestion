@@ -79,7 +79,9 @@ def enrichtype(body, ctype,
         if send_rejects_to_format and type_strings:
             rej = itemtype.rejects([(type_strings, type_for_type_keyword)])
             if rej:
-                sr_format.extend(rej)
+                if (not isinstance(sr_format, list)):
+                    sr_format = [sr_format]
+                sr_format.extend(rej) 
                 data['sourceResource']['format'] = sr_format
 
     return json.dumps(data)
