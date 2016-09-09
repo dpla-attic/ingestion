@@ -17,7 +17,7 @@ class INMapper(QDCMapper):
 
     def map_date(self):
       if exists(self.provider_data, "created"):
-        self.mapped_data.update({
+        self.update_source_resource({
           "date": getprop(self.provider_data, "created")
         })
 
