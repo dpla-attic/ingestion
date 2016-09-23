@@ -2,7 +2,7 @@
     "name": "indiana", 
     "type": "oai_verbs",
     "endpoint_url": "http://dpla.library.in.gov/OAIHandler",
-    "metadata_prefix": "oai_qdc",
+    "metadata_prefix": "oai_qdc_imdpla",
     "contributor": {
         "@id": "http://dp.la/api/contributor/indiana",
         "name": "Indiana Memory"
