@@ -93,6 +93,7 @@ def shred(body, ctype, action="shred", prop=None, delim=';', keepdup=None):
             v = getprop(data, p)
             if action == "shred":
                 if isinstance(v, list):
+                    v = filter(None, v)
                     try:
                         v = delim.join(v)
                         v = v.replace("%s%s" % (delim, delim), delim)

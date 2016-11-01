@@ -71,7 +71,9 @@ metadata_field_map = {
         "dcterms:medium": lambda (v): {"medium": v},
         "dcterms:provenance": lambda (v): {"provenance": v},
         "dcterms:spatial": lambda (v): {"spatial": v},
-        "dcterms:temporal": lambda (v): {"temporal": v}
+        "dcterms:temporal": lambda (v): {"temporal": v}, 
+        "edm:isShownAt": lambda (v): {"isShownAt": v},
+        "edm:preview": lambda (v): {"preview": v}
     }
 }
 
