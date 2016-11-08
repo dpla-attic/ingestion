@@ -1,0 +1,41 @@
+{
+    "name": "mi", 
+    "type": "oai_verbs",
+    "metadata_prefix": "MODS",
+    "endpoint_url": "http://oai.michiganservicehub.org/OAIHandler",
+    "sets": [], 
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/michigan",
+        "name": "Michigan Service Hub"
+    }, 
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ], 
+    "enrichments_item": [
+        "/select-id?prop=header%2Fidentifier",
+        "/dpla_mapper?mapper_type=mi",
+        "/strip_html",
+        "/set_context",
+        "/shred?prop=sourceResource%2Fsubject",
+        "/shred?prop=sourceResource%2Fsubject&delim=--",
+        "/shred?prop=sourceResource%2Ftitle&delim=--",
+        "/shred?prop=sourceResource%2Ftitle",
+        "/dedup_value?prop=sourceResource%2Fsubject",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
