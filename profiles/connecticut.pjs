@@ -1,0 +1,24 @@
+{
+    "name": "connecticut",
+    "type": "oai_verbs",
+    "endpoint_url": "http://harvest.ctdigitalarchive.org:8080/repox/OAIHandler",
+    "metadata_prefix": "rdf",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/connecticut",
+        "name": "Connecticut Digital Archive"
+    },
+    "sets": ["CTDA"],
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=rdf%3ADescription%2Fdc%3Aidentifier",
+        "/dpla_mapper?mapper_type=ct"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
