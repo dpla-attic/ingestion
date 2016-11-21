@@ -107,4 +107,4 @@ class CTMapper(DublinCoreMapper):
     def map_has_view(self):
         source = getprop(self.provider_data, "rdf:Description/dc:source")
         if source and is_absolute(source):
-            self.mapped_data.update({"preview": source})
+            self.mapped_data.update({"object": source})
