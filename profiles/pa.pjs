@@ -1,0 +1,24 @@
+{
+    "name": "pa",
+    "type": "oai_verbs",
+    "endpoint_url": "http://aggregator.padigital.org/oai",
+    "metadata_prefix": "oai_dc",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/pa",
+        "name": "PA Digital"
+    },
+    "sets": "NotSupported",
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id",
+        "/dpla_mapper?mapper_type=pa"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
