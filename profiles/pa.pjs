@@ -14,7 +14,21 @@
     ],
     "enrichments_item": [
         "/select-id",
-        "/dpla_mapper?mapper_type=pa"
+        "/dpla_mapper?mapper_type=pa",
+        "/strip_html",
+        "/set_context",
+        "/shred?prop=sourceResource%2Fsubject",
+        "/shred?prop=sourceResource%2Ftitle",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language",
+        "/validate_mapv3"
     ],
     "thresholds": {
         "added": 5000,
