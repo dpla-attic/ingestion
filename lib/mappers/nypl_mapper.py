@@ -300,6 +300,12 @@ class NYPLMapper(MODSMapper):
 
         self.update_source_resource(ret_dict)
 
+    def map_edm_rights(self):
+        prop = "rightsStatementURI"
+
+        if exists(self.provider_data, prop):
+            self.mapped_data.update({"rights": getprop(self.provider_data, prop)})
+
     def map_multiple_fields(self):
         self.map_contributor_and_creator()
         self.map_date_publisher_and_spatial()
