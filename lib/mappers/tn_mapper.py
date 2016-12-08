@@ -147,7 +147,6 @@ class TNMapper(MODSMapper):
             self.mapped_data.update({"dataProvider": data_provider})
 
     def map_is_shown_at(self):
-        # <location><url usage="primary" access="object in context">
         path = "/metadata/mods/location/url"
         if exists(self.provider_data, path):
             for location_url in iterify(getprop(self.provider_data, path)):
@@ -171,6 +170,14 @@ class TNMapper(MODSMapper):
 
     def map_provider(self, prop="provider"):
         self.mapped_data.update({"provider": "Tennessee Digital Library"})
+
+    def map_spatial(self):
+        path = "/metadata/mods/subject"
+        if exists(self.provider_data, path):
+            for subject in getprop(self.provider_data, path):
+                if "cartographics" in subject and "coordinates" in subject["cartographics"]:
+                    self.update_source_resource({"spatial": subject["cartographics"]["coordinates"]})
+
 
     def log(self, label, obj):
         logger.error(label + ": " + str(obj))
