@@ -140,8 +140,13 @@ class DigitalNCMapper(OAIMODSMapper):
         prop = self.root_key + "accessCondition"
 
         if exists(self.provider_data, prop):
-            self.update_source_resource({"rights":
-                                         getprop(self.provider_data, prop)})
+            for s in iterify(getprop(self.provider_data, prop)):
+                try:
+                    if s.get("type") == "local rights statement":
+                        self.update_source_resource({"rights": s.get("#text")})
+                except:
+                    logger.error("Error getting rights statement from record %s" %
+                                 self.provider_data["_id"])
 
     def map_type(self):
         prop = self.root_key + "genre"
