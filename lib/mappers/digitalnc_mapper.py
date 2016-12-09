@@ -149,7 +149,6 @@ class DigitalNCMapper(OAIMODSMapper):
                 except:
                     logger.error("Error getting rights statement from record %s" %
                                  self.provider_data["_id"])
-            logger.error("RIGHTS: %s" % rights)
 
             if rights:
                 self.update_source_resource({"rights": rights})
