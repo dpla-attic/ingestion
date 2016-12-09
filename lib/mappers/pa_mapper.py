@@ -66,7 +66,7 @@ class PAMapper(DublinCoreMapper):
             identifiers = iterify(getprop(self.provider_data, prop))
             if len(identifiers) > 1:
                 setprop(self.mapped_data, "isShownAt", identifiers[1])
-                setprop(self.mapped_data, "preview", identifiers[-1])
+                setprop(self.mapped_data, "object", identifiers[-1])
 
     def map_intermediate_provider(self):
         prop = "source"
