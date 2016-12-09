@@ -203,14 +203,23 @@ class TNMapper(MODSMapper):
         self.mapped_data.update({"provider": "Tennessee Digital Library"})
 
     def map_spatial(self):
+        # "<subject><geographic authority="""" valueURI="""">[text term]</geographic>"
         path = "/metadata/mods/subject"
+        spatial = {}
+
         if exists(self.provider_data, path):
             for subject in getprop(self.provider_data, path):
-                if "cartographics" in subject \
-                        and "coordinates" in subject["cartographics"]:
-                    self.update_source_resource(
-                        {"spatial": subject["cartographics"]["coordinates"]}
-                    )
+                # self.log("SUBJ GEO", subject)
+
+                if "cartographics" in subject and "coordinates" in subject["cartographics"]:
+                    spatial["coordinates"] = subject["cartographics"]["coordinates"]
+                    # self.update_source_resource({"spatial": subject["cartographics"]["coordinates"]})
+                if "geographic" in subject:
+                    if "authority" in subject["geographic"] and "valueURI" in subject["geographic"]:
+                        spatial["name"] = subject["geographic"].get("#text")
+
+        if spatial:
+            self.update_source_resource( {"spatial": spatial})
 
     def map_intermediate_provider(self):
         path = "/metadata/mods/note"
