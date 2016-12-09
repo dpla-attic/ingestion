@@ -18,15 +18,21 @@ class TNMapper(MODSMapper):
         if exists(self.provider_data, prop):
             for titleInfoDict in iterify(getprop(self.provider_data, prop)):
                 titleInfo = titleInfoDict['title']
-                if isinstance(titleInfo, dict) and titleInfo['type'] == "alternative" and "#text" in titleInfo:
-                    self.update_source_resource({"alternative": titleInfo["#text"]})
+                if isinstance(titleInfo, dict) \
+                        and titleInfo['type'] == "alternative" \
+                        and "#text" in titleInfo:
+                    self.update_source_resource(
+                        {"alternative": titleInfo["#text"]}
+                    )
 
     def map_is_part_of(self):
         path = "/metadata/mods/relatedItem"
         if exists(self.provider_data, path):
             for relatedItem in getprop(self.provider_data, path):
-                if "type" in relatedItem and "displayLabel" in relatedItem \
-                        and relatedItem["type"] == "host" and relatedItem["displayLabel"] == "Project":
+                if "type" in relatedItem \
+                        and "displayLabel" in relatedItem \
+                        and relatedItem["type"] == "host" \
+                        and relatedItem["displayLabel"] == "Project":
                     title = relatedItem["titleInfo"]["title"]
                     self.update_source_resource({"isPartOf": title})
                     self.mapped_data.update({"collection": {"title": title}})
@@ -40,7 +46,8 @@ class TNMapper(MODSMapper):
                 if "role" in name and "namePart" in name:
                     for role in iterify(name["role"]):
                         role_prop = "roleTerm/#text"
-                        if exists(role, role_prop) and getprop(role, role_prop) == type:
+                        if exists(role, role_prop) \
+                                and getprop(role, role_prop) == type:
                             results.append(name["namePart"])
 
         return results
@@ -85,8 +92,12 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/genre"
         if exists(self.provider_data, path):
             for genre in iterify(getprop(self.provider_data, path)):
-                if "authority" in genre and "valueURI" in genre and genre["authority"] == "aat":
-                    self.update_source_resource({"hasType": genre["valueURI"]})
+                if "authority" in genre \
+                        and "valueURI" in genre \
+                        and genre["authority"] == "aat":
+                    self.update_source_resource(
+                        {"hasType": genre["valueURI"]}
+                    )
 
     def map_identifier(self):
         path = "/metadata/mods/identifier"
@@ -98,26 +109,36 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/language/languageTerm"
         if exists(self.provider_data, path):
             language_term = getprop(self.provider_data, path)
-            if "type" in language_term and "authority" in language_term \
-                    and language_term["type"] == "code" and language_term["authority"] == "iso639-2b":
-                self.update_source_resource({"language": language_term["#text"]})
+            if "type" in language_term \
+                    and "authority" in language_term \
+                    and language_term["type"] == "code" \
+                    and language_term["authority"] == "iso639-2b":
+                self.update_source_resource(
+                    {"language": language_term["#text"]}
+                )
 
     def map_publisher(self):
         path = "/metadata/mods/originInfo/publisher"
         if exists(self.provider_data, path):
-            self.update_source_resource({"publisher": getprop(self.provider_data, path)})
+            self.update_source_resource(
+                {"publisher": getprop(self.provider_data, path)}
+            )
 
     def map_rights(self):
         path = "/metadata/mods/accessCondition"
         if exists(self.provider_data, path):
-            self.update_source_resource({"rights": getprop(self.provider_data, path)})
+            self.update_source_resource(
+                {"rights": getprop(self.provider_data, path)}
+            )
 
     def map_subject(self):
         path = "/metadata/mods/subject"
         if exists(self.provider_data, path):
             for subject in getprop(self.provider_data, path):
                 if isinstance(subject, dict) and "topic" in subject:
-                    self.update_source_resource({"subject": subject["topic"]})
+                    self.update_source_resource(
+                        {"subject": subject["topic"]}
+                    )
 
     def map_temporal(self):
         path = "/metadata/mods/subject"
@@ -125,14 +146,20 @@ class TNMapper(MODSMapper):
             for subject in getprop(self.provider_data, path):
                 if isinstance(subject, dict) and "temporal" in subject:
                     if isinstance(subject["temporal"], str):
-                        self.update_source_resource({"temporal": subject["temporal"]})
+                        self.update_source_resource(
+                            {"temporal": subject["temporal"]}
+                        )
                     elif isinstance(subject["temporal"], dict):
-                        self.update_source_resource({"temporal": subject["temporal"]["#text"]})
+                        self.update_source_resource(
+                            {"temporal": subject["temporal"]["#text"]}
+                        )
 
     def map_title(self):
         path = "/metadata/mods/titleInfo/title"
         if exists(self.provider_data, path):
-            self.update_source_resource({"title": getprop(self.provider_data, path)})
+            self.update_source_resource(
+                {"title": getprop(self.provider_data, path)}
+            )
 
     def map_type(self):
         path = "/metadata/mods/physicalDescription/form"
@@ -150,9 +177,13 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/location/url"
         if exists(self.provider_data, path):
             for location_url in iterify(getprop(self.provider_data, path)):
-                if "usage" in location_url and "access" in location_url \
-                        and location_url["usage"] == "primary" and location_url["access"] == "object in context":
-                    self.mapped_data.update({"isShownAt": location_url["#text"]})
+                if "usage" in location_url \
+                        and "access" in location_url \
+                        and location_url["usage"] == "primary" \
+                        and location_url["access"] == "object in context":
+                    self.mapped_data.update(
+                        {"isShownAt": location_url["#text"]}
+                    )
 
     def map_object(self):
         path = "/metadata/mods/location/url"
@@ -175,9 +206,25 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/subject"
         if exists(self.provider_data, path):
             for subject in getprop(self.provider_data, path):
-                if "cartographics" in subject and "coordinates" in subject["cartographics"]:
-                    self.update_source_resource({"spatial": subject["cartographics"]["coordinates"]})
+                if "cartographics" in subject \
+                        and "coordinates" in subject["cartographics"]:
+                    self.update_source_resource(
+                        {"spatial": subject["cartographics"]["coordinates"]}
+                    )
 
+    def map_intermediate_provider(self):
+        path = "/metadata/mods/note"
+        intermediate_providers = []
+        if exists(self.provider_data, path):
+            for note in iterify(getprop(self.provider_data, path)):
+                if "displayLabel" in note \
+                        and "#text" in note \
+                        and note["displayLabel"] == "Intermediate Provider":
+                    intermediate_providers.append(note["#text"])
+        if len(intermediate_providers) > 0:
+            self.mapped_data.update(
+                {"intermediateProvider": intermediate_providers}
+            )
 
     def log(self, label, obj):
         logger.error(label + ": " + str(obj))
