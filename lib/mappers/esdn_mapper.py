@@ -3,6 +3,7 @@ from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 
+
 class EsdnMapper(OAIMODSMapper):
     def __init__(self, provider_data):
         super(EsdnMapper, self).__init__(provider_data)
