@@ -1,0 +1,46 @@
+{
+    "name": "il",
+    "type": "oai_verbs",
+    "metadata_prefix": "qdc",
+    "endpoint_url": "https://dpla-repox.carli.illinois.edu/repox/OAIHandler",
+    "sets": "",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/il",
+        "name": "Illinois Digital Heritage Hub"
+    },
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id",
+        "/dpla_mapper?mapper_type=il",
+        "/strip_html",
+        "/set_context",
+        "/cleanup_value",
+        "/set_spec_type?prop=sourceResource%2Fformat",
+        "/cleanup_value?prop=dataProvider",
+        "/dedup_value?prop=dataProvider",
+        "/shred?prop=sourceResource%2Fsubject",
+        "/move_date_values?prop=sourceResource%2Fsubject",
+        "/move_date_values?prop=sourceResource%2Fspatial",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject",
+        "/enrich-type",
+        "/shred?prop=sourceResource%2Fformat",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Illinois",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}

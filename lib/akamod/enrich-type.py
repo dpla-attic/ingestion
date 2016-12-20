@@ -54,10 +54,12 @@ def enrichtype(body, ctype,
         for t in sr_type if (type(sr_type) == list) else [sr_type]:
             if type(t) == dict:
                 t = t.get('#text', '')
-            type_strings.append(t.lower())
+            if t is not None: 
+                type_strings.append(t.lower())
     if sr_format:
         for f in sr_format if (type(sr_format) == list) else [sr_format]:
-            format_strings.append(f.lower())
+            if f is not None: 
+                format_strings.append(f.lower())
     try:
         data['sourceResource']['type'] = \
                 itemtype.type_for_strings_and_mappings([
