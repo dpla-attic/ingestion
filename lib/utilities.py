@@ -17,7 +17,8 @@ def iterify(iterable):
     except TypeError:
         iterable = [iterable]
 
-    return iterable
+    return filter(None, iterable)
+
 
 def remove_key_prefix(data, prefix):
     """Removes the prefix from keys in a dictionary"""
