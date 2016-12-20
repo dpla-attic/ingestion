@@ -1,0 +1,38 @@
+{
+    "name": "wisconsin",
+    "type": "oai_verbs",
+    "metadata_prefix": "dpla_dc",
+    "endpoint_url": "https://dpla.library.wisc.edu/provider",
+    "sets": [],
+    "contributor": {
+        "@id": "https://dp.la/api/contributor/wisconsin",
+        "name": "Recollection Wisconsin"
+    },
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id",
+        "/dpla_mapper?mapper_type=wisconsin",
+        "/strip_html",
+        "/set_context",
+        "/cleanup_value",
+        "/set_spec_type?prop=sourceResource%2Fformat",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-subject",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language",
+        "/validate_mapv3"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
