@@ -63,7 +63,9 @@ metadata_field_map = {
         "dc:title": lambda (v): {"title": v},
         "dc:type": lambda (v): {"type": v},
         "dcterms:alternative": lambda (v): {"alternative": v},
+        "dcterms:contributor": lambda (v): {"contributor": v},
         "dcterms:created": lambda (v): {"created": v},
+        "dcterms:creator": lambda (v): {"creator": v},
         "dcterms:extent": lambda (v): {"extent": v},
         "dcterms:hasFormat": lambda (v): {"hasFormat": v},
         "dcterms:isPartOf": lambda (v): {"isPartOf": v},
@@ -71,9 +73,16 @@ metadata_field_map = {
         "dcterms:medium": lambda (v): {"medium": v},
         "dcterms:provenance": lambda (v): {"provenance": v},
         "dcterms:spatial": lambda (v): {"spatial": v},
-        "dcterms:temporal": lambda (v): {"temporal": v}, 
+        "dcterms:temporal": lambda (v): {"temporal": v},
+        "edm:dataProvider": lambda (v): {"dataProvider": v},
         "edm:isShownAt": lambda (v): {"isShownAt": v},
-        "edm:preview": lambda (v): {"preview": v}
+        "edm:preview": lambda (v): {"preview": v},
+        "dct:accessRights": lambda (v): {"accessRights": v},
+        "dct:alternative": lambda (v): {"dctAlternative": v},
+        "dct:isPartOf": lambda (v): {"isPartOf": v},
+        "dct:rightsHolder": lambda (v): {"rightsHolder": v},
+        "dct:spatial": lambda (v): {"spatial": v},
+        "dct:temporal": lambda (v): {"temporal": v}
     }
 }
 
@@ -297,7 +306,7 @@ class oaiservice(object):
         mapping, but silently ignore fields that are not.
         """
         map_key = prefix.lower()
-        if map_key in ["oai_qdc", "oai_qdc_imdpla"]:
+        if map_key in ["oai_qdc", "oai_qdc_imdpla", "dpla_dc"]:
             map_key = "qdc"
         mfm = metadata_field_map.get(map_key)
         hfm = header_field_map.get(map_key)
