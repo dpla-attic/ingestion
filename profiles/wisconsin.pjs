@@ -27,7 +27,7 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
-        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=South%20Carolina",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Wisconsin",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/geocode",
         "/enrich_language",
