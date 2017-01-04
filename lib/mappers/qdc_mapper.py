@@ -31,10 +31,22 @@ class QDCMapper(Mapper):
                                      getprop(self.provider_data, "publisher")})
 
     # sourceResource mapping
+    #
+    # FIXME: these method names should be changed to use verbs.
+    # E.g. `assign_sr_prop_from_same' and `assign_sr_prop_from_many'
     def source_resource_prop_to_prop(self, prop):
         if exists(self.provider_data, prop):
             self.update_source_resource({prop: self.provider_data.get(prop)})
-            
+
+    def source_resource_prop_from_many(self, prop, sources):
+        """Assign one sourceResource property from multiple elements"""
+        values = []
+        for source_element in sources:
+            if exists(self.provider_data, source_element):
+                values.extend(getprop(self.provider_data, source_element))
+        if values:
+            self.update_source_resource({prop: values})
+
     def map_collection(self):
         self.source_resource_prop_to_prop("collection")
 

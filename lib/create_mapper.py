@@ -96,6 +96,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.in_mapper import INMapper
         return INMapper(data)
 
+    def _create_il_mapper(data):
+        from dplaingestion.mappers.il_mapper import ILMapper
+        return ILMapper(data)
+      
     def _create_mi_mapper(data):
         from dplaingestion.mappers.michigan_mapper import MichiganMapper
         return MichiganMapper(data)
@@ -129,6 +133,7 @@ def create_mapper(mapper_type, data):
         'mdl_json':     lambda d: _create_mdl_json_mapper(d),
         'cdl_json':     lambda d: _create_cdl_json_mapper(d),
         'in':           lambda d: _create_in_mapper(d),
+        'il':           lambda d: _create_il_mapper(d),
         'mi':           lambda d: _create_mi_mapper(d),
         'tn':           lambda d: _create_tn_mapper(d)
     }

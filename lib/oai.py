@@ -71,7 +71,9 @@ metadata_field_map = {
         "dcterms:medium": lambda (v): {"medium": v},
         "dcterms:provenance": lambda (v): {"provenance": v},
         "dcterms:spatial": lambda (v): {"spatial": v},
-        "dcterms:temporal": lambda (v): {"temporal": v}
+        "dcterms:temporal": lambda (v): {"temporal": v}, 
+        "edm:isShownAt": lambda (v): {"isShownAt": v},
+        "edm:preview": lambda (v): {"preview": v}
     }
 }
 
@@ -116,40 +118,68 @@ class oaiservice(object):
         return
     
     def list_sets(self):
-        #e.g. http://dspace.mit.edu/oai/request?verb=ListSets
-        qstr = urllib.urlencode({'verb' : 'ListSets'})
-        url = self.root + '?' + qstr
-        self.logger.debug('OAI request URL: {0}'.format(url))
-        start_t = time.time()
-        try:
-            content = urllib2.urlopen(url).read()
-        except urllib2.URLError as e:
-            raise OAIHTTPError("list_sets could not make request: %s" % \
-                               e.reason)
-        except urllib2.HTTPError as e:
-            raise OAIHTTPError("list_sets got status %d: %s" % \
-                               (e.code, e.reason))
-        retrieved_t = time.time()
-        self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
+
         sets = []
+        resumptionToken = ''
+        #e.g. http://dspace.mit.edu/oai/request?verb=ListSets
+        params = {'verb' : 'ListSets'}
 
-        paths = [
-            u'string(o:setDescription/oai_dc:dc/dc:description)',
-            u'string(o:setDescription/o:oclcdc/dc:description)',
-            u'string(o:setDescription/dc:description)',
-            u'string(o:setDescription)'
-        ]
-        def receive_nodes(n):
-            setSpec = n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)
-            setName = n.xml_select(u'string(o:setName)', prefixes=PREFIXES)
-            #TODO better solution is to traverse setDescription amara tree
-            for p in paths:
-                setDescription = n.xml_select(p, prefixes=PREFIXES)
-                if setDescription:
-                    break
-            sets.append(dict([('setSpec', setSpec), ('setName', setName), ('setDescription', setDescription)]))
+        while True:
 
-        pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
+            if resumptionToken:
+                params['resumptionToken'] = resumptionToken
+
+            qstr = urllib.urlencode(params)
+
+            url = self.root + '?' + qstr
+            self.logger.debug('OAI request URL: {0}'.format(url))
+            start_t = time.time()
+            try:
+                content = urllib2.urlopen(url).read()
+            except urllib2.URLError as e:
+                raise OAIHTTPError("list_sets could not make request: %s" % \
+                                   e.reason)
+            except urllib2.HTTPError as e:
+                raise OAIHTTPError("list_sets got status %d: %s" % \
+                                   (e.code, e.reason))
+            retrieved_t = time.time()
+            self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
+
+            paths = [
+                u'string(o:setDescription/oai_dc:dc/dc:description)',
+                u'string(o:setDescription/o:oclcdc/dc:description)',
+                u'string(o:setDescription/dc:description)',
+                u'string(o:setDescription)'
+            ]
+            def receive_nodes(n):
+                setSpec = n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)
+                setName = n.xml_select(u'string(o:setName)', prefixes=PREFIXES)
+                #TODO better solution is to traverse setDescription amara tree
+                for p in paths:
+                    setDescription = n.xml_select(p, prefixes=PREFIXES)
+                    if setDescription:
+                        break
+                sets.append(dict([('setSpec', setSpec), ('setName', setName), ('setDescription', setDescription)]))
+
+            pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
+            try:
+                xml_content = XML_PARSE(content)
+
+                resumptionToken = \
+                    xml_content["OAI-PMH"]["ListSets"].get("resumptionToken","")
+            except KeyError:
+                try:
+                    error = xml_content["OAI-PMH"]["error"]
+                    raise OAIError(error)
+                except KeyError:
+                    raise OAIParseError("Could not parse %s:\n%s" % (url, xml_content))
+            if isinstance(resumptionToken, dict):
+                resumptionToken = resumptionToken.get("#text", "")
+
+            # Apply resumptionToken to sets
+            if not resumptionToken:
+                break
+
         return sets
 
     def list_records(self, set_id=None, resumption_token="", metadataPrefix="",
