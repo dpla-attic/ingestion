@@ -1,4 +1,3 @@
-
 """
 Michigan Hub Mapper 
 """
@@ -10,7 +9,6 @@ from dplaingestion.selector import exists, getprop
 
 
 class MichiganMapper(OAIMODSMapper):
-
     def map_collection(self):
         ret_dict = {"collection": getprop(self.provider_data, "collection")}
 
@@ -23,7 +21,7 @@ class MichiganMapper(OAIMODSMapper):
             if host_types:
                 title = getprop(host_types[-1], "titleInfo/title", True)
                 if title:
-                    ret_dict = {"collection": {"title": title }}
+                    ret_dict = {"collection": {"title": title}}
 
         if ret_dict["collection"]:
             self.update_source_resource(ret_dict)
@@ -48,15 +46,15 @@ class MichiganMapper(OAIMODSMapper):
                         continue
 
                     if "contributor" not in role_terms:
-                       _dict["creator"].append(name)
+                        _dict["creator"].append(name)
                     elif "contributor" in role_terms:
-                       _dict["contributor"].append(name)
+                        _dict["contributor"].append(name)
 
             self.update_source_resource(self.clean_dict(_dict))
-    
+
     # Data == first <mods:recordInfo><mods:recordContentSource>
     # Intermediate == second <mods:recordInfo><mods:recordContentSource>
-    def map_data_provider_and_intermediate_provider(self): 
+    def map_data_provider_and_intermediate_provider(self):
         prop = self.root_key + "recordInfo/recordContentSource"
 
         if exists(self.provider_data, prop):
@@ -66,7 +64,8 @@ class MichiganMapper(OAIMODSMapper):
             if isinstance(record_content_source, list):
                 data_provider = record_content_source[0].get("#text")
                 if len(data_provider) > 1:
-                    intermediate_provider = record_content_source[1].get("#text")
+                    intermediate_provider = record_content_source[1].get(
+                            "#text")
             elif isinstance(record_content_source, dict):
                 data_provider = record_content_source.get("#text")
             else:
@@ -75,7 +74,8 @@ class MichiganMapper(OAIMODSMapper):
             if data_provider:
                 self.mapped_data.update({"dataProvider": data_provider})
             if intermediate_provider:
-                self.mapped_data.update({"intermediateProvider": intermediate_provider})
+                self.mapped_data.update(
+                        {"intermediateProvider": intermediate_provider})
 
     # any <mods:originInfo><mods:dateIssued>
     # <mods:originInfo><mods:publisher>
@@ -85,15 +85,26 @@ class MichiganMapper(OAIMODSMapper):
             "date": [],
             "publisher": []
         }
- 
+
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 if "dateIssued" in s:
-                    if not isinstance(getprop(s, "dateIssued"), basestring):
-                        for d in iterify(getprop(s, "dateIssued")):
-                            _dict["date"].append(getprop(d, "#text"))
-                    else:
-                        _dict["date"].append(getprop(s, "dateIssued"))
+                    try:
+                        date_begin, date_end = None, None
+                        for i in self.get_date(s):
+                            _dict["date"].append(i)
+                        if "point" in s:
+                            if s["point"] == "start":
+                                date_begin = self.get_date(s)
+                            elif s["point"] == "end":
+                                date_end = self.get_date(s)
+
+                        if date_begin and date_end:
+                            _dict["date"] = date_begin[0] + "-" + date_end[0]
+                    except Exception as e:
+                        logger.error("Exception when trying to map date "
+                                     "values. %s" % e.message)
+
                 if "publisher" in s:
                     _dict["publisher"].append(s.get("publisher"))
 
@@ -104,7 +115,7 @@ class MichiganMapper(OAIMODSMapper):
     # <mods:abstract>
     def map_description(self):
         props = (self.root_key + "physicalDescription/note",
-            self.root_key + "note", self.root_key + "abstract")
+                 self.root_key + "note", self.root_key + "abstract")
 
         desc = []
         for desc_prop in props:
@@ -124,20 +135,26 @@ class MichiganMapper(OAIMODSMapper):
         prop = self.root_key + "physicalDescription/extent"
 
         if exists(self.provider_data, prop):
-            self.update_source_resource({"extent":
-                                         getprop(self.provider_data, prop)})
+            self.update_source_resource({
+                "extent":
+                    getprop(self.provider_data,
+                            prop)
+            })
 
     def map_type(self):
         prop = self.root_key + "typeOfResource"
 
         if exists(self.provider_data, prop):
-            self.update_source_resource({"type":
-                                         getprop(self.provider_data, prop)})
+            self.update_source_resource({
+                "type":
+                    getprop(self.provider_data,
+                            prop)
+            })
 
     # <mods:genre> AND <mods:physicalDescription><mods:form>
     def map_format(self):
         props = (self.root_key + "genre",
-            self.root_key + "physicalDescription/form")
+                 self.root_key + "physicalDescription/form")
 
         formats = []
 
@@ -156,7 +173,7 @@ class MichiganMapper(OAIMODSMapper):
 
     def map_genre(self):
         props = (self.root_key + "genre",
-            self.root_key + "physicalDescription/form")
+                 self.root_key + "physicalDescription/form")
 
         genres = []
 
@@ -169,9 +186,8 @@ class MichiganMapper(OAIMODSMapper):
 
         if genres:
             self.update_source_resource({"genre": genres})
-    
+
     # <mods:identifer>
-    # DONE
     def map_identifier(self):
         prop = self.root_key + "identifier"
         ids = []
@@ -204,12 +220,9 @@ class MichiganMapper(OAIMODSMapper):
         if languages:
             self.update_source_resource({"language": languages})
 
-    # DONE
     def map_rights(self):
         prop = self.root_key + "accessCondition"
-        # TODO confirm that array is valid here. Otherwise it should be converted to String
         rights = []
-
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 if isinstance(s, dict):
@@ -227,9 +240,11 @@ class MichiganMapper(OAIMODSMapper):
 
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
-                if exists(s, "geographic") and isinstance(s.get('geographic'), dict):
-                    geography.append(s.get('georaphic').get("#text"))
-                elif exists(s, "geographic") and isinstance(s.get('geographic'), list):
+                if exists(s, "geographic") and isinstance(s.get('geographic'),
+                                                          dict):
+                    geography.append(s.get('geographic').get("#text"))
+                elif exists(s, "geographic") and isinstance(s.get('geographic'),
+                                                            list):
                     geography = geography + s.get('geographic')
                 elif exists(s, "geographic"):
                     geography.append(s.get('geographic'))
@@ -271,17 +286,22 @@ class MichiganMapper(OAIMODSMapper):
         prop = self.root_key + "subject/temporal"
 
         if exists(self.provider_data, prop):
-            self.update_source_resource({"temporal":
-                                         getprop(self.provider_data, prop)})
+            self.update_source_resource({
+                "temporal":
+                    getprop(self.provider_data,
+                            prop)
+            })
 
     def map_title(self, unsupported_types=[], unsupported_subelements=[]):
         prop = self.root_key + "titleInfo/title"
 
         if exists(self.provider_data, prop):
-            self.update_source_resource({"title":
-                                         getprop(self.provider_data, prop)})
+            self.update_source_resource({
+                "title":
+                    getprop(self.provider_data,
+                            prop)
+            })
 
-    # Done
     def map_object_and_is_shown_at(self):
         prop = self.root_key + "location"
         ret_dict = {}
@@ -308,3 +328,19 @@ class MichiganMapper(OAIMODSMapper):
         self.map_date_and_publisher()
         self.map_data_provider_and_intermediate_provider()
         self.map_object_and_is_shown_at()
+
+    def get_date(self, record):
+        """ Get date values from provided record and returns them as list of
+        values"""
+        # TODO this could be rewritten using textnode.textnode()
+        dates = []
+        if not isinstance(getprop(record, "dateIssued"), basestring):
+            # Iterate through dicts and lists appending their values to dates
+            for d in iterify(getprop(record, "dateIssued")):
+                if isinstance(d, dict) and "#text" in d:
+                    dates.append(getprop(d, "#text"))
+                else:
+                    dates.append(d)
+        else:
+            dates.append(getprop(record, "dateIssued"))
+        return dates
