@@ -30,6 +30,10 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Michigan",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/geocode",
+
         "/enrich_language",
         "/validate_mapv3"
     ],
