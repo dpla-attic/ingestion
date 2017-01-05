@@ -257,7 +257,8 @@ def is_year_range_list(value):
     """
     return isinstance(value, list) and \
            all(v.isdigit() for v in value) and \
-           value == sorted(value, key=int)
+           value == sorted(value, key=int) and \
+           len(value) > 1
 
 def convert_dates(data, prop, earliest):
     """Converts dates.
