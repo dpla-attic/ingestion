@@ -1,6 +1,7 @@
 from akara import logger
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.qdc_mapper import QDCMapper
+from dplaingestion.utilities import iterify
 
 class SCDLMapper(QDCMapper):
     def __init__(self, provider_data):
@@ -19,10 +20,14 @@ class SCDLMapper(QDCMapper):
             self.mapped_data.update({"dataProvider": data_provider})
 
     def map_collection(self):
-        if exists(self.provider_data, "isPartOf"):
-            self.update_source_resource({"collection":
-                                         getprop(self.provider_data, 
-                                                 "isPartOf")})
+        """//dct:isPartOf -> sourceResource.collection"""
+        collection = None
+
+        if exists(self.provider_data, 'isPartOf'):
+            for coll in iterify(getprop(self.provider_data, 'isPartOf')):
+                collection = {"collection": {"title": coll}}
+        if collection:
+            self.update_source_resource(collection)
 
     def map_relation(self):
         relation = []
