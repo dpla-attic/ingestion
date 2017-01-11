@@ -66,6 +66,24 @@ class PAMapper(DublinCoreMapper):
                 setprop(self.mapped_data, "isShownAt", identifiers[1])
                 setprop(self.mapped_data, "object", identifiers[-1])
 
+    def map_subject(self):
+        prop = "subject"
+        subject = []
+
+        if exists(self.provider_data, prop):
+            prov_subjects = getprop(self.provider_data, prop)
+            for s in prov_subjects:
+                if isinstance(s, dict):
+                    subject.append(s.get("#text"))
+                elif isinstance(s, list):
+                    subject =+ s
+                else:
+                    subject.append(s)
+        subject = filter(None, subject)
+
+        if subject:
+            self.update_source_resource({"subject": subject})
+
     def map_intermediate_provider(self):
         prop = "source"
         if exists(self.provider_data, prop):
