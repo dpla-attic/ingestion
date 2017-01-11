@@ -5,7 +5,7 @@
     "metadata_prefix": "oai_dc",
     "contributor": {
         "@id": "http://dp.la/api/contributor/pa",
-        "name": "PA Digital"
+        "name": "Pennsylvania Digital Collections Project"
     },
     "sets": "NotSupported",
     "enrichments_coll": [
@@ -28,6 +28,9 @@
         "/enrich-format",
         "/enrich_location",
         "/enrich_language",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Pennsylvania",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/geocode",
         "/validate_mapv3"
     ],
     "thresholds": {
