@@ -38,7 +38,6 @@ class PAMapper(DublinCoreMapper):
         prop = "type"
         if exists(self.provider_data, prop):
             types = iterify(self.provider_data.get(prop))
-            self.update_source_resource({"hasType": types})
             non_dcmi_types = [type for type in types if type not in self.dcmi_types]
             if len(non_dcmi_types) > 0:
                 self.update_source_resource({"format": non_dcmi_types})
