@@ -5,7 +5,7 @@
     "metadata_prefix": "oai_dc",
     "contributor": {
         "@id": "http://dp.la/api/contributor/pa",
-        "name": "Pennsylvania Digital Collections Project"
+        "name": "PA Digital"
     },
     "sets": "NotSupported",
     "enrichments_coll": [
