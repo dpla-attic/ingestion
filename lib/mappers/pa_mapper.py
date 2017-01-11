@@ -2,6 +2,7 @@ from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.dublin_core_mapper import DublinCoreMapper
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, setprop
+from akara import logger
 
 
 class PAMapper(DublinCoreMapper):
@@ -47,7 +48,7 @@ class PAMapper(DublinCoreMapper):
         prop = "coverage"
         if exists(self.provider_data, prop):
             coverage = self.provider_data.get(prop)
-            self.update_source_resource({"spatial", coverage})
+            self.update_source_resource({"spatial": coverage})
 
     def map_contributor(self):
         prop = "contributor"
