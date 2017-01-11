@@ -3,6 +3,7 @@ from dplaingestion.mappers.dublin_core_mapper import DublinCoreMapper
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, setprop
 
+
 class PAMapper(DublinCoreMapper):
 
     dcmi_types = {
