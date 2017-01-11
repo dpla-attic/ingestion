@@ -23,9 +23,6 @@ class PAMapper(DublinCoreMapper):
     def __init__(self, provider_data):
         super(PAMapper, self).__init__(provider_data)
 
-    def map_provider(self):
-        self.mapped_data.update({"provider": "Pennsylvania Digital Collections Project"})
-
     def map_relation(self):
         prop = "relation"
         if exists(self.provider_data, prop):
@@ -45,7 +42,7 @@ class PAMapper(DublinCoreMapper):
             if (len(dcmi_types)) > 0:
                 self.update_source_resource({"type": dcmi_types})
 
-    def map_coverage(self):
+    def map_spatial(self):
         prop = "coverage"
         if exists(self.provider_data, prop):
             coverage = self.provider_data.get(prop)
