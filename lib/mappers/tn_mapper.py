@@ -107,7 +107,7 @@ class TNMapper(MODSMapper):
     def map_identifier(self):
         path = "/metadata/mods/identifier"
         if exists(self.provider_data, path):
-            identifier = = self.get_value(
+            identifier = self.get_value(
                 getprop(self.provider_data, path)
             )
             self.update_source_resource({"identifier": identifier})
