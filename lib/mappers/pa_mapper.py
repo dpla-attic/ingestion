@@ -71,18 +71,20 @@ class PAMapper(DublinCoreMapper):
         subject = []
 
         if exists(self.provider_data, prop):
-            prov_subjects = getprop(self.provider_data, prop)
-            for s in prov_subjects:
-                if isinstance(s, dict):
-                    subject.append(s.get("#text"))
-                elif isinstance(s, list):
-                    subject =+ s
-                else:
-                    subject.append(s)
+            s = getprop(self.provider_data, prop)
+            if isinstance(s, dict):
+                subject.append(s.get("#text"))
+            elif isinstance(s, list):
+                subject =+ s
+            else:
+                subject.append(s)
         subject = filter(None, subject)
 
         if subject:
             self.update_source_resource({"subject": subject})
+
+    def map_date(self):
+        pass
 
     def map_intermediate_provider(self):
         prop = "source"
