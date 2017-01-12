@@ -35,7 +35,8 @@ class TNMapper(MODSMapper):
                         and relatedItem["displayLabel"] == "Project":
                     title = relatedItem["titleInfo"]["title"]
                     self.update_source_resource({"isPartOf": title})
-                    self.mapped_data.update({"collection": {"title": title}})
+                    # Unnecessary
+                    # self.update_source_resource({"collection": {"title": title}})
 
     # helper function for the next two functions
     def name_part(self, type):
