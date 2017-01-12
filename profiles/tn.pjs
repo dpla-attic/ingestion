@@ -117,7 +117,7 @@
     ],
     "enrichments_item": [
         "/select-id?prop=id",
-        "/dpla_mapper?mapper_type=tn"
+        "/dpla_mapper?mapper_type=tn",
         "/set_context",
         "/validate_mapv3"
     ],
