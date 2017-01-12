@@ -189,15 +189,18 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/location/url"
         if exists(self.provider_data, path):
             for url in iterify(getprop(self.provider_data, path)):
-                if "access" in url and url["access"] == "raw object":
+                if "access" in url and url["access"] == "preview":
                     self.mapped_data.update({"object": url["#text"]})
 
-    def map_preview(self):
-        path = "/metadata/mods/location/url"
-        if exists(self.provider_data, path):
-            for url in iterify(getprop(self.provider_data, path)):
-                if "access" in url and url["access"] == "preview":
-                    self.mapped_data.update({"preview": url["#text"]})
+    # Commenting out map_preview becuase there may have been some confusion over
+    # mapping for object and preview.
+    # TODO: Confirm with @gretchen
+    # def map_preview(self):
+    #     path = "/metadata/mods/location/url"
+    #     if exists(self.provider_data, path):
+    #         for url in iterify(getprop(self.provider_data, path)):
+    #             if "access" in url and url["access"] == "preview":
+    #                 self.mapped_data.update({"preview": url["#text"]})
 
     def map_provider(self, prop="provider"):
         self.mapped_data.update({"provider": "Tennessee Digital Library"})
