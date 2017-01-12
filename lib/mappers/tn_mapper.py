@@ -11,7 +11,6 @@ class TNMapper(MODSMapper):
     def map_multiple_fields(self):
         super(MODSMapper, self).map_multiple_fields()
         self.map_alternative()
-        self.map_edm_has_type()
 
     def map_alternative(self):
         prop = "/metadata/mods/titleInfo"
