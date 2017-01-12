@@ -93,16 +93,17 @@ class TNMapper(MODSMapper):
             )
             self.update_source_resource({"format": forms})
 
-    def map_edm_has_type(self):
-        path = "/metadata/mods/genre"
-        if exists(self.provider_data, path):
-            for genre in iterify(getprop(self.provider_data, path)):
-                if "authority" in genre \
-                        and "valueURI" in genre \
-                        and genre["authority"] == "aat":
-                    self.update_source_resource(
-                        {"hasType": genre["valueURI"]}
-                    )
+    # Remove Genre mapping, not used.
+    # def map_edm_has_type(self):
+    #     path = "/metadata/mods/genre"
+    #     if exists(self.provider_data, path):
+    #         for genre in iterify(getprop(self.provider_data, path)):
+    #             if "authority" in genre \
+    #                     and "valueURI" in genre \
+    #                     and genre["authority"] == "aat":
+    #                 self.update_source_resource(
+    #                     {"hasType": genre["valueURI"]}
+    #                 )
 
     def map_identifier(self):
         path = "/metadata/mods/identifier"
