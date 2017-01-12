@@ -214,7 +214,7 @@ class TNMapper(MODSMapper):
                 if "cartographics" in subject and "coordinates" in subject["cartographics"]:
                     spatial["coordinates"] = subject["cartographics"]["coordinates"]
                     # self.update_source_resource({"spatial": subject["cartographics"]["coordinates"]})
-                if "geographic" in subject:
+                if "geographic" in subject and isinstance(subject["geographic"], dict):
                     if "authority" in subject["geographic"] and "valueURI" in subject["geographic"]:
                         spatial["name"] = subject["geographic"].get("#text")
 
