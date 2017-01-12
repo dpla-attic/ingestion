@@ -54,13 +54,13 @@ class TNMapper(MODSMapper):
 
     def map_contributor(self):
         contributor = self.name_part("Contributor")
-        self.log("CONTRIBUTOR", contributor)
+        # self.log("CONTRIBUTOR", contributor)
         if len(contributor) > 0:
             self.update_source_resource({"contributor": contributor})
 
     def map_creator(self):
         creators = self.name_part("Creator")
-        self.log("CREATOR", creators)
+        # self.log("CREATOR", creators)
         if len(creators) > 0:
             self.update_source_resource({"creator": creators})
 
@@ -208,12 +208,10 @@ class TNMapper(MODSMapper):
         spatial = {}
 
         if exists(self.provider_data, path):
-            for subject in getprop(self.provider_data, path):
-                # self.log("SUBJ GEO", subject)
-
+            for subject in iterify(getprop(self.provider_data, path)):
                 if "cartographics" in subject and "coordinates" in subject["cartographics"]:
                     spatial["coordinates"] = subject["cartographics"]["coordinates"]
-                    # self.update_source_resource({"spatial": subject["cartographics"]["coordinates"]})
+
                 if "geographic" in subject and isinstance(subject["geographic"], dict):
                     if "authority" in subject["geographic"] and "valueURI" in subject["geographic"]:
                         spatial["name"] = subject["geographic"].get("#text")
