@@ -207,8 +207,9 @@ class TNMapper(MODSMapper):
                 if "access" in url and url["access"] == "preview":
                     self.mapped_data.update({"object": url["#text"]})
 
-    def map_provider(self, prop="provider"):
-        self.mapped_data.update({"provider": "Tennessee Digital Library"})
+    # Unnecessary
+    # def map_provider(self, prop="provider"):
+        # self.mapped_data.update({"provider": "Tennessee Digital Library"})
 
     def map_spatial(self):
         # "<subject><geographic authority="""" valueURI="""">[text term]</geographic>"
