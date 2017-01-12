@@ -80,13 +80,17 @@ class TNMapper(MODSMapper):
     def map_extent(self):
         path = "/metadata/mods/physicalDescription/extent"
         if exists(self.provider_data, path):
-            extents = getprop(self.provider_data, path)
+            extents = self.get_value(
+                getprop(self.provider_data, path)
+            )
             self.update_source_resource({"extent": extents})
 
     def map_format(self):
         path = "/metadata/mods/physicalDescription/form"
         if exists(self.provider_data, path):
-            forms = getprop(self.provider_data, path)
+            forms = self.get_value(
+                getprop(self.provider_data, path)
+            )
             self.update_source_resource({"format": forms})
 
     def map_edm_has_type(self):
@@ -103,8 +107,10 @@ class TNMapper(MODSMapper):
     def map_identifier(self):
         path = "/metadata/mods/identifier"
         if exists(self.provider_data, path):
-            identifer = getprop(self.provider_data, path)
-            self.update_source_resource({"identifier": identifer})
+            identifier = = self.get_value(
+                getprop(self.provider_data, path)
+            )
+            self.update_source_resource({"identifier": identifier})
 
     def map_language(self):
         path = "/metadata/mods/language/languageTerm"
@@ -121,15 +127,21 @@ class TNMapper(MODSMapper):
     def map_publisher(self):
         path = "/metadata/mods/originInfo/publisher"
         if exists(self.provider_data, path):
+            publisher = self.get_value(
+                getprop(self.provider_data, path)
+            )
             self.update_source_resource(
-                {"publisher": getprop(self.provider_data, path)}
+                {"publisher": publisher}
             )
 
     def map_rights(self):
         path = "/metadata/mods/accessCondition"
         if exists(self.provider_data, path):
+            rights = self.get_value(
+                getprop(self.provider_data, path)
+            )
             self.update_source_resource(
-                {"rights": getprop(self.provider_data, path)}
+                {"rights": rights}
             )
 
     def map_subject(self):
@@ -165,7 +177,9 @@ class TNMapper(MODSMapper):
     def map_type(self):
         path = "/metadata/mods/physicalDescription/form"
         if exists(self.provider_data, path):
-            type = getprop(self.provider_data, path)
+            type = self.get_value(
+                getprop(self.provider_data, path)
+            )
             self.update_source_resource({"type": type})
 
     def map_data_provider(self, prop="source"):
@@ -192,16 +206,6 @@ class TNMapper(MODSMapper):
             for url in iterify(getprop(self.provider_data, path)):
                 if "access" in url and url["access"] == "preview":
                     self.mapped_data.update({"object": url["#text"]})
-
-    # Commenting out map_preview becuase there may have been some confusion over
-    # mapping for object and preview.
-    # TODO: Confirm with @gretchen
-    # def map_preview(self):
-    #     path = "/metadata/mods/location/url"
-    #     if exists(self.provider_data, path):
-    #         for url in iterify(getprop(self.provider_data, path)):
-    #             if "access" in url and url["access"] == "preview":
-    #                 self.mapped_data.update({"preview": url["#text"]})
 
     def map_provider(self, prop="provider"):
         self.mapped_data.update({"provider": "Tennessee Digital Library"})
@@ -236,6 +240,12 @@ class TNMapper(MODSMapper):
             self.mapped_data.update(
                 {"intermediateProvider": intermediate_providers}
             )
+
+    def get_value(self, _value):
+        if isinstance(_value, dict) and "#text" in _value:
+            return _value.get("#text")
+        else:
+            return _value
 
     def log(self, label, obj):
         logger.error(label + ": " + str(obj))
