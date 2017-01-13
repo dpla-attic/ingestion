@@ -10,19 +10,6 @@ class TNMapper(MODSMapper):
 
     def map_multiple_fields(self):
         super(MODSMapper, self).map_multiple_fields()
-        self.map_alternative()
-
-    def map_alternative(self):
-        prop = "/metadata/mods/titleInfo"
-        if exists(self.provider_data, prop):
-            for titleInfoDict in iterify(getprop(self.provider_data, prop)):
-                titleInfo = titleInfoDict['title']
-                if isinstance(titleInfo, dict) \
-                        and titleInfo['type'] == "alternative" \
-                        and "#text" in titleInfo:
-                    self.update_source_resource(
-                        {"alternative": titleInfo["#text"]}
-                    )
 
     def map_is_part_of(self):
         path = "/metadata/mods/relatedItem"
@@ -34,8 +21,6 @@ class TNMapper(MODSMapper):
                         and relatedItem["displayLabel"] == "Project":
                     title = relatedItem["titleInfo"]["title"]
                     self.update_source_resource({"isPartOf": title})
-                    # Unnecessary
-                    # self.update_source_resource({"collection": {"title": title}})
 
     # helper function for the next two functions
     def name_part(self, type):
@@ -54,13 +39,11 @@ class TNMapper(MODSMapper):
 
     def map_contributor(self):
         contributor = self.name_part("Contributor")
-        # self.log("CONTRIBUTOR", contributor)
         if len(contributor) > 0:
             self.update_source_resource({"contributor": contributor})
 
     def map_creator(self):
         creators = self.name_part("Creator")
-        # self.log("CREATOR", creators)
         if len(creators) > 0:
             self.update_source_resource({"creator": creators})
 
@@ -91,18 +74,6 @@ class TNMapper(MODSMapper):
                 getprop(self.provider_data, path)
             )
             self.update_source_resource({"format": forms})
-
-    # Remove Genre mapping, not used.
-    # def map_edm_has_type(self):
-    #     path = "/metadata/mods/genre"
-    #     if exists(self.provider_data, path):
-    #         for genre in iterify(getprop(self.provider_data, path)):
-    #             if "authority" in genre \
-    #                     and "valueURI" in genre \
-    #                     and genre["authority"] == "aat":
-    #                 self.update_source_resource(
-    #                     {"hasType": genre["valueURI"]}
-    #                 )
 
     def map_identifier(self):
         path = "/metadata/mods/identifier"
@@ -153,7 +124,6 @@ class TNMapper(MODSMapper):
                         {"subject": subject["topic"]}
                     )
 
-    # TODO check for
     def map_temporal(self):
         path = "/metadata/mods/subject"
         if exists(self.provider_data, path):
@@ -207,10 +177,6 @@ class TNMapper(MODSMapper):
             for url in iterify(getprop(self.provider_data, path)):
                 if "access" in url and url["access"] == "preview":
                     self.mapped_data.update({"object": url["#text"]})
-
-    # Unnecessary
-    # def map_provider(self, prop="provider"):
-        # self.mapped_data.update({"provider": "Tennessee Digital Library"})
 
     def map_spatial(self):
         # "<subject><geographic authority="""" valueURI="""">[text term]</geographic>"
