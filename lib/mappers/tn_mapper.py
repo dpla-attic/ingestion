@@ -77,10 +77,12 @@ class TNMapper(MODSMapper):
 
     def map_identifier(self):
         path = "/metadata/mods/identifier"
+        identifier = []
         if exists(self.provider_data, path):
-            identifier = self.get_value(
-                getprop(self.provider_data, path)
-            )
+            for id in iterify(getprop(self.provider_data, path)):
+                identifier.append(self.get_value(id))
+        if identifier:
+            logger.error("Identifier: %s" % identifier)
             self.update_source_resource({"identifier": identifier})
 
     def map_language(self):
