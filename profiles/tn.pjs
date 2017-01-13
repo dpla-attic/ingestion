@@ -119,6 +119,13 @@
         "/select-id?prop=id",
         "/dpla_mapper?mapper_type=tn",
         "/set_context",
+        "/cleanup_value",
+        "/enrich_language",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
         "/validate_mapv3"
     ],
     "thresholds": {
