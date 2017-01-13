@@ -92,7 +92,7 @@ class TNMapper(MODSMapper):
                     and language_term["type"] == "code" \
                     and language_term["authority"] == "iso639-2b":
                 self.update_source_resource(
-                    {"language": {"name": language_term["#text"]}}
+                    {"language": [language_term["#text"]]}
                 )
 
     def map_publisher(self):
