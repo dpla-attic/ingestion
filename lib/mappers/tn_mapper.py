@@ -68,7 +68,7 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/originInfo/dateCreated/#text"
         if exists(self.provider_data, path):
             date_created = getprop(self.provider_data, path)
-            self.update_source_resource({"date": date_created})
+            self.update_source_resource({"date": {"displayDate": date_created}})
 
     def map_description(self):
         path = "/metadata/mods/abstract"
