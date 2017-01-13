@@ -119,7 +119,6 @@
         "/select-id?prop=id",
         "/dpla_mapper?mapper_type=tn",
         "/set_context",
-        "/enrich_date",
         "/validate_mapv3"
     ],
     "thresholds": {
