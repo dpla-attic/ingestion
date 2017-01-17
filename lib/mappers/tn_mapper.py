@@ -69,11 +69,12 @@ class TNMapper(MODSMapper):
 
     def map_format(self):
         path = "/metadata/mods/physicalDescription/form"
+        formats = []
         if exists(self.provider_data, path):
-            forms = self.get_value(
-                getprop(self.provider_data, path)
-            )
-            self.update_source_resource({"format": forms})
+            for format in iterify(getprop(self.provider_data, path)):
+                formats.append(self.get_value(format))
+        if formats:
+            self.update_source_resource({"format": formats})
 
     def map_identifier(self):
         path = "/metadata/mods/identifier"
@@ -82,7 +83,6 @@ class TNMapper(MODSMapper):
             for id in iterify(getprop(self.provider_data, path)):
                 identifier.append(self.get_value(id))
         if identifier:
-            logger.error("Identifier: %s" % identifier)
             self.update_source_resource({"identifier": identifier})
 
     def map_language(self):
@@ -184,11 +184,17 @@ class TNMapper(MODSMapper):
         # "<subject><geographic authority="""" valueURI="""">[text term]</geographic>"
         path = "/metadata/mods/subject"
         spatial = {}
-
+        cardinals = ['N','S','E','W']
         if exists(self.provider_data, path):
             for subject in iterify(getprop(self.provider_data, path)):
                 if "cartographics" in subject and "coordinates" in subject["cartographics"]:
-                    spatial["coordinates"] = subject["cartographics"]["coordinates"]
+                    coord = subject["cartographics"]["coordinates"]
+                    # TODO build in check for alpha char in coordinates to
+                    # prevent indexing errors
+                    for card in cardinals:
+                        if card in coord.upper():
+                            coord = None
+                    spatial["coordinates"] = coord
 
                 if "geographic" in subject and isinstance(subject["geographic"], dict):
                     if "authority" in subject["geographic"] and "valueURI" in subject["geographic"]:
