@@ -244,38 +244,41 @@ class oaiservice(object):
         else:
             lr_records = xml_content['OAI-PMH']['ListRecords']['record']
         for full_rec in lr_records:
-            if not 'deleted' in full_rec['header'].get('status', ''):
-                header = full_rec['header']
-                rec_id = full_rec['header']['identifier']
-                # Due to the way this function used to be written, code for
-                # different metadata formats still expect the data to be
-                # formatted differently.
-                if metadataPrefix in ['marc', 'marc21', 'mods', 'untl']:
-                    md = full_rec['metadata']
-                    if metadataPrefix in ('marc', 'marc21'):
-                        rec_field = md.get('record') or md.get('marc:record')
-                    elif metadataPrefix == 'untl':
-                        rec_field = md['untl:metadata']
+            try:
+                if not 'deleted' in full_rec['header'].get('status', ''):
+                    header = full_rec['header']
+                    rec_id = full_rec['header']['identifier']
+                    # Due to the way this function used to be written, code for
+                    # different metadata formats still expect the data to be
+                    # formatted differently.
+                    if metadataPrefix in ['marc', 'marc21', 'mods', 'untl']:
+                        md = full_rec['metadata']
+                        if metadataPrefix in ('marc', 'marc21'):
+                            rec_field = md.get('record') or md.get('marc:record')
+                        elif metadataPrefix == 'untl':
+                            rec_field = md['untl:metadata']
+                        else:
+                            rec_field = md.get('mods:mods') or md.get('mods')
+                        status = rec_field.get('status', '')
+                        if not 'deleted' in status:
+                            records.append((rec_id, full_rec))
                     else:
-                        rec_field = md.get('mods:mods') or md.get('mods')
-                    status = rec_field.get('status', '')
-                    if not 'deleted' in status:
-                        records.append((rec_id, full_rec))
-                else:
-                    # (This is the condition that we eventually want to make
-                    # the only one, doing away with this if/else. This will
-                    # require refactoring the enrichment modules for the MARC,
-                    # MODS, and UNTL providers.)
-                    #
-                    # The following key (element 0) should be the only one, and
-                    # will be something like "oai_dc:dc" or "mods:mods"
-                    k = full_rec['metadata'].keys()[0]
-                    orig = dict(full_rec['metadata'][k])
-                    record = self.record_for_prefix(metadataPrefix,
-                                                    orig,
-                                                    header)
-                    if not 'deleted' in record.get('status', ''):
-                        records.append((rec_id, record))
+                        # (This is the condition that we eventually want to make
+                        # the only one, doing away with this if/else. This will
+                        # require refactoring the enrichment modules for the MARC,
+                        # MODS, and UNTL providers.)
+                        #
+                        # The following key (element 0) should be the only one, and
+                        # will be something like "oai_dc:dc" or "mods:mods"
+                        k = full_rec['metadata'].keys()[0]
+                        orig = dict(full_rec['metadata'][k])
+                        record = self.record_for_prefix(metadataPrefix,
+                                                        orig,
+                                                        header)
+                        if not 'deleted' in record.get('status', ''):
+                            records.append((rec_id, record))
+            except Exception as e:
+                logger.error("Unable to process record in #list_records(): \n\t%s" % e)
 
         return {'records': records, 'resumption_token': resumption_token,
                 'error': error}
