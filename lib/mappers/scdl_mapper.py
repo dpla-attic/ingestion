@@ -21,13 +21,13 @@ class SCDLMapper(QDCMapper):
 
     def map_collection(self):
         """//dct:isPartOf -> sourceResource.collection"""
-        collection = None
+        if exists(self.provider_data, "isPartOf"):
+            collections = []
 
-        if exists(self.provider_data, 'isPartOf'):
-            for coll in iterify(getprop(self.provider_data, 'isPartOf')):
-                collection = {"collection": {"title": coll}}
-        if collection:
-            self.update_source_resource(collection)
+            for coll in iterify(getprop(self.provider_data, "isPartOf")):
+                collections.append({"title": coll})
+
+            self.update_source_resource({"collection": collections})
 
     def map_relation(self):
         relation = []
