@@ -29,7 +29,7 @@ class PAMapper(DublinCoreMapper):
         prop = "relation"
         if exists(self.provider_data, prop):
             relations = iterify(self.provider_data.get(prop))
-            self.update_source_resource({"collection": relations[0]})
+            self.update_source_resource({"collection": {"title": relations[0]}})
             if len(relations) > 1:
                 self.update_source_resource({"relation": relations[1:]})
 
