@@ -118,40 +118,68 @@ class oaiservice(object):
         return
     
     def list_sets(self):
-        #e.g. http://dspace.mit.edu/oai/request?verb=ListSets
-        qstr = urllib.urlencode({'verb' : 'ListSets'})
-        url = self.root + '?' + qstr
-        self.logger.debug('OAI request URL: {0}'.format(url))
-        start_t = time.time()
-        try:
-            content = urllib2.urlopen(url).read()
-        except urllib2.URLError as e:
-            raise OAIHTTPError("list_sets could not make request: %s" % \
-                               e.reason)
-        except urllib2.HTTPError as e:
-            raise OAIHTTPError("list_sets got status %d: %s" % \
-                               (e.code, e.reason))
-        retrieved_t = time.time()
-        self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
+
         sets = []
+        resumptionToken = ''
+        #e.g. http://dspace.mit.edu/oai/request?verb=ListSets
+        params = {'verb' : 'ListSets'}
 
-        paths = [
-            u'string(o:setDescription/oai_dc:dc/dc:description)',
-            u'string(o:setDescription/o:oclcdc/dc:description)',
-            u'string(o:setDescription/dc:description)',
-            u'string(o:setDescription)'
-        ]
-        def receive_nodes(n):
-            setSpec = n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)
-            setName = n.xml_select(u'string(o:setName)', prefixes=PREFIXES)
-            #TODO better solution is to traverse setDescription amara tree
-            for p in paths:
-                setDescription = n.xml_select(p, prefixes=PREFIXES)
-                if setDescription:
-                    break
-            sets.append(dict([('setSpec', setSpec), ('setName', setName), ('setDescription', setDescription)]))
+        while True:
 
-        pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
+            if resumptionToken:
+                params['resumptionToken'] = resumptionToken
+
+            qstr = urllib.urlencode(params)
+
+            url = self.root + '?' + qstr
+            self.logger.debug('OAI request URL: {0}'.format(url))
+            start_t = time.time()
+            try:
+                content = urllib2.urlopen(url).read()
+            except urllib2.URLError as e:
+                raise OAIHTTPError("list_sets could not make request: %s" % \
+                                   e.reason)
+            except urllib2.HTTPError as e:
+                raise OAIHTTPError("list_sets got status %d: %s" % \
+                                   (e.code, e.reason))
+            retrieved_t = time.time()
+            self.logger.debug('Retrieved in {0}s'.format(retrieved_t - start_t))
+
+            paths = [
+                u'string(o:setDescription/oai_dc:dc/dc:description)',
+                u'string(o:setDescription/o:oclcdc/dc:description)',
+                u'string(o:setDescription/dc:description)',
+                u'string(o:setDescription)'
+            ]
+            def receive_nodes(n):
+                setSpec = n.xml_select(u'string(o:setSpec)', prefixes=PREFIXES)
+                setName = n.xml_select(u'string(o:setName)', prefixes=PREFIXES)
+                #TODO better solution is to traverse setDescription amara tree
+                for p in paths:
+                    setDescription = n.xml_select(p, prefixes=PREFIXES)
+                    if setDescription:
+                        break
+                sets.append(dict([('setSpec', setSpec), ('setName', setName), ('setDescription', setDescription)]))
+
+            pushtree(content, u"o:OAI-PMH/o:ListSets/o:set", receive_nodes, namespaces=PREFIXES)
+            try:
+                xml_content = XML_PARSE(content)
+
+                resumptionToken = \
+                    xml_content["OAI-PMH"]["ListSets"].get("resumptionToken","")
+            except KeyError:
+                try:
+                    error = xml_content["OAI-PMH"]["error"]
+                    raise OAIError(error)
+                except KeyError:
+                    raise OAIParseError("Could not parse %s:\n%s" % (url, xml_content))
+            if isinstance(resumptionToken, dict):
+                resumptionToken = resumptionToken.get("#text", "")
+
+            # Apply resumptionToken to sets
+            if not resumptionToken:
+                break
+
         return sets
 
     def list_records(self, set_id=None, resumption_token="", metadataPrefix="",
@@ -216,38 +244,41 @@ class oaiservice(object):
         else:
             lr_records = xml_content['OAI-PMH']['ListRecords']['record']
         for full_rec in lr_records:
-            if not 'deleted' in full_rec['header'].get('status', ''):
-                header = full_rec['header']
-                rec_id = full_rec['header']['identifier']
-                # Due to the way this function used to be written, code for
-                # different metadata formats still expect the data to be
-                # formatted differently.
-                if metadataPrefix in ['marc', 'marc21', 'mods', 'untl']:
-                    md = full_rec['metadata']
-                    if metadataPrefix in ('marc', 'marc21'):
-                        rec_field = md.get('record') or md.get('marc:record')
-                    elif metadataPrefix == 'untl':
-                        rec_field = md['untl:metadata']
+            try:
+                if not 'deleted' in full_rec['header'].get('status', ''):
+                    header = full_rec['header']
+                    rec_id = full_rec['header']['identifier']
+                    # Due to the way this function used to be written, code for
+                    # different metadata formats still expect the data to be
+                    # formatted differently.
+                    if metadataPrefix in ['marc', 'marc21', 'mods', 'untl']:
+                        md = full_rec['metadata']
+                        if metadataPrefix in ('marc', 'marc21'):
+                            rec_field = md.get('record') or md.get('marc:record')
+                        elif metadataPrefix == 'untl':
+                            rec_field = md['untl:metadata']
+                        else:
+                            rec_field = md.get('mods:mods') or md.get('mods')
+                        status = rec_field.get('status', '')
+                        if not 'deleted' in status:
+                            records.append((rec_id, full_rec))
                     else:
-                        rec_field = md.get('mods:mods') or md.get('mods')
-                    status = rec_field.get('status', '')
-                    if not 'deleted' in status:
-                        records.append((rec_id, full_rec))
-                else:
-                    # (This is the condition that we eventually want to make
-                    # the only one, doing away with this if/else. This will
-                    # require refactoring the enrichment modules for the MARC,
-                    # MODS, and UNTL providers.)
-                    #
-                    # The following key (element 0) should be the only one, and
-                    # will be something like "oai_dc:dc" or "mods:mods"
-                    k = full_rec['metadata'].keys()[0]
-                    orig = dict(full_rec['metadata'][k])
-                    record = self.record_for_prefix(metadataPrefix,
-                                                    orig,
-                                                    header)
-                    if not 'deleted' in record.get('status', ''):
-                        records.append((rec_id, record))
+                        # (This is the condition that we eventually want to make
+                        # the only one, doing away with this if/else. This will
+                        # require refactoring the enrichment modules for the MARC,
+                        # MODS, and UNTL providers.)
+                        #
+                        # The following key (element 0) should be the only one, and
+                        # will be something like "oai_dc:dc" or "mods:mods"
+                        k = full_rec['metadata'].keys()[0]
+                        orig = dict(full_rec['metadata'][k])
+                        record = self.record_for_prefix(metadataPrefix,
+                                                        orig,
+                                                        header)
+                        if not 'deleted' in record.get('status', ''):
+                            records.append((rec_id, record))
+            except Exception as e:
+                logger.error("Unable to process record in #list_records(): \n\t%s" % e)
 
         return {'records': records, 'resumption_token': resumption_token,
                 'error': error}

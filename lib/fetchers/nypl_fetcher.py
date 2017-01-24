@@ -86,6 +86,8 @@ class NYPLFetcher(AbsoluteURLFetcher):
                 record["tmp_high_res_link"] = item.get("highResLink")
                 record["tmp_rights_statement"] = \
                         getprop(content, "response/rightsStatement")
+                record["rightsStatementURI"] = \
+                        getprop(content, "response/rightsStatementURI")
                 records.append(record)
 
             if error is not None:
