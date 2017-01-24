@@ -75,7 +75,7 @@ class PAMapper(DublinCoreMapper):
             if isinstance(s, dict):
                 subject.append(s.get("#text"))
             elif isinstance(s, list):
-                subject =+ s
+                subject += s
             else:
                 subject.append(s)
         subject = filter(None, subject)
