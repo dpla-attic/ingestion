@@ -6,7 +6,7 @@ from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
 from dplaingestion.selector import setprop, getprop, exists
-from dplaingestion.akamod.geocode import Place, floats_to_coordinates, get_coordinates
+from dplaingestion.akamod.geocode import Place, floats_to_coordinates, parse_coordinates_from_name
 
 @attr(travis_exclude='yes')
 def test_geocode():
@@ -498,7 +498,6 @@ def test_geocode_skip_united_states():
         for field in ["name", "country"]:
             setprop(INPUT, "sourceResource/spatial", {field: v})
             resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-            # from nose.tools import set_trace; set_trace()
             assert resp.status == 200
             for place in json.loads(content)['sourceResource']['spatial']:
                 assert 'coordinates' not in place.keys()
@@ -697,10 +696,10 @@ def test_geocode_place_get_coodinates():
     """Should check for and build coordinates from string even when in reverse
     order
     """
-    assert get_coordinates('not coordinate') == None
-    assert get_coordinates('999.84, 123.33') == None
-    assert get_coordinates('33.33, 123.33') == '33.33, 123.33'
-    assert get_coordinates('123.33,33.33') == '33.33, 123.33'
+    assert parse_coordinates_from_name('not coordinate') == None
+    assert parse_coordinates_from_name('999.84, 123.33') == None
+    assert parse_coordinates_from_name('33.33, 123.33') == '33.33, 123.33'
+    assert parse_coordinates_from_name('123.33,33.33') == '33.33, 123.33'
 
 
 def test_geocode_floats_to_coodinates():
