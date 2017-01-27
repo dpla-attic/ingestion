@@ -13,7 +13,7 @@
         "/validate_mapv3"
     ],
     "enrichments_item": [
-        "/select-id?prop=id",
+        "/select-id?prop=id&use_source=no",
         "/dpla_mapper?mapper_type=pa",
         "/strip_html",
         "/set_context",
