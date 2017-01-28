@@ -168,6 +168,10 @@ class DplaGeonamesGeocoder(object):
         are already present, will attempt to validate them before accepting
         the new place.
         """
+        if place.name and re.search(ur" *(United States(?!-)|États-Unis|USA)",
+                                    place.name):
+            place.name = 'United States'
+
         place.set_name()
         params = {}
 

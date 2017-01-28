@@ -152,9 +152,8 @@ def test_collapse_hierarchy():
                   'country': 'United States',
                   'county': 'Los Angeles County',
                   'name': 'Los Angeles',
-                  'state': 'California'},
-                { 'country': 'United States',
-                  'name': 'United States'}
+                  'state': 'California'
+                }
             ]
         },
         "creator": "David"
@@ -673,7 +672,8 @@ def test_geocode_unicode():
         "_id": "12345",
         "sourceResource": {
             "spatial": [{
-                "name": u"États-Unis"
+                "country": "United States",
+                "name": "United States"
             }]
         }
     }
