@@ -355,7 +355,9 @@ class DplaGeonamesGeocoder(object):
     def _name_search(self, name, params={}):
         """Search GeoNames for a given name and return a dict of the result"""
         defaults = { "q": name.encode("utf8"),
-                     "maxRows": 15,
+                     "maxRows": 3,
+                     "isNameRequired": "true",
+                     "orderBy": "relevance",
                      "username": module_config().get("geonames_username"),
                      "token": module_config().get("geonames_token") }
         params = dict(defaults.items() + params.items())
