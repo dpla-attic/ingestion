@@ -175,17 +175,9 @@ class DplaGeonamesGeocoder(object):
         place.set_name()
         params = {}
 
-        # Whether to register coordinates for a Place, which could be a region
-        # that is too large to warrent pinpointing with falsely-precise
-        # coordinates that would clutter a map interface that shows points for
-        # objects.
-        register_coordinates = True
-
-        # TODO: considering filtering on specific feature codes
         if place.name in [place.country, place.region]:
             params['featureClass'] = 'A'
-            register_coordinates = False
-        elif place.name == place.state:
+        elif place.name in [place.county, place.state]:
             params['featureClass'] = 'A'
             params['countryBias'] = 'US'
         elif place.name == place.city:
@@ -231,7 +223,7 @@ class DplaGeonamesGeocoder(object):
                 'feature_type': interp.get('fcode')
             })
 
-            if register_coordinates:
+            if candidate_place.name != candidate_place.country:
                 candidate_place.coordinates = "%s, %s" % (interp['lat'],
                                                           interp['lng'])
 
@@ -458,7 +450,7 @@ class Place:
         Returns a list of the fields to be included in DPLA MAP's
         serializations of Place.
         """
-        fields = ['name', 'city', 'state', 'country', 'region', 'county']
+        fields = ['name', 'city', 'state', 'county', 'country', 'region']
         if (not self.feature_type) or (not 'PCL' in self.feature_type):
             fields.append('coordinates')
         return fields

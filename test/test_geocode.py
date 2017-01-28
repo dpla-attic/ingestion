@@ -359,7 +359,7 @@ def test_geocode_set_name_county():
         "sourceResource": {
             "spatial": {
                 "county": "Los Angeles County",
-                "country": "Bananas"
+                "country": "United States"
             }
         }
     }
@@ -370,11 +370,10 @@ def test_geocode_set_name_county():
             "spatial": [
                 {
                     "county": "Los Angeles County",
-                    "country": "Bananas",
+                    "country": "United States",
                     "name": "Los Angeles County",
                     "state": "California",
-                    #uses bing because geonames wants to match country values
-                    "coordinates": "33.9934997559, -118.29750824"
+                    "coordinates": "34.19801, -118.26102"
                 }
             ]
         }
@@ -437,38 +436,6 @@ def test_geocode_set_name_state():
                 "country": "United States",
                 "state": "California",
                 "name": "California"
-            }]
-        }
-    }
-
-    url = server() + "geocode"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert_same_jsons(EXPECTED, json.loads(content))
-
-@attr(travis_exclude='yes')
-def test_geocode_set_name_by_feature():
-    """Should set the name property to the smallest available feature value"""
-    INPUT = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": {
-                "country": "Canada",
-                "city": "Bananas"
-            }
-        }
-    }
-    EXPECTED = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": [{
-                'coordinates': '62.8329086304, -95.9133224487',
-                'country': 'Canada',
-                'name': 'Bananas',
-                'state': 'Nunavut',
-                "city": "Bananas"
             }]
         }
     }
@@ -588,7 +555,6 @@ def test_geocode_geonames_name_search():
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
-
 
 @attr(travis_exclude='yes')
 def test_geocode_geonames_name_search_context():
