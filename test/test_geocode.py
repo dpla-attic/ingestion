@@ -591,6 +591,42 @@ def test_geocode_geonames_name_search_context():
     assert_same_jsons(EXPECTED, json.loads(content))
 
 @attr(travis_exclude='yes')
+def test_geocode_works_with_dotted_abbreviations():
+    """Resolves something like "Greenville (S.C.)" as well as "SC" """
+    # Note when retrofitting Twofishes later: Twofishes handles "(S.C.)" just
+    # fine, so most of this test's assertion should be kept, but the code that
+    # works around this syntax should be altered.  When we use Twofishes,
+    # we're going to be able to preserve the "S.C." spelling in the "name"
+    # property, and when we do this for Ingestion 3 with MAPv4 we'll be able
+    # to preserve that spelling in the providedLabel property.
+    INPUT =  {
+        "_id": "foo",
+        "sourceResource": {
+            "spatial": {
+                "name": "Greenville (S.C.)"
+            }
+        }
+    }
+    EXPECTED = {
+        "_id": "foo",
+        "sourceResource": {
+            "spatial": [
+                {
+                    "county": "Greenville County",
+                    "country": "United States",
+                    "state": "South Carolina",
+                    "name": "Greenville (SC)",
+                    "coordinates": "34.85262, -82.39401"
+                }
+            ]
+        }
+    }
+    url = server() + "geocode"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
 def test_geocode_geonames_name_search_failure():
     """Shouldn't fall down when nothing is returned.
     """

@@ -168,10 +168,6 @@ class DplaGeonamesGeocoder(object):
         are already present, will attempt to validate them before accepting
         the new place.
         """
-        if place.name and re.search(ur" *(United States(?!-)|États-Unis|USA)",
-                                    place.name):
-            place.name = 'United States'
-
         place.set_name()
         params = {}
 
@@ -457,10 +453,20 @@ class Place:
 
     def set_name(self):
         """
-        Returns the name property. If none is set, sets it to the smallest
-        available geographic division label.
+        Modify and return our name property, after cleaning it up. If none is
+        set, initialize it to the smallest available geographic division label.
         """
         if self.name:
+            if re.search(ur" *(United States(?!-)|États-Unis|USA)", self.name):
+                self.name = 'United States'
+            # Kludge state abbreviations with periods (e.g. "S.C." or "CA.")
+            # into their equivalent official post-office abbreviations (e.g.
+            # "SC" or "CA"). GeoNames just doesn't resolve the ones with
+            # periods.  We can get rid of this when we switch to Twofishes.
+            self.name = re.sub(r'([ACDFGHIKLMNOPRSTUVW])\.?'
+                               r'([KLRZAOTEIDNSYCHJMVXV])\.',
+                               r'\1\2',
+                               self.name)
             return self.name
 
         prop_order = ["city", "county", "state", "country", "region"]
