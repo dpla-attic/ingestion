@@ -6,17 +6,17 @@ class CDLFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):
         super(CDLFetcher, self).__init__(profile, uri_base, config_file)
         token = self.config.get("APITokens", "CDL")
-        authorization = self.http_headers["X-Authentication-Token"].format(token)
+        authorization = \
+            self.http_headers["X-Authentication-Token"].format(token)
         self.http_headers["X-Authentication-Token"] = authorization
 
     def request_records(self, content, set_id):
         records = []
         error = None
-        for item in iterify(getprop(content, "response/docs",)):
-            record = item
-            record["_id"] = item["id"]
+
+        for record in iterify(getprop(content, "response/docs")):
+            record["_id"] = record["id"]
             records.append(record)
-            print(record["_id"])
 
         cursor_mark = getprop(content, "responseHeader/params/cursorMark")
         next_cursor_mark = getprop(content, "nextCursorMark")
@@ -26,4 +26,9 @@ class CDLFetcher(AbsoluteURLFetcher):
         yield error, records, request_more
 
     def extract_content(self, content, url):
-         return None, json.loads(content)
+        try:
+            return None, json.loads(content)
+
+        except Exception, e:
+            error = "Error parsing content from URL %s: %s" % (url, e)
+            return error, content
