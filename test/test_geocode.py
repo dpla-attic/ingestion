@@ -6,7 +6,7 @@ from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
 from dplaingestion.selector import setprop, getprop, exists
-from dplaingestion.akamod.geocode import Place, floats_to_coordinates, get_coordinates
+from dplaingestion.akamod.geocode import Place, floats_to_coordinates, parse_coordinates_from_name
 
 @attr(travis_exclude='yes')
 def test_geocode():
@@ -152,9 +152,8 @@ def test_collapse_hierarchy():
                   'country': 'United States',
                   'county': 'Los Angeles County',
                   'name': 'Los Angeles',
-                  'state': 'California'},
-                { 'country': 'United States',
-                  'name': 'United States'}
+                  'state': 'California'
+                }
             ]
         },
         "creator": "David"
@@ -360,7 +359,7 @@ def test_geocode_set_name_county():
         "sourceResource": {
             "spatial": {
                 "county": "Los Angeles County",
-                "country": "Bananas"
+                "country": "United States"
             }
         }
     }
@@ -371,11 +370,10 @@ def test_geocode_set_name_county():
             "spatial": [
                 {
                     "county": "Los Angeles County",
-                    "country": "Bananas",
+                    "country": "United States",
                     "name": "Los Angeles County",
                     "state": "California",
-                    #uses bing because geonames wants to match country values
-                    "coordinates": "33.9934997559, -118.29750824"
+                    "coordinates": "34.19801, -118.26102"
                 }
             ]
         }
@@ -448,38 +446,6 @@ def test_geocode_set_name_state():
     assert_same_jsons(EXPECTED, json.loads(content))
 
 @attr(travis_exclude='yes')
-def test_geocode_set_name_by_feature():
-    """Should set the name property to the smallest available feature value"""
-    INPUT = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": {
-                "country": "Canada",
-                "city": "Bananas"
-            }
-        }
-    }
-    EXPECTED = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": [{
-                'coordinates': '62.8329086304, -95.9133224487',
-                'country': 'Canada',
-                'name': 'Bananas',
-                'state': 'Nunavut',
-                "city": "Bananas"
-            }]
-        }
-    }
-
-    url = server() + "geocode"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert_same_jsons(EXPECTED, json.loads(content))
-
-@attr(travis_exclude='yes')
 def test_geocode_skip_united_states():
     """Should not add coordinates when name or country value is 
     'United States' or 'États-Unis' or 'USA'
@@ -498,7 +464,6 @@ def test_geocode_skip_united_states():
         for field in ["name", "country"]:
             setprop(INPUT, "sourceResource/spatial", {field: v})
             resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-            # from nose.tools import set_trace; set_trace()
             assert resp.status == 200
             for place in json.loads(content)['sourceResource']['spatial']:
                 assert 'coordinates' not in place.keys()
@@ -591,7 +556,6 @@ def test_geocode_geonames_name_search():
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
-
 @attr(travis_exclude='yes')
 def test_geocode_geonames_name_search_context():
     """Should find a place name, only if matching other data.
@@ -621,6 +585,42 @@ def test_geocode_geonames_name_search_context():
         ]}
     }
 
+    url = server() + "geocode"
+    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+@attr(travis_exclude='yes')
+def test_geocode_works_with_dotted_abbreviations():
+    """Resolves something like "Greenville (S.C.)" as well as "SC" """
+    # Note when retrofitting Twofishes later: Twofishes handles "(S.C.)" just
+    # fine, so most of this test's assertion should be kept, but the code that
+    # works around this syntax should be altered.  When we use Twofishes,
+    # we're going to be able to preserve the "S.C." spelling in the "name"
+    # property, and when we do this for Ingestion 3 with MAPv4 we'll be able
+    # to preserve that spelling in the providedLabel property.
+    INPUT =  {
+        "_id": "foo",
+        "sourceResource": {
+            "spatial": {
+                "name": "Greenville (S.C.)"
+            }
+        }
+    }
+    EXPECTED = {
+        "_id": "foo",
+        "sourceResource": {
+            "spatial": [
+                {
+                    "county": "Greenville County",
+                    "country": "United States",
+                    "state": "South Carolina",
+                    "name": "Greenville (SC)",
+                    "coordinates": "34.85262, -82.39401"
+                }
+            ]
+        }
+    }
     url = server() + "geocode"
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
     assert resp.status == 200
@@ -674,7 +674,8 @@ def test_geocode_unicode():
         "_id": "12345",
         "sourceResource": {
             "spatial": [{
-                "name": u"États-Unis"
+                "country": "United States",
+                "name": "United States"
             }]
         }
     }
@@ -697,10 +698,10 @@ def test_geocode_place_get_coodinates():
     """Should check for and build coordinates from string even when in reverse
     order
     """
-    assert get_coordinates('not coordinate') == None
-    assert get_coordinates('999.84, 123.33') == None
-    assert get_coordinates('33.33, 123.33') == '33.33, 123.33'
-    assert get_coordinates('123.33,33.33') == '33.33, 123.33'
+    assert parse_coordinates_from_name('not coordinate') == None
+    assert parse_coordinates_from_name('999.84, 123.33') == None
+    assert parse_coordinates_from_name('33.33, 123.33') == '33.33, 123.33'
+    assert parse_coordinates_from_name('123.33,33.33') == '33.33, 123.33'
 
 
 def test_geocode_floats_to_coodinates():
