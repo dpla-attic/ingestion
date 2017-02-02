@@ -7,7 +7,7 @@ class CDLFetcher(AbsoluteURLFetcher):
         super(CDLFetcher, self).__init__(profile, uri_base, config_file)
         token = self.config.get("APITokens", "CDL")
         authorization = \
-            self.http_headers["X-Authentication-Token"].format(token)
+            profile.get('http_headers')['X-Authentication-Token'].format(token)
         self.http_headers["X-Authentication-Token"] = authorization
 
     def request_records(self, content, set_id):
