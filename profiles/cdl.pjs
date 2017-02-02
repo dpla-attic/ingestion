@@ -1,13 +1,16 @@
 {
     "name": "cdl", 
     "type": "cdl",
-    "endpoint_url": "http://52.11.194.40/couchdb/ucldc/_all_docs",
+    "endpoint_url": "https://solr.calisphere.org/solr/query?q=*:*",
+    "http_headers": {"X-Authentication-Token": "{0}"},
     "endpoint_url_params": {
-        "include_docs": "true",
-        "skip": 0,
-        "limit": 1000
+        "cursorMark": "*",
+        "sort": "id desc",
+        "start": 0,
+        "rows": 10000,
+        "fq": "-type_ss:dataset"
     },
-    "fetcher_threads": 4,
+    "fetcher_threads": 1,
     "contributor": {
         "@id": "http://dp.la/api/contributor/cdl", 
         "name": "California Digital Library"
