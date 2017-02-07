@@ -13,14 +13,24 @@ class TNMapper(MODSMapper):
 
     def map_is_part_of(self):
         path = "/metadata/mods/relatedItem"
+        collections = []
+
         if exists(self.provider_data, path):
             for relatedItem in getprop(self.provider_data, path):
-                if "type" in relatedItem \
-                        and "displayLabel" in relatedItem \
-                        and relatedItem["type"] == "host" \
-                        and relatedItem["displayLabel"] == "Project":
-                    title = relatedItem["titleInfo"]["title"]
-                    self.update_source_resource({"isPartOf": title})
+                title, description = ""
+                if "displayLabel" in relatedItem \
+                    and relatedItem["displayLabel"].lower in ["project",
+                                                              "collection"]:
+                    if "titleInfo" in relatedItem:
+                        title = relatedItem["titleInfo"]["title"]
+
+                    if "abstract" in relatedItem:
+                        description = relatedItem["abstract"]
+
+                    collections.append({"title": title,
+                                        "description": description})
+
+            self.update_source_resource({"collection": collections})
 
     # helper function for the next two functions
     def name_part(self, type):
