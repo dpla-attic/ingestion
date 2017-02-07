@@ -1,8 +1,7 @@
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.qdc_mapper import QDCMapper
 from dplaingestion.utilities import iterify
-from akara import logger
-
+from dplaingestion.textnode import textnode
 
 class WIMapper(QDCMapper):
     def __init__(self, provider_data):
@@ -10,16 +9,16 @@ class WIMapper(QDCMapper):
 
     def map_data_provider(self):
         """//edm:dataProvider -> .dataProvider (required property)"""
-        if exists(self.provider_data, 'dataProvider'):
-            self.mapped_data.update(
-                {'dataProvider': getprop(self.provider_data, 'dataProvider')})
+        data_provider = getprop(self.provider_data, 'dataProvider', True)
+        if data_provider:
+            self.mapped_data.update({'dataProvider': data_provider})
 
 
     def map_is_shown_at(self):
         """//edm:isShownAt -> .isShownAt (required property)"""
-        if exists(self.provider_data, 'isShownAt'):
-            self.mapped_data.update(
-                {'isShownAt': getprop(self.provider_data, 'isShownAt')})
+        is_shown_at = getprop(self.provider_data, 'isShownAt', True)
+        if is_shown_at:
+            self.mapped_data.update({'isShownAt': is_shown_at})
 
     def map_object(self):
         if exists(self.provider_data, 'preview'):
@@ -30,28 +29,27 @@ class WIMapper(QDCMapper):
         """//dct:isPartOf -> sourceResource.collection"""
         collection = []
         if exists(self.provider_data, 'isPartOf'):
-            for coll in iterify(getprop(self.provider_data, 'isPartOf')):
-                collection.append({"title": coll})
+            collection = [{'title': c} for c in
+                          iterify(getprop(self.provider_data, 'isPartOf', []))]
         if collection:
-            self.update_source_resource({ "collection": collection })
+            self.update_source_resource({"collection": collection})
+
+
 
     def map_format(self):
         """//dc:format or //dc:medium -> .sourceResource.format"""
-        format = []
+        formats = []
         self.extend_collection(format, 'medium')
         self.extend_collection(format, 'format')
-        if format:
-            self.update_source_resource({'format': format})
+        if formats:
+            self.update_source_resource({'format': formats})
 
     def map_identifier(self):
         """//dc:identifier -> .sourceResource.identifier"""
         if exists(self.provider_data, "dc:identifier"):
             identifiers = []
             for identifier in iterify(self.provider_data.get("identifier")):
-                if isinstance(identifier, dict) and "#text" in identifier:
-                    identifiers.append(identifier["#text"])
-                elif isinstance(identifier, basestring):
-                    identifiers.append(identifier)
+                identifiers.append(textnode(identifier))
             identifiers = filter(None, identifiers)
             if identifiers:
                 self.update_source_resource({"identifier": identifiers})
@@ -60,11 +58,8 @@ class WIMapper(QDCMapper):
         lang = []
         if exists(self.provider_data, "language"):
             for s in iterify(getprop(self.provider_data, "language")):
-                if isinstance(s, dict):
-                    lang.append(s.get("#text"))
-                else:
-                    lang.append(s)
-                lang = filter(None, lang)
+                lang.append(textnode(s))
+            lang = filter(None, lang)
 
         if lang:
             self.update_source_resource({"language": lang})
