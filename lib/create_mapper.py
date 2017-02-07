@@ -108,6 +108,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.esdn_mapper import EsdnMapper
         return EsdnMapper(data)
 
+    def _create_tn_mapper(data):
+        from dplaingestion.mappers.tn_mapper import TNMapper
+        return TNMapper(data)
+
     mappers = {
         'ia':           lambda d: _create_ia_mapper(d),
         'bpl':          lambda d: _create_bpl_mapper(d),
@@ -134,7 +138,8 @@ def create_mapper(mapper_type, data):
         'in':           lambda d: _create_in_mapper(d),
         'il':           lambda d: _create_il_mapper(d),
         'mi':           lambda d: _create_mi_mapper(d),
-        'esdn':         lambda d: _create_esdn_mapper(d)
+        'esdn':         lambda d: _create_esdn_mapper(d),
+        'tn':           lambda d: _create_tn_mapper(d)
     }
 
     return mappers.get(mapper_type)(data)
