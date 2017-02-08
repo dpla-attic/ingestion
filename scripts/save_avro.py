@@ -24,9 +24,9 @@ from dplaingestion.selector import getprop
 
 avro_schema = """
 {
-    "namespace": "ingestion1.avro",
+    "namespace": "DPLA_MAP_v3.1.avro",
     "type": "record",
-    "name": "record",
+    "name": "enriched_record",
     "fields": [
         { "name": "id",         "type": "string" },
         { "name": "document",   "type": "string" }
@@ -53,45 +53,56 @@ def define_arguments():
 
 
 def main(argv):
-    parser = define_arguments()
-    args = parser.parse_args(argv[1:])
+    try:
+        parser = define_arguments()
+        args = parser.parse_args(argv[1:])
+        enrich_dir = get_enrich_dir(args.ingestion_document_id)
+        schema = avro.schema.parse(avro_schema)
+        total_items = write_avro(
+            args.codec,
+            enrich_dir,
+            args.output_file,
+            schema
+        )
+        print >> sys.stderr, "Saved %s documents" % total_items
+        return 0
 
-    schema = avro.schema.parse(avro_schema)
-    writer = DataFileWriter(
-        open(args.output_file, "w"),
-        DatumWriter(),
-        schema,
-        args.codec
-    )
+    except Exception, e:
+        print >> sys.stderr, "Caught error: %s" % e.message
+        return 1
 
-    couch = Couch()
-    ingestion_doc = couch.dashboard_db[args.ingestion_document_id]
 
-    if getprop(ingestion_doc, "enrich_process/status") != "complete":
-        print "Cannot save Avro files, enrich process did not complete"
-        return -1
+def write_avro(codec, enrich_dir, output_filename, schema):
+    with open(output_filename, "w") as outfile:
+        writer = DataFileWriter(outfile, DatumWriter(), schema, codec)
+        total_items = 0
 
-    enrich_dir = getprop(ingestion_doc, "enrich_process/data_dir")
-    total_items = 0
-
-    for enriched_file in os.listdir(enrich_dir):
-        filename = os.path.join(enrich_dir, enriched_file)
-        with open(filename, "r") as f:
-            try:
-                file_docs = json.loads(f.read())
+        for enriched_file in os.listdir(enrich_dir):
+            filename = os.path.join(enrich_dir, enriched_file)
+            with open(filename, "r") as input_file:
+                file_docs = json.loads(input_file.read())
                 for key in file_docs:
                     doc = file_docs[key]
                     writer.append({"id": key, "document": json.dumps(doc)})
                     total_items += 1
 
-            except Exception, e:
-                print >> sys.stderr, "Error loading %s: %s" % (filename, e)
-                break
+            print >> sys.stderr, "Read file %s" % filename
 
-        print >> sys.stderr, "Read file %s" % filename
+        writer.close()
+    return total_items
 
-    writer.close()
-    print >> sys.stderr, "Saved %s documents" % total_items
+
+def get_enrich_dir(ingestion_document_id):
+    couch = Couch()
+    ingestion_doc = couch.dashboard_db[ingestion_document_id]
+
+    if getprop(ingestion_doc, "enrich_process/status") != "complete":
+        raise AssertionError(
+            "Cannot save Avro files, enrich process did not complete")
+
+    return getprop(ingestion_doc, "enrich_process/data_dir")
+
 
 if __name__ == '__main__':
-    main(sys.argv)
+    retval = main(sys.argv)
+    sys.exit(retval)
