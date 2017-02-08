@@ -7,6 +7,9 @@ Usage:
 
 To use snappy support you need to install snappy with your package manager,
     and pip install python-snappy
+
+Homebrew package is "snappy", in Ubuntu you need libsnappy1 and libsnappy-dev
+
 """
 import os
 import sys
