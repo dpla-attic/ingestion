@@ -3,6 +3,7 @@ from dplaingestion.selector import getprop
 from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
 from akara import logger
 
+
 class CDLJSONMapper(MAPV3JSONMapper):
     def __init__(self, provider_data):
         super(CDLJSONMapper, self).__init__(provider_data)
@@ -70,4 +71,3 @@ class CDLJSONMapper(MAPV3JSONMapper):
             url = "https://thumbnails.calisphere.org/clip/150x150/%s" \
                   % reference_image_md5
             self.mapped_data.update({"preview": url})
-
