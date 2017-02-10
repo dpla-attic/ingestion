@@ -24,12 +24,13 @@ from dplaingestion.selector import getprop
 
 avro_schema = """
 {
-    "namespace": "DPLA_MAP_v3.1.avro",
+    "namespace": "la.dp.avro.MAP_3.1",
     "type": "record",
-    "name": "enriched_record",
+    "name": "EnrichedRecord",
+    "doc": "Dumped from PA cqa box in Ingestion 1"
     "fields": [
-        { "name": "id",         "type": "string" },
-        { "name": "document",   "type": "string" }
+        { "name": "id",             "type": "string" },
+        { "name": "json_document",  "type": "string" }
     ]
 }"""
 
