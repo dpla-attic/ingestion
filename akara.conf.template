@@ -205,11 +205,6 @@ MODULES = [
 
 ### Section 3: Other module configuration goes here
 
-class geocoding:
-    cache_max_age = 86400*7
-    geocoder = 'http://purl.org/com/zepheira/services/geocoders/local-geonames'
-    geonames_dbfile = Akara.ConfigRoot+'/caches/geonames.sqlite3'
-
 class geocode: 
     bing_api_key = "${Bing__ApiKey}"
     geonames_username = "${Geonames__Username}"

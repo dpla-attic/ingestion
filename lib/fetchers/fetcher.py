@@ -67,14 +67,19 @@ class Fetcher(object):
     def request_content_from(self, url, params={}, attempts=3):
         error = None
         resp = None
-        m = re.match(r"http://(.*?)(/.*)", url)
-        socket_parts = m.group(1).split(":")
+        m = re.match(r"(https?)://(.*?)(/.*)", url)
+        socket_parts = m.group(2).split(":")
         host = socket_parts[0]
+        ssl = m.group(1) == "https"
+
         if len(socket_parts) == 2:
             port = int(socket_parts[1])
+        elif ssl:
+            port = 443
         else:
             port = 80
-        req_uri = m.group(2)
+
+        req_uri = m.group(3)
         if params:
             if "?" in req_uri:
                 req_uri += "&" + urlencode(params, True)
@@ -83,7 +88,10 @@ class Fetcher(object):
 
         for i in range(attempts):
             try:
-                con = httplib.HTTPConnection(host, port)
+                if ssl:
+                    con = httplib.HTTPSConnection(host, port)
+                else:
+                    con = httplib.HTTPConnection(host, port)
                 con.request("GET", req_uri, None, self.http_headers)
                 resp = con.getresponse()
                 if resp.status == 200:
