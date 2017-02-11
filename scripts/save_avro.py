@@ -84,7 +84,7 @@ def write_avro(codec, enrich_dir, output_filename, schema):
                 file_docs = json.loads(input_file.read())
                 for key in file_docs:
                     doc = file_docs[key]
-                    writer.append({"id": key, "document": json.dumps(doc)})
+                    writer.append({"id": key, "json_document": json.dumps(doc)})
                     total_items += 1
 
             print >> sys.stderr, "Read file %s" % filename
