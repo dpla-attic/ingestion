@@ -27,7 +27,7 @@ avro_schema = """
     "namespace": "la.dp.avro.MAP_3.1",
     "type": "record",
     "name": "EnrichedRecord",
-    "doc": "Dumped from PA cqa box in Ingestion 1"
+    "doc": "Dumped from PA cqa box in Ingestion 1",
     "fields": [
         { "name": "id",             "type": "string" },
         { "name": "json_document",  "type": "string" }
