@@ -31,6 +31,7 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
+        "/enrich_language",
         "/geocode",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
