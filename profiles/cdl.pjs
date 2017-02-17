@@ -1,6 +1,7 @@
 {
     "name": "cdl", 
     "type": "cdl",
+    "provider": "cdl",
     "endpoint_url": "https://solr.calisphere.org/solr/query?q=*:*",
     "http_headers": {"X-Authentication-Token": "{0}"},
     "endpoint_url_params": {
@@ -21,13 +22,15 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=doc%2FisShownAt",
+        "/select-id?prop=isShownAt",
         "/dpla_mapper?mapper_type=cdl_json",
-        "/shred?prop=sourceResource%2Fformat%2CsourceResource%2Fsubject",
+        "/strip_html",
+        "/capitalize_value",
         "/set_context",
-        "/cdl_identify_object",
         "/cleanup_value",
+        "/enrich_earliest_date",
         "/enrich-subject",
+        "/enrich_date",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
