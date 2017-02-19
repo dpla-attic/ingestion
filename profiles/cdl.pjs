@@ -22,7 +22,7 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=isShownAt",
+        "/select-id?prop=id",
         "/dpla_mapper?mapper_type=cdl_json",
         "/strip_html",
         "/capitalize_value",
