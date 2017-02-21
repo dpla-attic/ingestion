@@ -64,10 +64,10 @@ class CDLJSONMapper(MAPV3JSONMapper):
     def update_mapped_fields(self):
         self.map_preview()
 
-    def map_preview(self):
+    def map_object(self):
         reference_image_md5 = \
             getprop(self.provider_data, "reference_image_md5", True)
         if reference_image_md5:
             url = "https://thumbnails.calisphere.org/clip/150x150/%s" \
                   % reference_image_md5
-            self.mapped_data.update({"preview": url})
+            self.mapped_data.update({"object": url})
