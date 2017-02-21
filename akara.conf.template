@@ -206,9 +206,7 @@ MODULES = [
 ### Section 3: Other module configuration goes here
 
 class geocode: 
-    bing_api_key = "${Bing__ApiKey}"
-    geonames_username = "${Geonames__Username}"
-    geonames_token = "${Geonames__Token}"
+    twofishes_base_url = "${Twofishes__BaseUrl}"
 
 class lookup:
     # Key is passed in query param.
