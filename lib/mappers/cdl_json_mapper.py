@@ -61,9 +61,6 @@ class CDLJSONMapper(MAPV3JSONMapper):
         if data_provider:
             self.mapped_data.update({"dataProvider": data_provider})
 
-    def update_mapped_fields(self):
-        self.map_preview()
-
     def map_object(self):
         reference_image_md5 = \
             getprop(self.provider_data, "reference_image_md5", True)
