@@ -21,16 +21,19 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=doc%2FisShownAt",
+        "/select-id?prop=id",
         "/dpla_mapper?mapper_type=cdl_json",
-        "/shred?prop=sourceResource%2Fformat%2CsourceResource%2Fsubject",
+        "/strip_html",
+        "/capitalize_value",
         "/set_context",
-        "/cdl_identify_object",
         "/cleanup_value",
+        "/enrich_earliest_date",
         "/enrich-subject",
+        "/enrich_date",
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
+        "/enrich_language",
         "/geocode",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/validate_mapv3"
