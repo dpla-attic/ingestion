@@ -1,7 +1,6 @@
 {
     "name": "cdl", 
     "type": "cdl",
-    "provider": "cdl",
     "endpoint_url": "https://solr.calisphere.org/solr/query?q=*:*",
     "http_headers": {"X-Authentication-Token": "{0}"},
     "endpoint_url_params": {
