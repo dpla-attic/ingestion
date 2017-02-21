@@ -37,18 +37,16 @@ class PAMapper(DublinCoreMapper):
     def map_rights(self):
         prop = "rights"
         if exists(self.provider_data, prop):
-            rightsUri = ""
+            rights_uri = ""
             rights = self.provider_data.get(prop)
             try:
-                if rights.startsWith("http"):
-                    rightsUri = urlparse(rights).geturl()
+                if rights.startswith("http"):
+                    rights_uri = urlparse(rights).geturl()
             except Exception as e:
-                logger.warn("Unable to parse rights URI: %s" % (rights))
+                logger.warn("Unable to parse rights URI: %s\n%s" % (rights, e))
 
-            # Map rights URIs to edm:rights (at root level of doc)
-            if rightsUri:
-                self.mapped_data.update({"rights": rightsUri})
-            # Map rights descriptions to SourceResouce.rights
+            if rights_uri:
+                self.mapped_data.update({"rights": rights_uri})
             else:
                 self.update_source_resource({"rights": rights})
 
