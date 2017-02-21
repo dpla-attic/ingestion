@@ -2,6 +2,7 @@ from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.dublin_core_mapper import DublinCoreMapper
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, setprop
+from urlparse import urlparse
 from akara import logger
 
 
@@ -33,6 +34,24 @@ class PAMapper(DublinCoreMapper):
             if len(relations) > 1:
                 self.update_source_resource({"relation": relations[1:]})
 
+    def map_rights(self):
+        prop = "rights"
+        if exists(self.provider_data, prop):
+            rightsUri = ""
+            rights = self.provider_data.get(prop)
+            try:
+                if rights.startsWith("http"):
+                    rightsUri = urlparse(rights).geturl()
+            except Exception as e:
+                logger.warn("Unable to parse rights URI: %s" % (rights))
+
+            # Map rights URIs to edm:rights (at root level of doc)
+            if rightsUri:
+                self.mapped_data.update({"rights": rightsUri})
+            # Map rights descriptions to SourceResouce.rights
+            else:
+                self.update_source_resource({"rights": rights})
+
     def map_type(self):
         prop = "type"
         if exists(self.provider_data, prop):
@@ -59,12 +78,20 @@ class PAMapper(DublinCoreMapper):
                 self.update_source_resource({"contributor": contributors[:-1]})
 
     def map_identifier(self):
+        """
+        * If there are three identifiers the last identifier is the <object>
+        and the second is <isShownAt>
+        * If there are two identifier, the last is (or, still, the second) is
+        <isShownAt>
+        :return:
+        """
         prop = "handle"
         if exists(self.provider_data, prop):
             identifiers = iterify(getprop(self.provider_data, prop))
-            if len(identifiers) > 1:
-                setprop(self.mapped_data, "isShownAt", identifiers[1])
+            if len(identifiers) >= 2:
                 setprop(self.mapped_data, "object", identifiers[-1])
+            if len(identifiers) > 2:
+                setprop(self.mapped_data, "isShownAt", identifiers[1])
 
     def map_subject(self):
         prop = "subject"
@@ -82,9 +109,6 @@ class PAMapper(DublinCoreMapper):
 
         if subject:
             self.update_source_resource({"subject": subject})
-
-    def map_date(self):
-        pass
 
     def map_intermediate_provider(self):
         prop = "source"
