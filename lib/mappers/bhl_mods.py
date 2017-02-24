@@ -18,22 +18,19 @@ class BHLMapper(OAIMODSMapper):
         }
 
         if exists(self.provider_data, prop):
-            for s in iterify(getprop(self.provider_data, prop)):
-                if "dateOther" in s:
-                    date_list = iterify(s.get("dateOther"))
-                    date = [t.get("#text") for t in date_list if
-                            t.get("keyDate") == "yes"
-                            and t.get("type") == "issueDate"]
-                    # Check if last date is already a range
-                    if "-" in date[-1] or "/" in date[-1]:
-                        _dict["date"] = date[-1]
-                    elif len(date) > 1:
-                        _dict["date"] = "%s-%s" % (date[0], date[-1])
+            for or_info in iterify(getprop(self.provider_data, prop)):
+                dates = _date_values(or_info)  # They come sorted
+                if dates:
+                    if '-' in dates[-1] or '/' in dates[-1]:
+                        # Date is already a range, so just use it
+                        _dict['date'] = dates[-1]
+                    elif len(dates) > 1:
+                        _dict['date'] = "%s-%s" % (dates[0], dates[-1])
                     else:
-                        _dict["date"] = date[0]
+                        _dict['date'] = dates[0]
 
-                if "publisher" in s:
-                    _dict["publisher"].append(s.get("publisher"))
+                if "publisher" in or_info:
+                    _dict["publisher"].append(or_info["publisher"])
 
             self.update_source_resource(self.clean_dict(_dict))
 
@@ -243,6 +240,55 @@ class BHLMapper(OAIMODSMapper):
         self.map_edm_has_type()
         self.map_date_and_publisher()
 
+class DateString(unicode):
+    """Class for date strings that has custom sorting rules
+
+    Strings with range delimiters ('-' and '/') are sorted to the end of the
+    list.
+
+    See how BHLMapper.map_date_and_publisher() expects to encounter date
+    ranges.
+    """
+    def __lt__(a, b):
+        if '-' in a or '/' in a:
+            if '-' not in b and '/' not in b:
+                return False
+            else:
+                return unicode.__lt__(a, b)
+        elif '-' in b or '/' in b:
+            return True
+        else:
+            return unicode.__lt__(a, b)
+    def __gt__(a, b):
+        if '-' in a or '/' in a:
+            if '-' not in b and '/' not in b:
+                return True
+            else:
+                return unicode.__lt__(a, b)
+        elif '-' in b or '/' in b:
+            return False
+        else:
+            return unicode.__lt__(a, b)
+
+
+def _date_values(element):
+    """Pick out the child element of the given XML element that is our date
+    field, and return the date values from it as a list of strings.
+    """
+    prop = [k for k in element if k in ['dateOther', 'dateIssued']]
+    if not prop:
+        return None
+    date_list = iterify(element.get(prop[0]))
+    return [DateString(textnode(e))
+            for e in _date_elements(date_list, prop[0])]
+
+def _date_elements(el_list, el_name):
+    """Given a list of candidate elements, yield those suitable as dates"""
+    for e in el_list:
+        if isinstance(e, dict) and e.get('keyDate') == 'yes':
+            if (el_name == 'dateOther' and e.get('type') == 'issueDate') \
+                    or el_name == 'dateIssued':
+                yield e
 
 def _good_titles(elements):
     """Given a list of elements, yield the ones that are "real" titles.
