@@ -100,11 +100,13 @@ class BHLMapper(OAIMODSMapper):
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 if "geographic" in s:
-                    _dict["spatial"].append(s.get("geographic"))
+                    _dict["spatial"].append(s["geographic"])
                 elif "topic" in s:
-                    _dict["subject"].append(s.get("topic"))
+                    _dict["subject"].append(s["topic"])
+                elif "genre" in s:
+                    _dict["subject"].append(s["genre"])
                 elif "temporal" in s:
-                    _dict["temporal"].append(s.get("temporal"))
+                    _dict["temporal"].append(s["temporal"])
 
             self.update_source_resource(self.clean_dict(_dict))
 
