@@ -112,3 +112,11 @@ class PAMapper(DublinCoreMapper):
         prop = "source"
         if exists(self.provider_data, prop):
             setprop(self.mapped_data, "intermediateProvider", getprop(self.provider_data, prop))
+
+    def map_is_shown_at(self):
+        """
+        Override map_is_shown_at to do nothing because it is incorrectly
+        implemented for PA in dublin_core_mapper. isShownAt is mapped in
+        map_identifier
+        """
+        pass
