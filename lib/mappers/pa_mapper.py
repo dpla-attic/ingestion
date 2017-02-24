@@ -79,16 +79,16 @@ class PAMapper(DublinCoreMapper):
         """
         * If there are three identifiers the last identifier is the <object>
         and the second is <isShownAt>
-        * If there are two identifier, the last is (or, still, the second) is
+        * If there are two identifiers, the last is (or, still, the second) is
         <isShownAt>
         :return:
         """
         prop = "handle"
         if exists(self.provider_data, prop):
             identifiers = iterify(getprop(self.provider_data, prop))
-            if len(identifiers) >= 2:
-                setprop(self.mapped_data, "object", identifiers[-1])
             if len(identifiers) > 2:
+                setprop(self.mapped_data, "object", identifiers[-1])
+            if len(identifiers) >= 2:
                 setprop(self.mapped_data, "isShownAt", identifiers[1])
 
     def map_subject(self):
