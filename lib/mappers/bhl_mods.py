@@ -231,6 +231,10 @@ class BHLMapper(OAIMODSMapper):
 
             self.update_source_resource(creator_and_contributor)
 
+    def map_collection(self):
+        """Skip mapping `collection', per G.G. 2017-02-17"""
+        pass
+
     def map_multiple_fields(self):
         self.map_format_and_spec_type()
         self.map_creator_and_contributor()
