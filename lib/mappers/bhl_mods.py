@@ -1,3 +1,4 @@
+import re
 from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
@@ -190,7 +191,9 @@ class BHLMapper(OAIMODSMapper):
                 return "%s, %s" % (t, number)
             else:
                 return t
-        full_titles = [t_string(t) for t in titles]
+        # Titles are concatenated with volume numbers, and have various
+        # unwanted characters and whitespace removed.
+        full_titles = [t_string(re.sub(r'[\s:\\]+$', '', t)) for t in titles]
         if full_titles:
             self.update_source_resource({"title": full_titles})
 

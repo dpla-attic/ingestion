@@ -130,3 +130,22 @@ def test_no_date_or_publisher_data():
     mapper.map_date_and_publisher()
     assert mapper.mapped_data['sourceResource'] == {}
 
+def test_map_title_append_volume():
+    """Titles are appended with volumes, without unwanted characters"""
+    orig_rec = {
+        'titleInfo': {
+            'title': "The Conchologists' exchange.\n \\ :"
+        },
+        'part': {
+            'detail': {
+                'type': 'volume',
+                'number': '34'
+            }
+        }
+    }
+    mapper = bhl_mods.BHLMapper(orig_rec)
+    mapper.root_key = ''
+    mapper.map_title()
+    assert mapper.mapped_data["sourceResource"] == {
+        'title': ["The Conchologists' exchange., 34"]
+    }
