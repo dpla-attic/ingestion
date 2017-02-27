@@ -1,5 +1,6 @@
 from dplaingestion.mappers import bhl_mods
 from mock import MagicMock
+from nose.tools import assert_equals
 
 
 def test_datestring_sort():
@@ -79,6 +80,31 @@ def test_date_values():
         [bare_date_str, date_issued_hash1, date_issued_hash2], 'dateIssued')
     assert rv == [u'1908', u'1909']
 
+def test_date_values_sorted():
+    """Returns date values sorted with ranges last"""
+    # I.e. values representing ranges like "2000-2001 or 2000/2001" come at the
+    # end of the list.
+    date_other_list = [{'point': 'start',
+                        'encoding': 'marc',
+                        '#text': '1901-1902',
+                        'keyDate': 'yes',
+                        'type': 'issueDate'},
+                       {'point': 'start',
+                        'encoding': 'marc',
+                        '#text': '1903/1904',
+                        'keyDate': 'yes',
+                        'type': 'issueDate'},
+                       {'point': 'start',
+                        'encoding': 'marc',
+                        '#text': '1910',
+                        'keyDate': 'yes',
+                        'type': 'issueDate'}]
+    incoming = {'dateOther': date_other_list}
+    bhl_mods._date_elements = MagicMock(return_value=date_other_list)
+    rv = bhl_mods._date_values(incoming)
+    bhl_mods._date_elements.assert_called_with(date_other_list, 'dateOther')
+    assert_equals(rv, [u'1910', u'1901-1902', u'1903/1904'])
+
 def test_map_date_range_string():
     """Date strings expressed as ranges are preferred over single years"""
     date_strs = ['1901-1902', '1903/1904']
@@ -86,10 +112,11 @@ def test_map_date_range_string():
         orig_rec = {'originInfo': {'dateIssued': ['stub']}}
         mapper = bhl_mods.BHLMapper(orig_rec)
         mapper.root_key = ''
-        bhl_mods._date_values = MagicMock(return_value=[unicode(d)])
+        bhl_mods._date_values = MagicMock(return_value=[u'1899', unicode(d)])
         mapper.map_date_and_publisher()
         bhl_mods._date_values.assert_called_with(orig_rec['originInfo'])
-        assert mapper.mapped_data['sourceResource'] == {'date': unicode(d)}
+        assert_equals(mapper.mapped_data['sourceResource'],
+                      {'date': unicode(d)})
 
 def test_map_date_multiple_format_as_range():
     """A number of date elements produces hyphenated range of low to high"""

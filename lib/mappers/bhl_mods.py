@@ -284,8 +284,8 @@ def _date_values(element):
     if not prop:
         return None
     date_list = iterify(element.get(prop[0]))
-    return [DateString(textnode(e))
-            for e in _date_elements(date_list, prop[0])]
+    return sorted([DateString(textnode(e))
+                   for e in _date_elements(date_list, prop[0])])
 
 def _date_elements(el_list, el_name):
     """Given a list of candidate elements, yield those suitable as dates"""
