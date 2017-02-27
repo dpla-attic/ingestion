@@ -7,12 +7,12 @@ from akara import request, response
 from akara import logger
 from dplaingestion.selector import getprop, setprop, exists
 
-COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname))
+COUCH_ID_BUILDER = lambda src, lname: "--".join((src,lname)) if src else lname
 COUCH_REC_ID_BUILDER = lambda src, id_handle: COUCH_ID_BUILDER(src,id_handle.strip().replace(" ","__"))
 
 @simple_service('POST', 'http://purl.org/la/dp/select-id', 'select-id',
                 'application/json')
-def selid(body, ctype, prop='handle'):
+def selid(body, ctype, prop='handle', use_prefix="true"):
     '''   
     Service that accepts a JSON document and adds or sets the "id" property to
     the value of the property named by the "prop" paramater
@@ -32,7 +32,9 @@ def selid(body, ctype, prop='handle'):
         return "Unable to parse body as JSON"
 
     request_headers = copy_headers_to_dict(request.environ)
-    source_name = request_headers.get('Source')
+    source_name = ""
+    if use_prefix.lower() == "true":
+        source_name = request_headers.get('Source')
 
     id = None
     if exists(data,prop):
