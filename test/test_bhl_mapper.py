@@ -23,10 +23,10 @@ def test_date_elements_date_issued():
                  'encoding': 'marc',
                  '#text': '1922'}]
     yielded = [e for e in bhl_mods._date_elements(elements, 'dateIssued')]
-    assert yielded == [{'point': 'start',
-                        'encoding': 'marc',
-                        '#text': '1921',
-                        'keyDate': 'yes'}]
+    assert_equals(yielded, [{'point': 'start',
+                             'encoding': 'marc',
+                             '#text': '1921',
+                             'keyDate': 'yes'}])
 
 def test_date_elements_date_other():
     """Given a list of candidate dateOther elements, only suitable ones are
@@ -46,11 +46,11 @@ def test_date_elements_date_other():
                  'encoding': 'marc',
                  '#text': '1923'}]
     yielded = [e for e in bhl_mods._date_elements(elements, 'dateOther')]
-    assert yielded == [{'point': 'start',
-                        'encoding': 'marc',
-                        '#text': '1921',
-                        'keyDate': 'yes',
-                        'type': 'issueDate'}]
+    assert_equals(yielded, [{'point': 'start',
+                             'encoding': 'marc',
+                             '#text': '1921',
+                             'keyDate': 'yes',
+                             'type': 'issueDate'}])
 
 def test_date_values():
     """Returns a list of date strings given a dict with the right properties"""
@@ -78,7 +78,7 @@ def test_date_values():
     rv = bhl_mods._date_values(incoming)
     bhl_mods._date_elements.assert_called_with(
         [bare_date_str, date_issued_hash1, date_issued_hash2], 'dateIssued')
-    assert rv == [u'1908', u'1909']
+    assert_equals(rv, [u'1908', u'1909'])
 
 def test_date_values_sorted():
     """Returns date values sorted with ranges last"""
@@ -126,7 +126,7 @@ def test_map_date_multiple_format_as_range():
     bhl_mods._date_values = MagicMock(return_value=[u'1900', u'1901', u'1902'])
     mapper.map_date_and_publisher()
     bhl_mods._date_values.assert_called_with(orig_rec['originInfo'])
-    assert mapper.mapped_data['sourceResource'] == {'date': u'1900-1902'}
+    assert_equals(mapper.mapped_data['sourceResource'], {'date': u'1900-1902'})
 
 def test_map_date_single():
     """A single date is mapped"""
@@ -136,7 +136,7 @@ def test_map_date_single():
     bhl_mods._date_values = MagicMock(return_value=[u'1900'])
     mapper.map_date_and_publisher()
     bhl_mods._date_values.assert_called_with(orig_rec['originInfo'])
-    assert mapper.mapped_data['sourceResource'] == {'date': u'1900'}
+    assert_equals(mapper.mapped_data['sourceResource'], {'date': u'1900'})
 
 def test_map_publisher():
     """A publisher is mapped if it is given"""
@@ -145,8 +145,8 @@ def test_map_publisher():
     mapper.root_key = ''
     bhl_mods._date_values = MagicMock(return_value=[u'1900'])
     mapper.map_date_and_publisher()
-    assert mapper.mapped_data['sourceResource'] == {'date': u'1900',
-                                                    'publisher': ['X']}
+    assert_equals(mapper.mapped_data['sourceResource'], {'date': u'1900',
+                                                         'publisher': ['X']})
 
 def test_no_date_or_publisher_data():
     """Does not make changes, does not fail if there are no date / publisher"""
@@ -155,7 +155,7 @@ def test_no_date_or_publisher_data():
     mapper.root_key = ''
     bhl_mods._date_values = MagicMock(return_value=[])
     mapper.map_date_and_publisher()
-    assert mapper.mapped_data['sourceResource'] == {}
+    assert_equals(mapper.mapped_data['sourceResource'], {})
 
 def test_map_title_append_volume():
     """Titles are appended with volumes, without unwanted characters"""
@@ -173,6 +173,5 @@ def test_map_title_append_volume():
     mapper = bhl_mods.BHLMapper(orig_rec)
     mapper.root_key = ''
     mapper.map_title()
-    assert mapper.mapped_data["sourceResource"] == {
-        'title': ["The Conchologists' exchange., 34"]
-    }
+    assert_equals(mapper.mapped_data["sourceResource"],
+                  {'title': ["The Conchologists' exchange., 34"]})
