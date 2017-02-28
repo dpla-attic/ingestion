@@ -4,7 +4,7 @@
     "metadata_prefix": "mods",
     "endpoint_url": "http://www.biodiversitylibrary.org/oai",
     "sets": [
-        "title"
+        "item"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/bhl",
