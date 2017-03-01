@@ -239,7 +239,7 @@ class TwofishesGeocoder():
         url = self._url(xtra_params)
         try:
             return self._twofishes_data(url)['interpretations'][0]
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             return {}
 
     def _url(self, params):
