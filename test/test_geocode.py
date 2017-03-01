@@ -565,7 +565,7 @@ def test_geocode_name_search_failure():
         "_id": "12345",
         "sourceResource": {
             "spatial": {
-                "name": "1234567"
+                "name": "Some Nonexistent Place"
             }
         }
     }
@@ -575,7 +575,7 @@ def test_geocode_name_search_failure():
         "_id": "12345",
         "sourceResource": {
             "spatial": [{
-                "name": "1234567"
+                "name": "Some Nonexistent Place"
             }]
         }
     }
