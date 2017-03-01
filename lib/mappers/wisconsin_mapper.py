@@ -39,8 +39,8 @@ class WIMapper(QDCMapper):
     def map_format(self):
         """//dc:format or //dc:medium -> .sourceResource.format"""
         formats = []
-        self.extend_collection(format, 'medium')
-        self.extend_collection(format, 'format')
+        self.extend_collection(formats, 'medium')
+        self.extend_collection(formats, 'format')
         if formats:
             self.update_source_resource({'format': formats})
 

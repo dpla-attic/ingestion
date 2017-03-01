@@ -1,79 +1,70 @@
-from akara import logger
-from amara.lib.iri import is_absolute
 from dplaingestion.utilities import iterify
-from dplaingestion.selector import exists, getprop, delprop
+from dplaingestion.selector import getprop
 from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
+from akara import logger
+
 
 class CDLJSONMapper(MAPV3JSONMapper):
     def __init__(self, provider_data):
         super(CDLJSONMapper, self).__init__(provider_data)
-        self.root_key = "doc/"
 
-    # sourceResource mapping
-    def map_collection(self):
-        if exists(self.provider_data, "collection"):
-            self.update_source_resource({"collection": self.provider_data.get("collection")})
+    def map_source_resource(self):
+        super(CDLJSONMapper, self).map_source_resource()
+        maps = {
+            "alternative_title_ss": "alternative",
+            "collection_name": "isPartOf",
+            "contributor_ss": "contributor",
+            "creator_ss": "creator",
+            "description": "description",
+            "extent_ss": "extent",
+            "format_ss": "format",
+            "genre_ss": "hasType",
+            "identifier_ss": "identifer",
+            "language_ss": "language",
+            "coverage_ss": "spatial",
+            "publisher_ss": "publisher",
+            "relation_ss": "relation",
+            "rights_ss": "rights",
+            "rights_note_ss": "rights",
+            "rights_date_ss": "rights",
+            "rightsholder_ss": "rights",
+            "subject_ss": "subject",
+            "temporal_ss": "temporal",
+            "title_ss": "title",
+            "type_ss": "type"
+        }
 
-    def update_subject(self):
-        subjects = []
-        if exists(self.mapped_data, "sourceResource/subject"):
-            for subject in iterify(getprop(self.mapped_data, "sourceResource/subject")):
-                if isinstance(subject, basestring):
-                    subjects.append(subject)
-                elif isinstance(subject, dict):
-                    s = getprop(subject, "name", True)
-                    if s:
-                        subjects.append(s)
-                else:
-                    pass
-            delprop(self.mapped_data, "sourceResource/subject", True)
-        if subjects:
-            self.update_source_resource({"subject": subjects})
+        for (source, dest) in maps.iteritems():
+            values = \
+                iterify(getprop(self.provider_data, source, True))
+            if values:
+                existing_values = \
+                    getprop(self.mapped_data["sourceResource"], dest, True)
+                if existing_values:
+                    values = list(set(values + existing_values))
+                self.update_source_resource({dest: values})
 
-    def update_data_provider(self):
-        new_data_provider = getprop(self.mapped_data, "dataProvider", True)
-        # if unset or dict or list
-        if not isinstance(new_data_provider, basestring): 
-            f = getprop(self.provider_data, "doc/originalRecord/facet-institution")
-            if isinstance(f, dict):
-                new_data_provider = f.pop("text", None)
-            elif isinstance(f, list) and len(f) > 0:
-                new_data_provider = f[0].pop("text", None)
-            if not isinstance(new_data_provider, basestring):
-                new_data_provider = None
-        if new_data_provider:
-            new_data_provider = new_data_provider.replace("::", ", ")
-            self.mapped_data.update({"dataProvider": new_data_provider})
-        else:
-            delprop(self.mapped_data, "dataProvider", True)
+    def map_is_shown_at(self):
+        url_item = iterify(getprop(self.provider_data, "url_item", True))
+        if url_item:
+            self.mapped_data.update({"isShownAt": url_item[0]})
 
-    def update_language(self):
-        out_languages = []
-        for language in iterify(getprop(self.mapped_data, "sourceResource/language", True)):
-            if isinstance(language, dict):
-                out_languages.append(language)
-            elif isinstance(language, basestring):
-                out_languages.append({"name": language})
-        if out_languages:
-            self.update_source_resource({"language": out_languages})
-        else:
-            delprop(self.mapped_data, "language", True)
+    def map_data_provider(self):
+        data_provider = ""
+        campus_name = iterify(getprop(self.provider_data, "campus_name", True))
+        repository_name = \
+            iterify(getprop(self.provider_data, "repository_name", True))
+        if campus_name and repository_name:
+            data_provider = "%s, %s" % (campus_name[0], repository_name[0])
+        elif repository_name:
+            data_provider = repository_name[0]
+        if data_provider:
+            self.mapped_data.update({"dataProvider": data_provider})
 
-    def update_spatial(self):
-        out_spatial = []
-        for spatial in iterify(getprop(self.mapped_data, "sourceResource/spatial", True)):
-            if isinstance(spatial, dict):
-                spatial_text = spatial.pop("text", None)
-                if spatial_text:
-                    spatial["name"] = spatial_text
-                    spatial.pop("attrib", None)
-            if spatial:
-                out_spatial.append(spatial)
-        if out_spatial:
-            self.update_source_resource({"spatial": out_spatial})
-
-    def update_mapped_fields(self):
-        self.update_subject()
-        self.update_data_provider()
-        self.update_language()
-        self.update_spatial()
+    def map_object(self):
+        reference_image_md5 = \
+            getprop(self.provider_data, "reference_image_md5", True)
+        if reference_image_md5:
+            url = "https://thumbnails.calisphere.org/clip/150x150/%s" \
+                  % reference_image_md5
+            self.mapped_data.update({"object": url})

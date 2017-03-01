@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
-import itertools
-import sys
-from server_support import server, H, print_error_log
+from server_support import server, H
 from amara.thirdparty import json
 from nose.plugins.attrib import attr
 from dict_differ import assert_same_jsons
-from dplaingestion.selector import setprop, getprop, exists
-from dplaingestion.akamod.geocode import Place, floats_to_coordinates, parse_coordinates_from_name
+from dplaingestion.selector import setprop
+from dplaingestion.akamod import geocode
 
 @attr(travis_exclude='yes')
-def test_geocode():
+def test_basic_forward_lookup():
     """
     Simple geocode
     """
@@ -32,6 +30,7 @@ def test_geocode():
             "spatial": [
                 {
                     "name": "Bakersfield, CA",
+                    "city": "Bakersfield",
                     "state": "California",
                     "county": "Kern County",
                     "country": "United States",
@@ -82,6 +81,7 @@ def test_close_multiple_results():
             "spatial": [
                 {
                     "name": "Philadelphia, PA",
+                    "city": "Philadelphia",
                     'county': 'Philadelphia County',
                     "state": "Pennsylvania",
                     "country": "United States",
@@ -92,14 +92,15 @@ def test_close_multiple_results():
                     "country": "United States",
                     "state": "California",
                     "name": "San Francisco, CA",
+                    "city": "San Francisco",
                     "coordinates": "37.77493, -122.41942"
                 },
                 {
-                    # We aren't recognizing City, State format yet
-                    'coordinates': '43.00035, -75.4999', 
+                    'coordinates': '40.742185, -73.992602',
                     'country': 'United States',
                     'state': 'New York',
-                    "name": "New York, NY" 
+                    "name": "New York, NY",
+                    "city": "New York"
                 },
                 {
                     "name": "Georgia",
@@ -116,54 +117,6 @@ def test_close_multiple_results():
     resp,content = H.request(url,"POST",body=json.dumps(INPUT))
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
-
-@attr(travis_exclude='yes')
-def test_collapse_hierarchy():
-    """Collapse spatial objects that are members of each others' hierarchies 
-    into a single object.
-    """
-    INPUT = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": [
-                {
-                    "name": "Los Angeles"
-                },
-                {
-                    "name": "California"
-                },
-                {
-                    "name": "United States"
-                },
-                {
-                    "name": "-118.21525,34.04851"
-                }
-            ]
-        },
-        "creator": "David"
-    }
-    EXPECTED = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial":  [
-                { 'coordinates': '34.05223, -118.24368',
-                  'country': 'United States',
-                  'county': 'Los Angeles County',
-                  'name': 'Los Angeles',
-                  'state': 'California'
-                }
-            ]
-        },
-        "creator": "David"
-    }
-
-    url = server() + "geocode"
-    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert_same_jsons(EXPECTED, json.loads(content))
-
 
 @attr(travis_exclude='yes')
 def test_geocode_coordinate_provided1():
@@ -187,9 +140,10 @@ def test_geocode_coordinate_provided1():
         "sourceResource": {
             "spatial": [
                 {
+                    "county": "Suffolk County",
                     "state": "Massachusetts",
                     "country": "United States",
-                    "name": "Massachusetts",
+                    "name": "Downtown, MA",
                     "coordinates": "42.358631134, -71.0567016602"
                 }
             ]
@@ -225,6 +179,7 @@ def test_geocode_coordinate_provided2():
         "sourceResource": {
             "spatial": [
                 {
+                    "county": "Suffolk County",
                     "state": "Massachusetts",
                     "country": "United States",
                     "name": "United States--Massachussetts",
@@ -265,6 +220,7 @@ def test_geocode_with_existing_props():
         "sourceResource": {
             "spatial": [
                 {
+                    "county": "Suffolk County",
                     "state": "Apples",
                     "country": "Bananas",
                     "name": "United States--Massachussetts",
@@ -302,7 +258,7 @@ def test_geocode_set_name_coordinates():
                 "coordinates": "37.7771186829, -122.419639587",
                     "city": "Bananas",
                     "state": "California",
-                    "name": "Bananas",
+                    "name": "Downtown/Civic Center, CA",
                     "county": "San Francisco County",
                     "country": "United States"
                 }
@@ -526,39 +482,11 @@ def test_geocode_exclude_coordinates_from_countries():
     assert_same_jsons(EXPECTED, json.loads(content))
 
 @attr(travis_exclude='yes')
-def test_geocode_geonames_name_search():
-    """Should find a place name.
-    """
-    INPUT = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": {"name": "Portland, OR"}
-        }
-    }
+def test_geocode_name_search_context():
+    """Contextualize a place name using any additional feature names
 
-    EXPECTED = {
-        "id": "12345",
-        "_id": "12345",
-        "sourceResource": {
-            "spatial": [{
-                "county": "Multnomah County",
-                "country": "United States",
-                "state": "Oregon",
-                "name": "Portland, OR",
-                "coordinates": "45.52345, -122.67621"
-            }]
-        }
-    }
-
-    url = server() + "geocode"
-    resp, content = H.request(url, "POST", body=json.dumps(INPUT))
-    assert resp.status == 200
-    assert_same_jsons(EXPECTED, json.loads(content))
-
-@attr(travis_exclude='yes')
-def test_geocode_geonames_name_search_context():
-    """Should find a place name, only if matching other data.
+    If feature names for city, county, or state are given, use them to
+    disambiguate place names that have multiple interpretations.
     """
     INPUT = {
         "id": "12345",
@@ -576,6 +504,7 @@ def test_geocode_geonames_name_search_context():
         "_id": "12345",
         "sourceResource": {
             "spatial": [{
+                "city": "Portland",
                 "county": "Cumberland County",
                 "country": "United States",
                 "state": "Maine",
@@ -612,10 +541,11 @@ def test_geocode_works_with_dotted_abbreviations():
         "sourceResource": {
             "spatial": [
                 {
+                    "city": "Greenville",
                     "county": "Greenville County",
                     "country": "United States",
                     "state": "South Carolina",
-                    "name": "Greenville (SC)",
+                    "name": "Greenville (S.C.)",
                     "coordinates": "34.85262, -82.39401"
                 }
             ]
@@ -627,7 +557,7 @@ def test_geocode_works_with_dotted_abbreviations():
     assert_same_jsons(EXPECTED, json.loads(content))
 
 @attr(travis_exclude='yes')
-def test_geocode_geonames_name_search_failure():
+def test_geocode_name_search_failure():
     """Shouldn't fall down when nothing is returned.
     """
     INPUT = {
@@ -635,7 +565,7 @@ def test_geocode_geonames_name_search_failure():
         "_id": "12345",
         "sourceResource": {
             "spatial": {
-                "name": "1234567"
+                "name": "Some Nonexistent Place"
             }
         }
     }
@@ -645,7 +575,7 @@ def test_geocode_geonames_name_search_failure():
         "_id": "12345",
         "sourceResource": {
             "spatial": [{
-                "name": "1234567"
+                "name": "Some Nonexistent Place"
             }]
         }
     }
@@ -657,8 +587,7 @@ def test_geocode_geonames_name_search_failure():
 
 @attr(travis_exclude='yes')
 def test_geocode_unicode():
-    """Should handle unicode values
-    """
+    """Handles unicode values that can be cast as UTF-8"""
     INPUT = {
         "id": "12345",
         "_id": "12345",
@@ -675,7 +604,7 @@ def test_geocode_unicode():
         "sourceResource": {
             "spatial": [{
                 "country": "United States",
-                "name": "United States"
+                "name": u"États-Unis"
             }]
         }
     }
@@ -685,43 +614,18 @@ def test_geocode_unicode():
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
-
-def test_geocode_place_validation():
-    """Should validate place for presence of name value
-    """
-    place = Place()
-    assert not place.validate()
-    place.name = 'place name'
-    assert place.validate()
-
-def test_geocode_place_get_coodinates():
-    """Should check for and build coordinates from string even when in reverse
-    order
-    """
-    assert parse_coordinates_from_name('not coordinate') == None
-    assert parse_coordinates_from_name('999.84, 123.33') == None
-    assert parse_coordinates_from_name('33.33, 123.33') == '33.33, 123.33'
-    assert parse_coordinates_from_name('123.33,33.33') == '33.33, 123.33'
-
-
-def test_geocode_floats_to_coodinates():
-    """Should translate a list of floats to a coordinate string
-    """
-    assert floats_to_coordinates([39.1234, 123.1234]) == \
-        "39.1234, 123.1234"
-
 def test_geocode_place_to_map_json():
     """Should convert Place to a dict and drop empty fields
     """
     INPUT = {'name': u'blah', 'coordinates': 'my coordinates'}
-    assert Place(INPUT).to_map_json() == INPUT
+    assert geocode.Place(INPUT).to_map_json() == INPUT
 
 def test_geocode_place_set_name():
     """Should get Place name from field other than coordinates if name is empty
     """
-    pl = Place({'city': 'Portland', 
-                'country': 'Oregon', 
-                'coordinates': 'my coordinates'})
+    pl = geocode.Place({'city': 'Portland',
+                        'country': 'Oregon',
+                        'coordinates': 'my coordinates'})
     pl.set_name()
     assert pl.name == 'Portland'
     pl.name = ''

@@ -76,18 +76,10 @@ def create_server_dir(port):
     ini = ConfigParser.ConfigParser()
     ini.optionxform=str  # Maintain case for configuration keys 
     ini.read(os.path.dirname(os.path.realpath(__file__)) + "/../akara.ini")
-    bing_apikey = "notset"
-    if (ini.has_section("Bing") \
-        and ini.has_option("Bing", "ApiKey")): 
-        bing_apikey = ini.get("Bing", "ApiKey")
-    geonames_username = "notset"
-    geonames_token = "notset"
-    if (ini.has_section("Geonames")):
-        if ini.has_option("Geonames", "Username"): 
-            geonames_username = ini.get("Geonames", "Username")
-        if ini.has_option("Geonames", "Token"): 
-            geonames_token = ini.get("Geonames", "Token")
-
+    twofishes_base_url = "notset"
+    if ini.has_section("Twofishes"):
+        if ini.has_option("Twofishes", "BaseUrl"):
+            twofishes_base_url = ini.get("Twofishes", "BaseUrl")
     f = open(config_filename, "w")
     f.write("""
 class Akara:
@@ -198,9 +190,7 @@ MODULES = [
     ]
 
 class geocode: 
-    bing_api_key = '%(bing_apikey)s'
-    geonames_username = '%(geonames_username)s'
-    geonames_token = '%(geonames_token)s'
+    twofishes_base_url = '%(twofishes_base_url)s'
 
 class lookup:
     lookup_mapping = {
@@ -312,9 +302,7 @@ class enrich_type(type_conversion):
 
 """ % dict(config_root = config_root,
            port = port,
-           bing_apikey = bing_apikey,
-           geonames_username = geonames_username,
-           geonames_token = geonames_token
+           twofishes_base_url = twofishes_base_url
            ))
     f.close()
 

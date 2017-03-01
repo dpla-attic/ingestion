@@ -5,13 +5,13 @@ from akara import logger
 from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import getprop, setprop, exists
-from geopy import geocoders, util
-import itertools
-import math
+from geopy import point
 import re
+import traceback
 from urllib import urlencode
-from urllib2 import URLError
-from dplaingestion.utilities import iterify, urlopen_with_retries
+from urllib2 import urlopen, URLError
+from dplaingestion.utilities import iterify
+
 
 @simple_service('POST', 'http://purl.org/la/dp/geocode', 'geocode',
                 'application/json')
@@ -48,99 +48,117 @@ def geocode(body, ctype, prop="sourceResource/spatial", newprop='coordinates'):
                 logger.error("Spatial value must be a dictionary; record %s" %
                              data["_id"])
                 continue
-
             place = Place(v)
-
-            if place.name:
-                coords = parse_coordinates_from_name(place.name)
-                if coords:
-                    place.coordinates = coords
-                    place.name = None
-                    place.set_name()
-
-            # Run Geonames enrichment
-            place.enrich_geodata(DplaGeonamesGeocoder())
-
-            if not place.validate():
-                if not place.set_name():
-                    logger.error("Spatial dictionary must have a " +
-                                 "'name' property. Could not enhance input " +
-                                 "data to include a name property; " +
-                                 "record %s" % data["_id"])
-
+            place.enrich_geodata(TwofishesGeocoder())
             places.append(place)
 
-        values = map(lambda x: x.to_map_json(), Place.merge_related(places))
+        values = map(lambda x: x.to_map_json(), places)
         setprop(data, prop, values)
 
     return json.dumps(data)
 
-def haversine(origin, destination):
-    '''
-    Distance in km between two lat/lng coordinates.
-    '''
-    lat1, lon1 = map(float, origin)
-    lat2, lon2 = map(float, destination)
-    radius = 6371 # Radius of the earth in km
 
-    dlat = math.radians(lat2-lat1)
-    dlon = math.radians(lon2-lon1)
-    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    d = radius * c
+class Place:
+    MAP_FIELDS = ['name', 'city', 'state', 'county', 'country', 'region',
+                  'coordinates']
 
-    return d
+    def __init__(self, spatial={}):
+        for name in self.MAP_FIELDS:
+            setattr(self,
+                    name,
+                    self._urlencode_safe_str(spatial.get(name)))
+        if self.name and not self.coordinates:
+            try:
+                p = point.Point(self.name)
+                # Latitude and longitude by List index
+                coords = ', '.join([str(p[0]), str(p[1])])
+            except ValueError:
+                # If there are no legitimate coordinates in the Place name
+                coords = ""
+            if coords:
+                self.coordinates = coords
+                self.name = None
+                self.set_name()
 
-def parse_coordinates_from_name(value):
-    """
-    Attempts to extract coordinate data from a string,
-    will recognize coordinates out of range for latitude
-    and longitude, and reorder them if needed.
-    """
-    if _match_for_coordinate(value):
-        coords = map(float, value.split(','))
-    elif _match_for_transposed_coordinate(value):
-        lon, lat = value.split(',')
-        coords = map(float, [lat, lon])
-    else:
-        return
-    return floats_to_coordinates(coords)
+    def set_name(self):
+        """
+        Modify and return our name property, after cleaning it up. If none is
+        set, initialize it to the smallest available geographic division label.
+        """
+        if self.name:
+            # If *only* "United States or its variants" (re.search searches
+            # from the beginning of the string), normalize it
+            if re.search(ur' *(United States(?: of America)?|USA)$',
+                         self.name):
+                self.name = 'United States'
+            self.name = self._urlencode_safe_str(self.name)
+            return self.name
 
-def floats_to_coordinates(floats):
-    """
-    Accepts a pair of floating point values representing latitude
-    and longitide and returns them in a string format separated by
-    a comma.
-    """
-    return ", ".join(["%s" % str(n) for n in floats])
+        prop_order = ["city", "county", "state", "country", "region"]
+        for prop in prop_order:
+            if getattr(self, prop):
+                self.name = self._urlencode_safe_str(getattr(self, prop))
+                return self.name
+        return self.name
 
-def _match_for_coordinate(value):
-    return re.search(r"^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?"
-                     r"(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$",
-                     value)
+    def _urlencode_safe_str(self, s):
+        if isinstance(s, unicode):
+            return s.encode('utf-8', 'ignore')
+        else:
+            return s
+
+    def to_map_json(self):
+        """
+        Serializes for inclusion in DPLA MAP JSON.
+        """
+        return dict((k,v) for k,v in self.__dict__.iteritems()
+                    if v and (k in self.MAP_FIELDS))
+
+    def enrich_geodata(self, geocoder):
+        """Enhance my data with the given geocoder.
+
+        Attempt to merge the geocoder's place with myself.
+        """
+        try:
+            coded_place = geocoder.enrich_place(self)
+            if coded_place == self:
+                return
+        except Exception, e:
+            tb = traceback.format_exc(5)
+            logger.error("%s failed on place '%s', error: %s\n%s" %
+                (str(geocoder), self.name, e, tb))
+
+            return
+
+        # Add only non-existing properties
+        for prop in coded_place.__dict__.keys():
+            if not getattr(self, prop):
+                setattr(self, prop, getattr(coded_place, prop))
 
 
-def _match_for_transposed_coordinate(value):
-    return re.search(r"^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))"
-                     r"(\.\d+)?),\s*[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$",
-                     value)
+class TwofishesGeocoder():
+    """Geocoder that uses Twofishes"""
 
+    # A subset of the WOE Types above that we want to try to apply to
+    # sourceResource.spatial properties. Our "region" spatial property is
+    # not precisely defined and does not correspond cleanly to any of the WOE
+    # Types.
+    PROP_FOR_WOE_TYPE = {7: 'city', 8: 'state', 9: 'county', 12: 'country'}
 
-class DplaGeonamesGeocoder(object):
-    resultCache = {}
-    base_uri = 'http://ws.geonames.net/'
+    def __init__(self):
+        self.base_url = module_config().get('twofishes_base_url')
+        self.params = {'lang': 'en',
+                       'responseIncludes': 'PARENTS,DISPLAY_NAME',
+                       'maxInterpretations': 1}
 
     def enrich_place(self, place):
-        """
-        Accepts a Place and attempts to return a geonames enhanced
-        replacement. If no enhancement is possible, returns the original
-        place. (Fulfills Dpla Geocoder interface.)
+        """Take a Place and return an enriched replacement, if possible.
 
-        Performs reverse geocoding if a coordinate property is set on Place,
-        othewise calls geocode_place to search against name.
-        """
+        If no enhancement is possible, return the original place.
 
+        Perform a reverse lookup if a coordinate property is set on Place,
+        othewise do a forward lookup with the Place's contents.
+        """
         if place.coordinates:
             try:
                 lat, lng = place.coordinates.split(',')
@@ -150,408 +168,110 @@ class DplaGeonamesGeocoder(object):
             if new_place:
                 return new_place
         else:
-            new_place = self.geocode_place(place)
+            place.set_name()
+            new_place = self._geocode_place(place)
             if new_place:
                 return new_place
-
         return place
-
-    def geocode_place(self, place):
-        """
-        Accepts a Place and searches Geonames for a matching location.
-
-        Privledges states (first-order administrative divisions) and countries,
-        with exactly matching text, then privledges US places.
-
-        Enhances Place with geonames hierarchies using geonameId values for
-        identifiers of places in the hierarchy. If some hierarchical values
-        are already present, will attempt to validate them before accepting
-        the new place.
-        """
-        place.set_name()
-        params = {}
-
-        if place.name in [place.country, place.region]:
-            params['featureClass'] = 'A'
-        elif place.name in [place.county, place.state]:
-            params['featureClass'] = 'A'
-            params['countryBias'] = 'US'
-        elif place.name == place.city:
-            params['featureClass'] = 'P'
-            params['countryBias'] = 'US'
-        else:
-            params['countryBias'] = 'US'
-
-        interpretations = self._name_search(place.name, params)
-
-        # If we just got a name, and no fields identifying it specifically as
-        # a city, state, or country, do some more lookups to see if we can
-        # identify it more accurately
-        #
-        # FIXME: This seems unnecessary. A name search returns multiple
-        # interpretations that can be iterated over.
-        #
-        if not 'featureClass' in params.keys():
-
-            # Gather interpretations that consider the place name as that of
-            # a state  (REMOTE API CALL)
-            st_interps = self._name_search(place.name, {'featureCode': 'ADM1'})
-
-            # Gather interpretations that consider the place name as that of
-            # a country  (REMOTE API CALL)
-            co_interps = self._name_search(place.name, {'featureCode': 'PCLI'})
-
-            # Combine all of these, including the unrestricted interpretations
-            # of the name, into one list
-            interpretations = st_interps + co_interps + interpretations
-
-        if not interpretations:
-            return place
-
-        candidates = []
-
-        for interp in interpretations:
-
-            candidate_place = Place({
-                'name': interp.get('name'),
-                'uri': interp.get('geonameId'),
-                'country': interp.get('countryName'),
-                'feature_type': interp.get('fcode')
-            })
-
-            if candidate_place.name != candidate_place.country:
-                candidate_place.coordinates = "%s, %s" % (interp['lat'],
-                                                          interp['lng'])
-
-            parent_features = self.build_hierarchy(interp['geonameId'],
-                                                   ["PCLI", # Country
-                                                    "ADM1", # State
-                                                    "ADM2", # County
-                                                    "PPLA"]) # City
-
-            for feature in parent_features:
-                if feature['fcode'] == 'PCLI':    # country
-                    candidate_place.country = feature["name"]
-                    candidate_place.country_uri = feature["geonameId"]
-                elif feature['fcode'] == 'ADM1':  # state
-                    candidate_place.state = feature["name"]
-                    candidate_place.state_uri = feature["geonameId"]
-                elif feature['fcode'] == 'ADM2':  # county
-                    candidate_place.county = feature["name"]
-                    candidate_place.county_uri = feature["geonameId"]
-
-            # Move on to the next interpretation if its name and the one we
-            # presented for lookup do not have anything in common.
-            if (candidate_place.name.lower() not in place.name.lower()) and \
-               (place.name.lower() not in candidate_place.name.lower()):
-                continue
-
-            # If the place we presented for lookup is labeled with a country,
-            # move on to the next candidate if the candidate's country is not
-            # the same as our place's country.
-            if place.country and (place.country.lower() != \
-                                  candidate_place.country.lower()):
-                continue
-
-            # If the place we presented for lookup is labeled with a state,
-            # move on the the next candidate if the candidate's state is not
-            # the same as our place's state.
-            if place.state and (place.state.lower() != \
-                                candidate_place.state.lower()):
-                continue
-
-            # As above, move on if know our place's county and the candidate's
-            # county does not match.
-            if place.county and (place.county.lower() != \
-                                 candidate_place.county.lower()):
-                continue
-
-            # If the interpretation's name is exactly the same as the name
-            # we started out with, count it as as the right one and return
-            # the candidate place, since we've weeded out the possibility that
-            # it's in the wrong county, state, or country.
-            if interp['name'].lower() == place.name.lower():
-                return candidate_place
-
-            # Otherwise, we're still not sure, so add it to the list of
-            # candidates.
-            candidates.append(candidate_place)
-
-        # Pick the best candidate of possibly many not-ideal choices:
-        #
-        # Return the one we have if that's all we have
-        if len(candidates) == 1:
-            return candidates[0]
-        elif len(candidates) > 1:
-            for candidate in candidates:
-                # Return the one that looks like some kind of "political
-                # entity," i.e. country or section thereof -- theoretically the
-                # more general one -- if we can.
-                if candidate.feature_type and 'PCL' in candidate.feature_type:
-                    return candidate
-
-            # Oh, well, just return the first one.
-            return candidates[0]
-        else:
-            # If there were no candidates, we're just returning the place that
-            # we started with.
-            return place
-
-    def reverse_geocode(self, lat, lng):
-        """
-        Accepts latitude and longitude values and returns a geonames place
-        that matches their value.
-        """
-        params = { "lat": lat,
-                   "lng": lng,
-                   "username": module_config().get("geonames_username"),
-                   "token": module_config().get("geonames_token") }
-        url = DplaGeonamesGeocoder.base_uri + \
-              "findNearbyJSON?%s" % urlencode(params)
-        if (url not in DplaGeonamesGeocoder.resultCache):
-            result = DplaGeonamesGeocoder._get_result(url)
-            if ("geonames" in result \
-                and len(result["geonames"]) > 0):
-                DplaGeonamesGeocoder.resultCache[url] = result["geonames"][0]
-            else:
-                logger.error("Could not reverse geocode (%s, %s)" %
-                             (lat, lng,))
-                return None
-
-        return DplaGeonamesGeocoder.resultCache[url]
-
-    def build_hierarchy(self, geonames_id, fcodes=None):
-        """
-        Accepts a geonames id and fetches a hierarchy of features from
-        the API, returning them as a list of geoname items.
-        """
-        hierarchy = []
-        params = { "geonameId": str(geonames_id),
-                   "username": module_config().get("geonames_username"),
-                   "token": module_config().get("geonames_token") }
-        url = DplaGeonamesGeocoder.base_uri + \
-              "hierarchyJSON?%s" % urlencode(params)
-        if (url not in DplaGeonamesGeocoder.resultCache):
-            result = DplaGeonamesGeocoder._get_result(url)  # REMOTE API CALL
-            if result.get('geonames'):
-                DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
-            else:
-                return hierarchy
-        # Return only the requested fcodes
-        for feature in DplaGeonamesGeocoder.resultCache.get(url):
-            if not fcodes or feature["fcode"] in fcodes:
-                hierarchy.append(feature)
-
-        return hierarchy
-
-    def _name_search(self, name, params={}):
-        """Search GeoNames for a given name and return a dict of the result"""
-        defaults = { "q": name.encode("utf8"),
-                     "maxRows": 3,
-                     "isNameRequired": "true",
-                     "orderBy": "relevance",
-                     "username": module_config().get("geonames_username"),
-                     "token": module_config().get("geonames_token") }
-        params = dict(defaults.items() + params.items())
-
-        url = DplaGeonamesGeocoder.base_uri + "searchJSON?%s" % \
-              urlencode(params)
-        if (url not in DplaGeonamesGeocoder.resultCache):
-            result = DplaGeonamesGeocoder._get_result(url)
-            if result.get('geonames'):
-                DplaGeonamesGeocoder.resultCache[url] = result["geonames"]
-            else:
-                return []
-        return DplaGeonamesGeocoder.resultCache[url]
 
     def _place_from_coordinates(self, lat, lng):
+        """Given coordinates, return a Place or None if there is no match
+
+        See self.enrich_place()
         """
-        Reverse-geocode this location to find country, state, and
-        county parent places.
+        interpretation = self._reverse_interpretation(lat, lng)
+        if interpretation:
+            return Place(self._place_features(interpretation))
+        else:
+            return None
+
+    def _geocode_place(self, place):
+        """Enhance a given Place with a forward Twofishes lookup"""
+        interpretation = self._forward_interpretation(place)
+        if interpretation:
+            return Place(self._place_features(interpretation))
+        else:
+            return None
+
+    def _place_features(self, interpretation):
+        """Given a Twofishes interpretation, return a dictionary that expresses
+        the Place's properties
+
+        See self._place_from_coordinates()
         """
+        rv = {'name': interpretation['feature']['displayName']}
+        # Interpretation WOE Type will be e.g. 'city', 'county', etc...
+        i_type = self.PROP_FOR_WOE_TYPE.get(
+            interpretation['feature']['woeType'], None)
+        if i_type:
+            rv[i_type] = interpretation['feature']['name']
+            if i_type != 'country':
+                # Assign coordinates if it's not a country.
+                place_center = interpretation['feature']['geometry']['center']
+                coords = ', '.join([str(place_center['lat']),
+                                    str(place_center['lng'])])
+                rv['coordinates'] = coords
+        rv.update(dict({(self.PROP_FOR_WOE_TYPE[p['woeType']],
+                         p['name'])
+                         for p in interpretation['parents']
+                         if p['woeType'] in self.PROP_FOR_WOE_TYPE}))
+        return rv
 
-        place = Place()
-        geonames_item = self.reverse_geocode(lat, lng)
-        if not geonames_item:
-            return
-        hierarchy = self.build_hierarchy(geonames_item['geonameId'],
-                                         ["PCLI", # Country
-                                          "ADM1", # State
-                                          "ADM2", # County
-                                          "PPLA"])# City
+    def _reverse_interpretation(self, lat, lng):
+        """Given coordinates, return the best Twofishes interpretation.
 
-        for feature in hierarchy:
-            if feature.get("fcode"):
-                if ("PCLI" == feature["fcode"]):
-                    place.country = feature["name"]
-                    place.uri = feature["geonameId"]
-                elif ("ADM1" == feature["fcode"]):
-                    place.state = feature["name"]
-                    place.uri = feature["geonameId"]
-                elif ("ADM2" == feature["fcode"]):
-                    place.county = feature["name"]
-                    place.uri = feature["geonameId"]
-                elif ("ADM2" == feature["fcode"]):
-                    place.city = feature["name"]
-                    place.uri = feature["geonameId"]
+        The interpretation is a dictionary of the first object of the
+        Twofishes 'interpretations' array in the response.
 
-            # Deterine how close we are to the original coordinates, to
-            # see if this is the place that was geocoded and we should
-            # stop adding more specificity (e.g. if the record
-            # specified "South Carolina", we don't want to include the
-            # county that is located at the coordinates of South
-            # Carolina. We use increasing tolerance levels to account
-            # for differences between input and Geonames coordinates.
-            d = haversine((lat, lng), (feature["lat"], feature["lng"]))
+        An empty dictionary is returned if there's no good result.
+        """
+        coords = ','.join([lat, lng])
+        our_params = {'ll': coords}
+        return self._lookup_data(our_params)
 
-            # Country tolerance (input/Geonames 49.9km off)
-            country_tolerance_met = ("PCLI" == feature.get("fcode") and
-                                             d < 50)
-            # State tolerance
-            state_tolerance_met = ("ADM1" == feature.get("fcode") and d < 15)
+    def _forward_interpretation(self, place):
+        """Given a search term, return a Twofishes interpretation"""
+        our_params = {'query': self._query_phrase(place)}
+        return self._lookup_data(our_params)
 
-            if (country_tolerance_met or state_tolerance_met):
-                return place
-
-        return place
-
-    @staticmethod
-    def _get_result(url):
+    def _lookup_data(self, xtra_params):
+        """Given query parameters, return a Twofishes interpretation"""
+        url = self._url(xtra_params)
         try:
-            logger.debug("hitting %s" % url)
-            result = json.loads(util.decode_page(urlopen_with_retries(url)))
-            return result
-        except URLError, e:
-            logger.error("GeoNames error, could not open URL: %s, error: %s" %
-                         (url, e))
+            return self._twofishes_data(url)['interpretations'][0]
+        except (KeyError, IndexError) as e:
             return {}
 
-class Place:
-    def __init__(self, spatial={}):
-        self.name = spatial.get("name")
-        self.city = spatial.get("city")
-        self.state = spatial.get("state")
-        self.state_uri = spatial.get("state_uri")
-        self.county = spatial.get("county")
-        self.county_uri = spatial.get("county_uri")
-        self.country = spatial.get("country")
-        self.country_uri = spatial.get("country_uri")
-        self.region = spatial.get("region")
-        self.coordinates = spatial.get("coordinates")
-        self.feature_type = spatial.get("feature_type")
-        self.uri = spatial.get("uri")
+    def _url(self, params):
+        params.update(self.params)
+        return "%s?%s" % (self.base_url, urlencode(params))
 
-    def map_fields(self):
-        """
-        Returns a list of the fields to be included in DPLA MAP's
-        serializations of Place.
-        """
-        fields = ['name', 'city', 'state', 'county', 'country', 'region']
-        if (not self.feature_type) or (not 'PCL' in self.feature_type):
-            fields.append('coordinates')
-        return fields
+    def _twofishes_data(self, url):
+        """Return a dict of Twofishes data for the given URL.
 
-    def set_name(self):
+        Rely on the response being Unicode-encoded JSON.
         """
-        Modify and return our name property, after cleaning it up. If none is
-        set, initialize it to the smallest available geographic division label.
-        """
-        if self.name:
-            if re.search(ur" *(United States(?!-)|États-Unis|USA)", self.name):
-                self.name = 'United States'
-            # Kludge state abbreviations with periods (e.g. "S.C." or "CA.")
-            # into their equivalent official post-office abbreviations (e.g.
-            # "SC" or "CA"). GeoNames just doesn't resolve the ones with
-            # periods.  We can get rid of this when we switch to Twofishes.
-            self.name = re.sub(r'([ACDFGHIKLMNOPRSTUVW])\.?'
-                               r'([KLRZAOTEIDNSYCHJMVXV])\.',
-                               r'\1\2',
-                               self.name)
-            return self.name
-
-        prop_order = ["city", "county", "state", "country", "region"]
-        for prop in prop_order:
-            if getattr(self, prop):
-                self.name = getattr(self, prop)
-                return self.name
-        return self.name
-
-    def to_map_json(self):
-        """
-        Serializes for inclusion in DPLA MAP JSON.
-        """
-        return dict((k,v) for k,v in self.__dict__.iteritems() if v and (k in self.map_fields()))
-
-    def validate(self):
-        return self.name
-
-    def refine_coordinates(self):
-        """
-        Validates coordinate values through parse_coordinates_from_name().
-        Sets and returns new coordinate values if needed.
-        """
-        coords = parse_coordinates_from_name(self.coordinates)
-        self.coordinates = coords if coords else none
-        return self.coordinates
-
-    def enrich_geodata(self, geocoder):
-        """
-        Accepts a geocoder with an `enrich_place()` method.
-
-        Calls the enrichment method for the geocoder passed and
-        attempts to merge the place returned into self.
-        """
+        logger.debug("GET %s" % url)
         try:
-            coded_place = geocoder.enrich_place(self)
-        except Exception, e:
-            logger.error("%s failed on place '%s', error: %s" %
-                (str(geocoder), self.name, e))
-            return
+            response = urlopen(url, None, 2)
+            http_status = response.getcode()
+            if http_status != 200:
+                logger.error("Got status %d from %s" % (http_status, url))
+                return {}
+            return json.loads(response.read())
+        except URLError as e:
+            logger.error("Could not open %s (%s)" % (url, e))
+            return {}
+        except Exception as e:
+            logger.error("Unexpected exception from %s: %e" % (url, e))
+            return {}
 
-        # Add only non-existing properties
-        # TODO: get more sophisticated about update
-        for prop in coded_place.__dict__.keys():
-            if not getattr(self, prop):
-                setattr(self, prop, getattr(coded_place, prop))
-        if not self.uri:
-            self.uri = coded_place.uri
-            self.country_uri = coded_place.country_uri
-            self.state_uri = coded_place.state_uri
-            self.county_uri = coded_place.county_uri
+    def _query_phrase(self, place):
+        """Construct a good string to use for the 'query' search parameter
 
-    @staticmethod
-    def merge_related(places):
+        See also https://github.com/foursquare/fsqio/blob/69c8e68a580b5bb4a94787735541a64ed5bf2676/src/jvm/io/fsq/twofishes/server/GeocodeImpl.scala#L35-L60
         """
-        Removes places that are included redundantly.
-        Accepts a list of Place objects and uses their URIs to remove
-        places that are redundant in light of a smaller geographic division.
-
-        e.g. given 'Los Angeles' and 'Los Angeles County', the latter will be
-        removed "merging" it into Los Angeles.
-        """
-        for place in places[:]:
-            if not place in places:
-                continue
-            for compare_place in places[:]:
-                if compare_place == place:
-                    continue
-                if Place._is_parent_of(place, compare_place):
-                    try:
-                        places.remove(place)
-                    except ValueError:
-                        pass
-        return places
-
-    @staticmethod
-    def _is_parent_of(p1, p2):
-        """
-        Accepts two Place objects and checks whether the first is
-        a parent in the location hierarchy of the second.
-
-        Returns a boolean.
-        """
-        if not ((not p1.uri) or (not p2.uri)):
-            parents = [p2.country_uri, p2.state_uri, p2.county_uri]
-            if p1.uri in parents:
-                return True
-        return False
+        features = filter(None, [place.city, place.county,
+                                 place.state])
+        ok_features = [f for f in features if f not in place.name]
+        return " ".join([place.name] + ok_features)

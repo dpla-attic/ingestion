@@ -2,6 +2,7 @@ from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
+from dplaingestion.textnode import textnode
 
 class DigitalNCMapper(OAIMODSMapper):
     def __init__(self, provider_data):
@@ -140,8 +141,19 @@ class DigitalNCMapper(OAIMODSMapper):
         prop = self.root_key + "accessCondition"
 
         if exists(self.provider_data, prop):
-            self.update_source_resource({"rights":
-                                         getprop(self.provider_data, prop)})
+            rights = []
+            rights_uri = ""
+
+            for s in iterify(getprop(self.provider_data, prop)):
+                if s.get("type") == "local rights statements":
+                    rights.append(textnode(s))
+                elif s.get("type") == "use and reproduction":
+                    rights_uri = textnode(s)
+
+            if rights:
+                self.update_source_resource({"rights": rights})
+            if rights_uri:
+                self.mapped_data.update({"rights": rights_uri})
 
     def map_type(self):
         prop = self.root_key + "genre"

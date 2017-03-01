@@ -1,9 +1,10 @@
 {
     "name": "bhl", 
     "type": "oai_verbs",
+    "metadata_prefix": "mods",
     "endpoint_url": "http://www.biodiversitylibrary.org/oai",
     "sets": [
-        "item"
+        "title"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/bhl",
@@ -14,17 +15,13 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id",
-        "/dpla_mapper?mapper_type=dublin_core",
+        "/select-id?prop=id",
+        "/dpla_mapper?mapper_type=bhl",
         "/strip_html",
         "/set_context",
-        "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
-        "/shred?prop=sourceResource%2Flanguage%2CsourceResource%2Fpublisher%2CsourceResource%2Frelation",
-        "/shred?prop=sourceResource%2Fsubject%2CsourceResource%2Ftype%2CsourceResource%2Fformat",
+        "/shred?prop=sourceResource%2Fsubject",
+        "/shred?prop=sourceResource%2Ftitle",
         "/cleanup_value",
-        "/move_date_values?prop=sourceResource%2Fsubject",
-        "/move_date_values?prop=sourceResource%2Fspatial",
-        "/shred?prop=sourceResource%2Fspatial&delim=--",
         "/capitalize_value",
         "/enrich_earliest_date",
         "/enrich-subject",
@@ -32,14 +29,8 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
-        "/bhl_contributor_to_collection",
-        "/copy_prop?prop=sourceResource%2Fcontributor&to_prop=dataProvider",
-        "/unset_prop?prop=sourceResource%2Fcontributor",
+        "/geocode",
         "/enrich_language",
-        "/unset_prop?prop=sourceResource%2Fdescription&condition=is_digit",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
-        "/unset_prop?prop=sourceResource%2Ftemporal",
-        "/unset_prop?prop=sourceResource%2Frights",
         "/validate_mapv3"
     ],
     "thresholds": {
