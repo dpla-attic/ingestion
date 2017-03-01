@@ -20,7 +20,7 @@
         "/shred?prop=sourceResource%2Fsubject",
         "/shred?prop=sourceResource%2Ftitle",
         "/cleanup_value",
-        "/capitalize_value",
+        "/capitalize_value?exclude=sourceResource%2Frights",
         "/enrich_earliest_date",
         "/enrich-subject",
         "/enrich_date",
