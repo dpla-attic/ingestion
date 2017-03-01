@@ -174,4 +174,4 @@ def test_map_title_append_volume():
     mapper.root_key = ''
     mapper.map_title()
     assert_equals(mapper.mapped_data["sourceResource"],
-                  {'title': ["The Conchologists' exchange., 34"]})
+                  {'title': ["The Conchologists' exchange, 34"]})

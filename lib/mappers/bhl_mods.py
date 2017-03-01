@@ -193,7 +193,7 @@ class BHLMapper(OAIMODSMapper):
                 return t
         # Titles are concatenated with volume numbers, and have various
         # unwanted characters and whitespace removed.
-        full_titles = [t_string(re.sub(r'[\s:/]+$', '', t)) for t in titles]
+        full_titles = [t_string(re.sub(r'[\s:/\.]+$', '', t)) for t in titles]
         if full_titles:
             self.update_source_resource({"title": full_titles})
 
