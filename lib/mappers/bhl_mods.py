@@ -229,8 +229,6 @@ class BHLMapper(OAIMODSMapper):
             if contributor:
                 creator_and_contributor["contributor"] = contributor
 
-            logger.error("C&C: %s" % creator_and_contributor)
-
             self.update_source_resource(creator_and_contributor)
 
     def map_multiple_fields(self):
