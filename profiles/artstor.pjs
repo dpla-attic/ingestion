@@ -100,8 +100,7 @@
         "/set_type_from_physical_format",
         "/copy_prop?prop=sourceResource%2Fpublisher&to_prop=dataProvider",
         "/unset_prop?prop=sourceResource%2Frelation",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
-        "/validate_mapv3"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
     ],
     "thresholds": {
         "added": 5000,

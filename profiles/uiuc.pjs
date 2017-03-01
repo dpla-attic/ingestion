@@ -59,8 +59,7 @@
         "/enrich_language",
         "/contentdm_identify_object",
         "/set_prop?prop=dataProvider&value=University%20of%20Illinois%20at%20Urbana-Champaign%2C%20University%20Library",
-        "/unset_prop?prop=sourceResource%2Fcontributor",
-        "/validate_mapv3"
+        "/unset_prop?prop=sourceResource%2Fcontributor"
     ],
     "thresholds": {
         "added": 5000,
