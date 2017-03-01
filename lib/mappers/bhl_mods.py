@@ -323,7 +323,8 @@ def _part_num_str(part_elements):
     try:
         return ", ".join([textnode(e['detail']['number'])
                           for e in iterify(part_elements)])
-    except NoTextNodeError:
+    except Exception:
         # There was probably an issue determining the string value of one of
-        # the elements.  See textnode.textnode().
+        # the elements.  See textnode.textnode(). 'detail' could also have been
+        # undefined.
         return ""

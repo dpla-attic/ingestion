@@ -175,3 +175,17 @@ def test_map_title_append_volume():
     mapper.map_title()
     assert_equals(mapper.mapped_data["sourceResource"],
                   {'title': ["The Conchologists' exchange, 34"]})
+
+def test_map_title_works_w_no_part_detail():
+    """Title processing works when there's no //part/detail"""
+    orig_rec = {
+        'titleInfo': {
+            'title': "The Title"
+        },
+        'part': {}
+    }
+    mapper = bhl_mods.BHLMapper(orig_rec)
+    mapper.root_key = ''
+    mapper.map_title()
+    assert_equals(mapper.mapped_data["sourceResource"],
+                  {'title': ["The Title"]})
