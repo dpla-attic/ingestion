@@ -161,7 +161,7 @@ def test_map_title_append_volume():
     """Titles are appended with volumes, without unwanted characters"""
     orig_rec = {
         'titleInfo': {
-            'title': "The Conchologists' exchange.\n \\ :"
+            'title': "The Conchologists' exchange.\n /:"
         },
         'part': {
             'detail': {
