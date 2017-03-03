@@ -1,23 +1,15 @@
-import os
 import re
 import sys
 import time
 import hashlib
-import fnmatch
-import urllib2
 import xmltodict
 import ConfigParser
 import httplib
 import socket
-import itertools as it
 from urllib import urlencode
-from datetime import datetime
-from amara.thirdparty import json
-from amara.lib.iri import is_absolute
-from dplaingestion.selector import exists
-from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
-from dplaingestion.utilities import iterify, couch_id_builder
+from dplaingestion.utilities import couch_id_builder
+
 
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
@@ -25,6 +17,7 @@ def getprop(obj, path):
 XML_PARSE = lambda doc: xmltodict.parse(doc, xml_attribs=True, attr_prefix='',
                                         force_cdata=False,
                                         ignore_whitespace_cdata=True)
+
 
 class Fetcher(object):
     """The base class for all fetchers.
