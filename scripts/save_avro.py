@@ -21,6 +21,7 @@ from avro.io import DatumWriter
 from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
+import datetime
 
 avro_schema = """
 {
@@ -56,7 +57,10 @@ def define_arguments():
 def main(argv):
     try:
         parser = define_arguments()
+
         args = parser.parse_args(argv[1:])
+        print >> sys.stderr, "%s" % args
+
         enrich_dir = get_enrich_dir(args.ingestion_document_id)
         schema = avro.schema.parse(avro_schema)
         total_items = write_avro(
@@ -69,7 +73,8 @@ def main(argv):
         return 0
 
     except Exception, e:
-        print >> sys.stderr, "Caught error: %s" % e.message
+        print >> sys.stderr, "%s" % argv
+        print >> sys.stderr, "Caught error: %s" % e
         return 1
 
 
@@ -77,6 +82,7 @@ def write_avro(codec, enrich_dir, output_filename, schema):
     with open(output_filename, "w") as outfile:
         writer = DataFileWriter(outfile, DatumWriter(), schema, codec)
         total_items = 0
+        time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
 
         for enriched_file in os.listdir(enrich_dir):
             filename = os.path.join(enrich_dir, enriched_file)
@@ -84,6 +90,7 @@ def write_avro(codec, enrich_dir, output_filename, schema):
                 file_docs = json.loads(input_file.read())
                 for key in file_docs:
                     doc = file_docs[key]
+                    doc['index_timestamp'] = time
                     writer.append({"id": key, "json_document": json.dumps(doc)})
                     total_items += 1
 
