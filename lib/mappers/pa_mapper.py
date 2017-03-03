@@ -8,7 +8,7 @@ from akara import logger
 
 class PAMapper(DublinCoreMapper):
 
-    dcmi_types = {
+    DCMI_TYPES = {
         "Collection",
         "Dataset",
         "Event",
@@ -54,10 +54,10 @@ class PAMapper(DublinCoreMapper):
         prop = "type"
         if exists(self.provider_data, prop):
             types = iterify(self.provider_data.get(prop))
-            non_dcmi_types = [type for type in types if type not in self.dcmi_types]
+            non_dcmi_types = [type for type in types if type not in self.DCMI_TYPES]
             if len(non_dcmi_types) > 0:
                 self.update_source_resource({"format": non_dcmi_types})
-            dcmi_types = [type for type in types if type in self.dcmi_types]
+            dcmi_types = [type for type in types if type in self.DCMI_TYPES]
             if (len(dcmi_types)) > 0:
                 self.update_source_resource({"type": dcmi_types})
 
