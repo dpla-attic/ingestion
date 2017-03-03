@@ -31,8 +31,7 @@
         "/enrich_language",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Virginia",
-        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/validate_mapv3"
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn"
     ],
     "thresholds": {
         "added": 5000,

@@ -74,8 +74,7 @@
         "/enrich_location",
         "/geocode",
         "/enrich_language",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
-        "/validate_mapv3"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
     ],
     "set_provider": [
         "/set_prop?prop=provider&_dict=True&value=%7B%22%40id%22%3A%22http%3A%2F%2Fdp.la%2Fapi%2Fcontributor%2Finternet_archive%22%2C%22name%22%3A%22Internet%20Archive%22%7D"

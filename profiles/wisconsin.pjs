@@ -30,8 +30,7 @@
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Wisconsin",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/geocode",
-        "/enrich_language",
-        "/validate_mapv3"
+        "/enrich_language"
     ],
     "thresholds": {
         "added": 5000,
