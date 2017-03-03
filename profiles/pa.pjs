@@ -30,8 +30,7 @@
         "/enrich_language",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Pennsylvania",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/geocode",
-        "/validate_mapv3"
+        "/geocode"
     ],
     "thresholds": {
         "added": 5000,
