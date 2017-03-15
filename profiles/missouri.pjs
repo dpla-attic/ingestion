@@ -31,8 +31,7 @@
         "/set_prop?prop=provider%2Fname&value=Missouri%20Hub",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Missouri",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
-        "/validate_mapv3"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
     ],
     "thresholds": {
         "added": 5000,

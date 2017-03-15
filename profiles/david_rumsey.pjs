@@ -38,8 +38,7 @@
         "/set_prop?prop=dataProvider&value=David%20Rumsey",
         "/set_prop?prop=sourceResource%2Frights&value=Creative%20Commons%20Attribution-NonCommercial-ShareAlike%203.0%20Unported%3B%20http%3A%2F%2Fcreativecommons%2Eorg%2Flicenses%2Fby%2Dnc%2Dsa%2F3%2E0%2F",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
-        "/replace_substring?prop=isShownAt&old=74%2E126%2E224%2E122&new=www%2Edavidrumsey%2Ecom",
-        "/validate_mapv3"
+        "/replace_substring?prop=isShownAt&old=74%2E126%2E224%2E122&new=www%2Edavidrumsey%2Ecom"
     ],
     "thresholds": {                                                             
         "added": 5000,                                                          

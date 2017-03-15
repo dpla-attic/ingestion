@@ -30,8 +30,7 @@
         "/enrich-format",
         "/enrich_location",
         "/geocode",
-        "/enrich_language",
-        "/validate_mapv3"
+        "/enrich_language"
     ],
     "thresholds": {
         "added": 5000,
