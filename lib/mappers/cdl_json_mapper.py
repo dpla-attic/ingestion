@@ -8,18 +8,28 @@ class CDLJSONMapper(MAPV3JSONMapper):
     def __init__(self, provider_data):
         super(CDLJSONMapper, self).__init__(provider_data)
 
+    def map_collection(self):
+        values = iterify(getprop(self.provider_data, "collection_name", True))
+        collections = []
+        for value in values:
+            collection = {"title": value, "@id": "", "id": "", "description": ""}
+            collections.append(collection)
+
+        if collections:
+            self.mapped_data["sourceResource"]["collection"] = collections
+
     def map_source_resource(self):
         super(CDLJSONMapper, self).map_source_resource()
         maps = {
             "alternative_title_ss": "alternative",
-            "collection_name": "isPartOf",
             "contributor_ss": "contributor",
             "creator_ss": "creator",
+            "date_ss": "date",
             "description": "description",
             "extent_ss": "extent",
             "format_ss": "format",
             "genre_ss": "hasType",
-            "identifier_ss": "identifer",
+            "identifier_ss": "identifier",
             "language_ss": "language",
             "coverage_ss": "spatial",
             "publisher_ss": "publisher",
@@ -43,6 +53,9 @@ class CDLJSONMapper(MAPV3JSONMapper):
                 if existing_values:
                     values = list(set(values + existing_values))
                 self.update_source_resource({dest: values})
+
+    def map_edm_rights(self):
+        pass
 
     def map_is_shown_at(self):
         url_item = iterify(getprop(self.provider_data, "url_item", True))
