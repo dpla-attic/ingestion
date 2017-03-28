@@ -1,3 +1,5 @@
+from urlparse import urlparse
+from akara import logger
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.qdc_mapper import QDCMapper
 
@@ -27,6 +29,21 @@ class INMapper(QDCMapper):
                 "date": getprop(self.provider_data, "created")
             })
 
+    def map_edm_rights(self):
+        prop = "rights"
+        if exists(self.provider_data, prop):
+            rights_uri, rights = "", self.provider_data.get(prop)
+            try:
+                if rights.lower().startswith("http"):
+                    rights_uri = urlparse(rights).geturl()
+            except Exception as e:
+                logger.warn("Unable to parse rights URI: %s\n%s" % (rights, e))
+
+            if rights_uri:
+                self.mapped_data.update({
+                    "rights": rights_uri
+                })
+
     def map_identifier(self):
         self.source_resource_prop_to_prop("identifier")
 
@@ -48,3 +65,8 @@ class INMapper(QDCMapper):
     def map_publisher(self):
         self.source_resource_prop_to_prop("publisher")
 
+    def map_rights(self):
+        if exists(self.provider_data, "accessRights"):
+            self.update_source_resource({
+                "rights": getprop(self.provider_data, "accessRights")
+            })
