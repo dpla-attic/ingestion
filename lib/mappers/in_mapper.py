@@ -34,10 +34,16 @@ class INMapper(QDCMapper):
         if exists(self.provider_data, prop):
             rights_uri, rights = "", self.provider_data.get(prop)
             try:
+                # IN is giving us some rights as ["rightsstatement", None],
+                # this is pretty kludgey but should suffice for now.
+                if isinstance(list, rights):
+                    # Should return a single string (may not be a URL)
+                    rights = filter(None, rights)[0]
+
                 if rights.lower().startswith("http"):
                     rights_uri = urlparse(rights).geturl()
             except Exception as e:
-                logger.warn("Unable to parse rights URI: %s\n%s" % (rights, e))
+                logger.error("Unable to parse rights URI: %s\n%s" % (rights, e))
 
             if rights_uri:
                 self.mapped_data.update({
