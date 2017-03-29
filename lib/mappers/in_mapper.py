@@ -36,7 +36,7 @@ class INMapper(QDCMapper):
             try:
                 # IN is giving us some rights as ["rightsstatement", None],
                 # this is pretty kludgey but should suffice for now.
-                if isinstance(list, rights):
+                if isinstance(rights,list):
                     # Should return a single string (may not be a URL)
                     rights = filter(None, rights)[0]
 
