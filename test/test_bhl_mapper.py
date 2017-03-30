@@ -148,6 +148,26 @@ def test_map_publisher():
     assert_equals(mapper.mapped_data['sourceResource'], {'date': u'1900',
                                                          'publisher': ['X']})
 
+def test_map_publisher_with_place_term():
+    """A publisher is mapped with a place term if it is given"""
+    orig_rec = {
+      'originInfo':{
+        'publisher': 'X',
+        'place': {
+          'placeTerm': {
+            'type': 'text',
+            '#text': 'The place :'
+          }
+        }
+      }
+    }
+    mapper = bhl_mods.BHLMapper(orig_rec)
+    mapper.root_key = ''
+    bhl_mods._date_values = MagicMock(return_value=[u'1900'])
+    mapper.map_date_and_publisher()
+    assert_equals(mapper.mapped_data['sourceResource'],
+                  {'date': u'1900', 'publisher': ['The place : X']})
+
 def test_no_date_or_publisher_data():
     """Does not make changes, does not fail if there are no date / publisher"""
     orig_rec = {'originInfo': {}}

@@ -10,6 +10,12 @@ class BHLMapper(OAIMODSMapper):
     def __init__(self, provider_data):
         super(BHLMapper, self).__init__(provider_data)
 
+    def _place_term(self, origin_info):
+        if 'place' in origin_info:
+            return textnode(origin_info['place'].get('placeTerm', {}))
+        else:
+            return ''
+
     def map_date_and_publisher(self):
         prop = self.root_key + "originInfo"
 
@@ -31,7 +37,12 @@ class BHLMapper(OAIMODSMapper):
                         _dict['date'] = dates[0]
 
                 if "publisher" in or_info:
-                    _dict["publisher"].append(or_info["publisher"])
+                    pt = self._place_term(or_info)
+                    if pt:
+                        _dict['publisher'].append(
+                            "%s %s" % (pt, or_info['publisher']))
+                    else:
+                        _dict['publisher'].append(or_info['publisher'])
 
             self.update_source_resource(self.clean_dict(_dict))
 
