@@ -225,9 +225,18 @@ class BHLMapper(OAIMODSMapper):
 
             self.update_source_resource(creator_and_contributor)
 
+    def _series_titles(self, related_items):
+        for item in related_items:
+            if item.get('type', '') == 'series':
+                yield item['titleInfo']['title']
+
     def map_collection(self):
-        """Skip mapping `collection', per G.G. 2017-02-17"""
-        pass
+        ri = getprop(self.provider_data, self.root_key + 'relatedItem', True)
+        if ri:
+            collections = [t for t in self._series_titles(iterify(ri))]
+            if collections:
+                self.update_source_resource({'collection': collections})
+
 
     def map_multiple_fields(self):
         self.map_format_and_spec_type()
