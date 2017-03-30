@@ -184,16 +184,8 @@ class BHLMapper(OAIMODSMapper):
         ti_path = self.root_key + "titleInfo"
         title_infos = iterify(getprop(self.provider_data, ti_path, True))
         titles = _good_titles(title_infos)  # generator
-        part_path = self.root_key + "part"
-        number = _part_num_str(getprop(self.provider_data, part_path, True))
-        def t_string(t):
-            if number:
-                return "%s, %s" % (t, number)
-            else:
-                return t
-        # Titles are concatenated with volume numbers, and have various
-        # unwanted characters and whitespace removed.
-        full_titles = [t_string(re.sub(r'[\s:/\.]+$', '', t)) for t in titles]
+        # Titles have various unwanted characters and whitespace removed.
+        full_titles = [re.sub(r'[\s:/\.]+$', '', t) for t in titles]
         if full_titles:
             self.update_source_resource({"title": full_titles})
 
@@ -300,7 +292,7 @@ def _good_titles(elements):
 
     The real ones don't have a "type" attribute, like "type=abbreviation".
     This function tries to handle a variety of cases where elements have or
-    dont' have attributes, where we might get strings or dicts with '#text'
+    don't have attributes, where we might get strings or dicts with '#text'
     properties.
     """
     for el in elements:
