@@ -193,12 +193,19 @@ def test_map_title_works_w_no_part_detail():
 
 def test_map_collection():
     """Maps a collection"""
-    orig_rec = {'relatedItem': {'type': 'series', 'titleInfo': {'title': 'a'}}}
+    orig_rec = {
+        'relatedItem': {
+            'type': 'series',
+            'titleInfo': {
+                'title': 'a'
+            }
+        }
+    }
     mapper = bhl_mods.BHLMapper(orig_rec)
     mapper.root_key = ''
     mapper.map_collection()
     assert_equals(mapper.mapped_data['sourceResource'],
-                  {'collection': ['a']})
+                  {'collection': [{'title': 'a'}]})
 
 def test_no_data():
     """There are no field mappings that fail if they have no data to work on"""

@@ -244,7 +244,8 @@ class BHLMapper(OAIMODSMapper):
     def map_collection(self):
         ri = getprop(self.provider_data, self.root_key + 'relatedItem', True)
         if ri:
-            collections = [t for t in self._series_titles(iterify(ri))]
+            collections = [{'title': t}
+                           for t in self._series_titles(iterify(ri))]
             if collections:
                 self.update_source_resource({'collection': collections})
 
