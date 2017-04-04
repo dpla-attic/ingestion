@@ -65,7 +65,8 @@ class PAMapper(DublinCoreMapper):
         prop = "coverage"
         if exists(self.provider_data, prop):
             coverage = self.provider_data.get(prop)
-            self.update_source_resource({"spatial": coverage})
+            if coverage:
+                self.update_source_resource({"spatial": coverage})
 
     def map_contributor(self):
         prop = "contributor"
@@ -111,7 +112,9 @@ class PAMapper(DublinCoreMapper):
     def map_intermediate_provider(self):
         prop = "source"
         if exists(self.provider_data, prop):
-            setprop(self.mapped_data, "intermediateProvider", getprop(self.provider_data, prop))
+            im_prov = getprop(self.provider_data, prop)
+            if im_prov:
+                self.setprop(self.mapped_data, "intermediateProvider", im_prov)
 
     def map_is_shown_at(self):
         """
