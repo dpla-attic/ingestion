@@ -1,6 +1,5 @@
 # Utility methods 
 import os
-import sys
 import time
 import tarfile
 import re
@@ -8,9 +7,10 @@ from functools import wraps
 from datetime import datetime
 from urllib2 import urlopen
 
+
 def iterify(iterable):
     """Treat iterating over a single item or an iterator seamlessly"""
-    if (isinstance(iterable, basestring) or isinstance(iterable, dict)):
+    if isinstance(iterable, basestring) or isinstance(iterable, dict):
         iterable = [iterable]
     try:
         iter(iterable)
@@ -34,16 +34,23 @@ def remove_key_prefix(data, prefix):
 
     return data
 
+
 def make_tarfile(source_dir):
     with tarfile.open(source_dir + ".tar.gz", "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
-def couch_id_builder(src, lname):
-    return "--".join((src, lname))
 
-def couch_rec_id_builder(src, record):
-    lname = record.get("id", "no-id").strip().relace(" ", "__")
-    return couch_id_builder(src, lname)
+def couch_id_builder(src, id_handle):
+    return "--".join((src, id_handle))
+
+
+def couch_rec_id_builder(src, id_handle):
+    return couch_id_builder(src, clean_id(id_handle))
+
+
+def clean_id(id_handle):
+    return id_handle.strip().replace(" ","__")
+
 
 def with_retries(attempts_num=3, delay_sec=1, print_args_if_error=False):
     """
@@ -99,9 +106,11 @@ def with_retries(attempts_num=3, delay_sec=1, print_args_if_error=False):
 
     return apply_with_retries
 
+
 @with_retries(4, 2)
 def urlopen_with_retries(url):
     return urlopen(url)
+
 
 def clean_date(d):
     """Return a given date string without certain characters and expressions"""
@@ -111,6 +120,7 @@ def clean_date(d):
     for p, r in regex:
         d = re.sub(p, r, d)
     return d.strip()
+
 
 def remove_single_brackets_and_strip(d):
     """
@@ -123,12 +133,15 @@ def remove_single_brackets_and_strip(d):
         bracket = "]"
     return d.replace(bracket, "").strip(". ")
 
+
 def remove_all_brackets_and_strip(d):
     """Return a given date-range string without square brackets"""
     return d.replace("[", "").replace("]", "").strip(". ")
 
+
 def strip_unclosed_brackets(s):
     return re.sub(r'\[(?![^\]]*?\])', '', s)
+
 
 def iso_utc_with_tz(dt=None):
     """Given a UTC datetime, return an ISO 8601-conformant string w/ timezone
@@ -136,6 +149,7 @@ def iso_utc_with_tz(dt=None):
     if not dt:
         dt = datetime.utcnow()
     return dt.isoformat() + "Z"
+
 
 def url_join(*args):
     """Joins and returns given urls.

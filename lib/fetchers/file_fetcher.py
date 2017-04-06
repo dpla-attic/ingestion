@@ -1,4 +1,5 @@
 from dplaingestion.fetchers.fetcher import *
+import os
 
 class FileFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):

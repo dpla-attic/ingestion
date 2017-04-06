@@ -19,12 +19,14 @@ from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
 from dplaingestion.utilities import iterify, couch_id_builder
 
+
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
 
 XML_PARSE = lambda doc: xmltodict.parse(doc, xml_attribs=True, attr_prefix='',
                                         force_cdata=False,
                                         ignore_whitespace_cdata=True)
+
 
 class Fetcher(object):
     """The base class for all fetchers.
