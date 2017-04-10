@@ -4,7 +4,7 @@
     "metadata_prefix": "mods",
     "endpoint_url": "http://www.biodiversitylibrary.org/oai",
     "sets": [
-        "title"
+        "item"
     ], 
     "contributor": {
         "@id": "http://dp.la/api/contributor/bhl",
@@ -22,7 +22,7 @@
         "/shred?prop=sourceResource%2Fsubject",
         "/shred?prop=sourceResource%2Ftitle",
         "/cleanup_value",
-        "/capitalize_value",
+        "/capitalize_value?prop=sourceResource%2Flanguage%2CsourceResource%2Ftitle%2CsourceResource%2Frights%2CsourceResource%2Fcreator%2CsourceResource%2Frelation%2CsourceResource%2Fpublisher%2CsourceResource%2Fsubject%2CsourceResource%2Fcollection%2Ftitle%2CsourceResource%2Fcontributor%2CsourceResource%2Fextent%2CsourceResource%2Fformat%2CdataProvider%2Cprovider%2Fname",
         "/enrich_earliest_date",
         "/enrich-subject",
         "/enrich_date",

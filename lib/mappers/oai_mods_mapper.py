@@ -18,10 +18,10 @@ class OAIMODSMapper(Mapper):
         name = []
         for n in iterify(name_part):
             if isinstance(n, basestring):
-                name.append(n)
+                name.append(n.strip(" ,"))
             elif isinstance(n, dict) and "#text" in n:
                 if not (set(n["type"]) & set(type_exceptions)):
-                    name.append(n["#text"])
+                    name.append(n["#text"].strip(" ,"))
 
         return ", ".join(name)
 
