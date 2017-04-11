@@ -28,9 +28,6 @@ Configure an akara.ini file appropriately for your environment;
     ; Recommended LogLevel is one of DEBUG or INFO
     LogLevel=<priority>
 
-    [Bing]
-    ApiKey=<your Bing Maps API key>
-
     [CouchDb]
     Url=<URL to CouchDB instance, including trailing forward-slash>
     Username=<CouchDB username>
@@ -39,9 +36,8 @@ Configure an akara.ini file appropriately for your environment;
     ; Recommended LogLevel is INFO for production; defaults to INFO if not set
     LogLevel=<priority>
 
-    [Geonames]
-    Username=<Geonames username>
-    Token=<Geonames token>
+    [Twofishes]
+    BaseUrl=<URL to Twofishes server, required for geo-enrichments>
 
     [Rackspace]
     Username=<Rackspace username>

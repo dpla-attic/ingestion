@@ -31,15 +31,13 @@
         "SSDPLASaintMary",
         "SSDPLAPuget",
         "SSDPLARhode",
-        "SSDPLACCNYAntiWar",
-        "SSDPLACCNYArch",
-        "SSDPLACCNYScience",
         "SSDPLAGetty",
         "SSDPLAMethodist",
         "SSDPLAOttawa",
         "SSDPLARhodeIsland",
         "SSDPLASaintMary",
-        "SSDLPACuny"
+        "SSDLPACuny",
+        "SSDPLATrinity"
     ],
     "set_params": {
         "SSDPLABrynMawr": {"frm": "2015-01-04"},
@@ -69,15 +67,13 @@
         "SSDPLASaintMary": {"frm": "2015-01-04"},
         "SSDPLAPuget": {"frm": "2015-01-04"},
         "SSDPLARhode": {"frm": "2015-01-04"},
-        "SSDPLACCNYAntiWar": {"frm": "2015-01-04"},
-        "SSDPLACCNYArch": {"frm": "2015-01-04"},
-        "SSDPLACCNYScience": {"frm": "2015-01-04"},
         "SSDPLAGetty": {"frm": "2015-01-04"},
         "SSDPLAMethodist": {"frm": "2015-01-04"},
         "SSDPLAOttawa": {"frm": "2015-01-04"},
         "SSDPLARhodeIsland": {"frm": "2015-01-04"},
         "SSDPLASaintMary": {"frm": "2015-01-04"},
-        "SSDLPACuny": {"frm": "2015-01-04"}
+        "SSDLPACuny": {"frm": "2015-01-04"},
+        "SSDPLATrinity": {"frm": "2015-01-04"}
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor",

@@ -1,3 +1,4 @@
+import re
 from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
@@ -9,6 +10,12 @@ class BHLMapper(OAIMODSMapper):
     def __init__(self, provider_data):
         super(BHLMapper, self).__init__(provider_data)
 
+    def _place_term(self, origin_info):
+        if 'place' in origin_info:
+            return textnode(origin_info['place'].get('placeTerm', {}))
+        else:
+            return ''
+
     def map_date_and_publisher(self):
         prop = self.root_key + "originInfo"
 
@@ -18,22 +25,24 @@ class BHLMapper(OAIMODSMapper):
         }
 
         if exists(self.provider_data, prop):
-            for s in iterify(getprop(self.provider_data, prop)):
-                if "dateOther" in s:
-                    date_list = iterify(s.get("dateOther"))
-                    date = [t.get("#text") for t in date_list if
-                            t.get("keyDate") == "yes"
-                            and t.get("type") == "issueDate"]
-                    # Check if last date is already a range
-                    if "-" in date[-1] or "/" in date[-1]:
-                        _dict["date"] = date[-1]
-                    elif len(date) > 1:
-                        _dict["date"] = "%s-%s" % (date[0], date[-1])
+            for or_info in iterify(getprop(self.provider_data, prop)):
+                dates = _date_values(or_info)  # They come sorted
+                if dates:
+                    if '-' in dates[-1] or '/' in dates[-1]:
+                        # Date is already a range, so just use it
+                        _dict['date'] = dates[-1]
+                    elif len(dates) > 1:
+                        _dict['date'] = "%s-%s" % (dates[0], dates[-1])
                     else:
-                        _dict["date"] = date[0]
+                        _dict['date'] = dates[0]
 
-                if "publisher" in s:
-                    _dict["publisher"].append(s.get("publisher"))
+                if "publisher" in or_info:
+                    pt = self._place_term(or_info)
+                    if pt:
+                        _dict['publisher'].append(
+                            "%s %s" % (pt, or_info['publisher']))
+                    else:
+                        _dict['publisher'].append(or_info['publisher'])
 
             self.update_source_resource(self.clean_dict(_dict))
 
@@ -103,11 +112,13 @@ class BHLMapper(OAIMODSMapper):
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 if "geographic" in s:
-                    _dict["spatial"].append(s.get("geographic"))
+                    _dict["spatial"].append(s["geographic"])
                 elif "topic" in s:
-                    _dict["subject"].append(s.get("topic"))
+                    _dict["subject"].append(s["topic"])
+                elif "genre" in s:
+                    _dict["subject"].append(s["genre"])
                 elif "temporal" in s:
-                    _dict["temporal"].append(s.get("temporal"))
+                    _dict["temporal"].append(s["temporal"])
 
             self.update_source_resource(self.clean_dict(_dict))
 
@@ -184,14 +195,8 @@ class BHLMapper(OAIMODSMapper):
         ti_path = self.root_key + "titleInfo"
         title_infos = iterify(getprop(self.provider_data, ti_path, True))
         titles = _good_titles(title_infos)  # generator
-        part_path = self.root_key + "part"
-        number = _part_num_str(getprop(self.provider_data, part_path, True))
-        def t_string(t):
-            if number:
-                return "%s, %s" % (t, number)
-            else:
-                return t
-        full_titles = [t_string(t) for t in titles]
+        # Titles have various unwanted characters and whitespace removed.
+        full_titles = [re.sub(r'[\s:/\.]+$', '', t) for t in titles]
         if full_titles:
             self.update_source_resource({"title": full_titles})
 
@@ -231,6 +236,20 @@ class BHLMapper(OAIMODSMapper):
 
             self.update_source_resource(creator_and_contributor)
 
+    def _series_titles(self, related_items):
+        for item in related_items:
+            if item.get('type', '') == 'series':
+                yield item['titleInfo']['title']
+
+    def map_collection(self):
+        ri = getprop(self.provider_data, self.root_key + 'relatedItem', True)
+        if ri:
+            collections = [{'title': t}
+                           for t in self._series_titles(iterify(ri))]
+            if collections:
+                self.update_source_resource({'collection': collections})
+
+
     def map_multiple_fields(self):
         self.map_format_and_spec_type()
         self.map_creator_and_contributor()
@@ -239,13 +258,62 @@ class BHLMapper(OAIMODSMapper):
         self.map_edm_has_type()
         self.map_date_and_publisher()
 
+class DateString(unicode):
+    """Class for date strings that has custom sorting rules
+
+    Strings with range delimiters ('-' and '/') are sorted to the end of the
+    list.
+
+    See how BHLMapper.map_date_and_publisher() expects to encounter date
+    ranges.
+    """
+    def __lt__(a, b):
+        if '-' in a or '/' in a:
+            if '-' not in b and '/' not in b:
+                return False
+            else:
+                return unicode.__lt__(a, b)
+        elif '-' in b or '/' in b:
+            return True
+        else:
+            return unicode.__lt__(a, b)
+    def __gt__(a, b):
+        if '-' in a or '/' in a:
+            if '-' not in b and '/' not in b:
+                return True
+            else:
+                return unicode.__lt__(a, b)
+        elif '-' in b or '/' in b:
+            return False
+        else:
+            return unicode.__lt__(a, b)
+
+
+def _date_values(element):
+    """Pick out the child element of the given XML element that is our date
+    field, and return the date values from it as a list of strings.
+    """
+    prop = [k for k in element if k in ['dateOther', 'dateIssued']]
+    if not prop:
+        return None
+    date_list = iterify(element.get(prop[0]))
+    return sorted([DateString(textnode(e))
+                   for e in _date_elements(date_list, prop[0])])
+
+def _date_elements(el_list, el_name):
+    """Given a list of candidate elements, yield those suitable as dates"""
+    for e in el_list:
+        if isinstance(e, dict) and e.get('keyDate') == 'yes':
+            if (el_name == 'dateOther' and e.get('type') == 'issueDate') \
+                    or el_name == 'dateIssued':
+                yield e
 
 def _good_titles(elements):
     """Given a list of elements, yield the ones that are "real" titles.
 
     The real ones don't have a "type" attribute, like "type=abbreviation".
     This function tries to handle a variety of cases where elements have or
-    dont' have attributes, where we might get strings or dicts with '#text'
+    don't have attributes, where we might get strings or dicts with '#text'
     properties.
     """
     for el in elements:
@@ -268,7 +336,8 @@ def _part_num_str(part_elements):
     try:
         return ", ".join([textnode(e['detail']['number'])
                           for e in iterify(part_elements)])
-    except NoTextNodeError:
+    except Exception:
         # There was probably an issue determining the string value of one of
-        # the elements.  See textnode.textnode().
+        # the elements.  See textnode.textnode(). 'detail' could also have been
+        # undefined.
         return ""

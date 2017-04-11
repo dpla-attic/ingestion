@@ -25,7 +25,10 @@ def enrichsubject(body,ctype,action="enrich-subject",prop="sourceResource/subjec
               (TAGS_FOR_STRIPPING + '$','')
 
     def cleanup(s):
-        s = s.strip()
+        try:
+            s = s.strip()
+        except AttributeError:  # when s is None
+            s = ''
         for pattern, replace in REGEXPS:
             s = re.sub(pattern, replace, s)
         if len(s) > 2:
