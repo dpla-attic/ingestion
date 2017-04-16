@@ -41,7 +41,7 @@ from datetime import datetime
 
 from dplaingestion.oai import oaiservice, OAIError, OAIHTTPError, OAIParseError
 
-
+CACHE_DIR = module_config().get('CACHE_DIR')
 LISTRECORDS_SERVICE_ID = 'http://purl.org/la.dp/dpla-list-records'
 
 @simple_service('GET', LISTRECORDS_SERVICE_ID, 'dpla-list-records', 'application/json')
@@ -57,7 +57,7 @@ def listrecords(endpoint, oaiset=None, resumption_token=None,
     if frm is not None and until is None:
         until = datetime.now().strftime("%Y-%m-%d")
 
-    remote = oaiservice(endpoint, logger)
+    remote = oaiservice(endpoint, logger, CACHE_DIR)
 
     try:
         list_records_result = \

@@ -14,7 +14,7 @@ from dplaingestion.utilities import iterify
 import xmltodict
 from dplaingestion.selector import getprop
 
-XML_PARSE = lambda doc: xmltodict.parse(doc,xml_attribs=True,attr_prefix='',force_cdata=False,ignore_whitespace_cdata=True)
+XML_PARSE = lambda doc: xmltodict.parse(doc, xml_attribs=True, attr_prefix='', force_cdata=False, ignore_whitespace_cdata=True)
 
 PREFIXES = {
     u'o': u'http://www.openarchives.org/OAI/2.0/',

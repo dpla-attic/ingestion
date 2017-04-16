@@ -27,6 +27,8 @@ Configure an akara.ini file appropriately for your environment;
     Port=<port for Akara to run on>
     ; Recommended LogLevel is one of DEBUG or INFO
     LogLevel=<priority>
+    ; Default directory to cache certain HTTP requests
+    Httplib2CacheDir=/tmp
 
     [CouchDb]
     Url=<URL to CouchDB instance, including trailing forward-slash>

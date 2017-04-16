@@ -39,6 +39,7 @@ from akara import module_config
 
 from dplaingestion.oai import oaiservice
 
+CACHE_DIR = module_config().get('CACHE_DIR')
 LISTSETS_SERVICE_ID = 'http://purl.org/la.dp/dpla-list-sets'
 
 @simple_service('GET', LISTSETS_SERVICE_ID, 'oai.listsets.json', 'application/json')
@@ -48,6 +49,6 @@ def listsets(endpoint, limit=None):
 
     curl "http://localhost:8880/oai.listsets.json?limit=10"
     """
-    remote = oaiservice(endpoint, logger)
+    remote = oaiservice(endpoint, logger, CACHE_DIR)
     sets = remote.list_sets()[:int(limit)] if limit else remote.list_sets()
     return json.dumps(sets, indent=4)
