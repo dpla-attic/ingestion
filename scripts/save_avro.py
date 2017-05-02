@@ -22,15 +22,16 @@ from amara.thirdparty import json
 from dplaingestion.couch import Couch
 from dplaingestion.selector import getprop
 
+# See https://digitalpubliclibraryofamerica.atlassian.net/wiki/display/TECH/Ingestion+3+Storage+Specification
 avro_schema = """
 {
     "namespace": "la.dp.avro.MAP_3.1",
     "type": "record",
-    "name": "EnrichedRecord",
-    "doc": "Dumped from PA cqa box in Ingestion 1",
+    "name": "IndexRecord.v1",
+    "doc": "",
     "fields": [
-        { "name": "id",             "type": "string" },
-        { "name": "json_document",  "type": "string" }
+        { "name": "id", "type": "string" },
+        { "name": "document",  "type": "string" }
     ]
 }"""
 
@@ -84,7 +85,7 @@ def write_avro(codec, enrich_dir, output_filename, schema):
                 file_docs = json.loads(input_file.read())
                 for key in file_docs:
                     doc = file_docs[key]
-                    writer.append({"id": key, "json_document": json.dumps(doc)})
+                    writer.append({"id": key, "document": json.dumps(doc)})
                     total_items += 1
 
             print >> sys.stderr, "Read file %s" % filename
