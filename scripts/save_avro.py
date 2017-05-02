@@ -69,7 +69,7 @@ def main(argv):
         return 0
 
     except Exception, e:
-        print >> sys.stderr, "Caught error: %s" % e.message
+        print >> sys.stderr, "Caught error: %s" % e
         return 1
 
 
