@@ -3,16 +3,245 @@ from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mods_mapper import MODSMapper
 
+
 class NYPLMapper(MODSMapper):
     def __init__(self, provider_data):
         super(NYPLMapper, self).__init__(provider_data)
+
+        self.contributor_roles = [
+            "actor",
+            "adapter",
+            "addressee",
+            "analyst",
+            "animator",
+            "annotator",
+            "applicant",
+            "arranger",
+            "art director",
+            "artistic director",
+            "assignee",
+            "associated name",
+            "auctioneer",
+            "author in quotations or text extracts",
+            "author of afterword, colophon, etc.",
+            "author of dialog",
+            "author of introduction, etc.",
+            "bibliographic antecedent",
+            "blurbwriter",
+            "book designer",
+            "book producer",
+            "bookseller",
+            "censor",
+            "cinematographer",
+            "client",
+            "collector",
+            "collotyper",
+            "colorist",
+            "commentator",
+            "commentator for written text",
+            "compiler",
+            "complainant",
+            "complainant-appellant",
+            "complainant-appellee",
+            "compositor",
+            "conceptor",
+            "conductor",
+            "conservator",
+            "consultant",
+            "consultant to a project",
+            "contestant",
+            "contestant-appellant",
+            "contestant-appellee",
+            "contestee",
+            "contestee-appellant",
+            "contestee-appellee",
+            "contractor",
+            "contributor",
+            "copyright claimant",
+            "copyright holder",
+            "corrector",
+            "curator",
+            "curator of an exhibition",
+            "dancer",
+            "data contributor",
+            "data manager",
+            "dedicatee",
+            "defendant",
+            "defendant-appellant",
+            "defendant-appellee",
+            "degree granting institution",
+            "degree grantor",
+            "delineator",
+            "depositor",
+            "distributor",
+            "donor",
+            "draftsman",
+            "editor",
+            "editor of compilation",
+            "editor of moving image work",
+            "electrician",
+            "electrotyper",
+            "engineer",
+            "expert",
+            "field director",
+            "film distributor",
+            "film editor",
+            "film producer",
+            "first party",
+            "former owner",
+            "funder",
+            "geographic information specialist",
+            "honoree",
+            "host",
+            "illuminator",
+            "inscriber",
+            "instrumentalist",
+            "issuing body",
+            "judge",
+            "laboratory",
+            "laboratory director",
+            "lead",
+            "lender",
+            "libelant",
+            "libelant-appellant",
+            "libelant-appellee",
+            "libelee",
+            "libelee-appellant",
+            "libelee-appellee",
+            "licensee",
+            "licensor",
+            "manufacturer",
+            "marbler",
+            "markup editor",
+            "metadata contact",
+            "metal-engraver",
+            "moderator",
+            "monitor",
+            "music copyist",
+            "musical director",
+            "musician",
+            "narrator",
+            "opponent",
+            "organizer",
+            "originator",
+            "other",
+            "owner",
+            "panelist",
+            "patent applicant",
+            "patent holder",
+            "patron",
+            "permitting agency",
+            "plaintiff",
+            "plaintiff-appellant",
+            "plaintiff-appellee",
+            "platemaker",
+            "presenter",
+            "printer",
+            "printer of plates",
+            "printmaker",
+            "process contact",
+            "producer",
+            "production company",
+            "production manager",
+            "production personnel",
+            "programmer",
+            "project director",
+            "proofreader",
+            "publisher",
+            "publishing director",
+            "puppeteer",
+            "radio producer",
+            "recording engineer",
+            "redaktor",
+            "fenderer",
+            "feporter",
+            "research team head",
+            "research team member",
+            "researcher",
+            "respondent",
+            "respondent-appellant",
+            "respondent-appellee",
+            "responsible party",
+            "restager",
+            "reviewer",
+            "rubricator",
+            "scenarist",
+            "scientific advisor",
+            "screenwriter",
+            "scribe",
+            "second party",
+            "secretary",
+            "signer",
+            "speaker",
+            "sponsor",
+            "stage director",
+            "stage manager",
+            "standards body",
+            "stereotyper",
+            "storyteller",
+            "supporting host",
+            "surveyor",
+            "teacher",
+            "technical director",
+            "television director",
+            "television producer",
+            "thesis advisor",
+            "transcriber",
+            "translator",
+            "type designer",
+            "typographer",
+            "videographer",
+            "voice actor",
+            "witness",
+            "writer of accompanying material"
+        ]
+
         self.creator_roles = [
-            "architect", "artist", "author", "cartographer", "composer",
-            "creator", "designer", "director", "engraver", "interviewer",
-            "landscape architect", "lithographer", "lyricist",
-            "musical director", "photographer", "performer",
-            "project director", "singer", "storyteller", "surveyor",
-            "technical director", "woodcutter"
+            "architect",
+            "art copyist",
+            "artist",
+            "attributed name",
+            "author",
+            "binder",
+            "binding designer",
+            "book jacket designer",
+            "bookplate designer",
+            "calligrapher",
+            "cartographer",
+            "choreographer",
+            "composer",
+            "correspondent",
+            "costume designer",
+            "cover designer",
+            "creator",
+            "dedicator",
+            "designer",
+            "director",
+            "dissertant",
+            "dubious author",
+            "engraver",
+            "etcher",
+            "facsimilist",
+            "film director",
+            "forger",
+            "illustrator",
+            "interviewee",
+            "interviewer",
+            "inventor",
+            "landscape architect",
+            "librettist",
+            "lighting designer",
+            "lithographer",
+            "lyricist",
+            "papermaker",
+            "performer",
+            "photographer",
+            "sculptor",
+            "set designer",
+            "singer",
+            "sound designer",
+            "wood engraver",
+            "woodcutter"
             ]
 
     def txt(self, n):
@@ -27,19 +256,26 @@ class NYPLMapper(MODSMapper):
 
     def map_title(self):
         prop = "titleInfo"
-
         if exists(self.provider_data, prop):
-            title_info = iterify(getprop(self.provider_data, prop))
-            # Title is in the last titleInfo element
-            title = None
-            try:
-                title = title_info[-1].get("title")
-            except:
-                logger.error("Error setting sourceResource.title for %s" %
-                             self.provider_data["_id"])
-            
-            if title:
-                self.update_source_resource({"title": title})
+            primary = None
+            alternates = []
+
+            for title_info in iterify(getprop(self.provider_data, prop)):
+                if "primary" == title_info.get("usage"):
+                    primary = title_info.get("title")
+                else:
+                    alternates.append(title_info.get("title"))
+
+            if primary:
+                self.update_source_resource({"title": primary})
+            else:
+                logger.error(
+                    "Error setting sourceResource.title for %s" %
+                    self.provider_data["_id"]
+                )
+
+            if alternates:
+                self.update_source_resource({"alternative": alternates})
 
     def map_identifier(self):
         prop = "identifier"
@@ -51,23 +287,31 @@ class NYPLMapper(MODSMapper):
             for v in iterify(getprop(self.provider_data, prop)):
                 for id_value in id_values:
                     if (id_value in v.get("displayLabel", "") or
-                        id_value in v.get("type", "")):
+                            id_value in v.get("type", "")):
                         identifier.append(v.get("#text"))
                         break
 
             if identifier:
                 self.update_source_resource({"identifier": identifier})
 
-    def map_description(self): 
-        note = self.txt(getprop(self.provider_data, "note", True))
-        pd = getprop(self.provider_data, "physicalDescription", True)
-        pnote = None
-        if type(pd) == list:
-            pnote = [self.txt(e["note"]) for e in pd if "note" in e] # Yes, a list.
-        elif type(pd) == dict and "note" in pd:
-            pnote = self.txt(pd["note"]) # Yes, a string.
+    def map_description(self):
 
-        desc = note or pnote
+        desc = []
+
+        note_data = iterify(getprop(self.provider_data, "note", True))
+
+        if note_data:
+            for note in note_data:
+                note_type = getprop(note, "type", True)
+                if "content" == note_type:
+                    desc.append(note.get("#text"))
+
+        abstracts = iterify(getprop(self.provider_data, "abstract", True))
+
+        if abstracts:
+            for abstract in abstracts:
+                desc.append(abstract.get("#text"))
+
         if desc:
             self.update_source_resource({"description": desc})
 
@@ -82,42 +326,45 @@ class NYPLMapper(MODSMapper):
         self.update_source_resource({"stateLocatedIn": "New York"})
 
     def map_subject(self):
-        # Mapped from subject and genre 
-        #
-        # Per discussion with Amy on 10 April 2014, don't worry about
-        # checking whether heading maps to authority file. Amy simplified the
-        # crosswalk.
-        #
-        # TODO: When present, we should probably pull in the valueURI and
-        # authority values into the sourceResource.subject - this would
-        # represent an index/API change, however. 
-        subject = []
+        subjects = []
 
         if exists(self.provider_data, "subject"):
+
             for v in iterify(getprop(self.provider_data, "subject")):
-                if "topic" in v:
-                    if isinstance(v, basestring):
-                        subject.append(v["topic"])
-                    elif isinstance(v["topic"], dict):
-                        subject.append(v["topic"].get("#text"))
-                    else:
-                        logger.error("Topic is not a string nor a dict; %s" %
-                                     self.provider_data["_id"])
-                if exists(v, "name/namePart"):
-                    subject.append(getprop(v, "name/namePart"))
+                subject = self.extract_subject(v, "topic")
+                if not subject:
+                    subject = self.extract_subject(v, "geographic")
+                if not subject:
+                    subject = self.extract_subject(v, "temporal")
+                if not subject:
+                    subject = self.extract_subject(v, "name")
+                if subject:
+                    subjects.append(subject)
 
-        if exists(self.provider_data, "genre"): 
-            for v in iterify(getprop(self.provider_data, "genre")):
-                if isinstance(v, basestring):
-                    subject.append(v)
-                elif isinstance(v, dict):
-                    subject.append(v.get("#text"))
-                else:
-                    logger.error("Genre is not a string nor a dict; %s" %
-                                 self.provider_data["_id"])
+        if subjects:
+            self.update_source_resource({"subject": subjects})
 
-        if subject:
-            self.update_source_resource({"subject": subject})
+    # helper function for map_subject
+    def extract_subject(self, subject_info, key):
+        if key in subject_info:
+            subject_type_info = subject_info[key]
+            if isinstance(subject_type_info, dict):
+                return subject_type_info.get("#text")
+            elif isinstance(subject_type_info, list):
+                subject_texts = []
+                for s in subject_type_info:
+                    subject_texts.append(self.txt(s))
+                return " -- ".join(str(x) for x in subject_texts)
+
+    def map_temporal(self):
+        temporals = []
+        if exists(self.provider_data, "subject"):
+            for v in iterify(getprop(self.provider_data, "subject")):
+                temporal = self.extract_subject(v, "temporal")
+                if temporal:
+                    temporals.append(temporal)
+        if temporals:
+            self.update_source_resource({"temporal": temporals})
 
     def map_type(self):
         prop = "typeOfResource"
@@ -133,18 +380,12 @@ class NYPLMapper(MODSMapper):
             format = []
             for v in iterify(getprop(self.provider_data, prop)):
                 if isinstance(v, dict):
-                    f = v.get("$")
+                    f = v.get("#text")
                     if f:
                         format.append(f)
 
             if format:
                 self.update_source_resource({"format": format})
-
-    def map_rights(self):
-        prop = "tmp_rights_statement"
-        if exists(self.provider_data, prop):
-            self.update_source_resource({"rights":
-                                         getprop(self.provider_data, prop)})
 
     def map_contributor_and_creator(self):
         prop = "name"
@@ -153,12 +394,13 @@ class NYPLMapper(MODSMapper):
             creator = set()
             contributor = set()
             for v in iterify(getprop(self.provider_data, prop)):
+                logger.error("V: " + str(v))
                 for role in iterify(v.get("role", [])):
                     for role_term in iterify(role.get("roleTerm", [])):
                         rt = role_term.get("#text").lower().strip(" .")
                         if rt in self.creator_roles:
                             creator.add(v["namePart"])
-                        elif rt != "publisher":
+                        elif rt in self.contributor_roles:
                             contributor.add(v["namePart"])
 
             if creator:
@@ -166,6 +408,9 @@ class NYPLMapper(MODSMapper):
             cont = contributor - creator
             if cont:
                 ret_dict["contributor"] = list(cont)
+
+            logger.error("CONTRIBUTOR: " + str(cont))
+            logger.error("CREATOR: " + str(creator))
 
             self.update_source_resource(ret_dict)
 
@@ -176,7 +421,7 @@ class NYPLMapper(MODSMapper):
             self.update_source_resource({"extent":
                                          getprop(self.provider_data, prop)})
 
-    def map_date_publisher_and_spatial(self):
+    def map_date_publisher(self):
         """
         Examine the many possible originInfo elements and pick out date,
         spatial, and publisher information.
@@ -226,20 +471,8 @@ class NYPLMapper(MODSMapper):
                     break
             # Map publisher
             if ("publisher" in origin_info and origin_info["publisher"] not in
-                ret_dict["publisher"]):
+                    ret_dict["publisher"]):
                 ret_dict["publisher"].append(self.txt(origin_info["publisher"]))
-            # Map spatial
-            if exists(origin_info, "place/placeTerm"):
-                for place_term in iterify(getprop(origin_info,
-                                                   "place/placeTerm")):
-                    if isinstance(place_term, basestring):
-                        pass
-                    elif isinstance(place_term, dict):
-                        place_term = place_term.get("#text")
-
-                    if (place_term and place_term not in ret_dict["spatial"]):
-                        ret_dict["spatial"].append(place_term)
-
         # Map dates. Only use the last date-related originInfo element
         try:
             last_date_origin_info = date_origin_info[-1]
@@ -266,12 +499,12 @@ class NYPLMapper(MODSMapper):
             for v in iterify(getprop(self.provider_data, prop)):
                 for p in iterify(v.get("physicalLocation", [])):
                     if (p.get("type") == "division" and
-                        p.get("authority") != "marcorg"):
+                            p.get("authority") != "marcorg"):
                         phys_location = p.get("#text", "")
                         while phys_location.endswith("."):
                             phys_location = phys_location[:-1]
                         if phys_location:
-                             data_provider = phys_location.strip() + \
+                            data_provider = phys_location.strip() + \
                                              ". The New York Public Library"
 
         if data_provider:
@@ -300,13 +533,68 @@ class NYPLMapper(MODSMapper):
 
         self.update_source_resource(ret_dict)
 
+    # defeating the default implementation of this in deference to map_rights
+    # which handles more than it would normally
     def map_edm_rights(self):
-        prop = "rightsStatementURI"
+        pass
 
+    # catchall method for mapping rights since nypl will have 3 places to grab
+    # rights info that are interdependent
+    def map_rights(self):
+        edm_rights_prop = "rightsStatementURI"
+        tmp_rights_prop = "tmp_rights_statement"
+        map_tmp = True
+
+        if exists(self.provider_data, edm_rights_prop):
+            self.mapped_data.update(
+                {"rights": getprop(self.provider_data, edm_rights_prop)}
+            )
+            map_tmp = False
+
+        if map_tmp and exists(self.provider_data, tmp_rights_prop):
+            self.update_source_resource(
+                {"rights": getprop(self.provider_data, tmp_rights_prop)}
+            )
+
+    def map_edm_has_type(self):
+        prop = "genre"
         if exists(self.provider_data, prop):
-            self.mapped_data.update({"rights": getprop(self.provider_data, prop)})
+            genre = self.txt(getprop(self.provider_data, prop))
+            self.update_source_resource({"hasType": genre})
+
+    def map_spatial(self):
+        geographics_list = []
+        # because of cardnality and xml -> json issues, this might be a dict
+        # with k = type and value = subject, or it might just be a subject
+        # so this works only for the former type.
+        subjects = iterify(getprop(self.provider_data, "subject", True))
+        for subject in subjects:
+            geographic_info = getprop(subject, "geographic", True)
+            if geographic_info:
+                text = self.txt(geographic_info)
+                if text:
+                    geographics_list.append(text)
+
+        geographics = list(set(geographics_list))
+        if geographics:
+            self.update_source_resource({"spatial": geographics})
+
+    def map_is_part_of(self):
+        relatedItems = iterify(getprop(self.provider_data, "relatedItem", True))
+        hosts = []
+        for relatedItem in relatedItems:
+            if "type" in relatedItem and relatedItem.get("type") == "host":
+                hosts.append(relatedItem)
+
+        if hosts:
+            lastHost = relatedItems[-1]
+            if exists(lastHost, "titleInfo/title"):
+                title = self.txt(getprop(lastHost, "titleInfo/title", True))
+                self.update_source_resource({"isPartOf": title})
 
     def map_multiple_fields(self):
         self.map_contributor_and_creator()
-        self.map_date_publisher_and_spatial()
+        self.map_date_publisher()
         self.map_collection_and_relation()
+        self.map_edm_has_type()
+
