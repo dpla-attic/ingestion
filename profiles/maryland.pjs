@@ -1,0 +1,36 @@
+{
+    "name": "maryland",
+    "type": "oai_verbs",
+    "metadata_prefix": "oai_qdc",
+    "endpoint_url": "http://webconfig.digitalmaryland.org/oai/oai.php"",
+
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/digital-maryland",
+        "name": "Digital Maryland"
+    }, 
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ], 
+    "enrichments_item": [
+        "/select-id?prop=header%2Fidentifier",
+        "/dpla_mapper?mapper_type=maryland",
+        "/strip_html",
+        "/set_context",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language"
+    ],
+    "thresholds": {                                                             
+        "added": 5000,                                                          
+        "changed": 1000,                                                        
+        "deleted": 1000                                                         
+    }
+}
