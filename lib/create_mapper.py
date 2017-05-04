@@ -120,6 +120,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.pa_mapper import PAMapper
         return PAMapper(data)
 
+    def _create_md_mapper(data):
+        from dplaingestion.mappers.maryland_mapper import MarylandMapper
+        return MarylandMapper(data)
+
     mappers = {
         'ia':           lambda d: _create_ia_mapper(d),
         'bpl':          lambda d: _create_bpl_mapper(d),
@@ -149,6 +153,7 @@ def create_mapper(mapper_type, data):
         'esdn':         lambda d: _create_esdn_mapper(d),
         'wisconsin':    lambda d: _create_wi_mapper(d),
         'bhl':          lambda d: _create_bhl_mapper(d),
+        'maryland':     lambda d: _create_md_mapper(d),
         'pa':           lambda d: _create_pa_mapper(d)
     }
 
