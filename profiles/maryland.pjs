@@ -2,8 +2,7 @@
     "name": "maryland",
     "type": "oai_verbs",
     "metadata_prefix": "oai_qdc",
-    "endpoint_url": "http://webconfig.digitalmaryland.org/oai/oai.php"",
-
+    "endpoint_url": "http://webconfig.digitalmaryland.org/oai/oai.php",
     "contributor": {
         "@id": "http://dp.la/api/contributor/digital-maryland",
         "name": "Digital Maryland"
@@ -13,7 +12,7 @@
         "/validate_mapv3"
     ], 
     "enrichments_item": [
-        "/select-id?prop=header%2Fidentifier",
+        "/select-id",
         "/dpla_mapper?mapper_type=maryland",
         "/strip_html",
         "/set_context",
