@@ -70,7 +70,7 @@ class MarylandMapper(QDCMapper):
         if identifiers and len(identifiers) > 1:
             self.mapped_data.update({"isShownAt": identifiers[1]})
 
-    def map_edm_preview(self):
+    def map_object(self):
         url = getprop(self.mapped_data, "isShownAt", True)
         if url:
             parts = url.strip("/").split("/")
@@ -79,7 +79,7 @@ class MarylandMapper(QDCMapper):
                 id = parts[-1]
                 preview = "http://webconfig.digitalmaryland.org/utils/" \
                           "getthumbnail/collection/%s/id/%s" % (collection, id)
-                self.mapped_data.update({"preview": preview})
+                self.mapped_data.update({"object": preview})
 
     def map_provider(self, prop="provider"):
         self.mapped_data.update({"provider": "Digital Maryland"})
@@ -88,6 +88,3 @@ class MarylandMapper(QDCMapper):
         rights = iterify(getprop(self.provider_data, "rights", True))
         if rights:
             self.mapped_data.update({"rights": rights})
-
-    def map_multiple_fields(self):
-        self.map_edm_preview()
