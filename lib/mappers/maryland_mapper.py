@@ -76,13 +76,20 @@ class MarylandMapper(QDCMapper):
             parts = url.strip("/").split("/")
             if parts:
                 collection = parts[-3]
-                id = parts[-1]
+                item = parts[-1]
                 preview = "http://webconfig.digitalmaryland.org/utils/" \
-                          "getthumbnail/collection/%s/id/%s" % (collection, id)
+                          "getthumbnail/collection/%s/id/%s" \
+                          % (collection, item)
                 self.mapped_data.update({"object": preview})
 
     def map_provider(self, prop="provider"):
-        self.mapped_data.update({"provider": "Digital Maryland"})
+        provider_data = {
+            "provider": {
+                "name": "Digital Maryland",
+                "@id": "http://dp.la/api/contributor/maryland"
+            }
+        }
+        self.mapped_data.update(provider_data)
 
     def map_edm_rights(self):
         rights = iterify(getprop(self.provider_data, "rights", True))
