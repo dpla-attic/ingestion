@@ -3,7 +3,6 @@ from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mods_mapper import MODSMapper
 from dplaingestion.textnode import textnode
-import re
 
 
 class TNMapper(MODSMapper):
@@ -11,7 +10,6 @@ class TNMapper(MODSMapper):
         super(TNMapper, self).__init__(provider_data)
 
     def map_multiple_fields(self):
-        super(MODSMapper, self).map_multiple_fields()
         self.map_spatial_and_subject_and_temporal()
 
     def map_is_part_of(self):
@@ -38,7 +36,7 @@ class TNMapper(MODSMapper):
             self.update_source_resource({"collection": collections})
 
     # helper function for the next two functions
-    def name_part(self, type):
+    def name_part(self, role_type):
         prop = "/metadata/mods/name"
         results = []
         if exists(self.provider_data, prop):
@@ -47,7 +45,7 @@ class TNMapper(MODSMapper):
                     for role in iterify(name["role"]):
                         role_prop = "roleTerm/#text"
                         if exists(role, role_prop) \
-                                and getprop(role, role_prop) == type:
+                                and getprop(role, role_prop) == role_type:
                             results.append(name["namePart"])
 
         return results
@@ -102,8 +100,8 @@ class TNMapper(MODSMapper):
         path = "/metadata/mods/identifier"
         identifiers = []
         if exists(self.provider_data, path):
-            for id in iterify(getprop(self.provider_data, path)):
-                identifiers.append(textnode(id))
+            for tn_id in iterify(getprop(self.provider_data, path)):
+                identifiers.append(textnode(tn_id))
         if identifiers:
             self.update_source_resource({"identifier": identifiers})
 
@@ -245,5 +243,6 @@ class TNMapper(MODSMapper):
             if im_prov:
                 self.mapped_data.update({"intermediateProvider": im_prov[0]})
 
+    @classmethod
     def log(self, label, obj):
         logger.error(label + ": " + str(obj))
