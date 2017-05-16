@@ -31,6 +31,8 @@
         "/set_spec_type",
         "/enrich-type",
         "/enrich_language",
+        "/enrich_location",
+        "/geocode",
         "/set_type_from_physical_format",
         "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
     ],
