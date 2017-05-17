@@ -1,6 +1,7 @@
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.primo_mapper import PrimoMapper
+from akara import logger
 
 class GettyMapper(PrimoMapper):
     def __init__(self, provider_data):
@@ -11,10 +12,21 @@ class GettyMapper(PrimoMapper):
         self.source_id = getprop(self.provider_data,
                                  self.root_key + "control/sourceid", True)
 
-
     def map_contributor(self):
         self._map_source_resource_prop("contributor",
                                        self.root_key + "display/contributor")
+
+    def map_creator(self):
+        props = (self.root_key + "display/creator",
+                 self.root_key + "display/lds50")
+        creators = []
+
+        for prop in props:
+            if exists(self.provider_data, prop):
+                creators.append(getprop(self.provider_data, prop))
+
+        if creators:
+            self.update_source_resource({"creator": creators})
 
     def map_date(self):
         self._map_source_resource_prop("date",
@@ -22,7 +34,7 @@ class GettyMapper(PrimoMapper):
 
     def map_description(self):
         description = []
-        props = ("lds04", "lds28", "rights")
+        props = ("lds04", "lds28")
         for prop in props:
             values = getprop(self.provider_data,
                              self.root_key + "display/%s" % prop, True)
@@ -54,21 +66,20 @@ class GettyMapper(PrimoMapper):
                                        self.root_key + "display/publisher")
 
     def map_relation(self):
-        relation = []
-        props = (self.links_key + "sear:lln04",
-                 self.root_key + "display/ispartof")
+        pass
+
+    def map_rights(self):
+        rights = []
+        props = (self.root_key + "display/lds27",
+                 self.root_key + "display/rights")
         for prop in props:
             values = getprop(self.provider_data, prop, True)
             if values:
-                [relation.append(v) for v in iterify(values) if v not in
-                 relation]
+                [rights.append(v) for v in iterify(values) if v not in
+                 rights]
 
-        if relation:
-            self.update_source_resource({"relation": relation})
-
-    def map_rights(self):
-        self._map_source_resource_prop("rights",
-                                       self.root_key + "display/lds27")
+        if rights:
+            self.update_source_resource({"rights": rights})
 
     def map_type(self):
         self._map_source_resource_prop("type",
@@ -91,17 +102,42 @@ class GettyMapper(PrimoMapper):
                             self.root_key + "control/recordid", True)
         if record_id and self.source_id:
             if self.source_id == "GETTY_ROSETTA":
-                vid = "GRI"
+                value = getprop(self.provider_data, self.root_key +
+                                "display/lds29")
+                if value:
+                    self.mapped_data.update({"isShownAt": value})
+
             elif self.source_id == "GETTY_OCP":
                 vid = "GRI-OCP"
-            else:
-                vid = None
-
-            if vid:
                 self.mapped_data.update({"isShownAt": self.is_shown_at_url %
-                                         (vid, record_id)})
+                                                      (vid, record_id)})
 
     def map_data_provider(self):
         if self.source_id in ("GETTY_OCP", "GETTY_ROSETTA"):
             self.mapped_data.update({"dataProvider":
                                      "Getty Research Institute"})
+
+    def map_spatial(self):
+        prop = self.root_key + "display/coverage"
+
+        values = getprop(self.provider_data, prop, True)
+        if values:
+            spatial = []
+            [spatial.append(v) for v in iterify(values) if v not in spatial]
+
+            logger.error("Spatial value : %s" % spatial)
+
+            self.update_source_resource({"spatial": spatial})
+
+    def map_subject(self):
+        subjects = []
+        props = (self.root_key + "display/lds49",
+                 self.root_key + "display/subject")
+        for prop in props:
+            values = getprop(self.provider_data, prop, True)
+            if values:
+                [subjects.append(v) for v in iterify(values) if v not in
+                 subjects]
+
+        if subjects:
+            self.update_source_resource({"subject": subjects})
