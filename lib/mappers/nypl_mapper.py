@@ -326,7 +326,7 @@ class NYPLMapper(MODSMapper):
         self.update_source_resource({"stateLocatedIn": "New York"})
 
     def map_subject(self):
-        subjects = []
+        subjects = set()
 
         if exists(self.provider_data, "subject"):
 
@@ -339,10 +339,10 @@ class NYPLMapper(MODSMapper):
                 if not subject:
                     subject = self.extract_subject(v, "name")
                 if subject:
-                    subjects.append(subject)
+                    subjects.add(subject)
 
         if subjects:
-            self.update_source_resource({"subject": subjects})
+            self.update_source_resource({"subject": list(subjects)})
 
     # helper function for map_subject
     def extract_subject(self, subject_info, key):
@@ -355,6 +355,8 @@ class NYPLMapper(MODSMapper):
                 for s in subject_type_info:
                     subject_texts.append(self.txt(s))
                 return " -- ".join(str(x) for x in subject_texts)
+            elif isinstance(subject_type_info, basestring):
+                return subject_type_info
 
     def map_temporal(self):
         temporals = []
@@ -374,18 +376,34 @@ class NYPLMapper(MODSMapper):
                                          getprop(self.provider_data, prop)})
 
     def map_format(self):
-        prop = "physicalDescription/form"
+        formats = set()
 
-        if exists(self.provider_data, prop):
-            format = []
-            for v in iterify(getprop(self.provider_data, prop)):
-                if isinstance(v, dict):
-                    f = v.get("#text")
-                    if f:
-                        format.append(f)
+        for physical_description in \
+            iterify(getprop(self.provider_data, "physicalDescription", True)):
+            if exists(physical_description, "form"):
+                for form in iterify(getprop(physical_description, "form", True)):
+                    format = self.txt(form)
+                    if format:
+                        formats.add(format)
 
-            if format:
-                self.update_source_resource({"format": format})
+        for genre_data in iterify(getprop(self.provider_data, "genre", True)):
+            genre = self.txt(genre_data)
+            if genre:
+                formats.add(genre)
+
+        if formats:
+            self.update_source_resource({"format": list(formats)})
+
+
+    def map_extent(self):
+        extents = set()
+        for physical_description in \
+            iterify(getprop(self.provider_data, "physicalDescription", True)):
+            if exists(physical_description, "extent"):
+                extents.add(getprop(physical_description, "extent"))
+        if extents:
+            self.update_source_resource({"extent": list(extents)})
+
 
     def map_contributor_and_creator(self):
         prop = "name"
@@ -394,7 +412,6 @@ class NYPLMapper(MODSMapper):
             creator = set()
             contributor = set()
             for v in iterify(getprop(self.provider_data, prop)):
-                logger.error("V: " + str(v))
                 for role in iterify(v.get("role", [])):
                     for role_term in iterify(role.get("roleTerm", [])):
                         rt = role_term.get("#text").lower().strip(" .")
@@ -409,17 +426,8 @@ class NYPLMapper(MODSMapper):
             if cont:
                 ret_dict["contributor"] = list(cont)
 
-            logger.error("CONTRIBUTOR: " + str(cont))
-            logger.error("CREATOR: " + str(creator))
-
             self.update_source_resource(ret_dict)
 
-    def map_extent(self):
-        prop = "physicalDescription/extent"
-
-        if exists(self.provider_data, prop):
-            self.update_source_resource({"extent":
-                                         getprop(self.provider_data, prop)})
 
     def map_date_publisher(self):
         """
@@ -510,18 +518,17 @@ class NYPLMapper(MODSMapper):
         if data_provider:
             self.mapped_data.update({"dataProvider": data_provider})
 
-    def map_collection_and_relation(self):
-        ret_dict = {"collection":  getprop(self.provider_data, "collection")}
-        if exists(self.provider_data, "relatedItem"):
-            related_items = iterify(getprop(self.provider_data, 
-                                    "relatedItem"))
-            # Map relation
-            relation = filter(None, [getprop(item, "titleInfo/title", True) for
-                                     item in related_items])
+    # helper method for map_collection_and_relation that recurse through nested
+    # relatedItems.
+    def recurse_relations(self, node, relations, collection_titles):
+        if exists(node, "relatedItem"):
+            related_items = iterify(getprop(node, "relatedItem"))
+            relation = filter(None, [getprop(item, "titleInfo/title", True)
+                                     for item in related_items])
             if relation:
                 relation.reverse()
                 relation = ". ".join(relation).replace("..", ".")
-                ret_dict["relation"] = relation
+                relations.append(relation)
 
             # Map collection title
             host_types = [item for item in related_items if
@@ -529,7 +536,25 @@ class NYPLMapper(MODSMapper):
             if host_types:
                 title = getprop(host_types[-1], "titleInfo/title", True)
                 if title:
-                    ret_dict["collection"]["title"] = title
+                    collection_titles.append(title)
+
+            for related_item in related_items:
+                self.recurse_relations(
+                    related_item,
+                    relations,
+                    collection_titles
+                )
+
+    def map_collection_and_relation(self):
+        ret_dict = {"collection":  getprop(self.provider_data, "collection")}
+        collection_titles = []
+        relations = []
+        self.recurse_relations(self.provider_data, relations, collection_titles)
+        if relations:
+            ret_dict["relation"] = relations
+        if collection_titles:
+            ret_dict["collection"]["title"] = collection_titles
+
 
         self.update_source_resource(ret_dict)
 
@@ -591,6 +616,18 @@ class NYPLMapper(MODSMapper):
             if exists(lastHost, "titleInfo/title"):
                 title = self.txt(getprop(lastHost, "titleInfo/title", True))
                 self.update_source_resource({"isPartOf": title})
+
+    def map_language(self):
+        languages = set()
+        for language_data in \
+            iterify(getprop(self.provider_data, "language", True)):
+            for language_term in \
+                    iterify(getprop(language_data,"languageTerm", True)):
+                language = self.txt(language_term)
+                if language:
+                    languages.add(language)
+        if languages:
+            self.update_source_resource({"language": list(languages)})
 
     def map_multiple_fields(self):
         self.map_contributor_and_creator()
