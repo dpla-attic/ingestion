@@ -393,7 +393,9 @@ class NYPLMapper(MODSMapper):
         for physical_description in iterify(
                 getprop(self.provider_data, "physicalDescription", True)):
             if exists(physical_description, "extent"):
-                extents.add(getprop(physical_description, "extent"))
+                for extent in iterify(
+                        getprop(physical_description, "extent", True)):
+                    extents.add(extent)
         if extents:
             self.update_source_resource({"extent": list(extents)})
 
