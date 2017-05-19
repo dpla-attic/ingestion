@@ -310,7 +310,7 @@ class NYPLMapper(MODSMapper):
 
         if abstracts:
             for abstract in abstracts:
-                desc.append(abstract.get("#text"))
+                desc.append(self.txt(abstract))
 
         if desc:
             self.update_source_resource({"description": desc})
@@ -327,20 +327,13 @@ class NYPLMapper(MODSMapper):
 
     def map_subject(self):
         subjects = set()
-
+        subject_keys = ["topic", "geographic", "temporal", "name"]
         if exists(self.provider_data, "subject"):
-
             for v in iterify(getprop(self.provider_data, "subject")):
-                subject = self.extract_subject(v, "topic")
-                if not subject:
-                    subject = self.extract_subject(v, "geographic")
-                if not subject:
-                    subject = self.extract_subject(v, "temporal")
-                if not subject:
-                    subject = self.extract_subject(v, "name")
-                if subject:
-                    subjects.add(subject)
-
+                for subject_key in subject_keys:
+                    subject = self.extract_subject(v, subject_key)
+                    if subject:
+                        subjects.add(subject)
         if subjects:
             self.update_source_resource({"subject": list(subjects)})
 
@@ -349,12 +342,12 @@ class NYPLMapper(MODSMapper):
         if key in subject_info:
             subject_type_info = subject_info[key]
             if isinstance(subject_type_info, dict):
-                return subject_type_info.get("#text")
+                return self.txt(subject_type_info)
             elif isinstance(subject_type_info, list):
                 subject_texts = []
                 for s in subject_type_info:
                     subject_texts.append(self.txt(s))
-                return " -- ".join(str(x) for x in subject_texts)
+                return " -- ".join(subject_texts)
             elif isinstance(subject_type_info, basestring):
                 return subject_type_info
 
@@ -378,10 +371,11 @@ class NYPLMapper(MODSMapper):
     def map_format(self):
         formats = set()
 
-        for physical_description in \
-            iterify(getprop(self.provider_data, "physicalDescription", True)):
+        for physical_description in iterify(
+                getprop(self.provider_data, "physicalDescription", True)):
             if exists(physical_description, "form"):
-                for form in iterify(getprop(physical_description, "form", True)):
+                for form in iterify(
+                        getprop(physical_description, "form", True)):
                     format = self.txt(form)
                     if format:
                         formats.add(format)
@@ -394,16 +388,14 @@ class NYPLMapper(MODSMapper):
         if formats:
             self.update_source_resource({"format": list(formats)})
 
-
     def map_extent(self):
         extents = set()
-        for physical_description in \
-            iterify(getprop(self.provider_data, "physicalDescription", True)):
+        for physical_description in iterify(
+                getprop(self.provider_data, "physicalDescription", True)):
             if exists(physical_description, "extent"):
                 extents.add(getprop(physical_description, "extent"))
         if extents:
             self.update_source_resource({"extent": list(extents)})
-
 
     def map_contributor_and_creator(self):
         prop = "name"
@@ -427,7 +419,6 @@ class NYPLMapper(MODSMapper):
                 ret_dict["contributor"] = list(cont)
 
             self.update_source_resource(ret_dict)
-
 
     def map_date_publisher(self):
         """
@@ -480,7 +471,8 @@ class NYPLMapper(MODSMapper):
             # Map publisher
             if ("publisher" in origin_info and origin_info["publisher"] not in
                     ret_dict["publisher"]):
-                ret_dict["publisher"].append(self.txt(origin_info["publisher"]))
+                ret_dict["publisher"].append(
+                    self.txt(origin_info["publisher"]))
         # Map dates. Only use the last date-related originInfo element
         try:
             last_date_origin_info = date_origin_info[-1]
@@ -549,12 +541,12 @@ class NYPLMapper(MODSMapper):
         ret_dict = {"collection":  getprop(self.provider_data, "collection")}
         collection_titles = []
         relations = []
-        self.recurse_relations(self.provider_data, relations, collection_titles)
+        self.recurse_relations(
+            self.provider_data, relations, collection_titles)
         if relations:
             ret_dict["relation"] = relations
         if collection_titles:
-            ret_dict["collection"]["title"] = collection_titles
-
+            ret_dict["collection"]["title"] = collection_titles[0]
 
         self.update_source_resource(ret_dict)
 
@@ -605,24 +597,25 @@ class NYPLMapper(MODSMapper):
             self.update_source_resource({"spatial": geographics})
 
     def map_is_part_of(self):
-        relatedItems = iterify(getprop(self.provider_data, "relatedItem", True))
+        related_items = iterify(
+            getprop(self.provider_data, "relatedItem", True))
         hosts = []
-        for relatedItem in relatedItems:
-            if "type" in relatedItem and relatedItem.get("type") == "host":
-                hosts.append(relatedItem)
+        for related_item in related_items:
+            if "type" in related_item and related_item.get("type") == "host":
+                hosts.append(related_item)
 
         if hosts:
-            lastHost = relatedItems[-1]
+            lastHost = related_items[-1]
             if exists(lastHost, "titleInfo/title"):
                 title = self.txt(getprop(lastHost, "titleInfo/title", True))
                 self.update_source_resource({"isPartOf": title})
 
     def map_language(self):
         languages = set()
-        for language_data in \
-            iterify(getprop(self.provider_data, "language", True)):
-            for language_term in \
-                    iterify(getprop(language_data,"languageTerm", True)):
+        for language_data in iterify(
+                getprop(self.provider_data, "language", True)):
+            for language_term in iterify(
+                    getprop(language_data, "languageTerm", True)):
                 language = self.txt(language_term)
                 if language:
                     languages.add(language)
@@ -634,4 +627,3 @@ class NYPLMapper(MODSMapper):
         self.map_date_publisher()
         self.map_collection_and_relation()
         self.map_edm_has_type()
-
