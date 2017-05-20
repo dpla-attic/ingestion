@@ -2,6 +2,10 @@ from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mods_mapper import MODSMapper
+from akara import logger
+from dplaingestion.utilities import iterify
+from dplaingestion.selector import exists, getprop
+from dplaingestion.mappers.mods_mapper import MODSMapper
 
 
 class NYPLMapper(MODSMapper):
@@ -406,13 +410,14 @@ class NYPLMapper(MODSMapper):
             creator = set()
             contributor = set()
             for v in iterify(getprop(self.provider_data, prop)):
-                for role in iterify(v.get("role", [])):
-                    for role_term in iterify(role.get("roleTerm", [])):
-                        rt = role_term.get("#text").lower().strip(" .")
-                        if rt in self.creator_roles:
-                            creator.add(v["namePart"])
-                        elif rt in self.contributor_roles:
-                            contributor.add(v["namePart"])
+                if isinstance(v, dict) and "role" in v:
+                    for role in iterify(v.get("role", [])):
+                        for role_term in iterify(role.get("roleTerm", [])):
+                            rt = role_term.get("#text").lower().strip(" .")
+                            if rt in self.creator_roles:
+                                creator.add(v["namePart"])
+                            elif rt in self.contributor_roles:
+                                contributor.add(v["namePart"])
 
             if creator:
                 ret_dict["creator"] = list(creator)
