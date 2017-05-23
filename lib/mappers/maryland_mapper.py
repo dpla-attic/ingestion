@@ -11,7 +11,7 @@ class MarylandMapper(QDCMapper):
     def map_collection(self):
         collection = getprop(self.provider_data, "collection/title", True)
         if collection:
-            self.update_source_resource({"isPartOf": collection})
+            self.update_source_resource({"collection": {"title": collection}})
 
     def map_semicolon_delimited_field(self, source_prop, dest_prop):
         result_set = set()
@@ -46,9 +46,7 @@ class MarylandMapper(QDCMapper):
         self.map_semicolon_delimited_field("publisher", "publisher")
 
     def map_rights(self):
-        rights = iterify(getprop(self.provider_data, "accessrights", True))
-        if rights:
-            self.update_source_resource({"rights": rights})
+        pass
 
     def map_subject(self):
         self.map_semicolon_delimited_field("subject", "subject")
