@@ -4,7 +4,7 @@
     "metadata_prefix": "oai_qdc",
     "endpoint_url": "http://webconfig.digitalmaryland.org/oai/oai.php",
     "contributor": {
-        "@id": "http://dp.la/api/contributor/digital-maryland",
+        "@id": "http://dp.la/api/contributor/maryland",
         "name": "Digital Maryland"
     }, 
     "enrichments_coll": [
