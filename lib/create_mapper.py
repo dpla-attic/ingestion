@@ -158,9 +158,12 @@ def create_mapper(mapper_type, data):
         'wisconsin':    lambda d: _create_wi_mapper(d),
         'bhl':          lambda d: _create_bhl_mapper(d),
 <<<<<<< HEAD
+<<<<<<< HEAD
         'pa':           lambda d: _create_pa_mapper(d),
         'tn':           lambda d: _create_tn_mapper(d)
 =======
+=======
+>>>>>>> 2855acc187c8310d2831e27079efd1fe2e57b1ee
         'maryland':     lambda d: _create_md_mapper(d),
         'pa':           lambda d: _create_pa_mapper(d)
 >>>>>>> skeleton of implementation.
