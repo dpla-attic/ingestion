@@ -9,8 +9,7 @@
         "name": "North Carolina Digital Heritage Center"
     }, 
     "enrichments_coll": [
-        "/set_context",
-        "/validate_mapv3"
+        "/set_context"
     ], 
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
