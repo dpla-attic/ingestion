@@ -4,6 +4,7 @@ from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 from dplaingestion.textnode import textnode
 
+
 class DigitalNCMapper(OAIMODSMapper):
     def __init__(self, provider_data):
         super(DigitalNCMapper, self).__init__(provider_data)
@@ -28,9 +29,9 @@ class DigitalNCMapper(OAIMODSMapper):
                         continue
 
                     if "creator" in role_terms:
-                       _dict["creator"].append(name)
+                        _dict["creator"].append(name)
                     elif "contributor" in role_terms:
-                       _dict["contributor"].append(name)
+                        _dict["contributor"].append(name)
 
             self.update_source_resource(self.clean_dict(_dict))
 
@@ -75,7 +76,7 @@ class DigitalNCMapper(OAIMODSMapper):
                 if "form" in s:
                     for f in iterify(s.get("form")):
                         if (f.lower() in ["books", "government records"] and
-                            f.capitalize() not in _dict["specType"]):
+                                f.capitalize() not in _dict["specType"]):
                             _dict["specType"].append(f.capitalize())
                         elif f not in _dict["format"]:
                             _dict["format"].append(f)
@@ -199,7 +200,7 @@ class DigitalNCMapper(OAIMODSMapper):
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 try:
-                    url =  getprop(s, "url/#text", True)
+                    url = getprop(s, "url/#text", True)
                 except:
                     logger.error("No dictionaries in prop %s of record %s" %
                                  (prop, self.provider_data["_id"]))
@@ -209,7 +210,7 @@ class DigitalNCMapper(OAIMODSMapper):
                     usage = getprop(s, "url/usage", True)
                     access = getprop(s, "url/access", True)
                     if (usage == "primary display" and
-                        access == "object in context"):
+                            access == "object in context"):
                         ret_dict["isShownAt"] = url
                     elif access == "preview":
                         ret_dict["object"] = url
