@@ -1,0 +1,49 @@
+{
+    "name": "loc",
+    "type": "loc",
+    "endpoint_url": "https://www.loc.gov/collections/{0}",
+    "get_records_url": "https://www.loc.gov/item/{0}/?fo=json",
+    "endpoint_url_params": {
+        "sp": 1,
+        "fo": "json"
+    },
+    "sets": [
+        "american-revolutionary-war-maps",
+        "civil-war-maps",
+        "panoramic-maps",
+        "bain",
+        "detroit-publishing-company",
+        "fsa-owi-color-photographs",
+        "harris-ewing",
+        "national-photo-company"
+    ],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/loc",
+        "name": "Library of Congress"
+    },
+   "enrichments_coll": [
+        "/set_context"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=_id",
+        "/dpla_mapper?mapper_type=loc",
+        "/strip_html",
+        "/set_context",
+        "/nypl_identify_object",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich-subject",
+        "/enrich_earliest_date",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
