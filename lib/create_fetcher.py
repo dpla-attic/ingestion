@@ -50,6 +50,10 @@ def create_fetcher(profile_path, uri_base, config_file):
         from dplaingestion.fetchers.cdl_fetcher import CDLFetcher
         return CDLFetcher(profile, uri_base, config_file)
 
+    def _create_loc_fetcher(profile, uri_base, config_file):
+        from dplaingestion.fetchers.loc_fetcher import LOCFetcher
+        return LOCFetcher(profile, uri_base, config_file)
+
     fetchers = {
         'ia':           lambda p, u, c: _create_ia_fetcher(p, u, c),
         'uva':          lambda p, u, c: _create_uva_fetcher(p, u, c),
@@ -61,7 +65,8 @@ def create_fetcher(profile_path, uri_base, config_file):
         'hathi':        lambda p, u, c: _create_hathi_fetcher(p, u, c),
         'oai_verbs':    lambda p, u, c: _create_oai_verbs_fetcher(p, u, c),
         'mdl':          lambda p, u, c: _create_mdl_api_fetcher(p, u, c),
-        'cdl':          lambda p, u, c: _create_cdl_fetcher(p, u, c)
+        'cdl':          lambda p, u, c: _create_cdl_fetcher(p, u, c),
+        'loc':          lambda p, u, c: _create_loc_fetcher(p, u, c)
     }
 
     with open(profile_path, "r") as f:
