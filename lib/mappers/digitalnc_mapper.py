@@ -146,10 +146,11 @@ class DigitalNCMapper(OAIMODSMapper):
             rights_uri = ""
 
             for s in iterify(getprop(self.provider_data, prop)):
-                if s.get("type") == "local rights statements":
-                    rights.append(textnode(s))
-                elif s.get("type") == "use and reproduction":
-                    rights_uri = textnode(s)
+                if isinstance(s, dict):
+                    if s.get("type") == "local rights statements":
+                        rights.append(textnode(s))
+                    elif s.get("type") == "use and reproduction":
+                        rights_uri = textnode(s)
 
             if rights:
                 self.update_source_resource({"rights": rights})
@@ -179,19 +180,28 @@ class DigitalNCMapper(OAIMODSMapper):
 
     def map_data_provider(self):
         prop = self.root_key + "note"
-        _dict = {"dataprovider": None}
+        data_providers = []
 
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 try:
                     if s.get("type") == "ownership":
-                        _dict["dataProvider"] = s.get("#text")
-                        break
+                        data_providers.append(s.get("#text"))
                 except:
                     logger.error("Error getting note/type for record %s" %
                                  self.provider_data["_id"])
 
-            self.mapped_data.update(self.clean_dict(_dict))
+
+
+        if data_providers:
+            _dict = {"dataprovider": data_providers[0]}
+            if len(data_providers) > 1:
+                logger.error("Multiple Data providers: " + str(data_providers))
+                _dict['intermediateProvider'] = data_providers[1]
+            self.mapped_data.update(_dict)
+
+    def map_intermediate_provider(self):
+        pass #handled in map_data_provider()
 
     def map_object_and_is_shown_at(self):
         prop = self.root_key + "location"
