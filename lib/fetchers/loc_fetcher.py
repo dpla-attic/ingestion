@@ -43,27 +43,39 @@ class LOCFetcher(AbsoluteURLFetcher):
         for item in iterify(items):
             count += 1
 
-            if error is None:
-                record_id = filter(None, item["id"].split("/"))[-1]
-                record_url = self.get_records_url.format(record_id)
-                error, record_content = self.request_content_from(record_url)
+            # TODO de-kludge
+            # https://github.com/dpla/heidrun/blob/develop/app/harvesters/loc_harvester.rb#L185-L186
+            urls = [get_prop(item, "aka", True),
+                    get_prop(item, "id", True),
+                    get_prop(item, "url", True)]
+
+            urls = set([item for sublist in urls for item in sublist])
+            record_url = [s for s in urls if "http://www.loc.gov/item/" in s][0]
+            record_url.replace("http://", "https://")
+            record_url = self.get_records_url.format(record_url)
+
+            error, record_content = self.request_content_from(record_url)
 
             if error is None:
                 error, record_content = self.extract_content(record_content,
                                                              record_url)
 
+            if not exists(record_content,
+                       "item/library_of_congress_control_number"):
+                error = "Record is missing required properties. %s" % \
+                        json.dumps(record_content, indent=4, sort_keys=True)
+
             if error is None:
-                # Extract record from response
-                record = record_content["item"]
                 # TODO Is this correct formation of the _id value?
+                record = record_content["item"]
                 record["_id"] = record["library_of_congress_control_number"]
                 records.append(record)
 
             if error is not None:
                 yield error, records, request_more
-                print "Error %s, " % error +\
-                      "but fetched %s of %s records from page %s of %s" % \
-                      (count, len(items), current_page, total_pages)
+                # print "Error %s, " % error +\
+                #       "but fetched %s of %s records from page %s of %s" % \
+                #       (count, len(items), current_page, total_pages)
 
         yield error, records, request_more
 
@@ -118,15 +130,12 @@ class LOCFetcher(AbsoluteURLFetcher):
                 url = self.endpoint_url
 
             while request_more:
-
-                print "requesting %s %s" % (url, self.endpoint_url_params)
+                # print "requesting %s %s" % (url, self.endpoint_url_params)
                 error, content = self.request_content_from(
                     url, self.endpoint_url_params
                     )
 
-
                 if error is not None:
-                    print ("ERROR after requesting item %s" % error)
                     # Stop requesting from this set
                     request_more = False
                     self.response["errors"].append(error)
