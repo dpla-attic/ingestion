@@ -1,13 +1,17 @@
 from dplaingestion.fetchers.absolute_url_fetcher import *
-from akara import logger
-
+import logging
 
 class LOCFetcher(AbsoluteURLFetcher):
+    logger = None
+
     def __init__(self, profile, uri_base, config_file):
         super(LOCFetcher, self).__init__(profile, uri_base, config_file)
-        # token = self.config.get("APITokens", "LOC")
-        # authorization = self.http_headers["Authorization"].format(token)
-        # self.http_headers["Authorization"] = authorization
+        logging.basicConfig(filename='logs/harvest_error.log',
+                            level=logging.ERROR,
+                            format='%(asctime)s %(levelname)s %(name)s %('
+                                   'message)s')
+        self.logger = logging.getLogger(__name__)
+
 
     def fetch_sets(self):
         """Fetches all sets
@@ -50,8 +54,13 @@ class LOCFetcher(AbsoluteURLFetcher):
                     get_prop(item, "url", True)]
 
             urls = set([item for sublist in urls for item in sublist])
-            record_url = [s for s in urls if "http://www.loc.gov/item/" in s][0]
-            record_url.replace("http://", "https://")
+            urls = [s for s in urls if "http://www.loc.gov/item/" in s]
+
+            if not urls:
+                self.logger.error("Record is missing an item url property")
+                continue
+
+            record_url = urls[0].replace("http://", "https://")
             record_url = self.get_records_url.format(record_url)
 
             error, record_content = self.request_content_from(record_url)
@@ -61,21 +70,25 @@ class LOCFetcher(AbsoluteURLFetcher):
                                                              record_url)
 
             if not exists(record_content,
-                       "item/library_of_congress_control_number"):
-                error = "Record is missing required properties. %s" % \
-                        json.dumps(record_content, indent=4, sort_keys=True)
+                          "item/library_of_congress_control_number") and not \
+                    exists(record_content, "item/control_number"):
+                self.logger.error("Record is missing required property. %s"
+                                  % record_url)
+                continue
 
             if error is None:
                 # TODO Is this correct formation of the _id value?
                 record = record_content["item"]
-                record["_id"] = record["library_of_congress_control_number"]
+                # This is a kludge but lets see how many harvest errors this
+                # fixes...
+                if exists(record, "library_of_congress_control_number"):
+                    record["_id"] = record["library_of_congress_control_number"]
+                else:
+                    record["_id"] = record["control_number"]
                 records.append(record)
 
             if error is not None:
                 yield error, records, request_more
-                # print "Error %s, " % error +\
-                #       "but fetched %s of %s records from page %s of %s" % \
-                #       (count, len(items), current_page, total_pages)
 
         yield error, records, request_more
 
@@ -85,12 +98,10 @@ class LOCFetcher(AbsoluteURLFetcher):
         """
         return self.extract_json_content(content, url)
 
-
     def fetch_all_data(self, set_id=None):
         """A generator to yield batches of records fetched, and any errors
            encountered in the process, via the self.response dicitonary.
         """
-
         if set_id:
             self.sets = [set_id]
             self.collections = {set_id: {"id": set_id}}
@@ -130,7 +141,7 @@ class LOCFetcher(AbsoluteURLFetcher):
                 url = self.endpoint_url
 
             while request_more:
-                # print "requesting %s %s" % (url, self.endpoint_url_params)
+                print "Requesting %s %s" % (url, self.endpoint_url_params)
                 error, content = self.request_content_from(
                     url, self.endpoint_url_params
                     )
@@ -142,6 +153,7 @@ class LOCFetcher(AbsoluteURLFetcher):
                     continue
 
                 error, content = self.extract_content(content, url)
+
                 if error is not None:
                     request_more = False
                     self.response["errors"].extend(iterify(error))
