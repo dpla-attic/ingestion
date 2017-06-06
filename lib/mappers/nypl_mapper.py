@@ -346,6 +346,8 @@ class NYPLMapper(MODSMapper):
         if key in subject_info:
             subject_type_info = subject_info[key]
             if isinstance(subject_type_info, dict):
+                if key == "name" and "namePart" in subject_type_info:
+                    return subject_type_info.get("namePart")
                 return self.txt(subject_type_info)
             elif isinstance(subject_type_info, list):
                 subject_texts = []
@@ -356,14 +358,14 @@ class NYPLMapper(MODSMapper):
                 return subject_type_info
 
     def map_temporal(self):
-        temporals = []
+        temporals = set()
         if exists(self.provider_data, "subject"):
             for v in iterify(getprop(self.provider_data, "subject")):
                 temporal = self.extract_subject(v, "temporal")
                 if temporal:
-                    temporals.append(temporal)
+                    temporals.add(temporal)
         if temporals:
-            self.update_source_resource({"temporal": temporals})
+            self.update_source_resource({"temporal": list(temporals)})
 
     def map_type(self):
         prop = "typeOfResource"
@@ -412,12 +414,13 @@ class NYPLMapper(MODSMapper):
             for v in iterify(getprop(self.provider_data, prop)):
                 if isinstance(v, dict) and "role" in v:
                     for role in iterify(v.get("role", [])):
-                        for role_term in iterify(role.get("roleTerm", [])):
-                            rt = role_term.get("#text").lower().strip(" .")
-                            if rt in self.creator_roles:
-                                creator.add(v["namePart"])
-                            elif rt in self.contributor_roles:
-                                contributor.add(v["namePart"])
+                        if isinstance(role, dict):
+                            for role_term in iterify(role.get("roleTerm", [])):
+                                rt = role_term.get("#text").lower().strip(" .")
+                                if rt in self.creator_roles:
+                                    creator.add(v["namePart"])
+                                elif rt in self.contributor_roles:
+                                    contributor.add(v["namePart"])
 
             if creator:
                 ret_dict["creator"] = list(creator)
@@ -553,7 +556,7 @@ class NYPLMapper(MODSMapper):
         if relations:
             ret_dict["relation"] = relations
         if collection_titles:
-            ret_dict["collection"]["title"] = collection_titles[0]
+            ret_dict["collection"]["title"] = collection_titles[-1]
 
         self.update_source_resource(ret_dict)
 
