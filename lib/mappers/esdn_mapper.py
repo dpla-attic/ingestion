@@ -290,7 +290,6 @@ class EsdnMapper(OAIMODSMapper):
         if rights:
             self.update_source_resource({"rights": rights})
         if edm_rights:
-            logger.error("EDM RIGHTS: " + edm_rights)
             self.mapped_data.update({"rights": edm_rights})
 
     def map_edm_rights(self):
