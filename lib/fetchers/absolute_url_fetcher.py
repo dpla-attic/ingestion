@@ -28,8 +28,10 @@ class AbsoluteURLFetcher(Fetcher):
         :return: Parsed JSON content
         """
         parsed_content, error = None, None
-
-        parsed_content = json.loads(content)
+        try:
+            parsed_content = json.loads(content)
+        except ValueError as ve:
+            error = "No JSON object could be decoded from: %s" % content
 
         return error, parsed_content
 
