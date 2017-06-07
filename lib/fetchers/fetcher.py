@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import time
 import hashlib
@@ -7,7 +6,6 @@ import fnmatch
 import urllib2
 import xmltodict
 import ConfigParser
-import httplib
 import socket
 import itertools as it
 from urllib import urlencode
@@ -18,12 +16,15 @@ from dplaingestion.selector import exists
 from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
 from dplaingestion.utilities import iterify, couch_id_builder
+import requests
 
 
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
 
-XML_PARSE = lambda doc: xmltodict.parse(doc, xml_attribs=True, attr_prefix='',
+XML_PARSE = lambda doc: xmltodict.parse(doc,
+                                        xml_attribs=True,
+                                        attr_prefix='',
                                         force_cdata=False,
                                         ignore_whitespace_cdata=True)
 
@@ -66,57 +67,18 @@ class Fetcher(object):
                 if set in self.sets:
                     del self.sets[set]
 
-    def request_content_from(self, url, params={}, attempts=3):
+    def request_content_from(self, url, params={}):
         error = None
         resp = None
-        m = re.match(r"(https?)://(.*?)(/.*)", url)
-        socket_parts = m.group(2).split(":")
-        host = socket_parts[0]
-        ssl = m.group(1) == "https"
 
-        if len(socket_parts) == 2:
-            port = int(socket_parts[1])
-        elif ssl:
-            port = 443
+        r = requests.get(url, params=params, headers=self.http_headers)
+
+        if r.status_code == 200:
+            resp = r.text
         else:
-            port = 80
-
-        req_uri = m.group(3)
-        if params:
-            if "?" in req_uri:
-                req_uri += "&" + urlencode(params, True)
-            else:
-                req_uri += "?" + urlencode(params, True)
-
-        for i in range(attempts):
-            try:
-                if ssl:
-                    con = httplib.HTTPSConnection(host, port)
-                else:
-                    con = httplib.HTTPConnection(host, port)
-                con.request("GET", req_uri, None, self.http_headers)
-                resp = con.getresponse()
-                if resp.status == 200:
-                    break  # connection stays open for read()!
-                con.close()
-            except Exception as e:
-                if type(e) == socket.error:
-                    err_msg = e
-                else:
-                    err_msg = e.message
-                print >> sys.stderr, "Requesting %s: %s" % (req_uri, err_msg)
-            time.sleep(2)
-
-        if resp and resp.status == 200:
-            rv = resp.read()
-            con.close()
-        elif resp:
-            error = "Error ('%d') requesting %s" % (resp.status, url)
-            rv = None
-        else:
-            error = "Could not request %s" % url
-            rv = None
-        return error, rv
+            error = "Error (%s--%s) requesting %s" % (r.status_code, r.reason,
+                                                     url)
+        return error, resp
 
     def create_collection_records(self):
         if self.collections:
