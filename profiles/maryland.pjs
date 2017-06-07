@@ -2,7 +2,7 @@
     "name": "maryland",
     "type": "oai_verbs",
     "metadata_prefix": "oai_qdc",
-    "endpoint_url": "http://webconfig.digitalmaryland.org/oai/oai.php",
+    "endpoint_url": "http://collections.digitalmaryland.org/oai/oai.php",
     "contributor": {
         "@id": "http://dp.la/api/contributor/maryland",
         "name": "Digital Maryland"
