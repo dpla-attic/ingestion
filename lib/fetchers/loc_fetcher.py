@@ -66,15 +66,12 @@ class LOCFetcher(AbsoluteURLFetcher):
             error, content = self.request_content_from(url=record_url,
                                                        params=self.item_params)
             if error is None:
-                error, content = self.extract_content(content,
-                                                             record_url)
+                error, content = self.extract_content(content, record_url)
 
-            if not exists(content,
-                          "item/library_of_congress_control_number") and not \
-                    exists(content, "item/control_number"):
-                self.logger.error("Record is missing required property. %s"
-                                  % record_url)
-                continue
+            if not exists(content, "item/library_of_congress_control_number") \
+                    and not exists(content, "item/control_number"):
+                error = "Record is missing required property. " + record_url
+                self.logger.error(error)
 
             if error is None:
                 # TODO Is this correct formation of the _id value?
