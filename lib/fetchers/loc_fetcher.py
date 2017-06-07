@@ -6,6 +6,7 @@ class LOCFetcher(AbsoluteURLFetcher):
 
     def __init__(self, profile, uri_base, config_file):
         super(LOCFetcher, self).__init__(profile, uri_base, config_file)
+        self.item_params = profile.get("get_item_params")
         logging.basicConfig(filename='logs/harvest_error.log',
                             level=logging.ERROR,
                             format='%(asctime)s %(levelname)s %(name)s %('
@@ -57,28 +58,27 @@ class LOCFetcher(AbsoluteURLFetcher):
             urls = [s for s in urls if "http://www.loc.gov/item/" in s]
 
             if not urls:
-                self.logger.error("Record is missing an item url property")
+                self.logger.error("Record is missing an item url "
+                                  "property:\n%s\n\n" % item)
                 continue
 
-            record_url = urls[0].replace("http://", "https://")
-            record_url = self.get_records_url.format(record_url)
-
-            error, record_content = self.request_content_from(record_url)
-
+            record_url = urls[0]
+            error, content = self.request_content_from(url=record_url,
+                                                       params=self.item_params)
             if error is None:
-                error, record_content = self.extract_content(record_content,
+                error, content = self.extract_content(content,
                                                              record_url)
 
-            if not exists(record_content,
+            if not exists(content,
                           "item/library_of_congress_control_number") and not \
-                    exists(record_content, "item/control_number"):
+                    exists(content, "item/control_number"):
                 self.logger.error("Record is missing required property. %s"
                                   % record_url)
                 continue
 
             if error is None:
                 # TODO Is this correct formation of the _id value?
-                record = record_content["item"]
+                record = content["item"]
                 # This is a kludge but lets see how many harvest errors this
                 # fixes...
                 if exists(record, "library_of_congress_control_number"):
