@@ -273,10 +273,15 @@ class EsdnMapper(OAIMODSMapper):
     def map_rights(self):
         prop = self.root_key + "accessCondition"
         rights = []
+        edm_rights = None
         if exists(self.provider_data, prop):
             for right in iterify(getprop(self.provider_data, prop)):
                 if isinstance(right, dict):
-                    rights.append(right.get("#text"))
+                    _type = getprop(right, "type", True)
+                    if _type and _type == "use and reproduction":
+                        edm_rights = right.get("xlink:href")
+                    else:
+                        rights.append(right.get("#text"))
                 elif isinstance(right, list):
                     for r in right:
                         rights.append(r)
@@ -284,6 +289,12 @@ class EsdnMapper(OAIMODSMapper):
                     rights.append(right)
         if rights:
             self.update_source_resource({"rights": rights})
+        if edm_rights:
+            self.mapped_data.update({"rights": edm_rights})
+
+    def map_edm_rights(self):
+        # defer to map_rights for edm:rights implementation
+        pass
 
     def map_subject_and_spatial_and_temporal(self):
         prop = self.root_key + "subject"
