@@ -72,6 +72,7 @@ class LOCFetcher(AbsoluteURLFetcher):
                     and not exists(content, "item/control_number"):
                 error = "Record is missing required property. " + record_url
                 self.logger.error(error)
+                continue
 
             if error is None:
                 # TODO Is this correct formation of the _id value?
