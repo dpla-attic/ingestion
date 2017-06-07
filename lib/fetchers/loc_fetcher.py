@@ -58,8 +58,7 @@ class LOCFetcher(AbsoluteURLFetcher):
             urls = [s for s in urls if "http://www.loc.gov/item/" in s]
 
             if not urls:
-                self.logger.error("Record is missing an item url "
-                                  "property:\n%s\n\n" % item)
+                self.logger.error("Missing item url property [aka,id,url]")
                 continue
 
             record_url = urls[0]
@@ -70,7 +69,7 @@ class LOCFetcher(AbsoluteURLFetcher):
 
             if not exists(content, "item/library_of_congress_control_number") \
                     and not exists(content, "item/control_number"):
-                error = "Record is missing required property. " + record_url
+                error = "Missing required *control property. " + record_url
                 self.logger.error(error)
                 continue
 
