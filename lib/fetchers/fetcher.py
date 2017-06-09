@@ -17,6 +17,7 @@ from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
 from dplaingestion.utilities import iterify, couch_id_builder
 import requests
+import re
 
 
 def getprop(obj, path):
