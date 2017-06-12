@@ -123,6 +123,10 @@ def create_mapper(mapper_type, data):
     def _create_tn_mapper(data):
         from dplaingestion.mappers.tn_mapper import TNMapper
         return TNMapper(data)
+
+    def _create_me_mapper(data):
+        from dplaingestion.mappers.maine_mapper import MaineMapper
+        return MaineMapper(data)
     
     def _create_md_mapper(data):
         from dplaingestion.mappers.maryland_mapper import MarylandMapper
@@ -159,6 +163,7 @@ def create_mapper(mapper_type, data):
         'bhl':          lambda d: _create_bhl_mapper(d),
         'pa':           lambda d: _create_pa_mapper(d),
         'tn':           lambda d: _create_tn_mapper(d),
+        'maine':        lambda d: _create_me_mapper(d),
         'maryland':     lambda d: _create_md_mapper(d)
     }
 
