@@ -191,17 +191,14 @@ class DigitalNCMapper(OAIMODSMapper):
                     logger.error("Error getting note/type for record %s" %
                                  self.provider_data["_id"])
 
-
-
         if data_providers:
-            _dict = {"dataprovider": data_providers[0]}
+            _dict = {"dataProvider": data_providers[0]}
             if len(data_providers) > 1:
-                logger.error("Multiple Data providers: " + str(data_providers))
                 _dict['intermediateProvider'] = data_providers[1]
             self.mapped_data.update(_dict)
 
     def map_intermediate_provider(self):
-        pass #handled in map_data_provider()
+        pass  # handled in map_data_provider()
 
     def map_object_and_is_shown_at(self):
         prop = self.root_key + "location"
