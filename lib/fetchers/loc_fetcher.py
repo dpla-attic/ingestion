@@ -32,6 +32,8 @@ class LOCFetcher(AbsoluteURLFetcher):
         return error, sets
 
     def request_records(self, content, set_id):
+
+        current_params = self.endpoint_url_params
         self.endpoint_url_params["sp"] += 1
         error = None
         total_pages = getprop(content, "pagination/total")
@@ -55,11 +57,13 @@ class LOCFetcher(AbsoluteURLFetcher):
                     get_prop(item, "url", True)]
 
             urls = set([item for sublist in urls for item in sublist])
-            urls = [s for s in urls if "http://www.loc.gov/item/" in s]
+            urls = [s for s in urls if "www.loc.gov/item/" in s]
 
             if not urls:
-                self.logger.error("Missing item url property [aka,id,url]")
-                continue
+                self.logger.error("No item url (e.g. www.loc.gov/item/<id>) "
+                                  "in [aka,id,url] properties for record"
+                                  "%s \nIn request %s" % (item, current_params))
+                break
 
             record_url = urls[0]
             error, content = self.request_content_from(url=record_url,
@@ -67,25 +71,21 @@ class LOCFetcher(AbsoluteURLFetcher):
             if error is None:
                 error, content = self.extract_content(content, record_url)
 
-            if not exists(content, "item/library_of_congress_control_number") \
-                    and not exists(content, "item/control_number"):
-                error = "Missing required *control property. " + record_url
-                self.logger.error(error)
-                continue
+            if error is None and (not exists(content,"item/id")):
+                self.logger.error("Record is missing required ID property. " +
+                                  record_url)
+                break
 
             if error is None:
                 # TODO Is this correct formation of the _id value?
                 record = content["item"]
-                # This is a kludge but lets see how many harvest errors this
-                # fixes...
-                if exists(record, "library_of_congress_control_number"):
-                    record["_id"] = record["library_of_congress_control_number"]
-                else:
-                    record["_id"] = record["control_number"]
+                # Change basis of DPLA ID to the LoC id property
+                record["_id"] = record["id"]
                 records.append(record)
 
-            if error is not None:
-                yield error, records, request_more
+            # if error is not None:
+            #     self.logger.error(error)
+            #     yield error, records, request_more
 
         yield error, records, request_more
 
