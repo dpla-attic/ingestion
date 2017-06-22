@@ -186,7 +186,7 @@ class DigitalNCMapper(OAIMODSMapper):
             for s in iterify(getprop(self.provider_data, prop)):
                 try:
                     if s.get("type") == "ownership":
-                        data_providers.append(s.get("#text"))
+                        data_providers.append(textnode(s))
                 except:
                     logger.error("Error getting note/type for record %s" %
                                  self.provider_data["_id"])
