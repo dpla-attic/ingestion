@@ -1,18 +1,22 @@
 from dplaingestion.fetchers.absolute_url_fetcher import *
 import logging
+import time
+
 
 class LOCFetcher(AbsoluteURLFetcher):
+    # Library of Congress specific file-based logger. Will probably be used to
+    # log the performance of their API
     logger = None
 
     def __init__(self, profile, uri_base, config_file):
         super(LOCFetcher, self).__init__(profile, uri_base, config_file)
         self.item_params = profile.get("get_item_params")
-        logging.basicConfig(filename='logs/harvest_error.log',
+        fname = "logs/error_loc_harvest_%s.log" % time.strftime("%Y%m%d-%H%M%S")
+        logging.basicConfig(filename=fname,
                             level=logging.ERROR,
                             format='%(asctime)s %(levelname)s %(name)s %('
                                    'message)s')
         self.logger = logging.getLogger(__name__)
-
 
     def fetch_sets(self):
         """Fetches all sets
@@ -50,8 +54,10 @@ class LOCFetcher(AbsoluteURLFetcher):
         for item in iterify(items):
             count += 1
 
-            # TODO de-kludge
-            # https://github.com/dpla/heidrun/blob/develop/app/harvesters/loc_harvester.rb#L185-L186
+            # Checks for the presence of an item url in the item record within
+            # a collection results page. If one does not exist the item cannot
+            # be harvested. Every item is expected to have one and those that
+            # do not *should* be reported to LoC
             urls = [get_prop(item, "aka", True),
                     get_prop(item, "id", True),
                     get_prop(item, "url", True)]
@@ -60,9 +66,10 @@ class LOCFetcher(AbsoluteURLFetcher):
             urls = [s for s in urls if "www.loc.gov/item/" in s]
 
             if not urls:
-                self.logger.error("No item url (e.g. www.loc.gov/item/<id>) "
-                                  "in [aka,id,url] properties for record"
-                                  "%s \nIn request %s" % (item, current_params))
+                self.logger.error("loc.gov/item/<id> missing for %s\n"
+                                  "In request: %s%s"
+                                  % (item, self.endpoint_url,
+                                     urlencode(current_params)))
                 break
 
             record_url = urls[0]
@@ -72,7 +79,7 @@ class LOCFetcher(AbsoluteURLFetcher):
                 error, content = self.extract_content(content, record_url)
 
             if error is None and (not exists(content,"item/id")):
-                self.logger.error("Record is missing required ID property. " +
+                self.logger.error("Item is missing required ID property. " +
                                   record_url)
                 break
 
@@ -82,10 +89,6 @@ class LOCFetcher(AbsoluteURLFetcher):
                 # Change basis of DPLA ID to the LoC id property
                 record["_id"] = record["id"]
                 records.append(record)
-
-            # if error is not None:
-            #     self.logger.error(error)
-            #     yield error, records, request_more
 
         yield error, records, request_more
 
@@ -138,10 +141,8 @@ class LOCFetcher(AbsoluteURLFetcher):
                 url = self.endpoint_url
 
             while request_more:
-                print "Requesting %s %s" % (url, self.endpoint_url_params)
-                error, content = self.request_content_from(
-                    url, self.endpoint_url_params
-                    )
+                print "Requesting %s%s" % (url,urlencode(self.endpoint_url_params))
+                error, content = self.request_content_from(url, self.endpoint_url_params)
 
                 if error is not None:
                     # Stop requesting from this set
