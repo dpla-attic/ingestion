@@ -2,6 +2,7 @@ import traceback
 import internetarchive
 from akara import logger
 from dplaingestion.fetchers.fetcher import Fetcher
+from urllib3 import Retry
 
 
 class IAFetcher(Fetcher):
@@ -25,11 +26,15 @@ class IAFetcher(Fetcher):
             i = 1
             for item in internetarchive \
                         .search_items("collection:%s" % token,
+                                      max_retries = Retry(connect=15,
+                                                          read=10,
+                                                          redirect=10,
+                                                          backoff_factor=6),
                                       request_kwargs={'timeout': 60}) \
                         .iter_as_items():
                 try:
                     md = item.item_metadata
-                    md['_id'] = "ia--%s" % md['metadata']['identifier']
+                    md['_id'] = md['metadata']['identifier']
                     md['collection'] = self.source_resource_collection(token)
                     self.response['records'].append(md)
                     i += 1

@@ -19,4 +19,4 @@ MarkupSafe==0.23
 pyrax
 avro
 mock
-internetarchive==1.5.0
+git+git://github.com/jjjake/internetarchive@master#egg=internetarchive
