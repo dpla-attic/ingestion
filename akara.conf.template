@@ -158,6 +158,7 @@ MODULES = [
     "dplaingestion.akamod.contentdm_identify_object",
     "dplaingestion.akamod.move_date_values",
     "dplaingestion.akamod.enrich_location",
+    "dplaingestion.akamod.remove_property",
     "dplaingestion.akamod.lookup",
     "dplaingestion.akamod.indiana_identify_object",
     "dplaingestion.akamod.kentucky_identify_object",
