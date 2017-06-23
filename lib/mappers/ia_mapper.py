@@ -139,8 +139,12 @@ class IAMapper(Mapper):
                     return
 
     def map_has_view(self):
-        _id = getprop(self.provider_data, "originalRecord/_id", True)
-        file_name = getprop(self.provider_data, "files/pdf", True)
+        file_name = None
+        _id = None
+        if exists(self.provider_data, "originalRecord/_id"):
+            _id = getprop(self.provider_data, "originalRecord/_id", True)
+        if exists(self.provider_data, "files/pdf"):
+            file_name = getprop(self.provider_data, "files/pdf", True)
         if _id and file_name:
             _format = "application/pdf"
             url_prefix = "http://www.archive.org/download/{0}/{1}"
