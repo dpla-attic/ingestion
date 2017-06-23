@@ -8,7 +8,7 @@
         "fo": "json",
         "c": 100
     },
-    "fetcher_threads": 4,
+    "fetcher_threads": 8,
     "sets": [
         "american-revolutionary-war-maps",
         "civil-war-maps",
