@@ -114,7 +114,7 @@ class PAMapper(DublinCoreMapper):
         if exists(self.provider_data, prop):
             im_prov = getprop(self.provider_data, prop)
             if im_prov:
-                self.setprop(self.mapped_data, "intermediateProvider", im_prov)
+                setprop(self.mapped_data, "intermediateProvider", im_prov)
 
     def map_is_shown_at(self):
         """
