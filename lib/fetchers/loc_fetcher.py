@@ -66,9 +66,9 @@ class LOCFetcher(AbsoluteURLFetcher):
             urls = [s for s in urls if "www.loc.gov/item/" in s]
 
             if not urls:
-                self.logger.error("loc.gov/item/<id> missing for %s\n"
-                                  "In request: %s%s"
-                                  % (item, self.endpoint_url,
+                self.logger.error("loc.gov/item/<id> missing for item #%s\n"
+                                  "In request: %s?%s"
+                                  % (count, self.endpoint_url.format(set_id),
                                      urlencode(current_params)))
                 break
 
@@ -141,7 +141,11 @@ class LOCFetcher(AbsoluteURLFetcher):
                 url = self.endpoint_url
 
             while request_more:
-                print "Requesting %s%s" % (url,urlencode(self.endpoint_url_params))
+                # Give the user some information about requests
+                rqst_info_msg = "Requesting %s?%s" % (url, urlencode(self.endpoint_url_params))
+                print rqst_info_msg # prints to console
+                logging.info(rqst_info_msg) # log to file
+
                 error, content = self.request_content_from(url, self.endpoint_url_params)
 
                 if error is not None:
