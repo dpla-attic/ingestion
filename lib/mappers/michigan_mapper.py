@@ -6,6 +6,7 @@ from akara import logger
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
+from dplaingestion.textnode import textnode
 
 
 class MichiganMapper(OAIMODSMapper):
@@ -21,7 +22,8 @@ class MichiganMapper(OAIMODSMapper):
             if host_types:
                 title = getprop(host_types[-1], "titleInfo/title", True)
                 if title:
-                    ret_dict = {"collection": {"title": title}}
+                    ret_dict = {"collection": {"title": title, "@id": "",
+                                               "id": "", "description": ""}}
 
         if ret_dict["collection"]:
             self.update_source_resource(ret_dict)
@@ -37,20 +39,39 @@ class MichiganMapper(OAIMODSMapper):
             for s in iterify(getprop(self.provider_data, prop)):
                 name = s.get("namePart")
                 if name:
+                    rt = []
                     try:
-                        role_terms = [r.get("roleTerm") for r in
-                                      iterify(s.get("role"))]
-                    except:
+                        # Get all the roleTerm values for a given mods:name
+                        # entity
+                        rt = [textnode(r.get("roleTerm")) for r in
+                              iterify(s.get("role"))]
+                    except Exception as e:
                         logger.error("Error getting name/role/roleTerm for " +
                                      "record %s" % self.provider_data["_id"])
                         continue
 
-                    if "contributor" not in role_terms:
-                        _dict["creator"].append(name)
-                    elif "contributor" in role_terms:
-                        _dict["contributor"].append(name)
+                    # If mods:roleTerm is empty or if it contains 'Creator'
+                    # then map the namePart value to creator. If roleTerm
+                    # contains 'Contributor' map to contributor
+                    if not rt or "creator" in map(unicode.lower, rt):
+                        if isinstance(name, list):
+                            for n in name:
+                                clean_name = textnode(n)
+                                if isinstance(clean_name, basestring):
+                                    _dict["creator"].append(clean_name)
+                        else:
+                            _dict["creator"].append(textnode(name))
+                    elif "contributor" in map(unicode.lower, rt):
+                        if isinstance(name, list):
+                            for n in name:
+                                clean_name = textnode(n)
+                                if isinstance(clean_name, basestring):
+                                    _dict["contributor"].append(clean_name)
+                        else:
+                            _dict["contributor"].append(textnode(name))
 
             self.update_source_resource(self.clean_dict(_dict))
+
 
     # Data == first <mods:recordInfo><mods:recordContentSource>
     # Intermediate == second <mods:recordInfo><mods:recordContentSource>
@@ -79,43 +100,58 @@ class MichiganMapper(OAIMODSMapper):
 
     # any <mods:originInfo><mods:dateIssued>
     # <mods:originInfo><mods:publisher>
-    def map_date_and_publisher(self):
+    def map_publisher(self):
         prop = self.root_key + "originInfo"
         _dict = {
-            "date": [],
             "publisher": []
         }
 
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
-                if "dateIssued" in s:
-                    try:
-                        date_begin, date_end = None, None
-                        for i in self.get_date(s):
-                            _dict["date"].append(i)
-                        if "point" in s:
-                            if s["point"] == "start":
-                                date_begin = self.get_date(s)
-                            elif s["point"] == "end":
-                                date_end = self.get_date(s)
-
-                        if date_begin and date_end:
-                            _dict["date"] = date_begin[0] + "-" + date_end[0]
-                    except Exception as e:
-                        logger.error("Exception when trying to map date "
-                                     "values. %s" % e.message)
-
                 if "publisher" in s:
                     _dict["publisher"].append(s.get("publisher"))
 
             self.update_source_resource(self.clean_dict(_dict))
 
-    # <mods:physicalDescription><mods:note> AND 
-    # <mods:note> AND 
+    def map_date(self):
+        originInfoPath = self.root_key + "originInfo"
+        dateCreated = []
+        dateIssued = []
+        date_begin, date_end = None, None
+
+        if exists(self.provider_data, originInfoPath):
+            for date in iterify(getprop(self.provider_data, originInfoPath)):
+                if "dateCreated" in date:
+                    dateCreated.append(textnode(date["dateCreated"]))
+
+                if "dateIssued" in date:
+                    t = date["dateIssued"]
+                    try:
+                        if "point" not in t:
+                            dateIssued.append(textnode(t))
+                        elif "point" in t and t["point"] == "start":
+                            date_begin = textnode(t)
+                        elif "point" in t and t["point"] == "end":
+                            date_end = textnode(t)
+                    except Exception as e:
+                        logger.error("Exception when trying to map date "
+                                     "values. for record %s \n\n%s" %
+                                     (self.provider_data % e.message))
+
+        # If there are no dateIssued or dateCreated properties then construct
+        # a date range from begin and end points (if they exist).
+        if date_begin and date_end and not dateCreated and not dateIssued:
+            dateIssued.append(date_begin + "-" + date_end)
+
+        if dateCreated:
+            self.update_source_resource({"date": dateCreated})
+        elif dateIssued:
+            self.update_source_resource({"date": dateIssued})
+
+    # <mods:note> AND
     # <mods:abstract>
     def map_description(self):
-        props = (self.root_key + "physicalDescription/note",
-                 self.root_key + "note", self.root_key + "abstract")
+        props = (self.root_key + "note", self.root_key + "abstract")
 
         desc = []
         for desc_prop in props:
@@ -254,10 +290,10 @@ class MichiganMapper(OAIMODSMapper):
         if geography:
             self.update_source_resource({"spatial": geography})
 
-    # <mods:subject> AND 
-    # <mods:subject><mods:topic> AND 
-    # <mods:subject><mods:name><mods:namePart> AND 
-    # <mods:subject><mods:genre> AND 
+    # <mods:subject> AND
+    # <mods:subject><mods:topic> AND
+    # <mods:subject><mods:name><mods:namePart> AND
+    # <mods:subject><mods:genre> AND
     # <mods:subject><mods:titleInfo><mods:title>
     def map_subject(self):
         prop = (self.root_key + "subject")
@@ -325,22 +361,5 @@ class MichiganMapper(OAIMODSMapper):
     def map_multiple_fields(self):
         self.map_creator_and_contributor()
         self.map_collection()
-        self.map_date_and_publisher()
         self.map_data_provider_and_intermediate_provider()
         self.map_object_and_is_shown_at()
-
-    def get_date(self, record):
-        """ Get date values from provided record and returns them as list of
-        values"""
-        # TODO this could be rewritten using textnode.textnode()
-        dates = []
-        if not isinstance(getprop(record, "dateIssued"), basestring):
-            # Iterate through dicts and lists appending their values to dates
-            for d in iterify(getprop(record, "dateIssued")):
-                if isinstance(d, dict) and "#text" in d:
-                    dates.append(getprop(d, "#text"))
-                else:
-                    dates.append(d)
-        else:
-            dates.append(getprop(record, "dateIssued"))
-        return dates
