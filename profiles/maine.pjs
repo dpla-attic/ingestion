@@ -1,0 +1,35 @@
+{
+    "name": "maine",
+    "type": "oai_verbs",
+    "metadata_prefix": "oai_qdc",
+    "endpoint_url": "http://m6cj-hkg5.accessdomain.com:8080/repox/OAIHandler",
+    "sets": [ "msl_regions", "msl_statedocs" ],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/maine",
+        "name": "Digital Maine"
+    },
+    "enrichments_coll": [
+        "/set_context"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=id",
+        "/dpla_mapper?mapper_type=maine",
+        "/strip_html",
+        "/set_context",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
