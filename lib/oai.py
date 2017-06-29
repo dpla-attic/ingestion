@@ -62,6 +62,7 @@ metadata_field_map = {
         "dc:subject": lambda (v): {"subject": v},
         "dc:title": lambda (v): {"title": v},
         "dc:type": lambda (v): {"type": v},
+        "dcterms:abstract": lambda (v): {"abstract": v},
         "dcterms:alternative": lambda (v): {"alternative": v},
         "dcterms:contributor": lambda (v): {"contributor": v},
         "dcterms:created": lambda (v): {"created": v},
