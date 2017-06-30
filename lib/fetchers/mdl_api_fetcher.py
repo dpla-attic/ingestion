@@ -1,5 +1,9 @@
 import json
-from dplaingestion.fetchers.fetcher import *
+import hashlib
+from urllib import urlencode
+from dplaingestion.utilities import iterify, couch_id_builder
+from dplaingestion.fetchers.fetcher import Fetcher, getprop
+
 
 class MDLAPIFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):

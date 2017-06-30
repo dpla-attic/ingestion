@@ -1,4 +1,6 @@
-from dplaingestion.fetchers.primo_fetcher import *
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.primo_fetcher import PrimoFetcher, getprop
+
 
 class GettyFetcher(PrimoFetcher):
     def __init__(self, profile, uri_base, config_file):

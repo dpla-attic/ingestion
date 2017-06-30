@@ -1,6 +1,9 @@
-from dplaingestion.fetchers.fetcher import *
-from urllib import urlencode
 import threading
+import hashlib
+from urllib import urlencode
+from dplaingestion.utilities import iterify, couch_id_builder
+from dplaingestion.fetchers.fetcher import Fetcher, getprop
+
 
 class PrimoFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):

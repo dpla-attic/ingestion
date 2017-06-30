@@ -1,5 +1,9 @@
-from dplaingestion.fetchers.fetcher import *
 import os
+import hashlib
+import fnmatch
+from dplaingestion.utilities import couch_id_builder
+from dplaingestion.fetchers.fetcher import Fetcher, XML_PARSE
+
 
 class FileFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):

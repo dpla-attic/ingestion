@@ -1,5 +1,7 @@
-from dplaingestion.fetchers.fetcher import *
+import sys
 import threading
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.fetcher import Fetcher
 
 
 class AbsoluteURLFetcher(Fetcher):

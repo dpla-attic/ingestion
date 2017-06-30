@@ -1,4 +1,7 @@
-from dplaingestion.fetchers.file_fetcher import *
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.fetcher import getprop
+from dplaingestion.fetchers.file_fetcher import FileFetcher
+
 
 class NARAFetcher(FileFetcher):
     def __init__(self, profile, uri_base, config_file):
