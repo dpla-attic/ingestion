@@ -1,4 +1,6 @@
-from dplaingestion.fetchers.absolute_url_fetcher import *
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.absolute_url_fetcher import AbsoluteURLFetcher
+
 
 class UVAFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):

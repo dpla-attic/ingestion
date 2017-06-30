@@ -1,4 +1,9 @@
-from dplaingestion.fetchers.file_fetcher import *
+import os
+import re
+import xmltodict
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.file_fetcher import FileFetcher
+
 
 class EDANFetcher(FileFetcher):
     def __init__(self, profile, uri_base, config_file):

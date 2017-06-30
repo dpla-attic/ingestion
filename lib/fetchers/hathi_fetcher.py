@@ -1,4 +1,6 @@
-from dplaingestion.fetchers.file_fetcher import *
+import itertools as it
+from dplaingestion.fetchers.file_fetcher import FileFetcher
+
 
 class HathiFetcher(FileFetcher):
     def __init__(self, profile, uri_base, config_file):

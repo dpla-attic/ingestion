@@ -1,4 +1,7 @@
-from dplaingestion.fetchers.absolute_url_fetcher import *
+from amara.thirdparty import json
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.absolute_url_fetcher \
+    import AbsoluteURLFetcher, getprop
 
 
 class CDLFetcher(AbsoluteURLFetcher):
