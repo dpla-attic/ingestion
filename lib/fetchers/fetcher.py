@@ -17,11 +17,13 @@ from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
 from dplaingestion.utilities import iterify, couch_id_builder
 import requests
+from requests import RequestException
 import re
 
 
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
+
 
 XML_PARSE = lambda doc: xmltodict.parse(doc,
                                         xml_attribs=True,
@@ -34,6 +36,7 @@ class Fetcher(object):
     """The base class for all fetchers.
        Includes attributes and methods that are common to all types.
     """
+
     def __init__(self, profile, uri_base, config_file):
         """Set common attributes"""
         self.uri_base = uri_base
@@ -71,14 +74,16 @@ class Fetcher(object):
     def request_content_from(self, url, params={}):
         error = None
         resp = None
+        r = None
 
-        r = requests.get(url, params=params, headers=self.http_headers)
-
-        if r.status_code == 200:
+        try:
+            r = requests.get(url, params=params, headers=self.http_headers)
+            r.raise_for_status()
             resp = r.text
-        else:
-            error = "Error (%s--%s) requesting %s" % (r.status_code, r.reason,
-                                                     url)
+        except RequestException:
+            error = "Error (%s--%s) requesting %s?%s" % (r.status_code,
+                                                         r.reason, url,
+                                                         urlencode(params))
         return error, resp
 
     def create_collection_records(self):
@@ -87,7 +92,7 @@ class Fetcher(object):
                 _id = couch_id_builder(self.provider, set_spec)
                 id = hashlib.md5(_id).hexdigest()
                 at_id = "http://dp.la/api/collections/" + id
-    
+
                 self.collections[set_spec]["id"] = id
                 self.collections[set_spec]["_id"] = _id
                 self.collections[set_spec]["@id"] = at_id
