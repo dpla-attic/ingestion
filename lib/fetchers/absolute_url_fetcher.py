@@ -2,6 +2,7 @@ import sys
 import threading
 from dplaingestion.utilities import iterify
 from dplaingestion.fetchers.fetcher import Fetcher
+import json
 
 
 class AbsoluteURLFetcher(Fetcher):

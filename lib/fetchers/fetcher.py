@@ -21,6 +21,7 @@ from requests import RequestException
 import re
 
 
+
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
 

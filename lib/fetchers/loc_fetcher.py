@@ -1,7 +1,9 @@
-from dplaingestion.fetchers.absolute_url_fetcher import *
 import logging
 import time
+from urllib import urlencode
 
+from dplaingestion.fetchers.absolute_url_fetcher import *
+from dplaingestion.selector import exists, getprop
 
 class LOCFetcher(AbsoluteURLFetcher):
     # Library of Congress specific file-based logger. Will probably be used to
@@ -58,9 +60,9 @@ class LOCFetcher(AbsoluteURLFetcher):
             # a collection results page. If one does not exist the item cannot
             # be harvested. Every item is expected to have one and those that
             # do not *should* be reported to LoC
-            urls = [get_prop(item, "aka", True),
-                    get_prop(item, "id", True),
-                    get_prop(item, "url", True)]
+            urls = [getprop(item, "aka", True),
+                    getprop(item, "id", True),
+                    getprop(item, "url", True)]
 
             urls = set([item for sublist in urls for item in sublist])
             urls = [s for s in urls if "www.loc.gov/item/" in s]
