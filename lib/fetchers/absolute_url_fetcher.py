@@ -1,8 +1,9 @@
+import json
 import sys
 import threading
+
 from dplaingestion.utilities import iterify
-from dplaingestion.fetchers.fetcher import Fetcher
-import json
+from dplaingestion.fetchers.fetcher import Fetcher, XML_PARSE
 
 
 class AbsoluteURLFetcher(Fetcher):

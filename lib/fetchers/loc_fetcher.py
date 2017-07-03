@@ -2,8 +2,9 @@ import logging
 import time
 from urllib import urlencode
 
-from dplaingestion.fetchers.absolute_url_fetcher import *
+from dplaingestion.fetchers.absolute_url_fetcher import AbsoluteURLFetcher
 from dplaingestion.selector import exists, getprop
+
 
 class LOCFetcher(AbsoluteURLFetcher):
     # Library of Congress specific file-based logger. Will probably be used to
