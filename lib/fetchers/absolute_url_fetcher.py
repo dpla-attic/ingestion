@@ -1,7 +1,7 @@
 import sys
 import threading
 from dplaingestion.utilities import iterify
-from dplaingestion.fetchers.fetcher import Fetcher
+from dplaingestion.fetchers.fetcher import Fetcher, XML_PARSE
 
 
 class AbsoluteURLFetcher(Fetcher):
