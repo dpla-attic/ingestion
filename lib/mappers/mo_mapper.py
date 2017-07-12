@@ -77,12 +77,12 @@ class MontanaMapper(OAIMODSMapper):
 
     def map_date(self):
         """<mods:originInfo><mods:dateCreated>"""
-        prop = self.root_key + "originInfo/dateCreated"
+        prop = self.root_key + "originInfo"
         dates = []
 
-        for d in iterify(getprop(self.provider_data, prop,
-                         True)):
-            dates.append(textnode(d))
+        for oi in iterify(getprop(self.provider_data, prop,True)):
+            for d in iterify(getprop(oi, "dateCreated", True)):
+                dates.append(textnode(d))
         if dates:
             self.update_source_resource({"date": dates})
 
@@ -117,11 +117,12 @@ class MontanaMapper(OAIMODSMapper):
 
     def map_extent_format(self):
         """<mods:physicalDescription><extent>"""
-        prop = self.root_key + "physicalDescription/extent"
+        prop = self.root_key + "physicalDescription/"
         extent = []
 
-        for e in iterify(getprop(self.provider_data, prop, True)):
-            extent.append(textnode(e))
+        for pd in iterify(getprop(self.provider_data, prop, True)):
+            for e in iterify(getprop(pd, "extent", True)):
+                extent.append(textnode(e))
 
         if extent:
             self.update_source_resource({"extent": extent, "format": extent})
@@ -158,11 +159,12 @@ class MontanaMapper(OAIMODSMapper):
 
     def map_publisher(self):
         """<mods:originInfo><mods:publisher>"""
-        prop = self.root_key + "originInfo/publisher"
+        prop = self.root_key + "originInfo"
         publishers = []
 
-        for p in iterify(getprop(self.provider_data, prop, True)):
-            publishers.append(textnode(p))
+        for oi in iterify(getprop(self.provider_data, prop, True)):
+            for p in iterify(getprop(oi, "publisher", True)):
+                publishers.append(textnode(p))
 
         if publishers:
             self.update_source_resource({"publisher": publishers})
