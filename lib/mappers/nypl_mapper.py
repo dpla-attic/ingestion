@@ -1,11 +1,7 @@
 from akara import logger
-from dplaingestion.utilities import iterify
-from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.mods_mapper import MODSMapper
-from akara import logger
-from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
-from dplaingestion.mappers.mods_mapper import MODSMapper
+from dplaingestion.utilities import iterify
 
 
 class NYPLMapper(MODSMapper):
@@ -331,13 +327,15 @@ class NYPLMapper(MODSMapper):
 
     def map_subject(self):
         subjects = set()
-        subject_keys = ["topic", "geographic", "temporal", "name"]
+        subject_keys = ["topic", "geographic", "temporal",
+                        "name", "occupation", "titleInfo"]
         if exists(self.provider_data, "subject"):
             for v in iterify(getprop(self.provider_data, "subject")):
                 for subject_key in subject_keys:
                     subject = self.extract_subject(v, subject_key)
                     if subject:
                         subjects.add(subject)
+
         if subjects:
             self.update_source_resource({"subject": list(subjects)})
 
@@ -348,6 +346,8 @@ class NYPLMapper(MODSMapper):
             if isinstance(subject_type_info, dict):
                 if key == "name" and "namePart" in subject_type_info:
                     return subject_type_info.get("namePart")
+                if key == "titleInfo" and "title" in subject_type_info:
+                    return subject_type_info.get("title")
                 return self.txt(subject_type_info)
             elif isinstance(subject_type_info, list):
                 subject_texts = []
@@ -607,18 +607,7 @@ class NYPLMapper(MODSMapper):
             self.update_source_resource({"spatial": geographics})
 
     def map_is_part_of(self):
-        related_items = iterify(
-            getprop(self.provider_data, "relatedItem", True))
-        hosts = []
-        for related_item in related_items:
-            if "type" in related_item and related_item.get("type") == "host":
-                hosts.append(related_item)
-
-        if hosts:
-            lastHost = related_items[-1]
-            if exists(lastHost, "titleInfo/title"):
-                title = self.txt(getprop(lastHost, "titleInfo/title", True))
-                self.update_source_resource({"isPartOf": title})
+        pass
 
     def map_language(self):
         languages = set()
