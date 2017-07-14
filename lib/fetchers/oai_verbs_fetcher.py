@@ -1,6 +1,7 @@
-from dplaingestion.fetchers.fetcher import *
 from amara.thirdparty import json
-from dplaingestion.utilities import *
+from dplaingestion.utilities import iterify
+from dplaingestion.fetchers.fetcher import Fetcher, getprop
+
 
 class OAIVerbsFetcher(Fetcher):
     def __init__(self, profile, uri_base, config_file):
