@@ -127,7 +127,7 @@ class MontanaMapper(OAIMODSMapper):
             self.update_source_resource({"extent": extents})
 
     def map_format(self):
-        prop = self.root_key + "physicalDescription/format"
+        prop = self.root_key + "physicalDescription/form"
         formats = []
 
         for f in iterify(getprop(self.provider_data, prop, True)):
