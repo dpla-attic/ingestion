@@ -35,7 +35,8 @@
         "SSDPLASaintMary",
         "SSDPLAUCSD",
         "SSDPLAWashington",
-        "SSDPLATrinity"
+        "SSDPLATrinity",
+        "SSDPLAEmerson"
     ],
     "set_params": {
         "DPLADallas": {"frm": "2017-04-07"},
@@ -70,7 +71,8 @@
         "SSDPLASaintMary": {"frm": "2017-04-07"},
         "SSDPLAUCSD": {"frm": "2017-04-07"},
         "SSDPLAWashington": {"frm": "2017-04-07"},
-        "SSDPLATrinity": {"frm": "2017-04-07"}
+        "SSDPLATrinity": {"frm": "2017-04-07"},
+        "SSDPLAEmerson": {"frm": "2017-04-07"}
 
     },
     "contributor": {
