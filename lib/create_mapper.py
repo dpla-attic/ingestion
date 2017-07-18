@@ -133,7 +133,7 @@ def create_mapper(mapper_type, data):
         return MarylandMapper(data)
 
     def _create_montana_mapper(data):
-        from dplaingestion.mappers.mo_mapper import MontanaMapper
+        from dplaingestion.mappers.montana_mapper import MontanaMapper
         return MontanaMapper(data)
 
     mappers = {

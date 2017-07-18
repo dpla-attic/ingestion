@@ -115,20 +115,30 @@ class MontanaMapper(OAIMODSMapper):
         if edm_rights:
             self.mapped_data.update({"rights": edm_rights})
 
-    def map_extent_format(self):
+    def map_extent(self):
         """<mods:physicalDescription><extent>"""
-        prop = self.root_key + "physicalDescription/"
-        extent = []
+        prop = self.root_key + "physicalDescription/extent"
+        extents = []
 
-        for pd in iterify(getprop(self.provider_data, prop, True)):
-            for e in iterify(getprop(pd, "extent", True)):
-                extent.append(textnode(e))
+        for e in iterify(getprop(self.provider_data, prop, True)):
+            extents.append(textnode(e))
 
-        if extent:
-            self.update_source_resource({"extent": extent, "format": extent})
+        if extents:
+            self.update_source_resource({"extent": extents})
+
+    def map_format(self):
+        prop = self.root_key + "physicalDescription/format"
+        formats = []
+
+        for f in iterify(getprop(self.provider_data, prop, True)):
+            formats.append(textnode(f))
+
+        if formats:
+            self.update_source_resource({"format": formats})
 
     def map_is_shown_at(self):
-        """<mods:location><mods:url> @access=object in context @usage=primary display"""
+        """<mods:location><mods:url> @access=object in context
+        @usage=primary display"""
         prop = self.root_key + "location"
         link = []
 
@@ -219,7 +229,7 @@ class MontanaMapper(OAIMODSMapper):
 
     def map_type(self):
         """<mods:typeofresource>"""
-        prop = self.root_key + "typeofresource"
+        prop = self.root_key + "typeOfResource"
         types = []
 
         for t in iterify(getprop(self.provider_data, prop, True)):
@@ -227,9 +237,3 @@ class MontanaMapper(OAIMODSMapper):
 
         if types:
             self.update_source_resource({"type": types})
-
-    def map_format(self):
-        pass
-
-    def map_multiple_fields(self):
-        self.map_extent_format()
