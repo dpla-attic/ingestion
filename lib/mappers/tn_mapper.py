@@ -69,12 +69,14 @@ class TNMapper(MODSMapper):
                 self.update_source_resource({"date": date_created})
 
     def map_description(self):
-        path = "/metadata/mods/abstract"
-        if exists(self.provider_data, path):
-            description = getprop(self.provider_data, path)
+        description = []
 
-            if description:
-                self.update_source_resource({"description": description})
+        path = "/metadata/mods/abstract"
+        for d in iterify(getprop(self.provider_data, path, True)):
+            description.append(textnode(d))
+
+        if description:
+            self.update_source_resource({"description": description})
 
     def map_extent(self):
         path = "/metadata/mods/physicalDescription/extent"
@@ -133,10 +135,25 @@ class TNMapper(MODSMapper):
         rights = []
         if exists(self.provider_data, path):
             for r in iterify(getprop(self.provider_data, path)):
-                rights.append(textnode(r))
+                t = getprop(r, "type", True)
+                if t and t == "local rights statement":
+                    rights.append(textnode(r))
 
             if rights:
                 self.update_source_resource({"rights": rights})
+
+    def map_edm_rights(self):
+        path = "/metadata/mods/accessCondition"
+        edm_rights = ""
+        if exists(self.provider_data, path):
+            for r in iterify(getprop(self.provider_data, path)):
+                t = getprop(r, "type", True)
+                rs = getprop(r, "xlink:href", True)
+                if t and rs and t == "use and reproduction":
+                    edm_rights = textnode(rs)
+
+        if edm_rights:
+            self.mapped_data.update({"rights": edm_rights})
 
     def map_spatial_and_subject_and_temporal(self):
         path = "/metadata/mods/subject"
@@ -147,7 +164,8 @@ class TNMapper(MODSMapper):
 
         if exists(self.provider_data, path):
             for subject in iterify(getprop(self.provider_data, path)):
-                if "cartographics" in subject and "coordinates" in subject["cartographics"]:
+                if "cartographics" in subject and \
+                                "coordinates" in subject["cartographics"]:
                     coord = subject["cartographics"]["coordinates"]
                     spatials.append({"name": coord })
 
@@ -160,13 +178,8 @@ class TNMapper(MODSMapper):
                         temporals.append(textnode(t))
 
                 for s_path in subject_props:
-
-                    logger.error(s_path)
-
-                    if exists(subject, s_path):
-                        for s in iterify(getprop(subject, s_path)):
-                            logger.error(textnode(s))
-                            subjects.append(s)
+                    for s in iterify(getprop(subject, s_path, True)):
+                        subjects.append(s)
 
         if spatials:
             self.update_source_resource({"spatial": spatials})
