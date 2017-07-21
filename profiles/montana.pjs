@@ -1,0 +1,38 @@
+    {
+    "name": "mo",
+    "type": "oai_verbs",
+    "metadata_prefix": "mods",
+    "endpoint_url": "http://repox.msl.mt.gov:8080/repox/OAIHandler",
+    "sets": [],
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/montana",
+        "name": "Big Sky Country Digital Network"
+    },
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=header%2Fidentifier",
+        "/dpla_mapper?mapper_type=montana",
+        "/strip_html",
+        "/set_context",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Montana",
+        "/enrich_location?prop=sourceResource%2FstateLocatedIn",
+        "/geocode",
+        "/enrich_language"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
