@@ -56,7 +56,9 @@ class MaineMapper(QDCMapper):
             self.mapped_data.update({dest: data})
 
     def map_data_provider(self):
-        self.copy_root("contributor", "dataProvider")
+        data = iterify(getprop(self.provider_data, "contributor"))
+        if data:
+            self.mapped_data.update({"dataProvider": data[0]})
 
     def map_is_shown_at(self, index=None):
         self.copy_root("handle", "isShownAt")
