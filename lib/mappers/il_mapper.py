@@ -67,5 +67,12 @@ class ILMapper(QDCMapper):
     def map_identifier(self):
         self.source_resource_prop_to_prop("identifier")
 
+    def map_edm_rights(self):
+        rights = []
+        for right in iterify(getprop(self.provider_data, "edm:rights", True)):
+            rights.append(right)
+        if rights:
+            self.mapped_data.update("rights", rights[0])
+
     def map_multiple_fields(self):
         self.map_format_and_medium()
