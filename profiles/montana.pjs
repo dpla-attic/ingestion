@@ -1,26 +1,22 @@
-{
-    "name": "mi", 
+    {
+    "name": "mo",
     "type": "oai_verbs",
-    "metadata_prefix": "MODS",
-    "endpoint_url": "http://oai.michiganservicehub.org/OAIHandler",
-    "sets": [], 
+    "metadata_prefix": "mods",
+    "endpoint_url": "http://repox.msl.mt.gov:8080/repox/OAIHandler",
+    "sets": [],
     "contributor": {
-        "@id": "http://dp.la/api/contributor/michigan",
-        "name": "Michigan Service Hub"
-    }, 
+        "@id": "http://dp.la/api/contributor/montana",
+        "name": "Big Sky Country Digital Network"
+    },
     "enrichments_coll": [
         "/set_context",
         "/validate_mapv3"
-    ], 
+    ],
     "enrichments_item": [
         "/select-id?prop=header%2Fidentifier",
-        "/dpla_mapper?mapper_type=mi",
+        "/dpla_mapper?mapper_type=montana",
         "/strip_html",
         "/set_context",
-        "/shred?prop=sourceResource%2Fsubject&delim=--",
-        "/shred?prop=sourceResource%2Fsubject",
-        "/shred?prop=sourceResource%2Ftitle&delim=--",
-        "/dedup_value?prop=sourceResource%2Fsubject",
         "/cleanup_value",
         "/capitalize_value",
         "/enrich_earliest_date",
@@ -29,7 +25,7 @@
         "/enrich-type",
         "/enrich-format",
         "/enrich_location",
-        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Michigan",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Montana",
         "/enrich_location?prop=sourceResource%2FstateLocatedIn",
         "/geocode",
         "/enrich_language"
