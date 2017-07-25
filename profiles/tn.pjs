@@ -128,7 +128,9 @@
         "utk_postcards",
         "utk_sanborn",
         "utk_smhc",
-        "volvoices"
+        "volvoices",
+        "utk_ekcd",
+        "utk_vpmoore"
     ],
     "enrichments_coll": [
         "/set_context",
