@@ -24,7 +24,8 @@ class IAFetcher(Fetcher):
             self.response['records'].append(self.collections[token])
             i = 1
             for item in internetarchive \
-                        .search_items("collection:%s" % token) \
+                        .search_items("collection:%s" % token,
+                                      request_kwargs={'timeout': 60}) \
                         .iter_as_items():
                 try:
                     md = item.item_metadata
