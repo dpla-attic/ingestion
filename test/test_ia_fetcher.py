@@ -31,7 +31,7 @@ def setup():
     search_for_col = {'collection:col1': search_col1,
                       'collection:col2': search_col2}
 
-    def _search_items(s):
+    def _search_items(s, request_kwargs):
         # See internetarchive.search_items() call in IAFetcher.fetch_all_data()
         return search_for_col[s]
 
