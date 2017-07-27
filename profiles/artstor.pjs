@@ -36,7 +36,8 @@
         "SSDPLAUCSD",
         "SSDPLAWashington",
         "SSDPLATrinity",
-        "SSDPLAEmerson"
+        "SSDPLAEmerson",
+        "SSDPLAIllinois"
     ],
     "set_params": {
         "DPLADallas": {"frm": "2017-04-07"},
@@ -72,8 +73,8 @@
         "SSDPLAUCSD": {"frm": "2017-04-07"},
         "SSDPLAWashington": {"frm": "2017-04-07"},
         "SSDPLATrinity": {"frm": "2017-04-07"},
-        "SSDPLAEmerson": {"frm": "2017-04-07"}
-
+        "SSDPLAEmerson": {"frm": "2017-04-07"},
+        "SSDPLAIllinois": {"frm": "2017-04-07"}
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor",
