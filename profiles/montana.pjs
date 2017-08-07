@@ -1,5 +1,5 @@
     {
-    "name": "mo",
+    "name": "mt",
     "type": "oai_verbs",
     "metadata_prefix": "mods",
     "endpoint_url": "http://repox.msl.mt.gov:8080/repox/OAIHandler",
