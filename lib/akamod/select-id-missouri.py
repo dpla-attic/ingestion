@@ -1,15 +1,15 @@
 import hashlib
 from amara.thirdparty import json
-from amara.lib.iri import is_absolute
 from akara.services import simple_service
 from akara.util import copy_headers_to_dict
 from akara import request, response
+from dplaingestion import textnode
 from dplaingestion.selector import getprop, exists
 from dplaingestion.utilities import couch_rec_id_builder, clean_id
 
 
-@simple_service('POST', 'http://purl.org/la/dp/select-id', 'select-id',
-                'application/json')
+@simple_service('POST', 'http://purl.org/la/dp/select-id-missouri',
+                'select-id-missouri', 'application/json')
 def selid(body, ctype, prop='handle', use_source='yes'):
     '''
     Service that accepts a JSON document and adds or sets the "id" property to
@@ -33,17 +33,24 @@ def selid(body, ctype, prop='handle', use_source='yes'):
     source_name = request_headers.get('Source')
 
     record_id = None
+
     if exists(data, prop):
         v = getprop(data, prop)
         if isinstance(v, basestring):
             record_id = v
         else:
             if v:
+                # Make an array of IDs (if needed) and iterate over it
                 for h in (v if isinstance(v, list) else [v]):
-                    if is_absolute(h):
-                        record_id = h
-                if not record_id:
-                    record_id = v[0]
+                    """
+                    The only valid path to select a original ID for 
+                    Missouri is <mods:identifier type='local'>
+                    
+                    If this does not exist, no DPLA ID can be minted.
+                    """
+                    if not record_id:
+                        if getprop(h, "type", True) == "local":
+                            record_id = textnode.textnode(h)
 
     if not record_id:
         response.code = 500

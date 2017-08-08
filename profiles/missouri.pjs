@@ -13,7 +13,7 @@
         "/validate_mapv3"
     ],
     "enrichments_item": [
-        "/select-id?prop=metadata/mods/identifier&attr=type&attrValue=local",
+        "/select-id-missouri?prop=metadata/mods/identifier",
         "/dpla_mapper?mapper_type=missouri",
         "/strip_html",
         "/set_context",

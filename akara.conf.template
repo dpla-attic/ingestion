@@ -201,7 +201,8 @@ MODULES = [
     "dplaingestion.akamod.validate_mapv3",
     "dplaingestion.akamod.dpla_mapper",
     "dplaingestion.akamod.set_context",
-    "dplaingestion.akamod.strip_html"
+    "dplaingestion.akamod.strip_html",
+    "dplaingestion.akamod.select-id-missouri"
     ]
 
 ### Section 3: Other module configuration goes here
