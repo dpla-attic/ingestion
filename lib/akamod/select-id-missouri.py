@@ -11,11 +11,8 @@ from dplaingestion.utilities import couch_rec_id_builder, clean_id
 @simple_service('POST', 'http://purl.org/la/dp/select-id-missouri',
                 'select-id-missouri', 'application/json')
 def selid(body, ctype, prop='handle', use_source='yes'):
-    '''
-    Service that accepts a JSON document and adds or sets the "id" property to
-    the value of the property named by the "prop" paramater
-    '''
-
+    """Service that accepts a JSON document and adds or sets the "id" property to
+    the value of the property named by the "prop" parameter"""
     if not prop:
         # Remove this document
         response.code = 500
@@ -24,7 +21,7 @@ def selid(body, ctype, prop='handle', use_source='yes'):
 
     try:
         data = json.loads(body)
-    except:
+    except Exception:
         response.code = 500
         response.add_header('content-type', 'text/plain')
         return "Unable to parse body as JSON"
@@ -42,12 +39,9 @@ def selid(body, ctype, prop='handle', use_source='yes'):
             if v:
                 # Make an array of IDs (if needed) and iterate over it
                 for h in (v if isinstance(v, list) else [v]):
-                    """
-                    The only valid path to select a original ID for 
-                    Missouri is <mods:identifier type='local'>
-                    
-                    If this does not exist, no DPLA ID can be minted.
-                    """
+                    """ The only valid path to select a original ID for 
+                    Missouri is <mods:identifier type='local'>. If this does 
+                    not exist then no DPLA ID can be minted."""
                     if not record_id:
                         if getprop(h, "type", True) == "local":
                             record_id = textnode.textnode(h)
