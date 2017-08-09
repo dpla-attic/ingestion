@@ -3,7 +3,7 @@
     "type": "oai_verbs",
     "metadata_prefix": "mods",
     "endpoint_url": "http://data.mohistory.org/services/mohub-cache/oai2.php",
-    "blacklist": [],
+    "blacklist": ["dpla_deletes"],
     "contributor": {
         "@id": "http://dp.la/api/contributor/missouri-hub",
         "name": "Missouri Hub"
