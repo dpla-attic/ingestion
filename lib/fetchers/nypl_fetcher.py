@@ -2,7 +2,7 @@ from dplaingestion.selector import exists
 from dplaingestion.utilities import iterify
 from dplaingestion.fetchers.fetcher import getprop
 from dplaingestion.fetchers.absolute_url_fetcher import AbsoluteURLFetcher
-
+from dplaingestion.fetchers.fetcher import XML_PARSE
 
 class NYPLFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):
