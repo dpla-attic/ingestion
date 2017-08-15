@@ -1,0 +1,22 @@
+{
+    "name": "florida",
+    "type": "florida",
+    "endpoint_url": "file:/v1/provider-data/florida/",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/florida",
+        "name": ""
+    },
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=identifier",
+        "/dpla_mapper?mapper_type=florida"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
