@@ -3,6 +3,7 @@ from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.qdc_mapper import QDCMapper
 from dplaingestion.textnode import textnode
 
+
 class ILMapper(QDCMapper):
     def __init__(self, provider_data):
         super(ILMapper, self).__init__(provider_data)
@@ -70,10 +71,11 @@ class ILMapper(QDCMapper):
 
     def map_edm_rights(self):
         rights = []
-        for right in iterify(getprop(self.provider_data, "edm:rights", True)):
-            rights.append(right)
+        for right in iterify(getprop(self.provider_data, "edmRights", True)):
+            rights.append(textnode(right))
+
         if rights:
-            self.mapped_data.update("rights", rights[0])
+            self.mapped_data.update({"rights": rights[0]})
 
     def map_multiple_fields(self):
         self.map_format_and_medium()
