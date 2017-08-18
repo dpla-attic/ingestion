@@ -78,6 +78,7 @@ metadata_field_map = {
         "edm:dataProvider": lambda (v): {"dataProvider": v},
         "edm:isShownAt": lambda (v): {"isShownAt": v},
         "edm:preview": lambda (v): {"preview": v},
+        "edm:rights": lambda (v): {"edmRights": v},
         "dct:accessRights": lambda (v): {"accessRights": v},
         "dct:alternative": lambda (v): {"dctAlternative": v},
         "dct:isPartOf": lambda (v): {"isPartOf": v},
