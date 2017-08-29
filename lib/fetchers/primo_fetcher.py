@@ -1,5 +1,6 @@
 import threading
 import hashlib
+import traceback
 from urllib import urlencode
 from dplaingestion.utilities import iterify, couch_id_builder
 from dplaingestion.fetchers.fetcher import Fetcher, getprop, XML_PARSE
@@ -18,6 +19,7 @@ class PrimoFetcher(Fetcher):
         try:
             content = XML_PARSE(content)
         except:
+            traceback.print_exc()
             error = "Error parsing content from URL %s" % url
 
         return error, content
@@ -152,12 +154,13 @@ class PrimoFetcher(Fetcher):
         request_more = True
         while request_more:
 
-            error, content = self.request_content_from(
-                self.endpoint_url, self.endpoint_url_params
-                )
             print "Requesting %s?%s" % (self.endpoint_url,
                                         urlencode(self.endpoint_url_params,
                                                   True))
+
+            error, content = self.request_content_from(
+                self.endpoint_url, self.endpoint_url_params
+                )
 
             if error is not None:
                 # Stop requesting from this set
