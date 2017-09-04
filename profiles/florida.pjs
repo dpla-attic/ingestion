@@ -1,19 +1,20 @@
 {
     "name": "florida",
     "type": "florida",
-    "endpoint_url": "file:/v1/provider-data/florida/",
+    "endpoint_url": "file:/Users/scott/dpla/bulk_data/fl/",
     "contributor": {
         "@id": "http://dp.la/api/contributor/florida",
-        "name": ""
+        "name": "Sunshine State Digital Network"
     },
     "enrichments_coll": [
         "/set_context",
         "/validate_mapv3"
     ],
     "enrichments_item": [
-        "/select-id?prop=identifier",
+        "/select-id?prop=sourceResource%2Fidentifier",
         "/dpla_mapper?mapper_type=florida"
     ],
+    "sets": "NotSupported",
     "thresholds": {
         "added": 5000,
         "changed": 1000,

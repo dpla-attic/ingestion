@@ -14,13 +14,14 @@ class FloridaFetcher(FileFetcher):
         with open(filepath, 'r') as f:
             jsonContent = []
             try:
-                jsonContent = json.load(f)
+                jsonContent = json.load(f, encoding="utf-8")
             except Exception as e:
                 errors.append("Unable to load JSON file: %s" % e.message)
 
             for record in jsonContent:
                 try:
                     # TODO confirm this is correct construction of the _id prop
+                    record["origianlRecord"] = str(record)
                     record["_id"] = record["sourceResource"]["identifier"]
                 except Exception as e:
                     # Collect error messages and exclude records with no
