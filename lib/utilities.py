@@ -162,3 +162,12 @@ def url_join(*args):
 
     """
     return "/".join(map(lambda x: str(x).rstrip("/"), args))
+
+
+def utf8str(s):
+    """Return the given String or Unicode String as a Unicode string"""
+    try:
+        return s.encode('utf-8')
+    except UnicodeEncodeError:
+        # It was already a Unicode string.
+        return s
