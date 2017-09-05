@@ -167,7 +167,7 @@ def url_join(*args):
 def utf8str(s):
     """Return the given String or Unicode String as a Unicode string"""
     try:
-        return s.encode('utf-8')
+        return s.encode('utf-8')  # For an ASCII string
     except UnicodeEncodeError:
-        # It was already a Unicode string.
+        # It was not an ASCII string.
         return s
