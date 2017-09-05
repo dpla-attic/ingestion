@@ -15,7 +15,7 @@ from amara.lib.iri import is_absolute
 from dplaingestion.selector import exists
 from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
-from dplaingestion.utilities import iterify, couch_id_builder
+from dplaingestion.utilities import iterify, couch_id_builder, utf8str
 import requests
 from requests import RequestException
 import re
@@ -24,8 +24,11 @@ import re
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
 
-
-XML_PARSE = lambda doc: xmltodict.parse(doc,
+# XML_PARSE: wrapper around xmltodict.parse, which needs a _string_ (str or
+# unicode), not a filehandle, because of the assurance that we want to provide
+# with utf8str() that it is Unicode.  (xmltodict.parse takes either a string or
+# filehandle.)
+XML_PARSE = lambda doc: xmltodict.parse(utf8str(doc),
                                         xml_attribs=True,
                                         attr_prefix='',
                                         force_cdata=False,

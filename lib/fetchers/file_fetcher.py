@@ -13,9 +13,9 @@ class FileFetcher(Fetcher):
     def extract_xml_content(self, filepath):
         error = None
         content = None
-        file = open(filepath, "r")
+        xmlfile = open(filepath, "r")
         try:
-            content = XML_PARSE(file)
+            content = XML_PARSE(xmlfile.read())
         except:
             error = "Error parsing content from file %s" % filepath
 
