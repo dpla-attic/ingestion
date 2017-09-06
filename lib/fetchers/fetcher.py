@@ -15,7 +15,7 @@ from amara.lib.iri import is_absolute
 from dplaingestion.selector import exists
 from dplaingestion.selector import setprop
 from dplaingestion.selector import getprop as get_prop
-from dplaingestion.utilities import iterify, couch_id_builder, utf8str
+from dplaingestion.utilities import iterify, couch_id_builder
 import requests
 from requests import RequestException
 import re
@@ -24,15 +24,22 @@ import re
 def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
 
-# XML_PARSE: wrapper around xmltodict.parse, which needs a _string_ (str or
-# unicode), not a filehandle, because of the assurance that we want to provide
-# with utf8str() that it is Unicode.  (xmltodict.parse takes either a string or
-# filehandle.)
-XML_PARSE = lambda doc: xmltodict.parse(utf8str(doc),
+XML_PARSE = lambda doc: xmltodict.parse(xmltodict_str(doc),
                                         xml_attribs=True,
                                         attr_prefix='',
                                         force_cdata=False,
                                         ignore_whitespace_cdata=True)
+
+def xmltodict_str(s):
+    """Temporary kludge to get Getty to work"""
+    try:
+        # encode() converts a `unicode' string to a byte string (`str').
+        # `decode()` converts a byte string (`str') to Unicode.
+        # `encode()` converts a `unicode' string to a `str' byte string.
+        #
+        return s.encode('utf-8')
+    except UnicodeEncodeError:
+        return s
 
 
 class Fetcher(object):
