@@ -146,6 +146,15 @@ class Mapper(object):
         """
         self.mapped_data["sourceResource"].update(_dict)
 
+    def overwrite_source_resource(self, _dict):
+        """
+        Overwrite exiting values in sourceResource
+        :param _dict:
+        :return:
+        """
+        for key in _dict:
+            self.mapped_data["sourceResource"][key] = _dict[key]
+
     # base mapping functions
     def map_original_record(self):
         prop = "originalRecord"

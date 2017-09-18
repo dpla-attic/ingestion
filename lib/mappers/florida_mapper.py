@@ -1,6 +1,7 @@
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import getprop
 from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
+from akara import logger
 
 
 class FloridaMapper(MAPV3JSONMapper):
@@ -8,63 +9,66 @@ class FloridaMapper(MAPV3JSONMapper):
         super(FloridaMapper, self).__init__(provider_data)
 
     def map_field(self, prop, subProp=None):
+        sr = self.provider_data["sourceResource"]
         values = []
-        for c in iterify(getprop(self.provider_data["sourceResource"], prop,
-                                 True)):
+        for c in iterify(getprop(sr, prop, True)):
             if subProp:
                 values.append(getprop(c, subProp, True))
-            else:
+            elif c:
                 values.append(c)
+
         return self.dropEmpty(values)
 
     def map_collection(self):
         collections = []
         titles = self.map_field("collection", "name")
+
         for title in titles:
             collections.append({
                 "title": title,
                 "description": ""
             })
-        if collections:
-            self.update_source_resource({"collection": collections})
 
-    def map_contributor(self):
+        if collections:
+            self.overwrite_source_resource({"collection": collections})
+
+    def update_contributor(self):
         v = self.map_field("contributor", "name")
         if v:
-            self.update_source_resource({"contributor": v})
+            self.overwrite_source_resource({"contributor": v})
 
-    def map_creator(self):
+    def update_creator(self):
         v = self.map_field("creator", "name")
         if v:
-            self.update_source_resource({"creator": v})
+            self.overwrite_source_resource({"creator": v})
 
-    def map_format(self):
+    def update_format(self):
         genres = self.map_field("genre", "name")
         formats = self.map_field("format")
 
         if formats and genres:
-            self.update_source_resource({"format": genres + formats})
+            self.overwrite_source_resource({"format": genres + formats})
         elif genres:
-            self.update_source_resource({"format": genres})
+            self.overwrite_source_resource({"format": genres})
         elif formats:
-            self.update_source_resource({"format": formats})
+            self.overwrite_source_resource({"format": formats})
 
-    def map_language(self):
+    def update_language(self):
         l = self.map_field("language", "name")
         l = l + self.map_field("language", "iso_639_3")
         if l:
-            self.update_source_resource({"language": l})
+            self.overwrite_source_resource({"language": l})
 
-    def map_rights(self):
+    def update_rights(self):
         rights = self.map_field("rights", "text")
         edmRights = self.map_field("rights", "@id")
 
         if rights:
-            self.update_source_resource({"rights": rights})
+            self.overwrite_source_resource({"rights": rights})
         if edmRights:
             self.mapped_data.update({"rights": edmRights[0]})
 
-    def map_spatial(self):
+    def update_spatial(self):
         places = self.map_field("spatial")
         myPlaces = []
         for place in places:
@@ -75,12 +79,22 @@ class FloridaMapper(MAPV3JSONMapper):
             })
 
         if places:
-            self.update_source_resource({"spatial": myPlaces})
+            self.overwrite_source_resource({"spatial": myPlaces})
 
-    def map_subject(self):
+    def update_subject(self):
         subjects = self.map_field("subject", "name")
+
         if subjects:
-            self.update_source_resource({"subject": subjects})
+            self.overwrite_source_resource({"subject": subjects})
+
+    def update_mapped_fields(self):
+        self.update_contributor()
+        self.update_creator()
+        self.update_format()
+        self.update_language()
+        self.update_rights()
+        self.update_spatial()
+        self.update_subject()
 
     def dropEmpty(self, l):
         return filter(None, l)

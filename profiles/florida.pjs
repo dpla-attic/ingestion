@@ -12,7 +12,17 @@
     ],
     "enrichments_item": [
         "/select-id?prop=sourceResource%2Fidentifier",
-        "/dpla_mapper?mapper_type=florida"
+        "/dpla_mapper?mapper_type=florida",
+        "/strip_html",
+        "/set_context",
+        "/cleanup_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_language",
+        "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Florida"
     ],
     "sets": "NotSupported",
     "thresholds": {

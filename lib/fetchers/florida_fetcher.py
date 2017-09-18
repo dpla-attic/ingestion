@@ -21,7 +21,7 @@ class FloridaFetcher(FileFetcher):
             for record in jsonContent:
                 try:
                     # TODO confirm this is correct construction of the _id prop
-                    record["origianlRecord"] = str(record)
+                    record["originalRecord"] = str(record)
                     record["_id"] = record["sourceResource"]["identifier"]
                 except Exception as e:
                     # Collect error messages and exclude records with no
