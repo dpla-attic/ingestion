@@ -1,7 +1,8 @@
+from dplaingestion.mappers.mapper import Mapper
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import getprop
-from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
 from akara import logger
+from dplaingestion.mappers.mapv3_json_mapper import MAPV3JSONMapper
 
 
 class FloridaMapper(MAPV3JSONMapper):
@@ -64,7 +65,7 @@ class FloridaMapper(MAPV3JSONMapper):
         edmRights = self.map_field("rights", "@id")
 
         if rights:
-            self.overwrite_source_resource({"rights": rights})
+            self.overwrite_source_resource({"rights": rights[0]})
         if edmRights:
             self.mapped_data.update({"rights": edmRights[0]})
 
@@ -94,7 +95,8 @@ class FloridaMapper(MAPV3JSONMapper):
         self.update_language()
         self.update_rights()
         self.update_spatial()
-        self.update_subject()
+        # Mapping not required.
+        # self.update_subject()
 
     def dropEmpty(self, l):
         return filter(None, l)
