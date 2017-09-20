@@ -1,4 +1,6 @@
 import itertools as it
+
+from dplaingestion.fetchers.fetcher import XML_PARSE
 from dplaingestion.fetchers.file_fetcher import FileFetcher
 
 
