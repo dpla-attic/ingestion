@@ -22,7 +22,6 @@
         "/enrich_earliest_date",
         "/enrich-subject",
         "/enrich_date",
-        "/enrich-type",
         "/enrich-format",
         "/enrich_location",
         "/set_prop?prop=sourceResource%2FstateLocatedIn&value=Montana",

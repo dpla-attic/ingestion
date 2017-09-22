@@ -230,10 +230,17 @@ class MontanaMapper(OAIMODSMapper):
     def map_type(self):
         """<mods:typeofresource>"""
         prop = self.root_key + "typeOfResource"
+        # Used to map DCMI type terms because the type enrichment is to tightly
+        # coupled to be easily changed.
+        type_mapping = {"still image": "image",
+                        "text": "text",
+                        "sound recording": "sound"}
         types = []
 
         for t in iterify(getprop(self.provider_data, prop, True)):
-            types.append(textnode(t))
+            enriched_type = getprop(type_mapping, textnode(t), True)
+            if enriched_type:
+                types.append(enriched_type)
 
         if types:
             self.update_source_resource({"type": types})
