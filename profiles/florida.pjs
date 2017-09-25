@@ -1,18 +1,29 @@
 {
     "name": "florida",
     "type": "florida",
-    "endpoint_url": "file:/v1/provider-data/florida/",
+    "endpoint_url": "file:/v1/provider-data/",
     "contributor": {
         "@id": "http://dp.la/api/contributor/florida",
-        "name": ""
+        "name": "Sunshine State Digital Network"
     },
     "enrichments_coll": [
-        "/set_context",
-        "/validate_mapv3"
+        "/set_context"
     ],
     "enrichments_item": [
-        "/select-id?prop=identifier",
-        "/dpla_mapper?mapper_type=florida"
+        "/select-id?prop=isShownAt",
+        "/dpla_mapper?mapper_type=florida",
+        "/strip_html",
+        "/capitalize_value",
+        "/set_context",
+        "/cleanup_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/enrich_language",
+        "/geocode"
     ],
     "thresholds": {
         "added": 5000,
