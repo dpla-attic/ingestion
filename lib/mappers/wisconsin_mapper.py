@@ -79,7 +79,8 @@ class WIMapper(QDCMapper):
                 self.update_source_resource({"relation": relation})
 
     def map_rights(self):
-        """//dc:rights or //dct:accessRights -> .sourceResource.rights
+        """//dc:rights and //dct:accessRights abd //dct:rightsHolder ->
+        .sourceResource.rights
         (required property)
         """
         rights = []
@@ -88,6 +89,13 @@ class WIMapper(QDCMapper):
         self.extend_collection(rights, 'rightsHolder')
         if rights:
             self.update_source_resource({'rights': rights})
+
+    def map_edm_rights(self):
+        """//edm:rights -> .rights"""
+        rights = []
+        self.extend_collection(rights, 'edmRights')
+        if rights:
+            self.mapped_data.update({'rights': rights[0]})
 
     def map_subject(self):
         subjects = []
