@@ -130,7 +130,10 @@
         "utk_smhc",
         "volvoices",
         "utk_ekcd",
-        "utk_vpmoore"
+        "utk_vpmoore",
+        "utc_p16877coll22_qdc",
+        "utk_scopes",
+        "utk_roth"
     ],
     "enrichments_coll": [
         "/set_context",
