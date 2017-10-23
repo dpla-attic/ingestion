@@ -292,7 +292,9 @@
         "vassar_earlyimages",
         "vassar_parrish",
         "vassar_burroughs",
-        "vassar_diaries"
+        "vassar_diaries",
+        "wnyc",
+        "hamBeiMss"
     ],
     "enrichments_coll": [
         "/set_context",
