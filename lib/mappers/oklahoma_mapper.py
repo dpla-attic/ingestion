@@ -14,17 +14,18 @@ class OklahomaMapper(OAIMODSMapper):
     def map_title(self):
         prop = self.root_key + "titleInfo"
         allTitles = []
+        altTitles, titles = [], []
 
         for ti in iterify(getprop(self.provider_data, prop, True)):
             for t in iterify(getprop(ti, "title", True)):
-                if isinstance(t, dict):
-                    allTitles.append(t)
-
-        altTitles, titles = [], []
+                allTitles.append(t)
         for t in allTitles:
-            tType = getprop(t, "type", True)
-            if tType and tType == "alternative":
-                altTitles.append(textnode(t))
+            if isinstance(t, dict):
+                tType = getprop(t, "type", True)
+                if tType and tType == "alternative":
+                    altTitles.append(textnode(t))
+                else:
+                    titles.append(textnode(t))
             else:
                 titles.append(textnode(t))
         if titles:
@@ -95,15 +96,13 @@ class OklahomaMapper(OAIMODSMapper):
         if extents:
             self.update_source_resource({"extent": extents})
 
-    # <mods:genre> AND <mods:physicialDescription><mods:note>
     def map_format(self):
-        props = [self.root_key + "physicalDescription/note",
-                 self.root_key + "genre"]
         formats = []
-
-        for g in iterify(getprop(self.provider_data, "genre", True)):
+        for g in iterify(getprop(self.provider_data, self.root_key+"genre",
+                                 True)):
             formats.append(textnode(g))
-        for d in iterify(getprop(self.provider_data, "physicalDescription",True)):
+        for d in iterify(getprop(self.provider_data,
+                                 self.root_key + "physicalDescription", True)):
             for n in iterify(getprop(d, "note", True)):
                 formats.append(textnode(n))
         if formats:
@@ -180,7 +179,7 @@ class OklahomaMapper(OAIMODSMapper):
         urls = []
         for i in iterify(getprop(self.provider_data, prop, True)):
             rType = getprop(i, "type", True)
-            rLink = getprop(i, "xlinkhref", True)
+            rLink = getprop(i, "xlink:href", True)
             if rType and rLink and rType == "use and reproduction":
                 urls.append(textnode(i))
         if urls:
@@ -215,7 +214,7 @@ class OklahomaMapper(OAIMODSMapper):
             for d in iterify(getprop(oi, "temporal", True)):
                 temporal.append(textnode(d))
         if temporal:
-            self.update_source_resource({"subject": temporal})
+            self.update_source_resource({"temporal": temporal})
 
     def map_type(self):
         prop = self.root_key + "typeOfResource"
