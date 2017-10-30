@@ -31,7 +31,7 @@ def setup():
     search_for_col = {'collection:col1': search_col1,
                       'collection:col2': search_col2}
 
-    def _search_items(s, request_kwargs):
+    def _search_items(s, max_retries, request_kwargs):
         # See internetarchive.search_items() call in IAFetcher.fetch_all_data()
         return search_for_col[s]
 
@@ -53,7 +53,7 @@ def test_fail_sets_arg():
 
 @with_setup(setup)
 def test_adds_underscore_id():
-    """Adds the `_id' field with the right formatting to item records"""
+    """Adds the `_id' field with to item records"""
     # Collection records get the _id added in
     # Fetcher.create_collection_records() and are outside of the domain of this
     # test.
@@ -61,7 +61,7 @@ def test_adds_underscore_id():
         for record in batch['records']:
             if record.get('ingestType') != 'collection':
                 identifier = record['metadata']['identifier']
-                assert(record['_id'] == "ia--%s" % identifier)
+                assert(record['_id'] == identifier)
 
 @with_setup(setup)
 def test_adds_collection_to_item():
