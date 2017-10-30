@@ -229,9 +229,9 @@ class OklahomaMapper(OAIMODSMapper):
                 av = getprop(v, attribute, True)
                 if av and attrValue and av == attrValue:
                     values.append(textnode(v))
-            else:
+            # Only extract text value if not checking attributes
+            elif attribute is None:
                 values.append(textnode(v))
-
         return filter(None, values)
 
     def map_multiple_fields(self):
