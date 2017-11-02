@@ -15,6 +15,7 @@
         "/dpla_mapper?mapper_type=oklahoma",
         "/strip_html",
         "/set_context",
+        "/shred?prop=sourceResource%2Fsubject&delim=;",
         "/cleanup_value",
         "/capitalize_value",
         "/enrich_earliest_date",

@@ -34,33 +34,49 @@ class OklahomaMapper(OAIMODSMapper):
             self.update_source_resource({"alternative": altTitles})
 
     def map_collection(self):
-        ret_dict = {"collection": getprop(self.provider_data, "collection")}
-
+        ret_dict = []
         prop = self.root_key + "relatedItem"
 
         if exists(self.provider_data, prop):
-            related_items = iterify(getprop(self.provider_data, prop))
-            host_types = [item for item in related_items if
-                          item.get("type") == "host"]
-            if host_types:
-                title = getprop(host_types[-1], "titleInfo/title", True)
+            related_items = iterify(getprop(self.provider_data, prop, True))
+            host_types = [item for item in related_items
+                          if item.get("type") == "host"]
+            for ht in host_types:
+                title = getprop(ht, "titleInfo/title", True)
                 if title:
-                    ret_dict = {
-                        "collection": {
-                            "title": title, "@id": "",
-                            "id": "", "description": ""
-                        }
-                    }
+                    ret_dict.append({
+                        "title": title,
+                        "@id": "",
+                        "id": "",
+                        "description": ""
+                    })
 
-        if ret_dict["collection"]:
-            self.update_source_resource(ret_dict)
+        if ret_dict:
+            self.update_source_resource({"collection": ret_dict})
+
+    def map_contributor(self):
+        prop = self.root_key + "name"
+        contributors = []
+        for oi in iterify(getprop(self.provider_data, prop, True)):
+            # when <role><roleTerm> DOES equal "contributor"
+            role = getprop(oi, "role/roleTerm", True)
+            if role and textnode(role) == "contributor":
+                for d in iterify(getprop(oi, "namePart", True)):
+                    contributors.append(textnode(d))
+        if contributors:
+            self.update_source_resource({"contributor": contributors})
 
     def map_creator(self):
         prop = self.root_key + "name"
         creators = []
         for oi in iterify(getprop(self.provider_data, prop, True)):
-            for d in iterify(getprop(oi, "namePart", True)):
-                creators.append(textnode(d))
+            # when <role><roleTerm> DOES NOT equal "contributor"
+            role = getprop(oi, "role/roleTerm", True)
+            if role and textnode(role) == "contributor":
+                continue
+            else:
+                for d in iterify(getprop(oi, "namePart", True)):
+                    creators.append(textnode(d))
         if creators:
             self.update_source_resource({"creator": creators})
 
