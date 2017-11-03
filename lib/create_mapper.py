@@ -136,6 +136,10 @@ def create_mapper(mapper_type, data):
         from dplaingestion.mappers.montana_mapper import MontanaMapper
         return MontanaMapper(data)
 
+    def _create_florida_mapper(data):
+        from dplaingestion.mappers.florida import FloridaMapper
+        return FloridaMapper(data)
+
     mappers = {
         'ia':           lambda d: _create_ia_mapper(d),
         'bpl':          lambda d: _create_bpl_mapper(d),
@@ -169,6 +173,7 @@ def create_mapper(mapper_type, data):
         'tn':           lambda d: _create_tn_mapper(d),
         'maine':        lambda d: _create_me_mapper(d),
         'maryland':     lambda d: _create_md_mapper(d),
+        'florida':      lambda d: _create_florida_mapper(d),
         'montana':      lambda d: _create_montana_mapper(d)
     }
 
