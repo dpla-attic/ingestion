@@ -1,0 +1,35 @@
+{
+    "name": "sd",
+    "type": "mdl",
+    "endpoint_url": "http://hub-client.lib.umn.edu/api/v1/records",
+    "endpoint_url_params": {
+        "q": "import_job_id_isi:71",
+        "start": 0
+    },
+    "fetcher_threads": 4,
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/sd",
+        "name": "South Dakota Digital Library"
+    },
+    "sets": "NotSupported",
+    "enrichments_coll": [
+        "/set_context",
+        "/validate_mapv3"
+    ],
+    "enrichments_item": [
+        "/select-id?prop=record%2FisShownAt",
+        "/dpla_mapper?mapper_type=mdl_json",
+        "/select-id?prop=isShownAt",
+        "/set_context",
+        "/cleanup_value",
+        "/cleanup_value?prop=sourceResource%2Fsubject%2Fname",
+        "/enrich-type",
+        "/enrich-format",
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
+    ],
+    "thresholds": {
+        "added": 5000,
+        "changed": 1000,
+        "deleted": 1000
+    }
+}
