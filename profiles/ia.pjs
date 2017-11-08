@@ -58,7 +58,7 @@
         "/validate_mapv3"
     ],
     "enrichments_item": [
-        "/select-id?prop=_id",
+        "/select-id?prop=_id&use_source=no",
         "/dpla_mapper?mapper_type=ia",
         "/strip_html",
         "/set_context",
