@@ -56,11 +56,18 @@ class FloridaMapper(Mapper):
         self.source_resource_prop_to_prop("alternative")
 
     def map_collection(self):
-        collection_names = iterify(getprop(self.provider_data, "sourceResource/collection", True))
-        if collection_names:
+        collections = iterify(getprop(self.provider_data, "sourceResource/collection", True))
+        if collections:
             collection_dicts = []
-            for name in collection_names:
-                collection_dicts.append({"name": name})
+            for collection in collections:
+                name = ""
+                if type(collection) == dict and "name" in collection:
+                    name = collection["name"]
+                elif isinstance(collection, basestring):
+                    name = collection
+                if name:
+                    logger.error("COLLECTION NAME: " + name)
+                    collection_dicts.append({"name": name})
             self.update_source_resource({"collection": collection_dicts})
 
     def map_contributor(self):
