@@ -7,8 +7,7 @@
         "name": "HathiTrust"
     }, 
     "enrichments_coll": [
-        "/set_context",
-        "/validate_mapv3"
+        "/set_context"
     ], 
     "enrichments_item": [
         "/select-id?prop=_id",
