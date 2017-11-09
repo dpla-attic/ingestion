@@ -223,5 +223,12 @@ class IAMapper(Mapper):
 
             self.update_source_resource(out)
 
+    def map_ia_provider(self):
+        self.mapped_data.update({"provider": {
+                "@id": "http://dp.la/api/contributor/internet_archive",
+                "name": "Internet Archive"
+            }})
+
     def map_multiple_fields(self):
         self.map_marc()
+        self.map_ia_provider()
