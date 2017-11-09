@@ -61,7 +61,7 @@ class FloridaMapper(Mapper):
             collection_dicts = []
             for collection in collections:
                 name = ""
-                if type(collection) == dict and "name" in collection:
+                if isinstance(collection, dict)  and "name" in collection:
                     name = collection["name"]
                 elif isinstance(collection, basestring):
                     name = collection
