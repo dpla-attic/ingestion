@@ -7,8 +7,7 @@
         "name": "Smithsonian Institution"
     },
     "enrichments_coll": [
-        "/set_context",
-        "/validate_mapv3"
+        "/set_context"
     ],
     "enrichments_item": [
         "/edan_select_id",
