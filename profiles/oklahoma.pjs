@@ -1,0 +1,35 @@
+{
+    "name": "oklahoma",
+    "type": "oai_verbs",
+    "metadata_prefix": "mods",
+    "endpoint_url": "https://repox.repository.ou.edu/OAIHandler",
+    "contributor": {
+        "@id": "http://dp.la/api/contributor/oklahoma",
+        "name": "OKHub"
+    }, 
+    "enrichments_coll": [
+        "/set_context"    
+    ], 
+    "enrichments_item": [
+        "/select-id?prop=id",
+        "/dpla_mapper?mapper_type=oklahoma",
+        "/strip_html",
+        "/set_context",
+        "/shred?prop=sourceResource%2Fsubject&delim=;",
+        "/cleanup_value",
+        "/capitalize_value",
+        "/enrich_earliest_date",
+        "/enrich-subject",
+        "/enrich_date",
+        "/enrich-type",
+        "/enrich-format",
+        "/enrich_location",
+        "/geocode",
+        "/enrich_language"
+    ],
+    "thresholds": {                                                             
+        "added": 5000,                                                          
+        "changed": 1000,                                                        
+        "deleted": 1000                                                         
+    }
+}
