@@ -45,7 +45,8 @@
         "p15799coll104",
         "p15799coll81",
         "p15799coll69",
-        "p15799coll22"
+        "p15799coll22",
+        "p15799coll80"
     ], 
     "enrichments_coll": [
         "/set_context"
