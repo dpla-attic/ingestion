@@ -8,6 +8,12 @@
         "name": "Empire State Digital Network"
     },
     "sets": [
+        "hamBeiMss",
+        "p16694coll69",
+        "p16694coll52",
+        "p16694coll96",
+        "p16694coll8",
+        "wnyc",
         "sccc",
         "jdc",
         "bhs",
@@ -292,9 +298,7 @@
         "vassar_earlyimages",
         "vassar_parrish",
         "vassar_burroughs",
-        "vassar_diaries",
-        "wnyc",
-        "hamBeiMss"
+        "vassar_diaries"
     ],
     "enrichments_coll": [
         "/set_context"
