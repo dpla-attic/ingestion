@@ -145,7 +145,7 @@ class EsdnMapper(OAIMODSMapper):
             for k in dates.keys():
                 if dates.get(k):
                     dates[k] = dates[k][0]
-                    if 'T' in dates.get(k):
+                    if dates.get(k) and 'T' in dates.get(k):
                         date = dates[k]
                         dates[k] = date[:date.index('T')]
 
@@ -156,6 +156,10 @@ class EsdnMapper(OAIMODSMapper):
                                        dates.get("late_date")
             elif dates.get("early_date"):
                 mapped_props["date"] = dates.get("early_date")
+
+            # Remove None values
+            mapped_props["publisher"] = filter(None, mapped_props["publisher"])
+            mapped_props["date"] = filter(None, mapped_props["date"])
 
             self.update_source_resource(self.clean_dict(mapped_props))
 
@@ -258,7 +262,7 @@ class EsdnMapper(OAIMODSMapper):
                 lang = lang.get("#text")
 
         if lang:
-            self.update_source_resource({"language": lang})
+            self.update_source_resource({"language": filter(None,lang)})
 
     def map_relation(self):
         prop = self.root_key + "relatedItem/titleInfo/title"
@@ -288,9 +292,9 @@ class EsdnMapper(OAIMODSMapper):
                 else:
                     rights.append(right)
         if rights:
-            self.update_source_resource({"rights": rights})
+            self.update_source_resource({"rights": filter(None, rights)})
         if edm_rights:
-            self.mapped_data.update({"rights": edm_rights})
+            self.mapped_data.update({"rights": filter(None, edm_rights)})
 
     def map_edm_rights(self):
         # defer to map_rights for edm:rights implementation
