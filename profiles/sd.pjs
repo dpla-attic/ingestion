@@ -8,15 +8,15 @@
     },
     "fetcher_threads": 4,
     "contributor": {
-        "@id": "http://dp.la/api/contributor/sd",
-        "name": "South Dakota Digital Library"
+        "@id": "http://dp.la/api/contributor/mdl",
+        "name": "Minnesota Digital Library"
     },
     "sets": "NotSupported",
     "enrichments_coll": [
         "/set_context"
     ],
     "enrichments_item": [
-        "/select-id?prop=record%2FisShownAt",
+        "/select-id?prop=record%2Fidentifier",
         "/dpla_mapper?mapper_type=mdl_json",
         "/select-id?prop=isShownAt",
         "/set_context",
@@ -24,7 +24,8 @@
         "/cleanup_value?prop=sourceResource%2Fsubject%2Fname",
         "/enrich-type",
         "/enrich-format",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
+        "/set_prop?prop=intermediateProvider&value=South%20Dakota%20Digital%20Library"
     ],
     "thresholds": {
         "added": 5000,

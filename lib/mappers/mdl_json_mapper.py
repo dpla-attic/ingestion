@@ -56,11 +56,9 @@ class MDLJSONMapper(MAPV3JSONMapper):
             self.update_source_resource({"format": orig_format})
 
     def update_rights(self):
-        orig_rights = None
-        if not getprop(self.mapped_data, "sourceResource/rights", True):
-            orig_rights = getprop(self.provider_data, "record/rights", True)
-        if orig_rights:
-            self.update_source_resource({"rights": orig_rights})
+        edm_rights = getprop(self.provider_data, "record/rights", True)
+        if edm_rights:
+            self.mapped_data.update({"rights": edm_rights})
 
     def update_type(self):
         object_id = None
