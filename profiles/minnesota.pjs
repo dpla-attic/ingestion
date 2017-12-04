@@ -3,8 +3,9 @@
     "type": "mdl",
     "endpoint_url": "http://hub-client.lib.umn.edu/api/v1/records",
     "endpoint_url_params": {
-        "q": "tags_ssim:dpla",
-        "start": 0
+        "q": "tags_ssim:dpla AND -import_job_name_ssi:\"Digital Library of South Dakota\"",
+        "start": 0,
+        "per_page": 100
     },
     "fetcher_threads": 4,
     "contributor": {
