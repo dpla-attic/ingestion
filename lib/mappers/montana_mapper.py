@@ -73,7 +73,7 @@ class MontanaMapper(OAIMODSMapper):
                 data_provider.append(textnode(r))
 
         if data_provider:
-            self.mapped_data.update({"dataProvider": data_provider})
+            self.mapped_data.update({"dataProvider": data_provider[0]})
 
     def map_date(self):
         """<mods:originInfo><mods:dateCreated>"""
