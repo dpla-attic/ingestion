@@ -219,7 +219,7 @@ class TNMapper(MODSMapper):
         if exists(self.provider_data, path):
             for dp in iterify(getprop(self.provider_data, path)):
                 data_provider.append(textnode(dp))
-            self.mapped_data.update({"dataProvider": data_provider})
+            self.mapped_data.update({"dataProvider": data_provider[0]})
 
     def map_is_shown_at(self):
         path = "/metadata/mods/location"
