@@ -25,8 +25,7 @@
         "/cleanup_value?prop=sourceResource%2Fsubject%2Fname",
         "/enrich-type",
         "/enrich-format",
-        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True",
-        "/set_prop?prop=intermediateProvider&value=South%20Dakota%20Digital%20Library"
+        "/copy_prop?prop=provider%2Fname&to_prop=dataProvider&skip_if_exists=True"
     ],
     "thresholds": {
         "added": 5000,
