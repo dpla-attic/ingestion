@@ -58,15 +58,15 @@ def write_jsonl(enrich_dir, output_filename):
                 file_docs = json.loads(input_file.read())
                 for key in file_docs:
                     doc = file_docs[key]
-                    f.write(unicode(
-                        json.dumps(
-                            {'_type': 'item',
-                             '_id': doc['_id'],
-                            '_source': doc
-                            },
-                            ensure_ascii=False)))
-
-                    total_items += 1
+                    if doc['ingestType'] == 'item':
+                        f.write(unicode(
+                            json.dumps(
+                                {'_type': 'item',
+                                 '_id': doc['_id'],
+                                '_source': doc
+                                },
+                                ensure_ascii=False)))
+                        total_items += 1
 
             print >> sys.stderr, "Read file %s" % filename
     return total_items
