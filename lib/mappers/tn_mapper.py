@@ -195,7 +195,8 @@ class TNMapper(MODSMapper):
         if exists(self.provider_data, path):
             for t in iterify(getprop(self.provider_data, path)):
                 if exists(t, "title") and not exists(t, "title/type"):
-                    titles.append(textnode(getprop(t, "title")))
+                    for title in iterify(getprop(t, "title")):
+                        titles.append(textnode(title))
             if titles:
                 self.update_source_resource({"title": titles})
 
