@@ -5,7 +5,7 @@
     "endpoint_url": "https://dpla.library.wisc.edu/provider",
     "sets": "NotSupported",
     "contributor": {
-        "@id": "https://dp.la/api/contributor/wisconsin",
+        "@id": "http://dp.la/api/contributor/wisconsin",
         "name": "Recollection Wisconsin"
     },
     "enrichments_coll": [
