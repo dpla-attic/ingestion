@@ -4,7 +4,7 @@
     "endpoint_url": "http://digitallibrary.usc.edu/oai/oai.php",
     "contributor": {
         "@id": "http://dp.la/api/contributor/usc", 
-        "name": "University of Southern California. Libraries"
+            "name": "University of Southern California Libraries"
     }, 
     "sets": [
         "p15799coll8",
