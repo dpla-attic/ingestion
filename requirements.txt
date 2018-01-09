@@ -20,3 +20,4 @@ pyrax
 avro
 mock
 git+git://github.com/jjjake/internetarchive@master#egg=internetarchive
+boto3
