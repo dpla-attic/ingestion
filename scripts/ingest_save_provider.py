@@ -12,6 +12,7 @@ from dplaingestion.couch import Couch
 from dplaingestion.utilities import iso_utc_with_tz
 
 import save_s3
+import check_ingestion_counts
 
 
 def define_arguments():
@@ -56,6 +57,11 @@ def main(argv):
     except:
         print "Error updating ingestion document " + ingestion_doc["_id"]
         return -1
+
+    resp = check_ingestion_counts.main([None, ingestion_doc_id])
+
+    if not resp == 0:
+        print "Error checking counts"
 
     print "Ingestion complete!"
 
