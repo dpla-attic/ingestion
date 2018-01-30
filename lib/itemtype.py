@@ -23,13 +23,23 @@ def type_for_strings_and_mappings(string_map_combos):
     Given pairs of (list of strings, list of mapping tuples), try to find a
     suitable item type.
     """
+
+    typed = []
     for strings, mappings in string_map_combos:
         # Try each of our strings to see if a keyword falls within it
         for s in strings:
             t = _type_for_keyword(s, mappings)
-            if t:
-                return t
-    raise NoTypeError
+            if isinstance(t, list):
+                for i in t:
+                    typed.append(i)
+            else:
+                typed.append(t)
+
+    if typed:
+        # Gets distinct values
+        return list(set(typed))
+    else:
+        raise NoTypeError
 
 def rejects(string_map_combos):
     """rejects([(list, list_of_tuples), ...])
