@@ -35,7 +35,7 @@ def type_for_strings_and_mappings(string_map_combos):
             else:
                 typed.append(t)
 
-    if typed:
+    if len(typed) > 0:
         # Gets distinct values
         return list(set(typed))
     else:
