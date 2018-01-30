@@ -53,7 +53,7 @@ def test_type_for_phys_keyword():
     EXPECTED = {
         "id": "123",
         "sourceResource": {
-            "type": "image",
+            "type": ["image"],
             "format": "Holiday Card"
         }
     }
@@ -71,7 +71,7 @@ def test_type_for_type_keyword():
     EXPECTED = {
         "id": "123",
         "sourceResource": {
-            "type": "image"
+            "type": ["image"]
         }
     }
     resp, content = _get_server_response(json.dumps(INPUT))
@@ -88,7 +88,7 @@ def test_type_for_type_keyword2():
     EXPECTED = {
         "id": "123",
         "sourceResource": {
-            "type": ["image", "text"]
+            u"type": [u"text", u"image"]
         }
     }
     resp, content = _get_server_response(json.dumps(INPUT))
@@ -103,14 +103,14 @@ def test_type_set_format():
     """
     url = server() + "enrich-type?send_rejects_to_format=true"
     INPUT = {
-        "sourceResource": {
-            "type": "digital photograph"
+        u"sourceResource": {
+            u"type": u"digital photograph"
         }
     }
     EXPECTED = {
-        "sourceResource": {
-            "type": "image",
-            "format": ["digital photograph"]
+        u"sourceResource": {
+            u"type": [u"image"],
+            u"format": [u"digital photograph"]
         }
     }
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
@@ -123,7 +123,7 @@ def test_type_set_format():
     }
     EXPECTED = {
         "sourceResource": {
-            "type": "text"
+            "type": ["text"]
         }
     }
     resp, content = H.request(url, "POST", body=json.dumps(INPUT))
