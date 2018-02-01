@@ -17,6 +17,7 @@ def _type_for_keyword(s, mappings):
             return pair[1]
     return None
 
+
 def type_for_strings_and_mappings(string_map_combos):
     """_type_for_strings_and_mappings([(list, list_of_tuples), ...])
     
@@ -35,11 +36,15 @@ def type_for_strings_and_mappings(string_map_combos):
             else:
                 typed.append(t)
 
+    # Filter None values out of list
+    typed = filter(None, typed)
+    
     if len(typed) > 0:
         # Gets distinct values
         return list(set(typed))
     else:
         raise NoTypeError
+
 
 def rejects(string_map_combos):
     """rejects([(list, list_of_tuples), ...])
