@@ -21,20 +21,40 @@ class IAFetcher(Fetcher):
                             "'%s' was provided." % sets)
         self.create_collection_records()
         self.reset_response()
+
+        # Config suggested by IA folks
+        from internetarchive import get_session
+        s = get_session(config=dict(general=dict(secure=False)))
+
+
         for token in self.collections.iterkeys():
             self.response['records'].append(self.collections[token])
             i = 1
-            for item in internetarchive \
-                        .search_items("collection:%s" % token,
+            for item in s.search_items("collection:%s" % token,
                                       max_retries = Retry(connect=15,
                                                           read=10,
                                                           redirect=10,
                                                           backoff_factor=6),
+                                                          fields=[ "creator",
+                                                                    "date",
+                                                                    "description",
+                                                                    "language",
+                                                                    "publisher",
+                                                                    "subject",
+                                                                    "possible-copyright-status",
+                                                                    "mediatype",
+                                                                    "identifier",
+                                                                    "call_number",
+                                                                    "title",
+                                                                    "volume",
+                                                                    "contributor",
+                                                                    "identifier-access",
+                                                                    "record/datafield"],
                                       request_kwargs={'timeout': 60}) \
-                        .iter_as_items():
+                        .iter_as_results():
                 try:
-                    md = item.item_metadata
-                    md['_id'] = md['metadata']['identifier']
+                    md = item
+                    md['_id'] = md['identifier']
                     md['collection'] = self.source_resource_collection(token)
                     self.response['records'].append(md)
                     i += 1
