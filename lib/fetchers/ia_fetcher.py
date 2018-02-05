@@ -26,53 +26,56 @@ class IAFetcher(Fetcher):
         from internetarchive import get_session
         s = get_session(config=dict(general=dict(secure=False)))
 
-
         for token in self.collections.iterkeys():
             self.response['records'].append(self.collections[token])
             i = 1
-            for item in s.search_items("collection:%s" % token,
-                                      max_retries = Retry(connect=15,
-                                                          read=10,
-                                                          redirect=10,
-                                                          backoff_factor=6),
-                                                          fields=[ "creator",
-                                                                    "date",
-                                                                    "description",
-                                                                    "language",
-                                                                    "publisher",
-                                                                    "subject",
-                                                                    "possible-copyright-status",
-                                                                    "mediatype",
-                                                                    "identifier",
-                                                                    "call_number",
-                                                                    "title",
-                                                                    "volume",
-                                                                    "contributor",
-                                                                    "identifier-access",
-                                                                    "record/datafield"],
-                                      request_kwargs={'timeout': 60}) \
+            try:
+                for item in s.search_items("collection:%s" % token,
+                                           max_retries=Retry(connect=15,
+                                                             read=10,
+                                                             redirect=10,
+                                                             backoff_factor=6),
+                                           fields=["creator",
+                                                   "date",
+                                                   "description",
+                                                   "language",
+                                                   "publisher",
+                                                   "subject",
+                                                   "possible-copyright-status",
+                                                   "mediatype",
+                                                   "identifier",
+                                                   "call_number",
+                                                   "title",
+                                                   "volume",
+                                                   "contributor",
+                                                   "identifier-access",
+                                                   "record/datafield"],
+                                           request_kwargs={'timeout': 60}) \
                         .iter_as_results():
-                try:
-                    md = item
-                    md['_id'] = md['identifier']
-                    md['collection'] = self.source_resource_collection(token)
-                    self.response['records'].append(md)
-                    i += 1
-                    if i >= self.batch_size:
-                        # ^^^ Should probably use `==' but being paranoid about
-                        # possible but unlikely batch_size of 1.
-                        yield self.response
-                        self.reset_response()
-                        i = 1
-                except Exception as e:
-                    tb = traceback.format_exc(5)
-                    msg = "In IA collection %s: %s" % (token, e)
-                    self.response['errors'].append(msg)
-                    logger.error("%s\n%s" % (msg, tb))
-            if len(self.response['records']):
-                # last yield of the collection
-                yield self.response
-                self.reset_response()
+                    try:
+                        md = item
+                        md['_id'] = md['identifier']
+                        md['collection'] = self.source_resource_collection(token)
+                        self.response['records'].append(md)
+                        i += 1
+                        if i >= self.batch_size:
+                            # ^^^ Should probably use `==' but being paranoid about
+                            # possible but unlikely batch_size of 1.
+                            yield self.response
+                            self.reset_response()
+                            i = 1
+                    except Exception as e:
+                        tb = traceback.format_exc(5)
+                        msg = "In IA collection %s: %s" % (token, e)
+                        self.response['errors'].append(msg)
+                        logger.error("%s\n%s" % (msg, tb))
+                if len(self.response['records']):
+                    # last yield of the collection
+                    yield self.response
+                    self.reset_response()
+            except Exception as e:
+                msg = "Error in %s. Error -- %s" % (token, e.message)
+                logger.error(msg)
 
     def source_resource_collection(self, token):
         """Return one collection dict suitable for sourceResource.collection
@@ -96,5 +99,5 @@ class IAFetcher(Fetcher):
             - EDANFetcher.add_collection_to_item_record()
         """
         exclusions = ('_id', 'ingestType')
-        return {k:v for k, v in self.collections.get(token, {}).items()
+        return {k: v for k, v in self.collections.get(token, {}).items()
                 if k not in exclusions}
