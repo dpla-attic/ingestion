@@ -65,7 +65,7 @@ def write_jsonl(enrich_dir, output_filename):
                                  '_id': doc['_id'],
                                 '_source': doc
                                 },
-                                ensure_ascii=False)))
+                                ensure_ascii=False) + "\n"))
                         total_items += 1
 
             print >> sys.stderr, "Read file %s" % filename
