@@ -48,8 +48,8 @@ class IAFetcher(Fetcher):
                                                    "title",
                                                    "volume",
                                                    "contributor",
-                                                   "identifier-access",
-                                                   "record/datafield"],
+                                                   "identifier-access"],
+                                                   # "record/datafield"],
                                            request_kwargs={'timeout': 60}) \
                         .iter_as_results():
                     try:
