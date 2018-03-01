@@ -2,13 +2,16 @@
     "name": "loc",
     "type": "loc",
     "endpoint_url": "https://www.loc.gov/collections/{0}",
-    "get_item_params": {"fo": "json"},
+    "get_item_params": {
+        "fo": "json",
+        "at": "item,resources"
+    },
     "endpoint_url_params": {
         "sp": 1,
         "fo": "json",
-        "c": 100
+        "c": 25
     },
-    "fetcher_threads": 8,
+    "fetcher_threads": 2,
     "sets": [
         "american-revolutionary-war-maps",
         "civil-war-maps",

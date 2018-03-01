@@ -2,8 +2,10 @@ import logging
 import time
 from urllib import urlencode
 
+import sys
 from dplaingestion.fetchers.absolute_url_fetcher import AbsoluteURLFetcher
 from dplaingestion.selector import exists, getprop
+from dplaingestion.utilities import iterify
 
 
 class LOCFetcher(AbsoluteURLFetcher):
@@ -14,6 +16,7 @@ class LOCFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):
         super(LOCFetcher, self).__init__(profile, uri_base, config_file)
         self.item_params = profile.get("get_item_params")
+        self.retry = []
         fname = "logs/error_loc_harvest_%s.log" % time.strftime("%Y%m%d-%H%M%S")
         logging.basicConfig(filename=fname,
                             level=logging.ERROR,
@@ -61,21 +64,33 @@ class LOCFetcher(AbsoluteURLFetcher):
             # a collection results page. If one does not exist the item cannot
             # be harvested. Every item is expected to have one and those that
             # do not *should* be reported to LoC
-            urls = [getprop(item, "aka", True),
-                    getprop(item, "id", True),
-                    getprop(item, "url", True)]
+            # FIXME Only the ID field needs to be checked. Confirm on call.
 
-            urls = set([item for sublist in urls for item in sublist])
-            urls = [s for s in urls if "www.loc.gov/item/" in s]
+            # See Requesting a specific item
+            # https://libraryofcongress.github.io/data-exploration/requests.html
 
-            if not urls:
-                self.logger.error("loc.gov/item/<id> missing for item #%s\n"
-                                  "In request: %s?%s"
-                                  % (count, self.endpoint_url.format(set_id),
-                                     urlencode(current_params)))
+            # BEGIN original version of harvester
+            # urls = getprop(item, "id", True)
+                    # getprop(item, "aka", True),
+                    # getprop(item, "url", True)]
+
+            # urls = set([item for sublist in urls for item in sublist])
+            # urls = [s for s in urls if "www.loc.gov/item/" in s]
+            # END original version
+            
+            record_url = getprop(item, "id", True)
+
+            # If the 'id' property is not present or if its value does not
+            # contain 'loc.gov/item' then it is not an item URL that can be
+            # harvested. Log the error and move on
+            if not record_url or "loc.gov/item" not in record_url:
+                self.logger.error("loc.gov/item/ value in 'id' property is "
+                                  "missing or invalid for item #%s\n"
+                                  "Request URL: %s?%s\n"
+                                  "item: %s" % (count, self.endpoint_url.format(set_id),
+                                                urlencode(current_params), item))
                 break
 
-            record_url = urls[0]
             error, content = self.request_content_from(url=record_url,
                                                        params=self.item_params)
             if error is None:
@@ -186,7 +201,7 @@ class LOCFetcher(AbsoluteURLFetcher):
         if self.retry:
             print >> sys.stderr, "Retrying %s fetches..." % \
                                  len(self.retry)
-            for error, records in self.retry_fetches():
+            for error, records in self.retry_fetchess():
                 self.response["errors"].extend(error)
                 self.response["records"].extend(records)
 
