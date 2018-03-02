@@ -26,11 +26,12 @@ def getprop(obj, path):
     return get_prop(obj, path, keyErrorAsNone=True)
 
 
-+XML_PARSE = lambda doc: xmltodict.parse(xmltodict_str(doc),
-                                         xml_attribs=True,
-                                         attr_prefix='',
-                                         force_cdata=False,
-                                         ignore_whitespace_cdata=True)
+XML_PARSE = lambda doc: xmltodict.parse(xmltodict_str(doc),
+                                        xml_attribs=True,
+                                        attr_prefix='',
+                                        force_cdata=False,
+                                        ignore_whitespace_cdata=True)
+
 
 def xmltodict_str(s):
     """Temporary kludge to get Getty to work"""
