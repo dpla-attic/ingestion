@@ -18,6 +18,7 @@ from dplaingestion.selector import getprop as get_prop
 from dplaingestion.utilities import iterify, couch_id_builder
 import requests
 from requests import RequestException
+from requests.adapters import HTTPAdapter
 import re
 
 
@@ -62,6 +63,8 @@ class Fetcher(object):
         # Set response
         self.response = {"errors": [], "records": []}
 
+        self.retries = profile.get("retries", 1)
+
     def reset_response(self):
         self.response = {"errors": [], "records": []}
 
@@ -77,7 +80,9 @@ class Fetcher(object):
         r = None
 
         try:
-            r = requests.get(url, params=params, headers=self.http_headers)
+            s = requests.Session()
+            s.mount(url, HTTPAdapter(max_retries=self.retries))
+            r = s.get(url, params=params, headers=self.http_headers)
             r.raise_for_status()
             resp = r.text
         except RequestException:

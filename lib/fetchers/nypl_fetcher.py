@@ -4,6 +4,8 @@ from dplaingestion.fetchers.fetcher import getprop
 from dplaingestion.fetchers.absolute_url_fetcher import AbsoluteURLFetcher
 from dplaingestion.fetchers.fetcher import XML_PARSE
 
+import threading
+
 class NYPLFetcher(AbsoluteURLFetcher):
     def __init__(self, profile, uri_base, config_file):
         super(NYPLFetcher, self).__init__(profile, uri_base, config_file)
