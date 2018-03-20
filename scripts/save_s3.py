@@ -49,12 +49,7 @@ def main(argv):
                  % (name, date_time, name)
 
         save_jsonl.main([None, args.ingestion_document_id, tmp_out])
-
         moveFile(tmp_out, s3_out)
-
-        print("Saved JSON to s3://dpla-master-dataset/%s" % s3_out)
-        return 0
-
     except Exception, e:
         traceback.print_exc(file=sys.stdout)
         print >> sys.stderr, "Caught error: %s" % e
@@ -63,13 +58,10 @@ def main(argv):
 
 def moveFile(src, dest):
     s3 = boto3.session.Session().client("s3")
-    try:
-        config = boto3.s3.transfer.TransferConfig()
-        transfer = boto3.s3.transfer.S3Transfer(client=s3,
-                                         config=config)
-        transfer.upload_file(src, 'dpla-master-dataset', dest)
-    except:
-        logger.error("Failed to upload %s" % src)
+    config = boto3.s3.transfer.TransferConfig()
+    transfer = boto3.s3.transfer.S3Transfer(client=s3, config=config)
+    transfer.upload_file(src, 'dpla-master-dataset', dest)
+    print("Saved JSON to s3://dpla-master-dataset/%s" % dest)
 
 
 def get_name(ingestion_document_id):
