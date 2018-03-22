@@ -42,22 +42,20 @@ class ILMapper(QDCMapper):
             self.update_source_resource({"format": format_medium})
 
     def map_is_shown_at(self, index=None):
-        url = None
+        url = []
         if exists(self.provider_data, "isShownAt"):
             for s in iterify(getprop(self.provider_data, "isShownAt")):
-                if "#text" in s:
-                    url = s["#text"]
-                    if url:
-                        self.mapped_data.update({"isShownAt": url})
+                url.append(textnode(s))
+        if url:
+            self.mapped_data.update({"isShownAt": url[0]})
 
     def map_object(self):
-        url = None
+        url = []
         if exists(self.provider_data, "preview"):
             for s in iterify(getprop(self.provider_data, "preview")):
-                if "#text" in s:
-                    url = s["#text"]
-                    if url:
-                        self.mapped_data.update({"object": url})
+                url.append(textnode(s))
+        if url:
+            self.mapped_data.update({"object": url[0]})
     
     def map_data_provider(self):
         dataProviders = []
