@@ -84,13 +84,12 @@ class MWDLMapper(PrimoMapper):
             self.update_source_resource({"isPartOf": "; ".join(ipo)})
  
     def map_title(self):
-        props = (self.root_key + "display/title")
+        prop = self.root_key + "display/title"
 
         title = []
-        for prop in props:
-            values = getprop(self.provider_data, prop, True)
-            if values:
-                [title.append(v) for v in iterify(values) if v not in title]
+        values = getprop(self.provider_data, prop, True)
+        if values:
+            [title.append(v) for v in iterify(values) if v not in title]
 
         if title:
             self.update_source_resource({"title": "; ".join(title)})
