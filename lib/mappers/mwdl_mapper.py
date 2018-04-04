@@ -2,6 +2,7 @@ from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.primo_mapper import PrimoMapper
 
+
 class MWDLMapper(PrimoMapper):
     def __init__(self, provider_data):
         super(MWDLMapper, self).__init__(provider_data)
@@ -11,8 +12,20 @@ class MWDLMapper(PrimoMapper):
                                "dlDisplay.do?vid=MWDL&afterPDS=true&docId="
 
     def map_date(self):
-        self._map_source_resource_prop("date",
-                                       self.root_key + "search/creationdate")
+        displayDateProp = self.root_key + "display/creationdate"
+        searchDateProp = self.root_key + "search/creationdate"
+
+        dates = []
+        searchValues = getprop(self.provider_data, searchDateProp, True)
+        displayValues = getprop(self.provider_data, displayDateProp, True)
+
+        if searchValues:
+            [dates.append(v) for v in iterify(searchValues) if v not in dates]
+        elif displayValues:
+            [dates.append(v) for v in iterify(displayValues) if v not in dates]
+
+        if dates:
+            self.update_source_resource({"date": dates})
 
     def map_description(self):
         self._map_source_resource_prop("description",
@@ -71,14 +84,12 @@ class MWDLMapper(PrimoMapper):
             self.update_source_resource({"isPartOf": "; ".join(ipo)})
  
     def map_title(self):
-        props = (self.root_key + "display/title",
-                 self.root_key + "display/lds10")
+        prop = self.root_key + "display/title"
 
         title = []
-        for prop in props:
-            values = getprop(self.provider_data, prop, True)
-            if values:
-                [title.append(v) for v in iterify(values) if v not in title]
+        values = getprop(self.provider_data, prop, True)
+        if values:
+            [title.append(v) for v in iterify(values) if v not in title]
 
         if title:
             self.update_source_resource({"title": "; ".join(title)})
