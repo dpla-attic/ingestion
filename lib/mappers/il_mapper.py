@@ -51,7 +51,11 @@ class ILMapper(QDCMapper):
 
     def map_object(self):
         url = []
-        if exists(self.provider_data, "preview"):
+        # Map either a IIIF presentation manifest or preview URL
+        if exists(self.provider_data, "isReferencedBy"):
+            for s in iterify(getprop(self.provider_data, "isReferencedBy")):
+                url.append(textnode(s))
+        elif exists(self.provider_data, "preview"):
             for s in iterify(getprop(self.provider_data, "preview")):
                 url.append(textnode(s))
         if url:

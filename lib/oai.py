@@ -70,6 +70,7 @@ metadata_field_map = {
         "dcterms:extent": lambda (v): {"extent": v},
         "dcterms:hasFormat": lambda (v): {"hasFormat": v},
         "dcterms:isPartOf": lambda (v): {"isPartOf": v},
+        "dcterms:isReferencedBy": lambda (v): {"isReferencedBy": v},
         "dcterms:mediator": lambda (v): {"mediator": v},
         "dcterms:medium": lambda (v): {"medium": v},
         "dcterms:provenance": lambda (v): {"provenance": v},
