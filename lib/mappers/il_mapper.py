@@ -85,3 +85,4 @@ class ILMapper(QDCMapper):
 
     def map_multiple_fields(self):
         self.map_format_and_medium()
+        self.map_is_referenced_by()
