@@ -4,7 +4,7 @@
     "endpoint_url": "http://www.davidrumsey.com/luna/servlet/oai",
     "sets": [],
     "contributor": {
-        "@id": "http://dp.la/api/contributor/david_rumsey", 
+        "@id": "http://dp.la/api/contributor/david_rumsey",
         "name": "David Rumsey"
     }, 
     "enrichments_coll": [
@@ -14,7 +14,7 @@
     ], 
     "enrichments_item": [
         "/select-id",
-        "/dpla_mapper?mapper_type=dublin_core",
+        "/dpla_mapper?mapper_type=rumsey",
         "/strip_html",
         "/set_context",
         "/shred?prop=sourceResource%2Fcontributor%2CsourceResource%2Fcreator%2CsourceResource%2Fdate",
