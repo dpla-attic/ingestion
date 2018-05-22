@@ -56,6 +56,14 @@ class ILMapper(QDCMapper):
                 url.append(textnode(s))
         if url:
             self.mapped_data.update({"object": url[0]})
+
+    def map_is_referenced_by(self):
+        url = []
+        if exists(self.provider_data, "isReferencedBy"):
+            for s in iterify(getprop(self.provider_data, "isReferencedBy")):
+                url.append(textnode(s))
+        if url:
+            self.mapped_data.update({"isReferencedBy": url[0]})
     
     def map_data_provider(self):
         dataProviders = []
@@ -77,3 +85,4 @@ class ILMapper(QDCMapper):
 
     def map_multiple_fields(self):
         self.map_format_and_medium()
+        self.map_is_referenced_by()
