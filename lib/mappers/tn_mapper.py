@@ -179,7 +179,7 @@ class TNMapper(MODSMapper):
 
                 for s_path in subject_props:
                     for s in iterify(getprop(subject, s_path, True)):
-                        subjects.append(s)
+                        subjects.append(textnode(s))
 
         if spatials:
             self.update_source_resource({"spatial": spatials})
