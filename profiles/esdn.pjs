@@ -8,6 +8,13 @@
         "name": "Empire State Digital Network"
     },
     "sets": [
+        "aaac_exhibitions",
+        "BookingLedgers",
+        "ur_6493",
+        "libertyhs",
+        "gc_mgmbookplates",
+        "xgy",
+        "nyhs_timucua",
         "hamBeiMss",
         "p16694coll69",
         "p16694coll52",
@@ -93,7 +100,6 @@
         "NYNCH",
         "BUF005",
         "BSM001",
-        "BUF009",
         "p16694coll45",
         "JSY",
         "fmcc",
