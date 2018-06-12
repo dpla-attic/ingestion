@@ -2,6 +2,7 @@ import itertools as it
 
 from dplaingestion.fetchers.fetcher import XML_PARSE
 from dplaingestion.fetchers.file_fetcher import FileFetcher
+import io
 
 
 class HathiFetcher(FileFetcher):
@@ -30,7 +31,8 @@ class HathiFetcher(FileFetcher):
 
         # Read in every self.batch_size docs
         grouped_records = []
-        with open(filepath, "r") as f:
+
+        with io.open(filepath, "r", encoding="utf-8") as f:
             first_group = True
             for key, group in it.groupby(f, lambda line:
                                          line.startswith("<record>")):
