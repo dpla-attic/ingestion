@@ -2,6 +2,7 @@ from akara import logger
 from dplaingestion.utilities import iterify
 from dplaingestion.selector import exists, getprop
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
+from dplaingestion.textnode import textnode
 
 
 class EsdnMapper(OAIMODSMapper):
@@ -181,11 +182,10 @@ class EsdnMapper(OAIMODSMapper):
                 vals = getprop(self.provider_data, prop)
                 if isinstance(vals, list):
                     for v in vals:
-                        formats.append(v)
-                elif isinstance(vals, dict):
-                    formats.append((vals.get("#text")))
+                        formats.append(textnode(v))
                 else:
-                    formats.append(vals)
+                    for i in iterify(vals):
+                        formats.append((textnode(i)))
 
         formats = filter(None, formats)
 
@@ -225,7 +225,7 @@ class EsdnMapper(OAIMODSMapper):
         if exists(self.provider_data, prop):
             for s in iterify(getprop(self.provider_data, prop)):
                 if "type" in s and s.get("type") == "host" and \
-                                s.get("displayLevel") == "collection":
+                        s.get("displayLevel") == "collection":
                     _dict["isPartOf"].append(getprop(s, "titleInfo/title"))
 
             self.update_source_resource(self.clean_dict(_dict))
@@ -262,7 +262,7 @@ class EsdnMapper(OAIMODSMapper):
                 lang = lang.get("#text")
 
         if lang:
-            self.update_source_resource({"language": filter(None,lang)})
+            self.update_source_resource({"language": filter(None, lang)})
 
     def map_relation(self):
         prop = self.root_key + "relatedItem/titleInfo/title"
@@ -327,7 +327,7 @@ class EsdnMapper(OAIMODSMapper):
 
             if mapped_props:
                 self.update_source_resource(self.clean_dict(
-                    mapped_props))
+                        mapped_props))
 
     def map_title(self):
         prop = self.root_key + "titleInfo/title"
@@ -343,9 +343,15 @@ class EsdnMapper(OAIMODSMapper):
 
     def map_type(self):
         prop = self.root_key + "typeOfResource"
+        types = []
         if exists(self.provider_data, prop):
-            self.update_source_resource(
-                    {"type": getprop(self.provider_data, prop)})
+            v = iterify(getprop(self.provider_data, prop))
+            logger.error("v = %s" % v)
+            for i in v:
+                logger.error(("i = %s" % i))
+                types.append(textnode(i))
+            logger.error(("types = %s" % types))
+            self.update_source_resource({"type": types})
 
     def unnest_list(self, nested_array, array=[]):
         for i in nested_array:
