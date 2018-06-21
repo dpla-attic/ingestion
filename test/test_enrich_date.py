@@ -6,8 +6,8 @@ from dict_differ import DictDiffer, assert_same_jsons, pinfo
 import sys
 
 
-def test_enrich_dates_bogus_date():
-    """Correctly transform a date value that cannot be parsed"""
+def test_enrich_dates_bogus_date_1():
+    """Correctly transform a date value that cannot be parsed (1)"""
     INPUT = {
         "date" : "could be 1928ish?"
     }
@@ -28,6 +28,68 @@ def test_enrich_dates_bogus_date():
     result = json.loads(content)
     assert result['date'] == EXPECTED[u'date']
 
+def test_enrich_dates_bogus_date_2():
+    """Correctly transform a date value that cannot be parsed (2)"""
+    INPUT = {
+        "date": "1896-19#"
+    }
+    EXPECTED = {
+        u'date' : {
+            'begin' : None,
+            'end' : None,
+            'displayDate': '1896-19#'
+        }
+    }
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert_same_jsons(result['date'], EXPECTED[u'date'])
+
+def test_enrich_bogus_date_3():
+    """Correctly transform a date value that cannot be parsed (3)"""
+    INPUT = {
+        # Uh, you mean 1969-03-26T00:00:00? We can't tell for sure.
+        "date": "1969-03-25T24:00:00"
+    }
+    EXPECTED = {
+        u'date': {
+            'begin': None,
+            'end': None,
+            'displayDate': '1969-03-25T24:00:00'
+        }
+    }
+    url = server() + "enrich_earliest_date?prop=date"
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+    result = json.loads(content)
+    print result
+    assert result['date'] == EXPECTED[u'date']
+
+def test_enrich_dates_bogus_date_4():
+    """Correctly transform a date value that cannot be parsed (4)"""
+    INPUT = {
+        "date": "1991-0u"
+    }
+    EXPECTED = {
+        u'date' : {
+            'begin' : None,
+            'end' : None,
+            'displayDate': '1991-0u'
+        }
+    }
+
+    url = server() + "enrich_earliest_date?prop=date"
+
+    resp,content = H.request(url,"POST",body=json.dumps(INPUT))
+
+    assert str(resp.status).startswith("2")
+
+    result = json.loads(content)
+    assert_same_jsons(result['date'], EXPECTED[u'date'])
 
 def test_enrich_date_single():
     """Correctly transform a single date value"""

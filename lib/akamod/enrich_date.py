@@ -39,7 +39,12 @@ def out_of_range(d):
 
 # EDTF: http://www.loc.gov/standards/datetime/pre-submission.html
 # (like ISO-8601 but doesn't require timezone)
-edtf_date_and_time = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+edtf_date_and_time = re.compile(
+    r"\d{4}-\d{2}-\d{2}"
+    r"T(?:[0-1][0-9]|2[0-3])"
+    r":(?:[0-5][0-9])"
+    r":(?:[0-5][0-9])"
+)
 
 def robust_date_parser(d):
     """
@@ -88,17 +93,17 @@ def robust_date_parser(d):
     return isodate
 
 # ie 1970/1971
-year_range = re.compile("(?P<year1>^\d{4})[-/](?P<year2>\d{4})$")
+year_range = re.compile(r"^(?P<year1>^\d{4})[-/](?P<year2>\d{4})$")
 # ie 1970-08-01/02
-day_range = re.compile("(?P<year>^\d{4})[-/](?P<month>\d{1,2})[-/](?P<day_begin>\d{1,2})[-/](?P<day_end>\d{1,2}$)")
+day_range = re.compile(r"^(?P<year>^\d{4})[-/](?P<month>\d{1,2})[-/](?P<day_begin>\d{1,2})[-/](?P<day_end>\d{1,2})$")
 # ie 1970-90
-circa_range = re.compile("(?P<century>\d{2})(?P<year_begin>\d{2})[-/](?P<year_end>\d{1,2})")
+circa_range = re.compile(r"^(?P<century>\d{2})(?P<year_begin>\d{2})[-/](?P<year_end>\d{1,2})$")
 # ie 9-1970
-month_year = re.compile("(?P<month>\d{1,2})[-/](?P<year>\d{4})")
+month_year = re.compile(r"^(?P<month>\d{1,2})[-/](?P<year>\d{4})$")
 # ie 195- 
-decade_date = re.compile("(?P<year>\d{3})-")
+decade_date = re.compile(r"^(?P<year>\d{3})-$")
 # ie 1920s
-decade_date_s = re.compile("(?P<year>\d{4})s")
+decade_date_s = re.compile(r"^(?P<year>\d{4})s$")
 # ie between 2000 and 2002
 between_date = re.compile("between\s*(?P<year1>\d{4})\s*and\s*(?P<year2>\d{4})")
 
