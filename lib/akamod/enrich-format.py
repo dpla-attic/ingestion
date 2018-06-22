@@ -7,6 +7,7 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import delprop, getprop, setprop, exists
 from amara.lib.iri import is_absolute
+from dplaingestion.textnode import textnode
 
 
 @simple_service('POST', 'http://purl.org/la/dp/enrich-format', 'enrich-format',
@@ -57,7 +58,7 @@ def enrichformat(body, ctype, action="enrich-format",
         s = s.lower().strip()
         for pattern, replace in REGEXPS:
             s = re.sub(pattern, replace, s)
-            s = re.sub(r"^([a-z0-9/]+)\s.*",r"\1", s)
+            s = re.sub(r"^([a-z0-9/]+)\s.*", r"\1", s)
         return s
 
     def is_imt(s):
@@ -77,17 +78,23 @@ def enrichformat(body, ctype, action="enrich-format",
         format = []
         hasview_format = []
 
-        for s in (filter(None,v) if not isinstance(v, basestring) else [v]):
+        if isinstance(v, list):
+            st = v
+        else:
+            st = [textnode(v)]
+
+        for s in st:
             if s is not None and s.startswith("http") and is_absolute(s):
                 s = get_ext(s)
+            logger.error("'proper=%s value=%s" % (prop, s))
             cleaned = cleanup(s)
             if is_imt(cleaned):
                 # Append to imt_values for use in type
                 imt_values.append(cleaned)
                 # Move IMT values to hasView/format else discard
                 if exists(data, "hasView") and not \
-                    exists(data, "hasView/format") and \
-                                cleaned not in hasview_format:
+                        exists(data, "hasView/format") and \
+                        cleaned not in hasview_format:
                     hasview_format.append(cleaned)
             else:
                 # Retain non-IMT values in sourceResource/format, non-cleaned
