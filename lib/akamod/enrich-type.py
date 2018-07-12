@@ -3,7 +3,9 @@ from akara.services import simple_service
 from amara.thirdparty import json
 from dplaingestion.selector import delprop, getprop, setprop, exists
 import dplaingestion.itemtype as itemtype
+from dplaingestion.textnode import textnode, NoTextNodeError
 import re
+
 
 type_for_type_keyword = \
     module_config('enrich_type').get('type_for_ot_keyword')
@@ -52,19 +54,17 @@ def enrichtype(body, ctype,
                        id_for_msg)
         return body
     if sr_type:
-        for t in sr_type if (type(sr_type) == list) else [sr_type]:
-            if type(t) == dict:
-                t = t.get('#text', '')
-            if t is not None:
-                type_strings.append(t.lower())
+        for t in list(sr_type):
+            try:
+                type_strings.append(textnode(t).lower())
+            except NoTextNodeError:
+                pass
     if sr_format:
-        for f in sr_format if (type(sr_format) == list) else [sr_format]:
-            if f is not None:
-                if isinstance(f, list):
-                    st = f
-                else:
-                    st = [textnode(f)]
-                format_strings.append(st.lower())
+        for f in list(sr_format):
+            try:
+                format_strings.append(textnode(f).lower())
+            except NoTextNodeError:
+                pass
     try:
         data['sourceResource']['type'] = \
             itemtype.type_for_strings_and_mappings([
