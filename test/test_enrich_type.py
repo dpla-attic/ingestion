@@ -143,5 +143,39 @@ def test_type_set_format():
     assert resp.status == 200
     assert_same_jsons(EXPECTED, json.loads(content))
 
+def test_type_from_textnode():
+    INPUT = {
+        "sourceResource": {
+            "type": [
+                "still image",
+                {"#text": "text", "usage": "primary"}
+            ],
+            "format": ["x"]
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {
+            u"type": [u"text", u"image"],
+            u"format": [u"x"]
+        }
+    }
+    resp, content = _get_server_response(json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+def test_type_textnode_error_handling():
+    INPUT = {
+        "sourceResource": {
+            "type": {"buggy": "data"}
+        }
+    }
+    EXPECTED = {
+        "sourceResource": {}
+    }
+    resp, content = _get_server_response(json.dumps(INPUT))
+    assert resp.status == 200
+    assert_same_jsons(EXPECTED, json.loads(content))
+
+
 if __name__ == "__main__":
     raise SystemExit("Use nosetest")
