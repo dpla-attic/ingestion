@@ -20,7 +20,14 @@ def getprop(obj,path,keyErrorAsNone=False):
         else:
             return None
 
-    return getprop(obj[pp],pn,keyErrorAsNone)
+    if exists(obj, pp):
+        return getprop(obj[pp],pn,keyErrorAsNone)
+    else:
+        if not keyErrorAsNone:
+            raise KeyError('Path not found in object: %s (%s)'%(path,pp))
+        else:
+            return None
+
 
 def setprop(obj,path,val,keyErrorAsNone=False):
     """
