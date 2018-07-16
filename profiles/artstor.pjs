@@ -38,7 +38,8 @@
         "SSDPLAWashington",
         "SSDPLATrinity",
         "SSDPLAEmerson",
-        "SSDPLAIllinois"
+        "SSDPLAIllinois",
+        "SSDPLAHollins"
     ],
     "set_params": {
         "SSDPLAAllegheny": {"frm": "2018-05-01"},
@@ -76,7 +77,8 @@
         "SSDPLAWashington": {"frm": "2018-05-01"},
         "SSDPLATrinity": {"frm": "2018-05-01"},
         "SSDPLAEmerson": {"frm": "2018-05-01"},
-        "SSDPLAIllinois": {"frm": "2018-05-01"}
+        "SSDPLAIllinois": {"frm": "2018-05-01"},
+        "SSDPLAHollins": {"frm": "2018-05-01"}
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor",
