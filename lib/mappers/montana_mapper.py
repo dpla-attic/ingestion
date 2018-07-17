@@ -2,7 +2,7 @@
 Montana Mapper
 """
 from dplaingestion.mappers.oai_mods_mapper import OAIMODSMapper
-from dplaingestion.selector import getprop
+from dplaingestion.selector import getprop, exists
 from dplaingestion.textnode import textnode
 from dplaingestion.utilities import iterify
 
@@ -91,10 +91,11 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "note"
         desc = []
 
-        for d in iterify(getprop(self.provider_data, prop, True)):
-            desc_type = getprop(d, "type", True)
-            if desc_type and desc_type == "content":
-                desc.append(textnode(d))
+        if exists(self.provider_data, prop):
+            for d in iterify(getprop(self.provider_data, prop, True)):
+                desc_type = getprop(d, "type", True)
+                if desc_type and desc_type == "content":
+                    desc.append(textnode(d))
 
         if desc:
             self.update_source_resource({"description": desc})
@@ -120,8 +121,9 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "physicalDescription/extent"
         extents = []
 
-        for e in iterify(getprop(self.provider_data, prop, True)):
-            extents.append(textnode(e))
+        if exists(self.provider_data, prop):
+            for e in iterify(getprop(self.provider_data, prop, True)):
+                extents.append(textnode(e))
 
         if extents:
             self.update_source_resource({"extent": extents})
@@ -143,12 +145,13 @@ class MontanaMapper(OAIMODSMapper):
         link = []
 
         for l in iterify(getprop(self.provider_data, prop, True)):
-            for r in iterify(getprop(l, "url", True)):
-                access_type = getprop(r, "access", True)
-                usage_type = getprop(r, "usage", True)
-                if (access_type and access_type == "object in context")\
-                        and (usage_type and usage_type == "primary display"):
-                    link.append(textnode(r))
+            if not isinstance(l, unicode):
+                for r in iterify(getprop(l, "url", True)):
+                    access_type = getprop(r, "access", True)
+                    usage_type = getprop(r, "usage", True)
+                    if (access_type and access_type == "object in context")\
+                            and (usage_type and usage_type == "primary display"):
+                        link.append(textnode(r))
 
         if link:
             self.mapped_data.update({"isShownAt": link[0]})
@@ -159,10 +162,11 @@ class MontanaMapper(OAIMODSMapper):
         link = []
 
         for l in iterify(getprop(self.provider_data, prop, True)):
-            for r in iterify(getprop(l, "url", True)):
-                access_type = getprop(r, "access", True)
-                if access_type and access_type == "preview":
-                    link.append(textnode(r))
+            if not isinstance(l, unicode):
+                for r in iterify(getprop(l, "url", True)):
+                    access_type = getprop(r, "access", True)
+                    if access_type and access_type == "preview":
+                        link.append(textnode(r))
 
         if link:
             self.mapped_data.update({"object": link[0]})
@@ -237,10 +241,14 @@ class MontanaMapper(OAIMODSMapper):
                         "sound recording": "sound"}
         types = []
 
-        for t in iterify(getprop(self.provider_data, prop, True)):
-            enriched_type = getprop(type_mapping, textnode(t), True)
-            if enriched_type:
-                types.append(enriched_type)
+        if exists(self.provider_data, prop):
+            for t in iterify(getprop(self.provider_data, prop, True)):
+                try:
+                    type_text = textnode(t)
+                    enriched_type = getprop(type_mapping, type_text, True)
+                    if enriched_type:
+                        types.append(textnode(enriched_type))
+                except Exception as e: continue
 
         if types:
             self.update_source_resource({"type": types})
