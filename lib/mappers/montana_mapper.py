@@ -80,9 +80,10 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "originInfo"
         dates = []
 
-        for oi in iterify(getprop(self.provider_data, prop,True)):
-            for d in iterify(getprop(oi, "dateCreated", True)):
-                dates.append(textnode(d))
+        if exists(self.provider_data, prop):
+            for oi in iterify(getprop(self.provider_data, prop,True)):
+                for d in iterify(getprop(oi, "dateCreated", True)):
+                    dates.append(textnode(d))
         if dates:
             self.update_source_resource({"date": dates})
 
@@ -132,8 +133,9 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "physicalDescription/form"
         formats = []
 
-        for f in iterify(getprop(self.provider_data, prop, True)):
-            formats.append(textnode(f))
+        if exists(self.provider_data, prop):
+            for f in iterify(getprop(self.provider_data, prop, True)):
+                formats.append(textnode(f))
 
         if formats:
             self.update_source_resource({"format": formats})
@@ -143,15 +145,15 @@ class MontanaMapper(OAIMODSMapper):
         @usage=primary display"""
         prop = self.root_key + "location"
         link = []
-
-        for l in iterify(getprop(self.provider_data, prop, True)):
-            if not isinstance(l, unicode):
-                for r in iterify(getprop(l, "url", True)):
-                    access_type = getprop(r, "access", True)
-                    usage_type = getprop(r, "usage", True)
-                    if (access_type and access_type == "object in context")\
-                            and (usage_type and usage_type == "primary display"):
-                        link.append(textnode(r))
+        if exists(self.provider_data, prop):
+            for l in iterify(getprop(self.provider_data, prop, True)):
+                if not isinstance(l, unicode):
+                    for r in iterify(getprop(l, "url", True)):
+                        access_type = getprop(r, "access", True)
+                        usage_type = getprop(r, "usage", True)
+                        if (access_type and access_type == "object in context")\
+                                and (usage_type and usage_type == "primary display"):
+                            link.append(textnode(r))
 
         if link:
             self.mapped_data.update({"isShownAt": link[0]})
@@ -161,12 +163,13 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "location"
         link = []
 
-        for l in iterify(getprop(self.provider_data, prop, True)):
-            if not isinstance(l, unicode):
-                for r in iterify(getprop(l, "url", True)):
-                    access_type = getprop(r, "access", True)
-                    if access_type and access_type == "preview":
-                        link.append(textnode(r))
+        if exists(self.provider_data, prop):
+            for l in iterify(getprop(self.provider_data, prop, True)):
+                if not isinstance(l, unicode):
+                    for r in iterify(getprop(l, "url", True)):
+                        access_type = getprop(r, "access", True)
+                        if access_type and access_type == "preview":
+                            link.append(textnode(r))
 
         if link:
             self.mapped_data.update({"object": link[0]})
@@ -176,9 +179,10 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "originInfo"
         publishers = []
 
-        for oi in iterify(getprop(self.provider_data, prop, True)):
-            for p in iterify(getprop(oi, "publisher", True)):
-                publishers.append(textnode(p))
+        if exists(self.provider_data, prop):
+            for oi in iterify(getprop(self.provider_data, prop, True)):
+                for p in iterify(getprop(oi, "publisher", True)):
+                    publishers.append(textnode(p))
 
         if publishers:
             self.update_source_resource({"publisher": publishers})
@@ -188,10 +192,11 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "accessCondition"
         rights = []
 
-        for r in iterify(getprop(self.provider_data, prop, True)):
-            rights_type = getprop(r, "type", True)
-            if rights_type and rights_type == "local rights statements":
-                rights.append(textnode(r))
+        if exists(self.provider_data, prop):
+            for r in iterify(getprop(self.provider_data, prop, True)):
+                rights_type = getprop(r, "type", True)
+                if rights_type and rights_type == "local rights statements":
+                    rights.append(textnode(r))
 
         if rights:
             self.update_source_resource({"rights": rights})
@@ -200,9 +205,11 @@ class MontanaMapper(OAIMODSMapper):
         """<mods:subject><mods:geographic>"""
         prop = self.root_key + "subject"
         geo = []
-        for s in iterify(getprop(self.provider_data, prop, True)):
-            for g in iterify(getprop(s, "geographic", True)):
-                geo.append(textnode(g))
+
+        if exists(self.provider_data, prop):
+            for s in iterify(getprop(self.provider_data, prop, True)):
+                for g in iterify(getprop(s, "geographic", True)):
+                    geo.append(textnode(g))
 
         if geo:
             self.update_source_resource({"spatial": geo})
@@ -212,9 +219,10 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "subject"
         subjects = []
 
-        for s in iterify(getprop(self.provider_data, prop, True)):
-            for t in iterify(getprop(s, "topic", True)):
-                subjects.append(textnode(t))
+        if exists(self.provider_data, prop):
+            for s in iterify(getprop(self.provider_data, prop, True)):
+                for t in iterify(getprop(s, "topic", True)):
+                    subjects.append(textnode(t))
 
         if subjects:
             self.update_source_resource({"subject": subjects})
@@ -224,9 +232,10 @@ class MontanaMapper(OAIMODSMapper):
         prop = self.root_key + "titleInfo"
         titles = []
 
-        for ti in iterify(getprop(self.provider_data, prop, True)):
-            for t in iterify(getprop(ti, "title", True)):
-                titles.append(textnode(t))
+        if exists(self.provider_data, prop):
+            for ti in iterify(getprop(self.provider_data, prop, True)):
+                for t in iterify(getprop(ti, "title", True)):
+                    titles.append(textnode(t))
 
         if titles:
             self.update_source_resource({"title": titles})
