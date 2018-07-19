@@ -7,6 +7,10 @@ def getprop(obj,path,keyErrorAsNone=False):
     Returns the value of the key identified by interpreting
     the path as a delimited hierarchy of keys
     """
+
+    if isinstance(obj, list):
+        obj
+        
     if '/' not in path:
         if keyErrorAsNone:
             return obj.get(path)
@@ -20,7 +24,14 @@ def getprop(obj,path,keyErrorAsNone=False):
         else:
             return None
 
-    return getprop(obj[pp],pn,keyErrorAsNone)
+    if exists(obj, pp):
+        return getprop(obj[pp],pn,keyErrorAsNone)
+    else:
+        if not keyErrorAsNone:
+            raise KeyError('Path not found in object: %s (%s)'%(path,pp))
+        else:
+            return None
+
 
 def setprop(obj,path,val,keyErrorAsNone=False):
     """
