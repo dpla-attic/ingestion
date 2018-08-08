@@ -83,12 +83,11 @@ class MichiganMapper(OAIMODSMapper):
             data_provider = ""
             intermediate_provider = ""
             if isinstance(record_content_source, list):
-                data_provider = record_content_source[0].get("#text")
+                data_provider = textnode(record_content_source[0])
                 if len(data_provider) > 1:
-                    intermediate_provider = record_content_source[1].get(
-                            "#text")
+                    intermediate_provider = textnode(record_content_source[1])
             elif isinstance(record_content_source, dict):
-                data_provider = record_content_source.get("#text")
+                data_provider = textnode(record_content_source)
             else:
                 data_provider = record_content_source
 
@@ -281,9 +280,9 @@ class MichiganMapper(OAIMODSMapper):
                     geography.append(s.get('geographic').get("#text"))
                 elif exists(s, "geographic") and isinstance(s.get('geographic'),
                                                             list):
-                    geography = geography + s.get('geographic')
+                    geography = geography + [textnode(g) for g in s.get('geographic')]
                 elif exists(s, "geographic"):
-                    geography.append(s.get('geographic'))
+                    geography.append(textnode(s.get('geographic')))
 
         geography = filter(None, geography)
 
@@ -308,9 +307,9 @@ class MichiganMapper(OAIMODSMapper):
                 for s in iterify(prov_subjects):
                     if exists(s, subj_prop):
                         if isinstance(getprop(s, subj_prop), dict):
-                            subject.append(getprop(s, subj_prop).get("#text"))
+                            subject.append(textnode(getprop(s, subj_prop)))
                         elif isinstance(getprop(s, subj_prop), list):
-                            subject = subject + getprop(s, subj_prop)
+                            subject = subject + [textnode(s) for s in getprop(s, subj_prop)]
                         else:
                             subject.append(getprop(s, subj_prop))
         subject = filter(None, subject)
