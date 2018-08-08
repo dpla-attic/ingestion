@@ -143,13 +143,8 @@ class GettyMapper(PrimoMapper):
             self.update_source_resource({"subject": subjects})
 
     def map_object(self):
-        primaryProp = self.links_key + "sear:lln03"
         prop = self.links_key + "sear:thumbnail"
 
-        if exists(self.provider_data, primaryProp):
-            self.mapped_data.update({"object":
-                                     getprop(self.provider_data, primaryProp)})
-
-        elif exists(self.provider_data, prop):
+        if exists(self.provider_data, prop):
             self.mapped_data.update({"object":
                                      getprop(self.provider_data, prop)})
