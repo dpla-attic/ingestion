@@ -306,7 +306,8 @@ class MichiganMapper(OAIMODSMapper):
             for subj_prop in props:
                 for s in iterify(prov_subjects):
                     if exists(s, subj_prop):
-                        if isinstance(getprop(s, subj_prop), dict):
+                        data = getprop(s, subj_prop)
+                        if isinstance(data, dict) and "#text" in data:
                             subject.append(textnode(getprop(s, subj_prop)))
                         elif isinstance(getprop(s, subj_prop), list):
                             subject = subject + [textnode(s) for s in getprop(s, subj_prop)]
