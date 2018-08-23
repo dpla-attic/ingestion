@@ -49,10 +49,8 @@ def enrichtype(body, ctype,
     except KeyError:
         # In this case, sourceResource is not present, so give up and return
         # the original data unmodified.
-        id_for_msg = data.get('_id', '[no id]')
-        logger.warning('enrich-type lacks sourceResource for _id %s' % \
-                       id_for_msg)
         return body
+
     if sr_type:
         for t in list(sr_type):
             try:
@@ -72,9 +70,6 @@ def enrichtype(body, ctype,
                 (type_strings, type_for_type_keyword)
             ])
     except itemtype.NoTypeError:
-        id_for_msg = data.get('_id', '[no id]')
-        logger.warning('Can not deduce type for item with _id: %s' % \
-                       id_for_msg)
         if default:
             data['sourceResource']['type'] = default
         else:

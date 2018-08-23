@@ -86,7 +86,6 @@ def enrichformat(body, ctype, action="enrich-format",
         for s in st:
             if s is not None and s.startswith("http") and is_absolute(s):
                 s = get_ext(s)
-            logger.error("'proper=%s value=%s" % (prop, s))
             cleaned = cleanup(s)
             if is_imt(cleaned):
                 # Append to imt_values for use in type
