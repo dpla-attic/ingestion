@@ -1,7 +1,7 @@
 {
     "name": "getty",
     "type": "getty",
-    "endpoint_url": "http://primose1.getty.edu:1701/PrimoWebServices/xservice/search/brief",
+    "endpoint_url": "http://primo.getty.edu/PrimoWebServices/xservice/search/brief",
     "endpoint_url_params": {
         "indx": 1,
         "bulkSize": 500,
