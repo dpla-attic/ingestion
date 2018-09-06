@@ -192,14 +192,15 @@ class OklahomaMapper(OAIMODSMapper):
 
     def map_edm_rights(self):
         prop = self.root_key + "accessCondition"
-        urls = []
-        for i in iterify(getprop(self.provider_data, prop, True)):
-            rType = getprop(i, "type", True)
-            rLink = getprop(i, "xlink:href", True)
-            if rType and rLink and rType == "use and reproduction":
-                urls.append(textnode(i))
-        if urls:
-            self.mapped_data.update({"rights": urls[0]})
+        edm_rights = None
+        if exists(self.provider_data, prop):
+            for right in iterify(getprop(self.provider_data, prop)):
+                if isinstance(right, dict):
+                    _type = getprop(right, "type", True)
+                    if _type and _type == "use and reproduction":
+                        edm_rights = right.get("xlink:href")
+        if edm_rights:
+            self.mapped_data.update({"rights": edm_rights})
 
     def map_rights(self):
         prop = self.root_key + "accessCondition"
