@@ -130,8 +130,10 @@ class FloridaMapper(Mapper):
         if formats:
             both += formats
 
-        if both:
-            self.update_source_resource({"format": both})
+        cleaned = self.get_names(both)
+
+        if cleaned:
+            self.update_source_resource({"format": cleaned})
 
     def map_identifier(self):
         self.source_resource_prop_to_prop("identifier")
