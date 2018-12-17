@@ -40,13 +40,17 @@ class TNMapper(MODSMapper):
         prop = "/metadata/mods/name"
         results = []
         if exists(self.provider_data, prop):
-            for name in getprop(self.provider_data, prop):
+            for name in iterify(getprop(self.provider_data, prop)):
                 if "role" in name and "namePart" in name:
                     for role in iterify(name["role"]):
-                        role_prop = "roleTerm/#text"
-                        if exists(role, role_prop) \
-                                and getprop(role, role_prop) == role_type:
-                            results.append(name["namePart"])
+                        rt = [textnode(role.get("roleTerm"))]
+                        if role_type in rt:
+                            name_value = name['namePart']
+                            if isinstance(name_value, list):
+                                for n in name_value:
+                                    results.append(n)
+                            else:
+                                results.append(textnode(name_value))
 
         return results
 
