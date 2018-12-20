@@ -51,14 +51,21 @@ def enrichtype(body, ctype,
         # the original data unmodified.
         return body
 
+    if (not isinstance(sr_format, list)):
+        sr_format = [sr_format]
+
+    if (not isinstance(sr_type, list)):
+        sr_type = [sr_type]
+
+
     if sr_type:
-        for t in list(sr_type):
+        for t in sr_type:
             try:
                 type_strings.append(textnode(t).lower())
             except NoTextNodeError:
                 pass
     if sr_format:
-        for f in list(sr_format):
+        for f in sr_format:
             try:
                 format_strings.append(textnode(f).lower())
             except NoTextNodeError:
