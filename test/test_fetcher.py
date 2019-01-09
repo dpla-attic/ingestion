@@ -104,40 +104,6 @@ def test_absolute_url_fetcher_nypl():
         break
 
 @attr(uses_network="yes", travis_exclude="yes")
-def test_absolute_url_fetcher_uva1():
-    profile_path = "profiles/virginia.pjs"
-    fetcher =  create_fetcher(profile_path, uri_base, config_file)
-    assert fetcher.__class__.__name__ == "UVAFetcher"
-
-    for response in fetcher.fetch_all_data():
-        assert not response["errors"]
-        assert response["records"]
-        break
-
-@attr(uses_network="yes", travis_exclude="yes")
-def test_absolute_url_fetcher_uva2():
-    profile_path = "profiles/virginia_books.pjs"
-    fetcher =  create_fetcher(profile_path, uri_base, config_file)
-    assert fetcher.__class__.__name__ == "UVAFetcher"
-
-    for response in fetcher.fetch_all_data():
-        assert not response["errors"]
-        assert response["records"]
-        break
-
-# Exclude the MWDL test in Travis as access to the feed is restricted
-@attr(travis_exclude='yes', uses_network='yes')
-def test_absolute_url_fetcher_mwdl():
-    profile_path = "profiles/mwdl.pjs"
-    fetcher =  create_fetcher(profile_path, uri_base, config_file)
-    assert fetcher.__class__.__name__ == "MWDLFetcher"
-
-    for response in fetcher.fetch_all_data(set=None):
-        assert not response["errors"]
-        assert response["records"]
-        break
-
-@attr(uses_network="yes", travis_exclude="yes")
 def test_all_oai_verb_fetchers():
     # Profiles that are representative of each type and are not restricted:
     profiles = [
@@ -281,17 +247,6 @@ def test_untl_field_conversion():
                             'untl:title', 'xmlns:untl']
     assert actual_record_fields == expected_record_fields
     assert actual_untl_fields == expected_untl_fields
-
-def test_file_fetcher_nara():
-    profile_path = "profiles/nara.pjs"
-    fetcher = create_fetcher(profile_path, uri_base, config_file)
-    assert fetcher.__class__.__name__ == "NARAFetcher"
-
-    fetcher.endpoint_url = "file:/%s/test/test_data/nara/" % os.getcwd()
-    for response in fetcher.fetch_all_data():
-        assert response["errors"] == []
-        assert response["records"]
-        break
 
 def test_file_fetcher_smithsonian():
     profile_path = "profiles/smithsonian.pjs"
