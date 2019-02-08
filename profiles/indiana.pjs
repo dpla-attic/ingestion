@@ -1,7 +1,7 @@
 {
     "name": "indiana", 
     "type": "oai_verbs",
-    "endpoint_url": "http://dpla.library.in.gov/OAIHandler",
+    "endpoint_url": "https://dpla.library.in.gov/OAIHandler",
     "metadata_prefix": "oai_qdc_imdpla",
     "contributor": {
         "@id": "http://dp.la/api/contributor/indiana",
