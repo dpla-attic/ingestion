@@ -84,7 +84,7 @@
     },
     "contributor": {
         "@id": "http://dp.la/api/contributor/artstor",
-        "name": "ARTstor"
+        "name": "Artstor"
     },
     "enrichments_coll": [
         "/set_context"
