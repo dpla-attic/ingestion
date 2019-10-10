@@ -3,7 +3,10 @@ import re
 import xmltodict
 from dplaingestion.utilities import iterify
 from dplaingestion.fetchers.file_fetcher import FileFetcher
-
+from xml.parsers.expat import ExpatError
+import tempfile
+import sys
+import re
 
 class EDANFetcher(FileFetcher):
     def __init__(self, profile, uri_base, config_file):
@@ -20,24 +23,22 @@ class EDANFetcher(FileFetcher):
         item_record["collection"].append(collection)
 
     def parse(self, doc_list):
+        print("IN: parse")
+        print("Doc list:" + str(len(doc_list)))
+        big_doc = "<docs>" + "".join(doc_list) + "</docs>"
         try:
-            parsed_docs = xmltodict.parse("<docs>" + "".join(doc_list) +
-                                          "</docs>")
+            parsed_docs = xmltodict.parse(big_doc)
             return parsed_docs["docs"]["doc"]
-        except ExpatError as e:
-            fd, error_file_name = mkstemp()
+        except Exception as e:
+            fd, error_file_name = tempfile.mkstemp()
             os.write(fd, "<docs>" + "".join(doc_list) + "</docs>")
             print >> sys.stderr, e.message
             print >> sys.stderr, "Bad batch written to %s" % error_file_name
             sys.exit(1)
 
     def extract_xml_content(self, filepath):
+        print("IN extract_xml_content: " + str(filepath))
         error = None
-        # First <doc> is not on its own line so let's get it there
-        cmd = "grep -rl '><doc>' %s | " \
-              "xargs sed -i'' -e 's/><doc>/>\\\n<doc>/g'" % \
-              filepath
-        os.system(cmd)
 
         # Read in batches of self.batch_size
         docs = []
@@ -45,8 +46,12 @@ class EDANFetcher(FileFetcher):
             while True:
                 try:
                     line = f.readline()
+
                     if not line:
                         break
+                    
+                    line = re.sub(r"</result></response>$", "", line)
+                    
                     if line.startswith("<doc>"):
                         docs.append(line)
                     if len(docs) == self.batch_size:
@@ -55,6 +60,8 @@ class EDANFetcher(FileFetcher):
                 except Exception, e:
                     error = "Error parsing content from file %s: %s" % \
                             (filepath, e)
+                    print("ERROR")
+                    print(str(docs))
                     yield error, None
                     break
         # Last yield
@@ -62,6 +69,7 @@ class EDANFetcher(FileFetcher):
             yield error, self.parse(docs)
 
     def extract_records(self, file_path):
+        print("IN: extract_records "  + str(file_path))
         def _normalize_collection_title(title):
             """Removes bad characters from collection titles"""
             norm = re.sub(r'[^\w\[\]]+', r'_', title)
@@ -80,7 +88,9 @@ class EDANFetcher(FileFetcher):
                         # Exclude records with no record_ID
                         continue
 
-                    set_names = record["freetext"].get("setName")
+                    set_names = None
+                    if "freetext" in record:
+                        set_names = record["freetext"].get("setName")
                     if set_names is None:
                         # Placeholder collection
                         title = ""
